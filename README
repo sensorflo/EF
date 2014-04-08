@@ -1,33 +1,29 @@
-// The markup language of this document is AsciiDoc
 :encoding: UTF-8
+// The markup language of this document is AsciiDoc
 
 = The EF Programming Language
-Florian Kaufmann <sensorflo@gmail.com>
-April 2014
+:author: Florian Kaufmann and Elias Diem
+:revdate: April 2014
 
 https://github.com/sensorflo/EF[The EF Programming Language] (C) by Florian
-Kaufmann is licensed under a
-http://creativecommons.org/licenses/by-sa/4.0/[Creative Commons
+Kaufmann <sensorflo@gmail.com> and Elias Diem <pub@webconect.ch> is licensed
+under a http://creativecommons.org/licenses/by-sa/4.0/[Creative Commons
 Attribution-ShareAlike 4.0 International License]
 
 This document is currently only in brainstorming quality
 
 == Rational for a new programming language
-
 For embedded systems or regular operating systems with rather tough run-time
-efficiency constrains there is no, to my current knowledge, programming
-language which has simple consistent syntax (C++ is out since due to legacy
-the syntax has become very difficult in the detail), is statically typed and
-offers many the convenience of modern scripting languages like java / ruby /
-python such as OO, functional programmming, generic programming, collections,
-as first class citizens.
+efficiency constrains there is currently no general purpose programming
+language which offers many of the abstraction features of modern and classic
+programming languages _and_ has a simple syntax and simple rules. 
 
 == Goal / Mission / Vision
 A modern programming language usable in an embedded, real-time environment in
-the industry. Competitor to C++.
+the industry. Competitor to C&plus;&plus;.
 
-- Multi-paradigm -- the user has to know in which situation which paradigm is
-  the best to use
+- General purpose programming language
+- Multi-paradigm 
 - Nearly pure OO language, nearly everything is an object, nearly every type
   is a class
 - Functional programming
@@ -37,7 +33,7 @@ the industry. Competitor to C++.
   occur.
 - Collections (e.g. lists or maps aka dictionaries) and operations (e.g
   slicing) on them are first class citizen.
-- Static type checking, i.e. no duck typing, but optionally RTTI
+- Static typed, type inference, whether strong or weak typing I don't know yet
 - Compile time execution: many things can be computed at compile-time opposed
   to run-time
 - Exceptions
@@ -59,6 +55,8 @@ the industry. Competitor to C++.
 I just begun brainstorming beginning in April 2014, trying out a lot of
 things, writing the syntax, and so far I am more than pleased with the result.
 I really think it's more than just a crazy idea. Until I wrote an first
-implementation of EF via an llvm front end I decided to encrypt my current
+implementation of EF via an LLVM front end I decided to encrypt my current
 work. I am happy to give you the key if you're honestly interested in helping
 evolving EF.
+
+// continuation in the currently encrypted file ef.txt
