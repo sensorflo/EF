@@ -1,0 +1,6 @@
+:encoding: UTF-8
+// The markup language of this document is AsciiDoc
+
+First untar and decrypt ++ef.tar.gpg++, e.g. with ++make decrypt++. From then
+on you can work with the files. Running ++make++ builds the EF compiler
+++out/ef++ and builds the documentation ++out/ef.html++.
