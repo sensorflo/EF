@@ -1,0 +1,1469 @@
+:encoding: UTF-8
+// The markup language of this document is AsciiDoc
+
+include::../README[]
+
+== Designing EF
+
+
+[[motivation_details]]
+=== Motivation for EF revisited 
+
+See also <<motivation_abstract>>. Thoughts about what EF could provide overall
+what no other current language can provide overall.
+
+Hard real-time / deterministic;; This is important for many embedded systems.
+Any programming language with an obligatory garbage collector most probably
+won't be suitable for hard real-time.  I am unsure about exceptions: there are
+zero overhead implementations, 
+
+Concurrency support;; ...
+
+Low power consumption;; This is important e.g. for portable devices running on
+battery or big server farms.  Interpreted languages in contrast to natively
+compiled languages almost certainly use more power when the program is
+executed (more machine instructions executed and / or more memory
+consumption).  Most modern programming languages are interpreted.  However JIT
+for many of them is already common, is it?  And in that case, what can be said
+about the power consumption?  After all there is still a VM, a typically big
+run-time, typically huge memory consumption.
+
+Safety nets;; By default bound checks, contracts, invariants, static type
+system, making it hard to accidentally drop errors.  For the user it should be
+easy to the correct thing and hard to do the wrong thing.  However EF does not
+try to take safety to the extreme.  Ease of use is also important.  Also EF
+does not patronize the user; when the user really wants it, he can do
+everything he can do it C.  I don't know where ADA and/or Ravenscar profile
+fit in here.  I think they are closer to high safety than to ease of use for
+my taste.  C&plus;&plus; 'if' correctly used also has adequate safety nets,
+but it is too easy to accidentally do the wrong thing and IMHO too hard to the
+right thing.
+
+As direct access to HW resources as C;; Despite the default way of programming
+in EF is `safe', if the user really wants he can get as raw access to HW
+resources as in C.  He has to be explicit though, so it doesn't happen by
+mistake and is easy recognizable.
+
+Performance at run-time;; Help compiler in being able to do optimizations at
+run-time.  E.g. with pure functions, knowing that pointers are not
+aliases, etc.  Most notably try to allow for global optimizations, including
+inter module.  Allow for compile-time evaluation of many constructs.  Allow
+for optional optimizations at run-time.
+
+Easy consistent syntax;; Simple things are easy to learn, easy to maintain,
+it's unlikely to make accidental mistakes, it's more fun when things work as
+intended and when you don't feel dumb.  C&plus;&plus; is an awful complex
+language once you start to dive into the language's details.
+
+Small run-time;; In order the binary also fits on a small embedded system.
+However does not take that to really tiny (for 2014 standards) embedded
+systems.  C is a good programming language for tiny programs.  Having safety
+nets and abstractions starts to really pay off when programs get larger.
+Anything interpreted is probably to large since the interpreter also needs
+space.
+
+Features;; OO, functional programming (includes first-class functions),
+generic programming, meta programming, collections (lists, maps aka hash
+tables etc) and slices thereof, regular expressions.
+
+Notable things what is 'not' part of the motivation of EF: specially targeted
+for safety-critical applications.  That allows for more freedom in what the
+programmer can do and how he can do it.  I think when the language is too
+pedantic and patronizing, it is not so much fun anymore using the language.
+
+
+=== Competing programming languages
+
+==== C
+
+Way too few safety nets.  Way too few of the conveniences other classic and
+modern programming languages provide.
+
+
+==== C&plus;&plus; (including newer versions)
+
+Way to complicated syntax and rules, mostly due to it's C legacy.  It's
+quicker and arguably more convenient to do the `unsafe' C thing than to do the
+`safe' modern C&plus;&plus; thing.  E.g. make use of STL collections with
+bound checks or make use of smart pointers.  C&plus;&plus;11 added support for
+concurrency.  Since that's via the STL that is too much an add-on as built-in
+into the language as it is the case with Ada.
+
+
+==== Ada (including newer versions)
+
+I can't judge Ada since I don't know it.  The first impression is that it
+offers much of what EF wants and what is objectively measurable.  My
+subjective first impression is that it feels a bit verbose.  Voices on the
+internet say it's OO feels attached rather than properly built-in.
+
+
+==== Real-Time Java 
+
+I suspect the run-time to be too big for small embedded system.  Since it's
+still interpreted, I suspect the power consumption to be still higher compared
+to say C&plus;&plus;1.  Modern compilers / run-times might really have decent
+on-average performance -- I'm not convinced yet that this good enough when you
+want to be sure certain parts are always (not on average) really fast.  Java
+is weak in directly accessing HW resources on a level as C can.
+
+
+==== Lisp
+Is apparently often used in robotics.  It is interpreted and has garbage
+collection.  Is thus not suitable for a hard real-time embedded system.
+
+
+.to-do:
+* Read Wikipedia's ``Comparison of Java and C&plus;&plus;''
+* http://www.embedded.com/design/prototyping-and-development/4024892/Ada-and-Java-real-time-advantages
+* http://www.adacore.com/uploads/technical-papers/concurrency-comparison.pdf
+* Book: Real-Time Systems and Programming Languages, look for newest edition
+* Google for ``Chris Lattner’s theory of compiler design''
+
+
+=== Guidelines in designing EF
+
+* I like the http://en.wikipedia.org/wiki/Unix_philosophy[Unix philosophy].
+  When can these guidelines in designing EF learn from them?
+* Prefer mnemonic (even when only one letter) letters/words over punctuation.
+* Provide the programmer with tools to directly express what he wants to
+  accomplish.
+* Easy grammar.  Most of all easy for humans to understand details
+  ('complicated' grammars might often be intuitive for humans in most cases
+  but not in a few corner cases or where the author of code ``abused' the
+  rules).  That also makes it easier to write tools/IDEs.  Common scanner and
+  parser generator tools such as lex and yacc should be able to handle the
+  grammar of EF.
+* No redundancy.  I don't want to be forced to write things twice.  Work with
+  identifiers to refer to already said things.
+* As in C&plus;&plus;, don't pay what you don't need.
+* As in many modern languages, abstractions and checks at compile time and
+  run-time shall make programmer's life easier with no or very little overhead
+  compared to C.  That is, the default way and the most convenient way to
+  program in EF is that way.  You still can use the raw features which C
+  provides, but you have to explicitly say so.
+  ** RTTI costs, mainly footprint size, which might be a problem in an
+     embedded system.  As in C&plus;&plus;, allow to turn it off - but then we
+     also loose exceptions?  See
+     http://stackoverflow.com/questions/5257190/are-exceptions-still-undesirable-in-realtime-environment.
+* Trade safety (likeliness to write correct programs) for compile time.  The
+  machine has to think, not the human programmer.  Compile time (almost) only
+  helps the programmer, but the programmer benefits probably more if he spends
+  less time searching bugs / compile/linker problems.
+ ** No context sensitive operators/keywords.
+* Trade faster run-time for longer compile-time.  The program is more often
+  run than compiled.  Even while developing - why compiling a translation unit
+  if you don't let the code in it run?  (OK due to a changed import it might
+  has to get recompiled).
+* Make it easy to write correct and run-time efficient code, make it and hard
+  to write incorrect code, make it obvious when run-time efficiency has more
+  than a near zero overhead compared to the C equivalent construct.
+ ** Full control as in a C program is still possible, however at the cost of
+    less short & nice syntax.  That is intentionally, it should be explicitly
+    visible that on purpose for some reason the potentially dangerous C style
+    has been used.  But don't go as far as making low level code too bulky,
+    because then nobody will want to write a whole file in that manner.
+ ** Concerning run-time overhead compared to the equivalent C construct: Does
+    it make sense to have 3 levels: 1) guaranteed to have zero overhead 2)
+    near zero overhead, around 1-3 machine instructions 3) More.  It does not
+    mean that every construct shall have those three in parallel, it only
+    means it should easily be recognizable / memorable into which level a
+    construct falls.
+* However, the more easy a language / library it makes that it is hard to make
+  errors, the more likely it is that this is at the cost of run-time
+  efficiency.  I'm thinking about the right (smart) pointer / reference /
+  collection to use.  What can EF do that it is easy to do the correct _and_
+  run-time efficient thing?
+* KISS.  Only few people are interested in delving into language details.
+  Most just want to use the language.  That is especially true in the
+  industry, and I want EF to be applicable for embedded systems.
+* To be successful on embedded, the produced binary must not contain much
+  overhead (size)
+* One thing has only one responsibility
+ ** Applies also to keywords / operators in EF
+  *** Avoid the case that one keyword affects multiple different things at the
+      same time, especially regarding storage, lifetime, scope, linkage.
+  *** Context insensitive, a keyword/operator has always the same meaning in
+      any context
+  *** Choose linkage, lifetime, storage, scope, alignment etc with dedicated
+      keywords.
+ ** EF shall help that the constructs the programmer creates adhere to this
+    principle
+ ** Const local objects -- apart from loop variables, collecting/summing up
+    variables, it's hard that one object with given name really can reasonably
+    contain different values at different times.
+* For the cases where there exists facts and data that a given abstraction
+  (say e.g.  smart pointers) helps the programmer to write less bugs at little
+  near zero or even zero run-time costs, people still might object using these
+  abstractions.  Because they don't know the facts/data, or don't believe
+  them, or they really have a special case where the `near zero' overhead
+  becomes a noticeable overhead.  Especially in the embedded hard real-time
+  world people want full control.  So EF has to provide full control if it
+  wants to have a chance to be accepted.
+ ** provide compile switches for style guides.  Then project's guidelines can
+    choose whether they want to allow C features for ultimate control or
+    disallow them for more safety at nearly zero run-time costs.
+* inspiring:
+  ** Targeted toward embedded system.  C / C&plus;&plus; / Lua / Tcl / Ada /
+     Ravenscar profile / Hume / embedded C&plus;&plus; / Java Real-Time
+  ** OO: C&plus;&plus; / D / Java / C# / Ruby / Python / Eiffel
+  ** Functional programming: Lisp, Smalltalk, Scheme, Ruby, Python
+  ** Generic programming: C&plus;&plus; / D
+  ** F#, OCaml (boasts to be nearly as fast as C)
+* Clean code can be reads as English prose.  You read the code from left to
+  right and directly get English prose.
+* Regarding the field difference run-time evaluation and compile-time
+  evaluation, type_expr, type_def, ctconst etc. don't re-invent the wheel.
+  Look at how lisp and other language do that.
+
+
+=== Embedded system constraints
+
+* http://electronics.stackexchange.com/questions/3027/is-c-suitable-for-embedded-systems
+* http://www.inf.ed.ac.uk/teaching/courses/es/PDFs/lecture_5.pdf        
+* http://741mhz.com/exceptions-performance/
+* http://stackoverflow.com/questions/5257190/are-exceptions-still-undesirable-in-realtime-environment
+* http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.55.8024&rep=rep1&type=pdf  
+* http://forum.dlang.org/thread/unreajijtwafywprqaag@forum.dlang.org?page=2#post-op.wmhetvpwsqugbd:40fbsdx64.lan
+* http://programmers.stackexchange.com/questions/84514/why-does-c-dominate-in-the-embedded-software-market
+* Book: Real-Time Systems.  Design Principles for Distributed Embedded
+  Applications.  Kopetz, Hermann.
+* From http://stackoverflow.com/questions/1601893/why-are-c-c-and-lisp-so-prevalent-in-embedded-devices-and-robots
+  2/3:
+ ** deterministic memory management
+ ** access to well-defined bit sizes (still not sure how LISP fits in here)
+ ** simple execution environment
+ ** entirely functional (natural fit for concurrency) or general purpose
+    (flexibility, embedded systems often have special needs)
+ ** flat memory model
+* From http://www.stroustrup.com/abstraction-and-machine.pdf:
+ ** Bit, byte, pointer, and array fiddling should be the last resort rather
+    than the first choice.  C&plus;&plus; balances costs with benefits for
+    “advanced features”, such as classes, inheritance, templates, free store
+    (heap), exceptions, and the standard library.  If you need the
+    functionality offered by these facilities, you can rarely (if ever)
+    provide better hand- coded alternatives.  The ISO C&plus;&plus; standard
+    committee’s technical report on performance [ISO, 2005] is provides data
+    and arguments for that proposition.
+ ** Exceptions (throw/catch): The time needed to handle an exception depends
+    on the distance (measured in function calls) from the throw-point to the
+    catch-point and the number of objects needed to be destroyed on the way.
+    Without suitable tools that’s very hard to predict, and such tools are not
+    available.  Consequently, I can’t recommend exceptions for hard real time;
+    doing so is a research problem, which I expect to be solved within the
+    decade.  For now, we must use more conventional error-handling strategies
+    when hard real time is needed, and restrict the use of exceptions to large
+    embedded systems with soft real time requirements.
+* to-do: Read The ISO C&plus;&plus; standard committee’s technical report on
+  performance [ISO, 2005]:
+  http://www.open-std.org/jtc1/sc22/wg21/docs/TR18015.pdf
+* Is it really the case that for many embedded systems only a C compiler is
+  available, which would mean that at least EF compiler is needed which's
+  output is C?  However that would be horrible to debug, would it?  And isn't
+  it easy enough to write a back end for GCC or LLVM for someone wanting to
+  write EF for his embedded system where he currently only has some C
+  compiler?
+* Mind that most of the time only a small part of the embedded system is under
+  hard real-time constraints.  What benefit can we draw from that?
+  ** Turn off exceptions completely for all or only a subset
+  ** If it is the case that one exception implementation is on average better
+     than another, but the second is better for real-time because of better
+     predictability, than maybe let the user choose.
+* Are exceptions compatible with the idea that EF should be applicable in a
+  real-time environment ?
+ ** See above, Stroustrup's opinion.
+ ** http://stackoverflow.com/questions/5257190/are-exceptions-still-undesirable-in-realtime-environment
+ **  http://741mhz.com/exceptions-performance/
+ ** Also when I use return codes it's no difference in difficulty to
+    measure/guess/prove how long a call takes in the worst case.
+* Anyway, even if modern exception implementation would be suitable in an hard
+  real-time embedded system, there still might be reluctant people who are in
+  charge, so EF maybe still needs a way to turn exceptions off as
+  C&plus;&plus; can.
+* An embedded system often does have things a normal OS has: files,
+  processes/threads?, ... What is the influence on EF's stdlib?
+
+
+== Meta syntax used in this document
+
+https://github.com/sensorflo/yasmala[Yasmala] is the meta syntax used in this
+document to describe the syntax of EF.
+
+
+== Program structure
+
+In EF everything is composed of expressions, thus a program is just an
+expression.  See chapter <<expressions>>.
+----------------------------------------------------------------------
+program = sa_expr;
+----------------------------------------------------------------------
+
+
+== Identifiers
+
+As in C&plus;&plus;:
+----------------------------------------------------------------------
+identifier = '[a-zA-Z_]'[a-zA-Z_0-9]+;
+----------------------------------------------------------------------
+
+
+[[expressions]]
+== Expressions
+
+In EF everything is an expression.  As a rough analogy, what C calls
+statements EF calls stand alone expressions, what C calls expressions EF calls
+sub expressions.
+
+----------------------------------------------------------------------
+## stand alone (sa) expressions. sa_expr is like pedantic_sa_expr but with a
+## bit more relaxed rules.
+sa_expr = 
+  ## the last element is allowed to be a non semicolon (;) terminated
+  ## proper_sub_expr.  This is because within parentheses a trailing ';' feels
+  ## bad.  Also sa_expr is allowed to be empty.
+  [\;] [pedantic_sa_expr] [proper_sub_expr];
+pedantic_sa_expr = 
+  ## unary postfix operator ';' makes its operand a stand-alone expression. 
+  proper_sub_expr \; | 
+  ## Applying ; to an expression which already is an stand-alone expression
+  ## is allowed and consequently is a nop.
+  pedantic_sa_expr \;? | 
+  psa_sub_expr |
+  labelled_sa_expr |
+  ## implicit binary sequence operator: It evaluates lhs operand for side
+  ## effects only, i.e. throws away the result, then evaluates rhs and returns
+  ## its result. I.e. it is analogous to C's comma operator
+  pedantic_sa_expr pedantic_sa_expr;
+
+expr_list = (sa_expr \,{?})*; 
+
+sub_expr = proper_sub_expr | psa_sub_expr;
+
+labelled_sa_expr = ['label identifier pedantic_sa_expr];
+
+## Possibly stand alone (psa) sub expression
+psa_sub_expr = block_expr | flow_control_expr | decl_expr | def_expr;
+
+## {} also introduces a lexical scope
+block_expr = \{ sa_expr \};
+----------------------------------------------------------------------
+
+Example:
+----------------------------------------------------------------------
+fun foo(int : i, int : j) -> void {
+  obj int : n,m;
+  n = i*2 + j*3; <1>
+  if ( ... ) { ... } <2>
+  m = if ( ... ) { ... } else { ... }; <3>
+  if ( n=0; m=i*j <4> ) { ... }
+}
+----------------------------------------------------------------------
+
+<1> Sub expressions need to be terminated with the operator `++;++' which
+    results in an stand alone expression.
+<2> Possibly stand alone sub expressions such as flow control expressions
+    need not to be terminated with `++;++' since they are already also stand
+    alone expressions.
+<3> Possibly stand alone sub expressions can appear as operands of sub
+    expressions, since they are also sub expressions.
+<4> The last sub expression in a block or parenthesis is allowed to omit the
+    terminating `++;++'.
+
+The whole function body is a single stand alone expression.  It is composed of
+stand alone expressions, in this example one per line.  Between each stand
+alone expression is the implicit binary sequence operator.
+
+.To-do
+- Read http://en.wikipedia.org/wiki/Monad_(functional_programming)
+- I want a mostly context free grammar.  That is easier for human brain and
+  for compilers.  100% is probably is not possible.  E.g at global scope, an
+  arithmetic operator is meaningless.  Then again, maybe we can allow that.
+  Such expressions, as initialization of static variables, are executed in
+  undefined order at program start-up.  EF doesn't patronize the user.
+- However and import may also be done anywhere, in which case the symbols are
+  only imported in the enclosing block.
+
+
+=== Sub expressions and classic operators
+
+These operators correspond to what is found in most programming languages.
+
+----------------------------------------------------------------------
+proper_sub_expr = boolean_expr | bit_expr | comparison_expr |
+  arithmetic_expr | assignment_expr | other_sub_expr | fun_call_expr | 
+  obj_def;
+
+arithmetic_expr =
+  ('root2 | 'log2 | 'loge | 'log10 | \+ | \-) sub_expr | 
+  sub_expr (`+ | `- | `* | `/ | \% | 'pow | 'root | 'logb) sub_expr;
+
+bit_expr = 'bit_not sub_expr |
+  sub_expr ('bit_or | 'bit_and | 'bit_xor | 'bit_nand |
+            'ror | 'rol | 'shr | 'shl | 'sar | 'sal) sub_expr;
+
+## all are short circuit operands, they don't evaluate second operand if
+## outcome is determined after evaluation the first operand.  Thus they can
+## also be used as flow control operands, e.g. as in Perl "foo() or die()".
+boolean_expr = 'not sub_expr | sub_expr ('or | 'and | 'xor | 'nand) sub_expr;
+
+comparison_expr = sub_expr (`== | `!= | \< | \> | `<= | `>= ) sub_expr;
+
+assignment_expr = sub_expr (`\= | `+= | `-= | `*= | `/= | `%= | ... ) sub_expr;
+
+other_sub_expr =
+  sub_expr `?: sub_expr | ## null coalescing operator
+  \( sa_expr \);
+----------------------------------------------------------------------
+
+
+=== Forced parentheses
+
+In case EF can't get the operator precedence intuitive, then force the usage
+of parentheses around certain sub-expressions if and only if the value of the
+sub-expression is used.  EF suffers more from this problem, since everything
+is an expression, i.e. everything is either an operator or operand.
+E.g. the following is understandable, although admittedly not really nice:
+
+----------------------------------------------------------------------
+(obj string : s("hello")) + "world"
+----------------------------------------------------------------------
+
+However the equivalent expression without parentheses, assuming +++++ has a
+higher precedence than ++obj:()++, is truly ugly and hard to understand:
+
+----------------------------------------------------------------------
+obj string : s("hello") + "world"
+----------------------------------------------------------------------
+
+Similarly it must be ++while ((i=j)) ...++ opposed to ++while (i=j) ...++.
+
+
+=== Expressions vs Statements
+
+- nearly everything is an expression; no?  difference between expressions ans
+  statements
+- no distinction necessarily between , and ; ?
+- would mean there are only operators (and words acting as operators), no
+  `traditional' keywords.
+- Where does lifetime of automatic storage end when there are no longer any
+  blocks?  Where does lifetime of temporaries end when there no statements
+  anymore?  Where are sequence points?
+ ** Use parenthesis just as in C++ to overwrite precedence.  Use curly [b]{}
+    for the same thing but additionally with the old block semantics.
+ ** ; opposed to , could be use as the point where temporaries are deleted.
+    But that is a small advantage for a token.  Thus let temporaries die also
+    at the end of the enclosing block, just as automatic variables.
+
+
+== Types
+
+----------------------------------------------------------------------
+type_def = class_type_def | interface_type_def | enum_type_def |
+  union_type_def | alias_type_def;
+
+type_expr =
+  [type_qualifier] (fundamental_type | compound_type_expr) |
+  \( type_expr \);  ## to change precedence of type expr operators
+
+type_expr_list = (type_expr \,{?})*;
+
+type_qualifier = 
+  'const |:  ## ignored for &, &&, raw arrays
+  'volatile |: ## ignored for &, &&, raw arrays
+  'alignas<expr>;
+
+fundamental_type = ## aka primitive type
+  ## arithmetic types
+    ## integral types. probably some need to be moved into stdlib
+    ['u|'s].(
+      'efbyte#*not necessary 8bit*#|'short|'int|'long|'longlong|
+      ['f['ast]|'l['east]]'int('8|'16|'32|'64|'128|'258) |
+      ['bigint|'intx]) | ## probably needs to be moved into stdlib
+    ## floating point types
+    'float | 'double | 'longdouble | 
+    ## character types. value is code point. maybe move some to lib. would
+    ## have to be variable with anyway, no? How does C++ do it?
+    'char | 'wchar | 'utf8char | 'utf16char | 'utf32char
+  'bool |
+  'tnull | ## type of null pointer literal
+  'void |
+  'noret;
+
+## !!!!to-do/ensure!!!! all the following after the same pattern as above
+compound_type_expr =
+  generic_reference_type |
+  generic_pointer_type |
+  array_type |
+  enum_type | 
+  function_type | 
+  class_type | 
+  union_type;
+
+## - drop the name reference and use alias?
+## - As in C++, probably references are not objects (thus don't have an
+##   address), but sometimes still need memory to store where they refer to.
+## - is the property of a const ref still needed that it extends lifetime of a
+##   temporary? I think this is now unneeded complexity
+## - isn't it that rvalue ref is just some kind of smart pointer? The old
+##   owner says: I don't need my content anymore, and the rvalue ref says: I
+##   take ownership of your content and do with it whatever I want. With
+##   classes supporting move semantics the actual data is not really on the
+##   stack, its on the heap anyway. Thus a function can new the data directly
+##   using some smart ptr.
+##   * Mind the swap example
+##   * Read http://www.drdobbs.com/cpp/c11-uniqueptr/240002708
+generic_reference_type = 
+  ## when type_expr is itself a ref, this outer ref is ignored. Warn if
+  ## type_expr is directly explicitly an ref
+  (\&|'ref) type_expr | 
+  ("&&"|'mref) type_expr;
+
+generic_pointer_type =
+  ## 'normal' (name??? to distinguish from member pointer) pointer
+  ['[sub]]#ptrsubtype (\*|'ptrto) type_expr | 
+  ## pointer (built-in) to member type
+  ['[sub]]#ptrsubtype (\*|'ptrto) type_expr 'in class_type; 
+
+array_type = 
+  ## array type. a=std::array (default), b=built in
+  ['[ab]]#arraysubtype \(\[ctconst_expr#n\]|'arrayof ctconst_expr#n) type_expr; 
+----------------------------------------------------------------------
+
+An EF type expression can be read from left to right and the spoken words
+correspond exactly to what it technically is.
+
+.Notes
+* For simplicity a type name is always a single identifier, e.g. no ``unsigned
+  long long''.
+* Is it possible that nearly anything by default is signed? Less problems with
+  conflicting types.  However some applications really want that MSB.  The std
+  library probably cannot have a size() which returns a signed number. 
+
+.To-do
+* Add more floating point types, there apparently is also 16bit, 80bit, two
+  128bit (112 and 64 mantissa)
+* Consider allowing any number of bits for integers.
+* Consider user providing means to choose between packed arrays and naturally
+  aligned array members?
+* Does it really make sense that a type defines its own alignment; that's 1)
+  in addition to the declaration of an object 2) the fully expanded type, i.e.
+  the resulting type expression, could contain multiple alignas, and EF would
+  need to establish rules what the final alignment is.
+
+
+=== Type aliases
+
+----------------------------------------------------------------------
+## At compile-time defines an alias for the given type_expr. At run-time does
+## nothing.
+type_alias_decl =
+  ('newtype|'typealias) identifier | ## incomplete type
+  ('newtype|'typealias) identifier type_expr;
+----------------------------------------------------------------------
+
+* ++typealias++: Declares an identifier which is an alias for type_expr, but
+  is not a distinct type.
+* ++newtype++: Declares an identifier which is a new distinct type.
+
+.To-do:
+* Provide ability to define aliases, macros for type_expr, e.g. ++defxx
+  ptr_to_array *[]++
+
+
+=== Type information
+
+When everything is an object, than a type object would have these methods
+
+* +id+
+* +name+
+ ** For template arguments choose whether template name is meant (e.g. T) or
+    the passed type (e.g. myclass)
+ ** Same analogous question for typedefs: 
+* +sizeof+ is often ctconst, but sometimes (e.g. dynarrays as in C) also only
+  known at run-time
+
+
+=== RTTI
+
+- Classes provide a list of their members as std::tuple.  That way e.g. one
+  could implement an reliable (though inefficient) operator= or operator==.
+  (Naturally EF already provides those operators)
+
+
+=== Implicit Conversions
+
+Much less implicit conversions than C&plus;&plus;.  No narrowing implicit
+conversions.  Maybe apply the principle `explicit is better than implicit'.
+After all, EF also tries to result in more maintainable SW.  And always trying
+to be clever and short by using a lot of implicit stuff makes it hard
+maintain.  Also mind that most people are not interested in studying the
+language in depth.  Apply the principle of `make it easy to be used correctly
+and hard to be used incorrectly'.  Maybe once again make it a compiler switch
+whether e.g. the 0 equivalent is bool false.  Then normally those implicit
+conversions are turned off and those hackers really wanting them can turn them
+on (and then there is also no reason against using EF).
+
+=== Explicit Conversions
+
+...
+
+
+=== Enumerations
+
+* User chooses whether enclosing namespace gets the names and/or if they are
+  contained in the enumeration namespace
+* Each enum is, as everything, an object which name as a string can be
+  retrieved.
+
+
+=== Strings & Characters
+
+...
+
+
+==== Character encoding
+
+Differentiate between 1) the type, e.g. unicode_char, which is capable of
+holding any code point and 2) the character encoding into a stream of another
+type, typically 8bit bytes, e.g. utf-8 or utf-16.
+
+
+==== Internationalization
+
+...
+
+
+=== Misc
+
+Maybe among other ways, provide a format function like shells or Perl offer
+it: embed variables directly into the string, prepended with +$+, optionally
+curly braces around the identifier.  Look up the ways Perl and Python offer.
+
+
+[[code_chunks]]
+== Code chunks / General Functions
+
+`Code chunk' is a the most generic term standing for all types of function
+like things.  What is a better term?  Maybe `general function'?
+
+A procedure does not return any value, while a function does.
+
+
+=== (Named) Methods
+
+For now same as functions (regarding the definition), just defined within a
+class.  Maybe use keyword +meth+ instead of +fun+.  That also makes
+documentation more easy.  I.e. terms used in documentation correspond more to
+terms used in code / in the syntax of the language.
+
+- Virtual is default
+- Keyword for overwrite, so we have to be explicit in our intend to avoid the
+  case to accidentally introduce a new method.  Or the other way round, a
+  keyword for introducing a new method.
+- Keyword for non-virtual (since virtual is the default)
+- No final keyword to prevent overwriting methods or deriving classes.  Only?
+  usable in security related areas, and those should achieve their goals by
+  other means.  Final is bad for unit testing.  It's bad from the point of
+  view that the author of class A shall not dictate others how to use it.
+
+
+=== (Named) Functions
+
+----------------------------------------------------------------------
+## At compile-time defines an function object.  At run-time does nothing.
+fun_obj_def = 'fun identifier#name fun_type_expr block_expr;
+fun_type_expr = fun_signature | identifier#*function type*#;
+fun_signature =
+  [\( named_type_list \)] ## defaults to ()
+  [`: named_type_list ] ## return type, defaults to auto_t, typically only one element in the list
+                        ## Only allowed to omit if guide compile switch is set
+  ['throws \( type_expr_list \)] 
+  ['is funcqualifiers];
+
+## To-do: "[\= ctconst_expr]" is not really part of a general type list, it is
+## only available in a function signature.
+named_type_list = (named_type \,{?})*; 
+named_type = type_expr [\: identifier#name] [\= ctconst_expr];
+
+## To-do: What exactly is the returned type? Something like named_type_list
+fun_call_expr = fun_obj_expr \( expr_list \);
+----------------------------------------------------------------------
+
+For example:
+----------------------------------------------------------------------
+fun factorial(int:i) -> int {
+  if (i<=1) { 1 }
+  else { i * factorial(i-1) }
+}
+----------------------------------------------------------------------
+
+.To-do
+- Allow that definition only uses name already introduced by declaration, so
+  we don't have to redundantly state signature again.  That fails for
+  overloads, but see function name aliases.
+- Allow to add aliases to functions.  Both to other name, ignoring signature,
+  and to the complete thing (name+signature).
+- A lambda is an anonymous function.  That should be visible in some way from
+  the syntax.
+- What if i want an anonymous function and define signature via an function
+  type name?
+
+
+=== Overloaded Operators
+
+Support the case that the class can also be the rhs of the other type is
+the lhs.  That avoids the need for being forced to define a global operator for
+that case which also forces that global operator to be private.
+
+See also D: Auto deduction of all comparison operators after == and any of (<
+<= > >=) are given.
+
+
+=== Function call
+
+As in Python, allow to call giving something like a map identifier->value.
+That way caller has not to remember the order.  Should I really do that? The
+principle should be to make use of the IDE more.  But unlike using comments in
+C/C&plus;&plus; at caller side, the python/EF approach is not redundant, so no
+downside from this point of view.
+
+=== Lambdas
+
+An anonymous aka unnamed function.  An unnamed closure which makes no
+references to environment.
+
+
+=== MethLambdas
+
+An unnamed method. 
+
+
+=== Closures
+
+A closure is any (named or anonymous, does not matter) function which closes
+over the environment in which it was defined.  This means that it can access
+variables not in its parameter list.  See also
+http://stackoverflow.com/questions/220658/what-is-the-difference-between-a-closure-and-a-lambda
+
+Can they be templatized?
+
+
+=== Contracts
+
+See D / Ada.  For all types of code chunks.
+
+Pure virtual methods should also be able to have contracts, no?  That includes
+interfaces.
+
+Interfaces should also be able to have invariants, no?
+
+
+=== Overloading
+
+Consider not supporting overloading in EF.
+
+- Together with implicit conversions and namespaces / modules it gets
+  difficult to understand which conversions happen and which overloaded method
+  is called at the end.  Both for humans and for compilers.
+- I like overloading and use it not seldom.  Still it is only convenience, it
+  only saves me from having to invent multiple names instead just one name.
+  The maintainer also has to know multiple names instead just one, but he has
+  (having overloading) also to remember the multiple signatures, so no
+  difference for the maintainer.
+- On the other side, for constructors we most certainly have overloading
+  anyway. 
+
+
+=== Variadic arguments
+
+Mainly to be compatible to C, to be able to build wrappers around C.  But
+shouldn't the wrapper then use a more EF like construct?
+
+
+=== Chaining functions
+
+As in #F with ++|>++ allow to stream output of one function into input of
+another function.  Is it possible to have one general solution that also
+includes pipes / redirection?  Learn how Windows PowerShell does it.
+
+
+=== Optimizations
+
+...
+
+
+==== Pure
+
+See D for pure functions.  In EF, pure can be a property of any code chunk.
+
+
+==== Tail call optimization
+
+...
+
+
+==== Return value optimization (RVO)
+
+Probably part of the more general copy elision.
+
+
+== Initialization
+
+Much easier than in C&plus;&plus;.  Only one / a few simple principles.
+Either completely orthogonal or simple aliases.
+
+
+== Comments / Documentation / EFDoc
+
+----------------------------------------------------------------------
+comment = 
+  \#(\*+) ...\1\# | ## multi-line
+  \# ... \n ;  ## single-line
+----------------------------------------------------------------------
+
+The multi-line variant can be nested.  E.g given ++a #* b #* c *# d *# e++,
+from b to d inclusive is within the outer comment.  The closing delimiter
+needs as many stars as the opening delimiter.  That way sequences like *# can
+be included in the comment: `#** in EF the *# ends an comment **#`.
+
+.Notes
+- Having # as delimiter allows to use the shebang mechanism.
+
+.To-do
+- Institutionalize using Doxygen or Doxygen like markup language.
+- See EFDoc why it makes sense to integrate the doc language into the
+  compiler.
+- Inherited classes, overloaded methods, overwritten methods,
+  member-getter-setter, delegate methods: Find a way that only a minimalistic
+  comment (one keyword) or none at all has to be written and still have 1)
+  good doc output 2) even in code the maintainer sees quickly that the
+  identifier is not documented here but at another place.
+
+
+== Modules
+
+Do it as in D, have modules, as opposed to header(.h) and source(.cpp/.cc/...)
+files.
+
+Most expressions at global scope are things which are evaluated at
+compile-time and do nothing at run-time.  E.g. definitions of types and of
+function objects.
+
+Nonetheless, the code in a module is just one expression.  As any expression
+it has a compile-time component and a run-time component.  The run-time
+component is executed at program start up.  However by default expressions at
+global scope with a non-nop run-time part are disallowed.  You can turn it on
+via compiler switch.
+
+
+== Objects
+
+An object, in EF, is a region of storage with the following properties:
+
+* _type_
+* _value_:      
+* [_name_]: A name is optional
+* _size_: Is implicitly defined by object's type
+* _scope_: 
+* _storage_: As in C&plus;&plus;
+ ** automatic:
+ ** static:
+ ** thread:
+ ** dynamic:
+* _lifetime_: Is implicitly defined by storage & scope
+* _linkage_
+* _alignment_
+
+Type, storage, linkage, alignment can be defined as following:
+----------------------------------------------------------------------
+obj_def = local_obj_def | global_obj_def | classmember_obj_def | fun_obj_def;
+
+obj_prop_expr = type_expr [storage linkage alignment scope]#*any order*#;
+storage = 'static_storage | 'thread_storage | 'auto_storage;
+linkage = 'extern | 'intern;
+alignment = 'alignas \( (sub_expr#integral|type_expr) \);
+scope = 'block_scope | 'full_expr_scope;
+----------------------------------------------------------------------
+
+.To-do
+* Is alignment part of object definition or of type_expr?
+
+
+=== Local objects
+
+A bit simplified, the ++obj++ family of n-ary operators create a new object,
+initialize it with the given initializer, bind the given identifier as name to
+it and finally return a reference to the new object.
+
+----------------------------------------------------------------------
+## if obj_prop_expr is omitted it defaults to 'auto_t'
+## if identifier is omitted, it's an unnamed object
+## obj{}
+local_obj_def =
+  'obj [obj_prop_expr] [\: identifier#name] initializer |
+  'obj [obj_prop_expr] \{ ([identifier#name] initializer \,{?})+ \};
+  'obj [obj_prop_expr] \{ ([identifier#name] \,{?})+ \} initializer;
+
+initializer =
+  ## constructor call syntax
+  \( expr_list \) |
+  ## leave objects value undetermined
+  \( 'noinit \) | 
+  ## an alternative syntax to the constructor call with one argument like so
+  ## '(sub_expr)'
+  \= sub_expr |
+  ## omitting the initializer is an alias to the '()' initializer
+  ;
+----------------------------------------------------------------------
+
+.Example
+----------------------------------------------------------------------
+obj a = 3, b(3), c;
+
+fun get(int, &double);
+get( 0, obj double f ); 
+
+obj string { a, b } = get2strings();
+----------------------------------------------------------------------
+
+.Scope and lifetime
+The lifetime always ends at the end of the enclosing block.  In particular
+that includes object definitions inside the condition of flow control
+expressions.
+
+.Read out aloud
+Read the code from left to right and get English prose.
+
+* ++obj int : i = 3++: Define a new __obj__ect of type ++__int__++, name it
+  ++__i__++ and initialize it with +_3_+.
+* ++obj string static {town = "NY", name("Bob")}++: Define new __obj__ects of
+  type ++__string__++ with ++__static__++ storage: name one ++__town__++ and
+  initialized it with ++__"NY"__++, name another ++__name__++ and initialize
+  it with ++__"Bob"__++.
+
+.Uninitialized objects
+EF supports the ability to not initialize a variable, most probably for
+run-time efficiency, as it is possible in C.  However the programmer has to be
+quite explicit.  The keyword is ++(noinit)++.  Only ++noinit++ without
+parenthesis would have been probably possible too, but I feel with the
+parentheses it looks more familiar, it's more consistent.
+
+.To-do
+* Define where _exactly_ lifetime and scope begin.  In particular with
+  collection initializers: Can one element refer to another one? Does that
+  depend on whether the referee was already initialized itself or can you get
+  a reference/pointer to a not yet constructed element (that would probably be
+  nice to conveniently construct trees).  Can you refer to the collections
+  size of the initializer? That also could be useful.
+* Try to get rid of : or of obj keyword.  Only having : would be a bit closer
+  to the idea that in EF there are only expressions, i.e. only operators.  It
+  would also be shorter.
+* Try to have the identifier on the lhs and the obj_prop_expr on the lhs.
+  Would be closer to the way other declarations and definitions are done
+  in EF.  Also I feel the identifier more important as the type -- the type is
+  mostly for the compiler for the static type system; in other languages there
+  is no type information at all.  This way the identifiers would also be
+  aligned, e.g. in class definition.
+* Make local objects const by default.  I.e. the +const+ qualifier is
+  implicitly prepended to the obj_prop_expr.  Naturally non-const local
+  objects must be possible.  It's just that const objects should be the norm
+  and to achieve that they should have the easier nicer syntax.  Reasoning:
+ ** One thing should only have one responsibility
+ ** Is in favor of functional programming where variables are tried to be
+    avoided.
+* allow to explicitly shadow a name declared in the same scope and/or to pop
+  the latest automatic variable from the stack.
+* Concerning objects declared in the condition of a flow control expression:
+  let the user choose whether he want's the scope to be limited to the
+  enclosing block (default, would be one single consistent rule), or whether
+  the scope ends at the end of the flow control expression.  Specially with
+  the for loop, the iterator variable sometimes is wanted to vanish after the
+  loop, sometimes to vanish not until the end of the enclosing loop.  Or
+  extend the concept to scope the variable to the enclosing full expression.
+
+
+== Non local objects
+
+Actually don't differentiate, do it always the same way.  EF tries to have to
+have context free grammar (do i use the term correctly?).  So to define global
+static objects, we have to say storage type static.  C&plus;&plus; does it
+also this way.  The initializer are expressions to be evaluated the same way
+as non - ctconst expressions in global scope: in undetermined order at program
+start-up.
+
+Similar for member obj of classes.  The syntax is the same as for all obj
+definitions.  It's only that the initializer is executed upon construction of
+the class' object.
+
+Static class obj are virtually the same as global static obj.  It's just that
+the scope is different.
+
+== Struct
+
+Does it help if a struct is nearly the same thing as it is in C?  No methods
+no nothing?  Only public members.
+
+Easy initialization, readable.  E.g. similar to Python, caller can provide
+something like a map identifier->value, this way he has not to remember the
+order.  And the names of the members he has to know anyway.
+
+
+== Classes / Interfaces
+
++class_def+ and +interface_def+ are both +type_expr+.
+----------------------------------------------------------------------
+## At compile-time define a new class type. At run-time does nothing.
+class_type_def = 'class identifier#name [\: base_class_list] \{ classimpl \};
+inteface_type_def = 'interface identifier#name [\: interface_list] \{ classimpl \};
+base_class_list = identifier#superclass [\, interface_list] | interface_list;
+interface_list = (identifier#interface \,{?})*;
+----------------------------------------------------------------------
+
+
+=== Inheritance / Super class / Interfaces
+
+Only single inheritance, no multiple inheritance, but implementing of an
+arbitrary amount of interfaces.
+
+
+=== Constructor
+
+The name is +this+ or +ctor+ (ctor and dtor would be very close) or
++constructor+.  Don't use the class' name as C&plus;&plus; does because that
+is redundant.
+
+Allow to delete the auto generated ++(noinit)++ constructor:
+++constructor(noinit) = delete++
+
+
+=== Destructor
+
+The name is ~this or dtor or destructor.  See also ctor
+
+
+=== Initval
+
+What is D's init?  Why not just use default ctor
+
+
+=== Friend
+
+Unlike D, keep +friend+.  I don't like D's solution that within a module there
+is no private anymore.  In my eyes private also protects myself / the
+maintainers from making mistakes in one single module.  E.g. sometimes
+redundancy sadly is needed, and then I want to encapsulate that redundancy in
+an very small area, i.e. a very small helper class.
+
+
+=== Methods / Operators
+
+See chapter <<code_chunks>>.
+
+
+=== Members / Properties
+
+- See D.  However EF lets you default implement properties.
+- In the declaration of a member, one can state whether and what
+  getters/setters are (auto) generated [mind the different access].  The
+  implementation is automatic or user given.
+
+
+=== Invariants
+
+See D
+
+
+=== Deletion of ctor, dtor, assignment
+
+Instead of making those private, which has the disadvantage that for methods
+of the same class the compiler doesn't say anything, only the linker, delete
+them.  I think C&plus;&plus;11 also has this feature.  For convenience, also
+give a short whatever to delete a group for often occurring use-cases
+
+copy ctor and assignment operator for classes not intended to be copied in any
+way
+
+
+=== Packed
+
+...
+
+
+== Control flow
+
+----------------------------------------------------------------------
+flow_control_expr = conditional_expr | loop_expr | jump_expr | 
+  other_control_flow_expr;
+
+conditional_expr = ifchain_expr | givenchain_expr | jumptable_expr |
+  'unless [\(] sa_expr (\,|'do) block_expr (\)|'end);
+
+ifchain_expr = '
+  'if [\(] sa_expr (\,|'then) sa_expr
+  ((\,|'elif) sa_expr (\,|'then) sa_expr)*
+  ## if ommited defaults to "else {nop;}", i.e. type void 
+  ['else sa_expr]
+  (\)|'end);
+
+givenchain_expr =
+  ## the optional 2nd expression is a predicate function object which defaults
+  ## to test for equality.
+  'given \( expr_list#*one or two*# \) 
+  ('when \( expr_list#*at least one*# \) block_expr_opt_falltrough)* 
+  ['else block_expr]
+
+jumptable_expr =
+  'jumptable \( sa_expr \) 
+  ('when \( ctexpr_list#*at least one*# \) block_expr_opt_falltrough)* 
+  ['else block_expr]  
+
+loop_expr =
+  ## to-do 
+  ## - like in python something ala "foreach ( key,val in mymap )" 
+  ## - like in ?? a nested loop in one written loop "multiforeach ( i,j in matrixindicies )"
+  ##   However that gets difficult with jumps (break,continue,...). To which loop do they refer?
+  ##   Probably a feature with dimishing returns.
+  'foreach \( (sa_expr 'in collection_expr )+ \) block_expr |
+  'for \(  expr_list#*<void,bool,void>*# \) block_expr |
+  ##['begin sub_expr] 'while sa_expr 'inc sub_expr 'do sub_expr | what does ruby, python,
+  ##scala, ... do?
+  ('while|'until) [\(] sa_expr (\,|'do) sa_expr (\)|'end) |
+  'do [\(] sa_expr ('while|'until) sa_expr (\)|'end);
+  ## ????? what was my problem that i wanted a condition at the start AND the
+  ## end???
+## alternatively: 
+## integralexpr.times closureexpr
+
+## jumps. The result type of control flow jump operands is typically
+## noret. See also labelled_sa_expr.
+## to-do: as in Perl, jump to specific loops. Also relative numbers to
+## identify nested enclosing loop
+jump_expr = 
+  'ret sub_expr | ## returns from enclosing code chunk
+  ('goto | 'continue | 'redo | 'break) [label_expr] |
+  ## defines the enclosing/referred loop expression's value
+  'breakwith sub_expr; 
+
+other_control_flow_expr = 
+  ## to-do: what is the metatype and type of this expressions?
+  'label identifier;
+----------------------------------------------------------------------
+
+.Notes
+* Short circuit operators such as +or+ or +and+ are also kind of flow control.
+
+.To-do
+* As for block_expr, make it a compile time switch whether parentheses are
+  enforced for the conditional part of the flow control expressions.
+
+
+=== Interact with other programs
+
+However mind that not on all platforms you can `execute a program by stating
+its path'.  On many embedded systems there is no file system.  Maybe make the
+pipes / redirections a more abstract level: something similar to C&plus;&plus;
+streams.  Just an easy syntax to connect streams to each other.
+
+
+=== Redirection / Pipes
+
+Make it easy to interact with other programs using pipes and redirection, like
+shell scripts do it.  See also chapter "chaining functions". 
+
+
+== Ranges
+
+...
+
+
+== Slices
+
+As in Python/Ruby, easily transform a collection to another collection, or
+interpret a collection as another collection.
+
+
+== Everything is an object
+
+Also built-in types, but without sacrificing being as close to HW as C.
+normal objects, functions, modules, ...
+
+
+=== Common base class
+
+Does it help when there is a common base class as in Java?
+
+
+== Memory management
+
+Read http://en.wikipedia.org/wiki/Manual_memory_management and follow the
+links at the bottom.
+
+
+== Layout
+
+- Don't have C&plus;&plus;'s restriction that each obj must have an unique
+  address.  Or just allow for zero sized objects, in particular zero sized
+  arrays.  
+- +alignof+
+- bit fields
+- pack as attribute to structs/classes
+
+
+== Compilation
+
+=== Compile time execution
+
+Extend Cpp11 (I don't know what Cpp14 offers) concept of constexpr, but
+probably name it ++ctconst++.  The code the compiler generates can also be
+executed right away.  Why restrict that in any way? Maybe it gets too
+difficult to write good tools (analysis, semantic aware tools for IDEs, etc).
+
+Difficult for cross compilers? The code really being generated cannot be
+executed.  The code executed while compiling is either in the host machine
+code or in some byte code the compiler can execute.
+
+Allow using const and temporary objects.  That makes it possible that we can
+call methods on literals, being really of a given class type (everything is an
+object in EF), and the calls are evaluated at compile time.
+
+The `normal' compiler receives built-in literals from the execution of the
+code the meta compiler produced.
+
+
+=== Conditional compiling
+
+constexpr are evaluated at compile time.  Using that with const conditional
+expression and put declaration statements into the clauses controlled by the
+conditional expression we get conditional declarations.
+
+
+=== Preprocessor / Macros
+
+* EF shall provide macros, but discourage their use.  They only can be enabled
+  by a style guide compile switch.
+* If a language has macros / a preprocessor, it is apparently much harder to
+  write tools like static code analysis or refactoring tools.
+* If there is no preprocessor, how to I get __FILE__, __LINE__, __FUNC__? For
+  __FUNC__ maybe something like ++thisfunc.name()++
+* Even if EF has expressions evaluated at compile time which conditionally
+  define/declare stuff, than macros still can assemble arbitrary text, .e.g
+  only part of expressions
+* Use M4?
+* As separator for parameters of a macro call, interpreted by preprocessor,
+  use something which is not part of the EF language.  E.g. if EF knows comma
+  (,) but not semicolon (;), then e.g. the preprocessor uses semicolon to
+  separate arguments.  In C&plus;&plus; its not easily possibly and sometimes
+  not at all to pass an argument containing a comma.
+
+
+== Extendable language / what is part of language what of compiler?
+
+Literals such as strings, arithmetic, collection are just very basic from a
+language point of view.  However the language allows to create aliases, and
+the EF standard then supplies a number of them.  List literals l[...], map
+literals m[...] etc only make use of some meta language which lets the user
+define such literal constructs.
+
+
+== Exceptions
+
+See chapter 'Embedded System constraints'
+
+Allow to disable them for users where footprint size is most important.  But
+what will happen then to the signature of library functions?  Do we always
+need two versions, one using return codes and one using exceptions (and using
+the return value for something which allows the caller to build nice
+expressions)?.  If so, probably the exception version should be the one having
+to pay the penalty of having two versions, if there is a penalty at all.
+Because the return code version is the one for the embedded system with hard
+constrains, thus a penalty is not affordable.
+
+When to use exceptions?
+
+Some say Use exceptions correctly: to report an unexpected use case.  When the
+function could not do what it was asked to do.  Don't use it in normal use
+cases.  An exception should actually never occur at all.  But that does mean
+that the N caller of `divide' is supposed to check for themselves that divisor
+is not 0 (OK, if they can and want to react, they have to write the code
+anyway, the question is only before the call to prevent the call or after the
+call in the catch clause).  Likewise for opening a file
+-- here I think it would even be the wrong solution to do it like `if
+!fileexists open' because naturally between the fileexists and the open the
+file can vanish.
+
+Others say, I think ruby or python, that you should always first just try and
+if it fails, try to react in the catch handler.
+
+
+- As I think Stroustrup said: The whole error handling theme _is_ complex,
+  don't blame the exceptions.
+- Caller can decide that all/certain exceptions result in an die right away.
+  E.g. because caller thinks he fulfills all preconditions or because he (and
+  no one else in the call hierarchy) doesn't write a catch handler.  However
+  then each exceptions needs to be translatable into a integer and or a string
+  which can then be automatically printed.  That printer is user definable,
+  e.g. through overload or registering a callback aka hook.
+- As in Java, have an obligatory throws clause
+- We can define name's for sets of exceptions, usable for throws part of
+  function signature
+
+
+== Optimizations
+
+See book Writing Efficient Programs
+
+=== Copy elision
+
+...
+
+
+=== Lazy evaluation
+
+If its true that it is not applicable in an hard-real time environment, then
+provide compiler switch to turn it off.  However would that work?  Probably
+the caller module and the module implementing the function must be compiled
+with the same compiler switch.
+
+
+== Library
+
+=== Iterators
+- Know their container, most of all know the bounds of the container
+
+=== Algorithms
+- Primarily work with collections, not with iterator pairs
+
+=== Localization / Internationalization / character encoding
+
+...
+
+
+=== Threads / processes
+
+...
+
+
+=== Atomic operations
+
+...
+
+
+== Interaction
+
+...
+
+
+=== ABI
+
+...
+
+
+=== Talk to C API
+
+...
+
+
+=== Inline Assembler Snippets
+
+...
+
+
+== Tools around
+
+When D has guidelines/rules how to name unnamed/temporary objects / code
+chunks, then tools can profit.  The semantic intelligence of an IDE can show
+them.  Also probably needed in call tree visualizations where unnamed code
+chunks are part of.  In the debugger I want to visualize return values of
+functions or even every expression.
+
+
+=== Debugger
+
+- Be able to display at least return value of functions call.  Maybe even the
+  unnamed temporary result of each expression.
+- Be able to debug all constructs (macros, templates, closures, lambdas, ...)
+
+
+=== Static code analysis
+
+See what Clang Static Analyzer does
+
+
+=== Valgrind / LLVM & Co
+
+...
+
+
+=== Profiler
+
+The guideline is to always use the `automatic'/`smart' classes, never the
+raw/built-in types like raw arrays, raw pointers etc.  Only when a profiler
+shows that a certain part of the code has efficiency issues those should be
+considered.
+
+
+=== IDEs can have semantic understanding
+
+Plugins for QTCreator, Eclipse, MS Studio, Emacs, Vim.  To my current
+understanding, QTCreator is more often used for development of applications on
+embedded systems than Eclipse, thus first start with QTCreator.
+
+
+=== Pretty printer aka beautifier
+
+...
+
+
+== Style
+
+By default enforce some white rules.  This enforcement can be turned off by
+compile switch.  Nearly all style guides agree that the actual style is not
+that important, any programmer can quickly get used to any style, only
+consistency is important.  When the language mildly enforces a style then
+there is a high chance of consistency.
+
+Also enforce some naming style?  Uppercase for type names, class members end
+or start with underscore....
+
+By default the warning level is maximum, and warnings are treated as 
+
+
+== Theory
+
+* What profit does EF get when it tries to listen to findings, concepts from
+  theory.  E.g. if it would have a truly context free grammar, what would be
+  the profit -- and the costs?
+* Have the same namespace for identifiers for objects (including code objects)
+  and for types and label and whatever.  This is simpler for the parser
+  (closer to being context free), and also simpler for most human brains: one
+  name meaning different things just is confusing.
+
+
+== Misc
+
+* ; or , build expression lists (aka/similar compound statement).  The value
+  of the whole thing is the value of the last element.  It follows that the
+  value of a function body is the value of the last element, i.e. a return
+  statement is no longer needed.  Allowing to omit the return statement
+  especially makes small lambdas more concise/readable.
+* Via compile switches one can choose whether mnemonic keywords or full/long
+  keywords are prohibited.  The default is to use mnemonic keywords.  That
+  results in shorter code, the reader better sees the important things in the
+  code, and by being mnemonic its very unlikely that the maintainer does not
+  remember the meanings of the keywords.  Many languages successfully use
+  mnemonic abbreviations: ++struct++, ++defun++, ...
+* As in python/Perl tuples/lists everywhere: (a,b,c) = foo_returning_3
+* Read again (google) ``C and C&plus;&plus; are not context free'' --
+  Trevor Jim.
+* Let me initially a local var by passing it as output param to a function
+  call fun void( int&, int&); fun bar() -> void { foo( int var flori noinit,
+  int var edi noinit ); cout << flori << edi; }
+
+As in Python, make it possible that a list of variables are initialized by a list
+----------------------------------------------------------------------
+[var i as auto, var j as auto] = gettwo();
+[i,j] = gettwo();
+!!!! must work for any type of collection gettwo returns !!!!
+the explicit version would probably be
+std::tuple<const int&,const double&>(i,j) = gettwo();
+----------------------------------------------------------------------

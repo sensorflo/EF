@@ -1,0 +1,68 @@
+:encoding: UTF-8
+// The markup language of this document is AsciiDoc
+
+= The EF Programming Language
+:author: Florian Kaufmann and Elias Diem
+:revdate: April 2014
+
+https://github.com/sensorflo/EF[The EF Programming Language] (C) by Florian
+Kaufmann <sensorflo@gmail.com> and Elias Diem <pub@webconect.ch> is licensed
+under a http://creativecommons.org/licenses/by-sa/4.0/[Creative Commons
+Attribution-ShareAlike 4.0 International License]
+
+This document is currently only in brainstorming quality
+
+[[motivation_abstract]]
+== Motivation for a new programming language
+
+For embedded systems or regular operating systems with rather tough run-time
+efficiency constrains there is currently no general purpose programming
+language which offers most of the abstraction features of modern and classic
+programming languages and has a simple syntax and simple rules.  More on EF's
+motivation in <<motivation_details>>
+
+== Goal / Mission / Vision
+
+A general purpose programming language usable in but not limited to an
+embedded, hard real-time environment in the industry.  Competitor to
+C&plus;&plus;, Ada, Real-Time Java.
+
+- General purpose programming language
+- Multi-paradigm 
+- Nearly pure OO language, nearly everything is an object, nearly every type
+  is a class
+- Functional programming
+- Generic programming
+- Meta programming
+- Based on expressions; no statements.  Thus much less constraints where
+  certain constructs, e.g. definition of functions, classes, objects etc can
+  occur.
+- Collections (e.g. lists or maps aka dictionaries) and operations (e.g
+  slicing) on them are first class citizen.
+- Static typed, type inference, whether strong or weak typing I don't know yet
+- Compile time execution: many things can be computed at compile-time opposed
+  to run-time
+- Exceptions
+- Contracts (as in D)
+- Proper/easier interfaces, no multiple inheritance
+- Manual memory management, but by default smart pointers are used, no garbage
+  collector.
+- Supply safe-easy-to-use primitives such as pointers, arrays, strings,
+  collections in general etc, which are nearly are as efficient as their C
+  counterparts.  That includes having literals of those
+- Low level code as in C still possible if the above is not efficient after
+  all for certain program parts
+- Easy enough grammar, so compilers and additional tools like static code
+  analysis, semantic aware IDEs etc are easy enough to write.  Only if good
+  development tools are available for EF it will also be used in the industry.
+
+== Current state
+
+I just begun brainstorming beginning in April 2014, trying out a lot of
+things, writing the syntax, and so far I am more than pleased with the result.
+I really think it's more than just a crazy idea.  Until I wrote an first
+implementation of EF via an LLVM front end I decided to encrypt my current
+work.  I am happy to give you the key if you're honestly interested in helping
+evolving EF.
+
+// continuation in the currently encrypted file ef.txt
