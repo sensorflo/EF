@@ -1,50 +1,64 @@
 #include "../gensrc/parser.hpp"
 #include "../driver.h"
 #include "gtest/gtest.h"
+#include <string>
+#include <fstream>
 using namespace testing;
 using namespace std;
 using namespace yy;
 
+/** Creates a temporary file with the given content. The file is removed in
+the destructor. Only one instance, i.e. only one temp file, can exist at a
+time. This is good enough and enables having a static buffer for the file name
+which enables being allowed to call tmpnam only once. */
+class TmpFile {
+public:
+  TmpFile(const string& content) {
+    if (m_instanceCount++) { throw "more than one TmpFile instance"; } 
+    static bool isFileNameInit = false;
+    if (!isFileNameInit) { tmpnam(m_fileName); };
+    ofstream tmpFile(m_fileName);
+    tmpFile << content;
+  }
+  ~TmpFile() { remove( m_fileName ); --m_instanceCount; }
+  char const*  fileName() { return m_fileName; }
+private:
+  static char m_fileName[L_tmpnam];
+  static int m_instanceCount;
+};
 
+char TmpFile::m_fileName[L_tmpnam];
+int TmpFile::m_instanceCount = 0;
+
+/** Creates a driver operaring on a temporary file with the content given in
+the constructor. */
+class DriverOnTmpFile {
+public:
+  DriverOnTmpFile( const string& content ) :
+    m_tmpFile(content),
+    m_driver(m_tmpFile.fileName()) {};
+  operator Driver&() { return m_driver; }
+private:
+  TmpFile m_tmpFile;
+  Driver m_driver;
+};
 
 TEST(ScannerTest, empty) {
-  // setup
-  Driver driver;
-  driver.m_fileName = "test/test_empty.ef";
-  driver.beginScan();
-
-  // exercise & verify
+  DriverOnTmpFile driver( "" );
   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
-
-  // tear down
-  driver.beginScan();
 }
 
 TEST(ScannerTest, id) {
-  // setup
-  Driver driver;
-  driver.m_fileName = "test/test_id.ef";
-  driver.beginScan();
-
-  // exercise & verify
+  DriverOnTmpFile driver( "ifelse" );
   EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
-
-  // tear down
-  driver.beginScan();
 }
 
 TEST(ScannerTest, if_else) {
-  // setup
-  Driver driver;
-  driver.m_fileName = "test/test_if_else.ef";
-  driver.beginScan();
-
-  // exercise & verify
+  // ef.l currently cannot handle keywords at the very end of a file, thus the
+  // trailing blank
+  DriverOnTmpFile driver( "if else " );
   EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() );
   EXPECT_EQ(Parser::token::TOK_ELSE, yylex(driver).token() );
   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
-
-  // tear down
-  driver.beginScan();
 }

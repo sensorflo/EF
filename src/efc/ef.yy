@@ -1,6 +1,7 @@
 /* Bison declaration section
 ----------------------------------------------------------------------*/
 %skeleton "lalr1.cc"
+%token-table
 %require "3.0.2"
 %defines
 %define parser_class_name {Parser}
@@ -27,6 +28,8 @@
 %code
 {
   #include "../driver.h"
+  using namespace std;
+  using namespace yy;
 }
 
 %define api.token.prefix {TOK_}

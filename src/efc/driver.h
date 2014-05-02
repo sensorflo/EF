@@ -9,24 +9,13 @@ YY_DECL;
 /* Drives the Scanner and the Parser */
 class Driver {
 public:
-  Driver();
+  Driver(const std::string& fileName);
+  virtual ~Driver();
   
-  // implemented by Scanner
-  // --------------------------------------------------
-  void beginScan();
-  void endScan();
-
-  // referenced by Scanner
-  // --------------------------------------------------
-  /** Whether to trace during scanning */
-  bool m_traceScanning;
-
   // referenced by Parser
   // --------------------------------------------------
   void error(const yy::location& loc, const std::string& msg);
   void error(const std::string& msg);
-  /** Whether to trace during parsing */
-  bool m_traceParsing;
 
   // referenced by both Scanner and Parser
   // --------------------------------------------------
