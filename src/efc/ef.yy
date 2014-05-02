@@ -32,6 +32,9 @@
 %define api.token.prefix {TOK_}
 %token
   END_OF_FILE  0  "end of file"
+  IF "if"
+  ELSE "else"
+  ID "identifier"
 ;
 
 /* Grammar rules section

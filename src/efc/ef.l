@@ -17,21 +17,32 @@
 #undef yywrap
 #define yywrap() 1
 
+// an action which is always executed prior to the matched rule's action
 #define YY_USER_ACTION  loc.columns(yyleng);
 
 static yy::location loc;
 %}
 
+  /* not identifier start */
+NIDS [^a-zA-Z_]
+  /* identifier */
+ID [a-zA-Z_][a-zA-Z_0-9]*
+
 /* rules section
 ----------------------------------------------------------------------*/
 %%
 
+  // code which is to be executed whenever the scanning routine is entered
 %{
   loc.step();
 %}
 
-<<EOF>> return yy::Parser::make_END_OF_FILE(loc);
-
+[ \t]+              loc.step();
+if/{NIDS}           return yy::Parser::make_IF(loc);
+else/{NIDS}         return yy::Parser::make_ELSE(loc);
+{ID}                return yy::Parser::make_ID(loc);
+<<EOF>>             return yy::Parser::make_END_OF_FILE(loc);
+.                   driver.error(loc, "invalid character");
 
 %%
 /* user code section
