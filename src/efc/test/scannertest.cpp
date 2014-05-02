@@ -62,3 +62,25 @@ TEST(ScannerTest, if_else) {
   EXPECT_EQ(Parser::token::TOK_ELSE, yylex(driver).token() );
   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
 }
+
+TEST(ScannerTest, number) {
+  {
+    // ef.l currently cannot handle numbers at the very end of a file, thus
+    // the trailing blank
+    DriverOnTmpFile driver( "42 " );
+    EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  }
+
+  {
+    DriverOnTmpFile driver( "42ll " );
+    EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  }
+
+  {
+    DriverOnTmpFile driver( "42if " );
+    EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  }
+}

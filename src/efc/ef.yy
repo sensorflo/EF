@@ -38,6 +38,7 @@
   IF "if"
   ELSE "else"
   ID "identifier"
+  NUMBER "number"
 ;
 
 /* Grammar rules section

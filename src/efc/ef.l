@@ -39,10 +39,12 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
   loc.step();
 %}
  
-  // bug: keywords are not recognized when at the end of the file
+  // bug: keywords and numbers are not recognized when at the very
+  // end of the file
 [ \t]+              loc.step();
 if/{NIDC}           return yy::Parser::make_IF(loc);
 else/{NIDC}         return yy::Parser::make_ELSE(loc);
+[0-9]+{ID}?         return yy::Parser::make_NUMBER(loc); // the last bit is the number suffix
 {ID}                return yy::Parser::make_ID(loc);
 <<EOF>>             return yy::Parser::make_END_OF_FILE(loc);
 .                   driver.error(loc, "invalid character");
