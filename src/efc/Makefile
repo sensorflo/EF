@@ -45,7 +45,10 @@ efctest: out/efctest
 out/efctest.o: test/efctest.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efctest: out/efctest.o out/libgtest.a
+out/scannertest.o: test/scannertest.cpp $(GEN_HEADERS) *.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+out/efctest: out/scanner.o out/driver.o out/scannertest.o out/efctest.o out/libgtest.a
 	$(CXX)  $(LDFLAGS) -pthread -o $@ $^
 
 
