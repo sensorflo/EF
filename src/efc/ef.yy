@@ -38,8 +38,9 @@
   IF "if"
   ELSE "else"
   ID "identifier"
-  NUMBER "number"
 ;
+
+%token <int> NUMBER
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/

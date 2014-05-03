@@ -83,4 +83,10 @@ TEST(ScannerTest, number) {
     EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
   }
+
+  {
+    DriverOnTmpFile driver( "42" );
+    Parser::symbol_type st = yylex(driver);
+    EXPECT_EQ(42, st.value.as<int>());
+  }
 }

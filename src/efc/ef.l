@@ -44,7 +44,28 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 [ \t]+              loc.step();
 if/{NIDC}           return yy::Parser::make_IF(loc);
 else/{NIDC}         return yy::Parser::make_ELSE(loc);
-[0-9]+{ID}?         return yy::Parser::make_NUMBER(loc); // the last bit is the number suffix
+
+[+-]?[ \t\n\r]*[0-9]+{ID}?  {
+  errno = 0;
+  char* suffix = NULL;
+  long int number = strtol(yytext, &suffix, 10);
+  if (errno) {
+    driver.error(loc, string("Internal error: Scanner's rule"
+     "matched a number, but strtol doesn't recognize a number. ") +
+     strerror(errno));
+
+  // currently no suffixes are recognized
+  } else if (*suffix!='\0') {
+    driver.error(loc, string("Unknown literal number suffix: ") + suffix);
+
+  // TODO: compare against target's INT_MIN/INT_MAX
+  } else if (number<INT_MIN || number>INT_MAX) {
+    number = number<INT_MIN ? INT_MIN : INT_MAX;
+    driver.error(loc, "Numeric literal to big");
+  }
+  return yy::Parser::make_NUMBER(number, loc);
+}
+
 {ID}                return yy::Parser::make_ID(loc);
 <<EOF>>             return yy::Parser::make_END_OF_FILE(loc);
 .                   driver.error(loc, "invalid character");
