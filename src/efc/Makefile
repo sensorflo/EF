@@ -31,10 +31,13 @@ out/scanner.o: gensrc/scanner.cpp $(GEN_HEADERS) *.h
 out/driver.o: driver.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
+out/ast.o: ast.cpp $(GEN_HEADERS) *.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 out/efc.o: efc.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efc: out/parser.o out/scanner.o out/driver.o out/efc.o
+out/efc: out/parser.o out/scanner.o out/driver.o out/ast.o out/efc.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 
@@ -48,7 +51,10 @@ out/efctest.o: test/efctest.cpp $(GEN_HEADERS) *.h test/*.h
 out/scannertest.o: test/scannertest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efctest: out/scanner.o out/driver.o out/scannertest.o out/efctest.o out/libgtest.a
+out/scannerandparsertest.o: test/scannerandparsertest.cpp $(GEN_HEADERS) *.h test/*.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+out/efctest: out/scanner.o out/ast.o out/parser.o out/driver.o out/scannertest.o out/scannerandparsertest.o out/efctest.o out/libgtest.a
 	$(CXX)  $(LDFLAGS) -pthread -o $@ $^
 
 

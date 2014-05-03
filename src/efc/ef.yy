@@ -12,14 +12,16 @@
 %code requires
 {
   class Driver;
+  #include "../ast.h"
 }
 
 %param { Driver& driver }
+%parse-param { AstNode*& astRoot }
 
 %locations
 %initial-action
 {
-  @$.begin.filename = @$.end.filename = &driver.m_fileName;
+  @$.begin.filename = @$.end.filename = &driver.fileName();
 };
 
 /*%define parse.trace*/
@@ -49,7 +51,7 @@
 %start program;
 
 program
-  : END_OF_FILE
+  : NUMBER END_OF_FILE { driver.astRoot() = new AstNumber($1); }
   ;
 
 /* Epilogue section

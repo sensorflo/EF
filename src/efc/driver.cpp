@@ -1,18 +1,23 @@
 #include "driver.h"
+#include "gensrc/parser.hpp"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
 using namespace std;
 using namespace yy;
 
-extern FILE *yyin;
+extern FILE* yyin;
 extern void yyrestart(FILE*);
 
 Driver::Driver(const std::string& fileName) :
   m_gotError(false),
-  m_gotWarning(false) {
-  // Ctor/Dtor must RAII yyin
+  m_gotWarning(false),
+  m_astRoot(NULL),
+  m_parser(new Parser(*this, m_astRoot)) {
+  // Ctor/Dtor must RAII yyin and m_parser
 
+  if (!m_parser) { cerr << "Out of memory"; exit(1); }
+  
   m_fileName = fileName;
   if (m_fileName.empty() || m_fileName == "-") {
     yyin = stdin;
@@ -24,6 +29,13 @@ Driver::Driver(const std::string& fileName) :
 
 Driver::~Driver() {
   fclose(yyin);
+  delete m_parser;
+}
+
+int Driver::parse(AstNode*& astRoot) {
+  int ret = m_parser->parse(); // as a side-effect, sets m_astRoot
+  astRoot = m_astRoot;
+  return ret;
 }
 
 void Driver::warning(const location& loc, const string& msg) {
