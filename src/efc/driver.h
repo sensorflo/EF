@@ -14,13 +14,17 @@ public:
   
   // referenced by Parser
   // --------------------------------------------------
+  void warning(const yy::location& loc, const std::string& msg);
   void error(const yy::location& loc, const std::string& msg);
-  void error(const std::string& msg);
+  void exitInternError(const yy::location& loc, const std::string& msg);
+  void exitInternError(const std::string& msg);
 
   // referenced by both Scanner and Parser
   // --------------------------------------------------
   /** The name of the file being parsed */
   std::string m_fileName;
+  bool m_gotError;
+  bool m_gotWarning;
 };
   
 #endif

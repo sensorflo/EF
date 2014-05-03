@@ -50,7 +50,7 @@ else/{NIDC}         return yy::Parser::make_ELSE(loc);
   char* suffix = NULL;
   long int number = strtol(yytext, &suffix, 10);
   if (errno) {
-    driver.error(loc, string("Internal error: Scanner's rule"
+    driver.exitInternError(loc, string("Scanner's rule"
      "matched a number, but strtol doesn't recognize a number. ") +
      strerror(errno));
 

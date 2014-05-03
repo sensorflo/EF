@@ -30,14 +30,15 @@ private:
 char TmpFile::m_fileName[L_tmpnam];
 int TmpFile::m_instanceCount = 0;
 
-/** Creates a driver operaring on a temporary file with the content given in
-the constructor. */
+/** Wrapps a Driver which operates on a temporary file with the content given
+in the constructor. */
 class DriverOnTmpFile {
 public:
   DriverOnTmpFile( const string& content ) :
     m_tmpFile(content),
     m_driver(m_tmpFile.fileName()) {};
   operator Driver&() { return m_driver; }
+  Driver& d() { return m_driver; }
 private:
   TmpFile m_tmpFile;
   Driver m_driver;
@@ -46,12 +47,14 @@ private:
 TEST(ScannerTest, empty) {
   DriverOnTmpFile driver( "" );
   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  EXPECT_FALSE( driver.d().m_gotError );
 }
 
 TEST(ScannerTest, id) {
   DriverOnTmpFile driver( "ifelse" );
   EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  EXPECT_FALSE( driver.d().m_gotError );
 }
 
 TEST(ScannerTest, if_else) {
@@ -61,6 +64,7 @@ TEST(ScannerTest, if_else) {
   EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() );
   EXPECT_EQ(Parser::token::TOK_ELSE, yylex(driver).token() );
   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  EXPECT_FALSE( driver.d().m_gotError );
 }
 
 TEST(ScannerTest, number) {
@@ -70,18 +74,22 @@ TEST(ScannerTest, number) {
     DriverOnTmpFile driver( "42 " );
     EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
-  }
-
-  {
-    DriverOnTmpFile driver( "42ll " );
-    EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
-    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+    EXPECT_FALSE( driver.d().m_gotError );
   }
 
   {
     DriverOnTmpFile driver( "42if " );
     EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
+    EXPECT_TRUE( driver.d().m_gotError );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  }
+
+  {
+    DriverOnTmpFile driver( "flo 42 " );
+    EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+    EXPECT_FALSE( driver.d().m_gotError );
   }
 
   {

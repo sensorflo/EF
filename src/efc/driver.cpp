@@ -7,15 +7,16 @@ using namespace yy;
 
 extern FILE *yyin;
 
-Driver::Driver(const std::string& fileName) {
+Driver::Driver(const std::string& fileName) :
+  m_gotError(false),
+  m_gotWarning(false) {
   // Ctor/Dtor must RAII yyin
 
   m_fileName = fileName;
   if (m_fileName.empty() || m_fileName == "-") {
     yyin = stdin;
   } else if (!(yyin = fopen(m_fileName.c_str(), "r"))) {
-    error("cannot open " + m_fileName + ": " + strerror(errno));
-    exit(EXIT_FAILURE);
+    exitInternError("cannot open " + m_fileName + ": " + strerror(errno));
   }
 }
 
@@ -23,12 +24,24 @@ Driver::~Driver() {
   fclose(yyin);
 }
 
-void Driver::error(const location& loc, const string& msg) {
-  cerr << loc << ": " << msg << endl;
+void Driver::warning(const location& loc, const string& msg) {
+  cerr << loc << ": warning: " << msg << "\n";
+  m_gotWarning = true;
 }
 
-void Driver::error(const string& msg) {
-  cerr << msg << endl;
+void Driver::error(const location& loc, const string& msg) {
+  cerr << loc << ": error: " << msg << "\n";
+  m_gotError = true;
+}
+
+void Driver::exitInternError(const location& loc, const string& msg) {
+  cerr << loc << ": internal error: " << msg << "\n";
+  exit(1);
+}
+
+void Driver::exitInternError(const string& msg) {
+  cerr << "internal error: " << msg << "\n";
+  exit(1);
 }
 
 // yy_flex_debug = true;
