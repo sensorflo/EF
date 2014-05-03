@@ -1,6 +1,6 @@
+#include "test.h"
 #include "../gensrc/parser.hpp"
 #include "../driver.h"
-#include "gtest/gtest.h"
 #include <string>
 #include <fstream>
 #include <errno.h>
@@ -47,26 +47,33 @@ private:
   Driver m_driver;
 };
 
-TEST(ScannerTest, empty) {
+TEST(ScannerTest, MAKE_TEST_NAME(
+    an_empty_file,
+    yylex,
+    returns_TOK_END_OF_FILE_AND_succeeds) ) {
   DriverOnTmpFile driver( "" );
   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
   EXPECT_FALSE( driver.d().m_gotError );
 }
 
-TEST(ScannerTest, id) {
+TEST(ScannerTest, MAKE_TEST_NAME(
+    concatenated_keywords,
+    yylex,
+    returns_TOK_ID_AND_succeeds)) {
   DriverOnTmpFile driver( "ifelse" );
   EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
-  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
   EXPECT_FALSE( driver.d().m_gotError );
 }
 
-TEST(ScannerTest, if_else) {
+TEST(ScannerTest, MAKE_TEST_NAME(
+    keywords_separated_by_blanks,
+    yylex_is_called_repeatedly,
+    returns_the_keyword_tokens_AND_succeeds)) {
   // ef.l currently cannot handle keywords at the very end of a file, thus the
   // trailing blank
   DriverOnTmpFile driver( "if else " );
   EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() );
   EXPECT_EQ(Parser::token::TOK_ELSE, yylex(driver).token() );
-  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
   EXPECT_FALSE( driver.d().m_gotError );
 }
 

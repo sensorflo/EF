@@ -6,6 +6,7 @@ using namespace std;
 using namespace yy;
 
 extern FILE *yyin;
+extern void yyrestart(FILE*);
 
 Driver::Driver(const std::string& fileName) :
   m_gotError(false),
@@ -18,6 +19,7 @@ Driver::Driver(const std::string& fileName) :
   } else if (!(yyin = fopen(m_fileName.c_str(), "r"))) {
     exitInternError("cannot open " + m_fileName + ": " + strerror(errno));
   }
+  yyrestart(yyin);
 }
 
 Driver::~Driver() {
