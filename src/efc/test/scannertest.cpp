@@ -3,32 +3,35 @@
 #include "gtest/gtest.h"
 #include <string>
 #include <fstream>
+#include <errno.h>
+#include <stdlib.h>
 using namespace testing;
 using namespace std;
 using namespace yy;
 
 /** Creates a temporary file with the given content. The file is removed in
-the destructor. Only one instance, i.e. only one temp file, can exist at a
-time. This is good enough and enables having a static buffer for the file name
-which enables being allowed to call tmpnam only once. */
+the destructor. */
 class TmpFile {
 public:
   TmpFile(const string& content) {
-    if (m_instanceCount++) { throw "more than one TmpFile instance"; } 
-    static bool isFileNameInit = false;
-    if (!isFileNameInit) { tmpnam(m_fileName); };
-    ofstream tmpFile(m_fileName);
-    tmpFile << content;
+    memset(m_fileName, 'X', sizeof(m_fileName)-1);
+    m_fileName[sizeof(m_fileName)-1] = '\0';
+    errno = 0;
+    int fd = mkstemp(m_fileName);
+    if (!errno) { write(fd, content.c_str(), content.length()); }
+    if (!errno) { close(fd); }
+    if (errno) {
+      cerr << __FUNCTION__ << ": Either of creating / writing-to / closing "
+        "a temporary file failed" << strerror(errno);
+      exit(1);
+    }
   }
-  ~TmpFile() { remove( m_fileName ); --m_instanceCount; }
+  ~TmpFile() { remove( m_fileName ); }
   char const*  fileName() { return m_fileName; }
 private:
-  static char m_fileName[L_tmpnam];
-  static int m_instanceCount;
+  char m_fileName[10]; // at least 7 (6 needed by mkstemp + 1 for '\0')
 };
 
-char TmpFile::m_fileName[L_tmpnam];
-int TmpFile::m_instanceCount = 0;
 
 /** Wrapps a Driver which operates on a temporary file with the content given
 in the constructor. */
