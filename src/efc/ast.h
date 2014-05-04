@@ -36,11 +36,13 @@ private:
 
 class AstSeq : public AstNode {
 public:
-  AstSeq(AstNode* child = NULL);
+  AstSeq(AstNode* child1 = NULL);
+  AstSeq(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
   ~AstSeq();
   virtual void accept(AstVisitor& visitor) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&);
   AstSeq* Add(AstNode* child);
+  AstSeq* Add(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
 private:
   AstSeq(const AstSeq&);
   AstSeq& operator=(const AstSeq&);

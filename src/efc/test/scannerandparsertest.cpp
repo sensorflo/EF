@@ -9,15 +9,16 @@ using namespace yy;
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     literal_number,
     parse,
-    returns_an_AST_with_one_seq_node_and_one_number_node_as_child) ) {
+    succeeds_AND_returns_an_AST_with_one_seq_node_and_one_number_node_as_child) ) {
   // setup
-  AstNode* astRoot;
   DriverOnTmpFile driver( "42" );
 
   // exercise
-  driver.d().parse(astRoot);
+  AstNode* astRoot = NULL;
+  int res = driver.d().parse(astRoot);
 
   // verify
+  EXPECT_EQ( 0, res);
   ASSERT_TRUE( NULL != astRoot );
   EXPECT_EQ( "seq(42)", astRoot->toStr() );
 
@@ -28,15 +29,16 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     literal_number_sequence,
     parse,
-    returns_an_AST_with_one_sequence_node_and_the_numbers_as_childs) ) {
+    succeeds_AND_returns_an_AST_with_one_sequence_node_and_the_numbers_as_childs) ) {
   // setup
-  AstNode* astRoot;
   DriverOnTmpFile driver( "42, 64, 77 " );
 
   // exercise
-  driver.d().parse(astRoot);
+  AstNode* astRoot = NULL;
+  int res = driver.d().parse(astRoot);
 
   // verify
+  EXPECT_EQ( 0, res);
   ASSERT_TRUE( NULL != astRoot );
   EXPECT_EQ( "seq(42,64,77)", astRoot->toStr() );
 
