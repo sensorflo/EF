@@ -1,4 +1,4 @@
-#include "gtest/gtest.h"
+#include "test.h"
 using namespace testing;
 
 int main(int argc, char** argv) {
