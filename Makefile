@@ -1,10 +1,12 @@
 all: efc doc
 
-allreally: all alltest
+allreally: all alltest runalltest
 
 alltest: efctest
 
-efc efctest:
+runalltest: runefctest
+
+efc efctest runefctest:
 	cd src/efc && $(MAKE) $@
 
 doc:
@@ -20,4 +22,4 @@ encrypt: clean
 decrypt:
 	gpg --batch --yes -o - -d ef.tar.gpg | tar --overwrite -x
 
-.PHONY: all allreally alltest clean efc efctest doc encrypt decrypt
+.PHONY: all allreally alltest runalltest clean efc efctest runefctest doc encrypt decrypt

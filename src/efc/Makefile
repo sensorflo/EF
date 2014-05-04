@@ -42,8 +42,10 @@ out/efc: out/parser.o out/scanner.o out/driver.o out/ast.o out/efc.o
 
 
 
-efctest: out/efctest
-	out/efctest
+test efctest: out/efctest
+
+runtest runefctest: out/efctest
+	$<
 
 out/efctest.o: test/efctest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
@@ -69,4 +71,4 @@ clean:
 	rm -rf out/*
 	rm -rf gensrc/*
 
-.PHONY: all efc efctest
+.PHONY: all efc test efctest runtest runefctest
