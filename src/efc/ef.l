@@ -45,7 +45,7 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 if/{NIDC}           return yy::Parser::make_IF(loc);
 else/{NIDC}         return yy::Parser::make_ELSE(loc);
 
-[+-]?[ \t\n\r]*[0-9]+{ID}?  {
+[0-9]+{ID}?  {
   errno = 0;
   char* suffix = NULL;
   long int number = strtol(yytext, &suffix, 10);
