@@ -6,12 +6,14 @@
 
 class AstNode;
 class AstNumber;
+class AstOperator;
 class AstSeq;
 
 class AstVisitor {
 public:
   virtual ~AstVisitor() {};
   virtual void visit(const AstSeq& seq) =0;
+  virtual void visit(const AstOperator& op) =0;
   virtual void visit(const AstNumber& number) =0;
 };
 
@@ -32,6 +34,20 @@ public:
   int value() const { return m_value; }
 private:
   const int m_value;
+};
+
+class AstOperator : public AstNode {
+public:
+  AstOperator(char op, AstNode* lhs, AstNode* rhs);
+  virtual ~AstOperator();
+  virtual void accept(AstVisitor& visitor) const;
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os); 
+private:
+  AstOperator(const AstOperator&);
+  AstOperator& operator=(const AstOperator&);
+  char m_op;
+  AstNode* m_lhs;
+  AstNode* m_rhs;
 };
 
 class AstSeq : public AstNode {

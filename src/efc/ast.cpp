@@ -12,6 +12,33 @@ basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) {
   return os << m_value;
 }
 
+AstOperator::AstOperator(char op, AstNode* lhs, AstNode* rhs) :
+  m_op(op),
+  m_lhs(lhs ? lhs : new AstNumber(0)),
+  m_rhs(rhs ? rhs : new AstNumber(0)) {
+  // todo: handle the case that lhs/rhs are still NULL due to out of memory
+}
+
+AstOperator::~AstOperator() {
+  delete m_lhs;
+  delete m_rhs;
+}
+
+basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) {
+  os << m_op << '(';
+  m_lhs->printTo(os);
+  os << ',';
+  m_rhs->printTo(os);
+  os << ')';
+  return os;
+}
+
+void AstOperator::accept(AstVisitor& visitor) const {
+  visitor.visit(*this);
+  m_lhs->accept(visitor);
+  m_rhs->accept(visitor);
+}
+
 /** When child is NULL it is ignored */
 AstSeq::AstSeq(AstNode* child) {
   if (child) { m_childs.push_back(child); }

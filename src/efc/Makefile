@@ -62,7 +62,10 @@ out/scannerandparsertest.o: test/scannerandparsertest.cpp $(GEN_HEADERS) *.h tes
 out/irbuilderasttest.o: test/irbuilderasttest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efctest: out/scanner.o out/ast.o out/irbuilderast.o out/parser.o out/driver.o out/scannertest.o out/scannerandparsertest.o out/irbuilderasttest.o out/efctest.o out/libgtest.a
+out/asttest.o: test/asttest.cpp $(GEN_HEADERS) *.h test/*.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+out/efctest: out/scanner.o out/ast.o out/irbuilderast.o out/parser.o out/driver.o out/scannertest.o out/scannerandparsertest.o out/irbuilderasttest.o out/asttest.o out/efctest.o out/libgtest.a
 	$(CXX)  $(LDFLAGS) -pthread -o $@ $^
 
 

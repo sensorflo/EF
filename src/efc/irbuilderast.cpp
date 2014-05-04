@@ -9,6 +9,10 @@ void IrBuilderAst::visit(const AstSeq& /*seq*/) {
   //nop
 }
 
+void IrBuilderAst::visit(const AstOperator& /*op*/) {
+  //nop
+}
+
 void IrBuilderAst::visit(const AstNumber& number) {
   m_lastValueInSeq = number.value();
 }
