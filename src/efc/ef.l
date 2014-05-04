@@ -66,6 +66,8 @@ else/{NIDC}         return yy::Parser::make_ELSE(loc);
   return yy::Parser::make_NUMBER(number, loc);
 }
 
+","                 return yy::Parser::make_COMMA(loc);
+
 {ID}                return yy::Parser::make_ID(loc);
 <<EOF>>             return yy::Parser::make_END_OF_FILE(loc);
 .                   driver.error(loc, "invalid character");

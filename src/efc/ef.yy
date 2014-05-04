@@ -40,9 +40,12 @@
   IF "if"
   ELSE "else"
   ID "identifier"
+  COMMA ","
 ;
 
 %token <int> NUMBER
+
+%type <AstSeq*> expr_seq 
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -51,7 +54,13 @@
 %start program;
 
 program
-  : NUMBER END_OF_FILE { driver.astRoot() = new AstNumber($1); }
+  : expr_seq END_OF_FILE { driver.astRoot() = $1; }
+  ;
+
+expr_seq
+  : %empty { $$ = new AstSeq(); }
+  | NUMBER { $$ = new AstSeq(new AstNumber($1)); }
+  | expr_seq "," NUMBER { $$ = ($1)->Add(new AstNumber($3)); }
   ;
 
 /* Epilogue section
