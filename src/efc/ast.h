@@ -23,13 +23,15 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) = 0;
 };
 
+/** Literal number */
 class AstNumber : public AstNode {
 public:
-  AstNumber(int number) : m_number(number) {}
+  AstNumber(int value) : m_value(value) {}
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os); 
+  int value() const { return m_value; }
 private:
-  const int m_number;
+  const int m_value;
 };
 
 class AstSeq : public AstNode {

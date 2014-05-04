@@ -9,7 +9,7 @@ string AstNode::toStr() {
 }
 
 basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) {
-  return os << m_number;
+  return os << m_value;
 }
 
 AstSeq::AstSeq(AstNode* child) {
