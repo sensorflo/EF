@@ -38,3 +38,10 @@ basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) {
   return os;
 }
 
+void AstSeq::accept(AstVisitor& visitor) const {
+  visitor.visit(*this);
+  for (list<AstNode*>::const_iterator i=m_childs.begin();
+       i!=m_childs.end(); ++i) {
+    (*i)->accept(visitor);
+  }
+}
