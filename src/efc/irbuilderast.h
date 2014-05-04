@@ -7,4 +7,5 @@ public:
 private:
   void visit(const AstSeq& seq);
   void visit(const AstNumber& number);
+  int m_lastValueInSeq;
 };
