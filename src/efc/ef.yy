@@ -40,12 +40,17 @@
   IF "if"
   ELSE "else"
   ID "identifier"
-  COMMA ","
 ;
 
 %token <int> NUMBER
+%left COMMA ","
+%left PLUS "+"
+      MINUS "-"
+%left STAR "*"
+      SLASH "/"
 
 %type <AstSeq*> expr_seq 
+%type <AstNode*> expr
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -59,8 +64,16 @@ program
 
 expr_seq
   : %empty { $$ = new AstSeq(); }
-  | NUMBER { $$ = new AstSeq(new AstNumber($1)); }
-  | expr_seq "," NUMBER { $$ = ($1)->Add(new AstNumber($3)); }
+  | expr { $$ = new AstSeq($1); }
+  | expr_seq COMMA expr { $$ = ($1)->Add($3); }
+  ;
+
+expr
+  : NUMBER { $$ = new AstNumber($1); }
+  | expr PLUS expr { $$ = new AstOperator('+', $1, $3); }
+  | expr MINUS expr { $$ = new AstOperator('-', $1, $3); }
+  | expr STAR expr { $$ = new AstOperator('*', $1, $3); }
+  | expr SLASH expr { $$ = new AstOperator('/', $1, $3); }
   ;
 
 /* Epilogue section

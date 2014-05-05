@@ -67,6 +67,10 @@ else/{NIDC}         return yy::Parser::make_ELSE(loc);
 }
 
 ","                 return yy::Parser::make_COMMA(loc);
+"+"                 return yy::Parser::make_PLUS(loc);
+"-"                 return yy::Parser::make_MINUS(loc);
+"*"                 return yy::Parser::make_STAR(loc);
+"/"                 return yy::Parser::make_SLASH(loc);
 
 {ID}                return yy::Parser::make_ID(loc);
 <<EOF>>             return yy::Parser::make_END_OF_FILE(loc);
