@@ -12,7 +12,7 @@ basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) {
   return os << m_value;
 }
 
-AstOperator::AstOperator(char op, AstNode* lhs, AstNode* rhs) :
+AstOperator::AstOperator(char op, AstValue* lhs, AstValue* rhs) :
   m_op(op),
   m_lhs(lhs ? lhs : new AstNumber(0)),
   m_rhs(rhs ? rhs : new AstNumber(0)) {

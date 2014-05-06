@@ -50,7 +50,7 @@
       SLASH "/"
 
 %type <AstSeq*> expr_seq 
-%type <AstNode*> expr
+%type <AstValue*> expr
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
