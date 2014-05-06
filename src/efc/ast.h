@@ -46,6 +46,8 @@ public:
   virtual void accept(AstVisitor& visitor) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os); 
   char op() const { return m_op; }
+  const AstValue& lhs() const { return *m_lhs; }
+  const AstValue& rhs() const { return *m_rhs; }
 private:
   AstOperator(const AstOperator&);
   AstOperator& operator=(const AstOperator&);
@@ -63,6 +65,7 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&);
   AstSeq* Add(AstNode* child);
   AstSeq* Add(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
+  const std::list<AstNode*>& childs() { return m_childs; }
 private:
   AstSeq(const AstSeq&);
   AstSeq& operator=(const AstSeq&);
