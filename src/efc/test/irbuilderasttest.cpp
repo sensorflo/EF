@@ -5,9 +5,9 @@ using namespace testing;
 using namespace std;
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    a_seq_with_one_number,
+    a_seq_with_one_or_more_numbers,
     buildAndRunModule,
-    returns_that_number)) {
+    returns_the_last_number)) {
   // example 1
   {
     // setup
