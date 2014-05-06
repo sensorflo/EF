@@ -45,6 +45,7 @@ public:
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os); 
+  char op() const { return m_op; }
 private:
   AstOperator(const AstOperator&);
   AstOperator& operator=(const AstOperator&);
