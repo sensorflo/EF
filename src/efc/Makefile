@@ -1,4 +1,6 @@
-CXXFLAGS += -O0 -Wall -Werror -ggdb3 -std=c++98 #-pedantic
+CXXFLAGS += `llvm-config --cxxflags | sed 's/-fno-exceptions//'` -O0 -Wall -Werror -ggdb3 -std=c++98 #-pedantic
+LDFLAGS += `llvm-config --ldflags`
+LIBS += `llvm-config --libs core jit native interpreter`
 CXX = clang++
 LEX = flex
 YACC = bison
@@ -66,7 +68,7 @@ out/asttest.o: test/asttest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 out/efctest: out/scanner.o out/ast.o out/irbuilderast.o out/parser.o out/driver.o out/scannertest.o out/scannerandparsertest.o out/irbuilderasttest.o out/asttest.o out/efctest.o out/libgtest.a
-	$(CXX)  $(LDFLAGS) -pthread -o $@ $^
+	$(CXX)  $(LDFLAGS) -pthread -o $@ $^ $(LIBS)
 
 
 
