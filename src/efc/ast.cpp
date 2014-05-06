@@ -34,9 +34,9 @@ basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) {
 }
 
 void AstOperator::accept(AstVisitor& visitor) const {
-  visitor.visit(*this);
   m_lhs->accept(visitor);
   m_rhs->accept(visitor);
+  visitor.visit(*this);
 }
 
 /** When child is NULL it is ignored */
@@ -83,9 +83,9 @@ basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) {
 }
 
 void AstSeq::accept(AstVisitor& visitor) const {
-  visitor.visit(*this);
   for (list<AstNode*>::const_iterator i=m_childs.begin();
        i!=m_childs.end(); ++i) {
     (*i)->accept(visitor);
   }
+  visitor.visit(*this);
 }
