@@ -1,8 +1,12 @@
 #include "irbuilderast.h"
+#include <algorithm>
+using namespace std;
 
 int IrBuilderAst::buildAndRunModule(const AstSeq& seq) {
   seq.accept(*this);
-  return m_lastValueInSeq;
+  int retVal = valueStack.top();
+  stack<int> empty; swap( valueStack, empty ); // clears the valueStack
+  return retVal;
 }
 
 void IrBuilderAst::visit(const AstSeq& /*seq*/) {
@@ -14,5 +18,5 @@ void IrBuilderAst::visit(const AstOperator& /*op*/) {
 }
 
 void IrBuilderAst::visit(const AstNumber& number) {
-  m_lastValueInSeq = number.value();
+  valueStack.push(number.value());
 }

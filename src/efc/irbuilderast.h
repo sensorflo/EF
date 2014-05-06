@@ -1,4 +1,5 @@
 #include "ast.h"
+#include <stack>
 
 class IrBuilderAst : public AstVisitor {
 public:
@@ -8,5 +9,5 @@ private:
   void visit(const AstSeq& seq);
   void visit(const AstOperator& op);
   void visit(const AstNumber& number);
-  int m_lastValueInSeq;
+  std::stack<int> valueStack;
 };
