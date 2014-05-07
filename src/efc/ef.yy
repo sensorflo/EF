@@ -54,8 +54,8 @@
 %left STAR
       SLASH
 
-%type <AstSeq*> expr_seq 
-%type <AstValue*> expr  expr_leaf
+%type <AstSeq*> sa_expr pure_sa_expr
+%type <AstValue*> sa_expr_leaf expr expr_leaf 
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -64,13 +64,24 @@
 %start program;
 
 program
-  : expr_seq END_OF_FILE { driver.astRoot() = $1; }
+  : sa_expr END_OF_FILE { driver.astRoot() = $1; }
   ;
 
-expr_seq
+sa_expr
   : %empty { $$ = new AstSeq(); }
   | expr { $$ = new AstSeq($1); }
-  | expr_seq COMMA expr { $$ = ($1)->Add($3); }
+  | pure_sa_expr { std::swap($$,$1); }
+  | pure_sa_expr expr { $$ = ($1)->Add($2); }
+  ;
+
+pure_sa_expr
+  : sa_expr_leaf { $$ = new AstSeq($1); }
+  /* implicit sequence operator */
+  | pure_sa_expr sa_expr_leaf { $$ = ($1)->Add($2); }
+  ;
+
+sa_expr_leaf
+  : expr COMMA { std::swap($$,$1); }
   ;
 
 expr
