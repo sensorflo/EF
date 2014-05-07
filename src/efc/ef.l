@@ -25,8 +25,6 @@
  static yy::location loc;
 %}
 
-  /* not identifier character */
-NIDC [^a-zA-Z_0-9]
   /* identifier */
 ID [a-zA-Z_][a-zA-Z_0-9]*
 
@@ -39,11 +37,9 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
   loc.step();
 %}
  
-  // bug: keywords and numbers are not recognized when at the very
-  // end of the file
 [ \t]+              loc.step();
-if/{NIDC}           return yy::Parser::make_IF(loc);
-else/{NIDC}         return yy::Parser::make_ELSE(loc);
+if                  return yy::Parser::make_IF(loc);
+else                return yy::Parser::make_ELSE(loc);
 
 [0-9]+{ID}?  {
   errno = 0;
