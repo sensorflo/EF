@@ -1,4 +1,4 @@
-#include "irbuilderast.h:
+#include "irbuilderast.h"
 
 int main(int, char**) {
   IrBuilderAst::staticOneTimeInit();
