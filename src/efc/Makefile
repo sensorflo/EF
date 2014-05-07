@@ -19,7 +19,7 @@ GEN_HEADERS:=gensrc/parser.hpp gensrc/stack.hh gensrc/position.hh gensrc/locatio
 efc: out/efc
 
 gensrc/parser.cpp $(GEN_HEADERS): ef.yy *.h
-	$(YACC) $(YFLAGS) -d -o gensrc/parser.cpp $<
+	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $<
 
 gensrc/scanner.cpp: ef.l $(GEN_HEADERS) *.h
 	$(LEX) $(LFLAGS) -o $@ $<

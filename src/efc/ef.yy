@@ -3,6 +3,7 @@
 %skeleton "lalr1.cc"
 %token-table
 %require "3.0.2"
+%expect 0
 %defines
 %define parser_class_name {Parser}
 %define api.token.constructor
@@ -40,17 +41,21 @@
   IF "if"
   ELSE "else"
   ID "identifier"
+  COMMA ","
+  PLUS "+"
+  MINUS "-"
+  STAR "*"
+  SLASH "/"
 ;
 
 %token <int> NUMBER
-%left COMMA ","
-%left PLUS "+"
-      MINUS "-"
-%left STAR "*"
-      SLASH "/"
+%left PLUS
+      MINUS
+%left STAR
+      SLASH
 
 %type <AstSeq*> expr_seq 
-%type <AstValue*> expr
+%type <AstValue*> expr  expr_leaf
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -69,11 +74,15 @@ expr_seq
   ;
 
 expr
-  : NUMBER { $$ = new AstNumber($1); }
+  : expr_leaf { std::swap($$,$1); }
   | expr PLUS expr { $$ = new AstOperator('+', $1, $3); }
   | expr MINUS expr { $$ = new AstOperator('-', $1, $3); }
   | expr STAR expr { $$ = new AstOperator('*', $1, $3); }
   | expr SLASH expr { $$ = new AstOperator('/', $1, $3); }
+  ;
+
+expr_leaf
+  : NUMBER { $$ = new AstNumber($1); }
   ;
 
 /* Epilogue section
