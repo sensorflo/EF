@@ -6,21 +6,24 @@ using namespace testing;
 using namespace std;
 using namespace yy;
 
-TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    literal_number,
-    parse,
-    succeeds_AND_returns_an_AST_with_one_seq_node_and_one_number_node_as_child) ) {
+void testParse(const string& efProgram, const string& expectedAst,
+  const string& spec = "") {
   // setup
-  DriverOnTmpFile driver( "42" );
+  DriverOnTmpFile driver(efProgram);
 
   // exercise
   AstNode* astRoot = NULL;
   int res = driver.d().parse(astRoot);
 
   // verify
-  EXPECT_EQ( 0, res);
+  EXPECT_EQ( 0, res) <<
+    (res==1 ? "parser failed due to invalid input, i.e. input contains a syntax error\n" :
+      (res==2 ? "parser failed due to memory exhaustion\n" :
+        "parser failed for unknown reason\n")) <<
+    "ef program = \"" << efProgram << "\"";
   ASSERT_TRUE( NULL != astRoot );
-  EXPECT_EQ( "seq(42)", astRoot->toStr() );
+  EXPECT_EQ( expectedAst, astRoot->toStr() ) <<
+    "ef program = \"" << efProgram << "\"";
 
   // tear down
   if (astRoot) { delete astRoot; }
@@ -29,122 +32,21 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     literal_number_sequence,
     parse,
-    succeeds_AND_returns_an_AST_with_one_sequence_node_and_the_numbers_as_childs) ) {
-
-  string example = "trivial example";
-  {
-    // setup
-    DriverOnTmpFile driver( "42, 64, 77" );
-
-    // exercise
-    AstNode* astRoot = NULL;
-    int res = driver.d().parse(astRoot);
-
-    // verify
-    EXPECT_EQ( 0, res);
-    ASSERT_TRUE( NULL != astRoot );
-    EXPECT_EQ( "seq(42,64,77)", astRoot->toStr() ) << example;
-
-    // tear down
-    if (astRoot) { delete astRoot; }
-  }
-
-  example = "trailing comma";
-  {
-    // setup
-    DriverOnTmpFile driver( "42," );
-
-    // exercise
-    AstNode* astRoot = NULL;
-    int res = driver.d().parse(astRoot);
-
-    // verify
-    EXPECT_EQ( 0, res);
-    ASSERT_TRUE( NULL != astRoot );
-    EXPECT_EQ( "seq(42)", astRoot->toStr() ) << example;
-
-    // tear down
-    if (astRoot) { delete astRoot; }
-  }
+    succeeds_AND_returns_an_AST_form) ) {
+  testParse( "42", "seq(42)", "trivial example with only one element" );
+  testParse( "42, 64, 77", "seq(42,64,77)", "trivial example" );
+  testParse( "42,", "seq(42)", "trailing comma is allowed" );
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    math_expression_with_one_operator,
+    math_expression,
     parse,
     succeeds_AND_returns_AST_form_of_math_expression) ) {
-  // setup
-  DriverOnTmpFile driver( "42 + 77" );
-
-  // exercise
-  AstNode* astRoot = NULL;
-  int res = driver.d().parse(astRoot);
-
-  // verify
-  EXPECT_EQ( 0, res);
-  ASSERT_TRUE( NULL != astRoot );
-  EXPECT_EQ( "seq(+(42,77))", astRoot->toStr() );
-
-  // tear down
-  if (astRoot) { delete astRoot; }
-}
-
-TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    math_expression_with_multiple_different_operators,
-    parse,
-    succeeds_AND_returns_AST_form_of_math_expression) ) {
-  string spec;
-
-  spec = "+ and - have same precedence and are both left associative";
-  {
-    // setup
-    DriverOnTmpFile driver( "1+2+3-4-5" );
-
-    // exercise
-    AstNode* astRoot = NULL;
-    int res = driver.d().parse(astRoot);
-
-    // verify
-    EXPECT_EQ( 0, res);
-    ASSERT_TRUE( NULL != astRoot );
-    EXPECT_EQ( "seq(-(-(+(+(1,2),3),4),5))", astRoot->toStr() ) << spec;
-
-    // tear down
-    if (astRoot) { delete astRoot; }
-  }
-
-  spec = "* and / have same precedence and are both left associative";
-  {
-    // setup
-    DriverOnTmpFile driver( "1*2*3/4/5" );
-
-    // exercise
-    AstNode* astRoot = NULL;
-    int res = driver.d().parse(astRoot);
-
-    // verify
-    EXPECT_EQ( 0, res);
-    ASSERT_TRUE( NULL != astRoot );
-    EXPECT_EQ( "seq(/(/(*(*(1,2),3),4),5))", astRoot->toStr() );
-
-    // tear down
-    if (astRoot) { delete astRoot; }
-  }
-
-  spec = "* and / have higher precedence than + and -";
-  {
-    // setup
-    DriverOnTmpFile driver( "1+2*3-4/5" );
-
-    // exercise
-    AstNode* astRoot = NULL;
-    int res = driver.d().parse(astRoot);
-
-    // verify
-    EXPECT_EQ( 0, res);
-    ASSERT_TRUE( NULL != astRoot );
-    EXPECT_EQ( "seq(-(+(1,*(2,3)),/(4,5)))", astRoot->toStr() );
-
-    // tear down
-    if (astRoot) { delete astRoot; }
-  }
+  testParse( "42 + 77", "seq(+(42,77))", "trivial example");
+  testParse( "1+2+3-4-5", "seq(-(-(+(+(1,2),3),4),5))",
+    "+ and - have same precedence and are both left associative");
+  testParse( "1*2*3/4/5", "seq(/(/(*(*(1,2),3),4),5))",
+    "* and / have same precedence and are both left associative");
+  testParse( "1+2*3-4/5", "seq(-(+(1,*(2,3)),/(4,5)))",
+    "* and / have higher precedence than + and -");
 }
