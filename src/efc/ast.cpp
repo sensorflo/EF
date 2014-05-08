@@ -108,3 +108,52 @@ void AstSeq::accept(AstVisitor& visitor) const {
   }
   visitor.visit(*this);
 }
+
+/** When child is NULL it is ignored */
+AstCtList::AstCtList(AstNode* child) {
+  if (child) { m_childs.push_back(child); }
+}
+
+/** NULL childs are ignored.*/
+AstCtList::AstCtList(AstNode* child1, AstNode* child2, AstNode* child3) {
+  if (child1) { m_childs.push_back(child1); }
+  if (child2) { m_childs.push_back(child2); }
+  if (child3) { m_childs.push_back(child3); }
+}
+
+AstCtList::~AstCtList() {
+  for (list<AstNode*>::iterator i=m_childs.begin(); i!=m_childs.end(); ++i) {
+    delete (*i);
+  }
+}
+
+/** When child is NULL it is ignored */
+AstCtList* AstCtList::Add(AstNode* child) {
+  if (child) { m_childs.push_back(child); }
+  return this;
+}
+
+/** NULL childs are ignored. */
+AstCtList* AstCtList::Add(AstNode* child1, AstNode* child2, AstNode* child3) {
+  Add(child1);
+  Add(child2);
+  Add(child3);
+  return this;
+}
+
+basic_ostream<char>& AstCtList::printTo(basic_ostream<char>& os) const {
+  for (list<AstNode*>::const_iterator i=m_childs.begin();
+       i!=m_childs.end(); ++i) {
+    if (i!=m_childs.begin()) { os << ","; }
+    (*i)->printTo(os);
+  }
+  return os;
+}
+
+void AstCtList::accept(AstVisitor& visitor) const {
+  for (list<AstNode*>::const_iterator i=m_childs.begin();
+       i!=m_childs.end(); ++i) {
+    (*i)->accept(visitor);
+  }
+  visitor.visit(*this);
+}

@@ -8,12 +8,14 @@ class AstNode;
 class AstNumber;
 class AstOperator;
 class AstSeq;
+class AstCtList;
 class AstFunDef;
 
 class AstVisitor {
 public:
   virtual ~AstVisitor() {};
   virtual void visit(const AstSeq& seq) =0;
+  virtual void visit(const AstCtList& ctList) =0;
   virtual void visit(const AstOperator& op) =0;
   virtual void visit(const AstNumber& number) =0;
   virtual void visit(const AstFunDef& funDef) =0;
@@ -85,6 +87,24 @@ public:
 private:
   AstSeq(const AstSeq&);
   AstSeq& operator=(const AstSeq&);
+
+  /** We're the owner of the pointees. Pointers are garanteed to be non null*/
+  std::list<AstNode*> m_childs;
+};
+
+class AstCtList : public AstNode {
+public:
+  AstCtList(AstNode* child1 = NULL);
+  AstCtList(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
+  ~AstCtList();
+  virtual void accept(AstVisitor& visitor) const;
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
+  AstCtList* Add(AstNode* child);
+  AstCtList* Add(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
+  const std::list<AstNode*>& childs() { return m_childs; }
+private:
+  AstCtList(const AstCtList&);
+  AstCtList& operator=(const AstCtList&);
 
   /** We're the owner of the pointees. Pointers are garanteed to be non null*/
   std::list<AstNode*> m_childs;

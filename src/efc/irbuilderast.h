@@ -17,6 +17,7 @@ private:
   int execMain();
 
   void visit(const AstSeq& seq);
+  void visit(const AstCtList& ctList) {};
   void visit(const AstOperator& op);
   void visit(const AstNumber& number);
   void visit(const AstFunDef& funDef) {};
