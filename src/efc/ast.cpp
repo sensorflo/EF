@@ -2,13 +2,13 @@
 #include <sstream>
 using namespace std;
 
-string AstNode::toStr() {
+string AstNode::toStr() const {
   ostringstream ss;
   printTo(ss);
   return ss.str();
 }
 
-basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) {
+basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {
   return os << m_value;
 }
 
@@ -21,7 +21,7 @@ AstFunDef::~AstFunDef() {
   delete m_body;
 }
 
-basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) {
+basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) const {
   os << "fun(" << m_name << ",";
   m_body->printTo(os);
   os <<")"; 
@@ -40,7 +40,7 @@ AstOperator::~AstOperator() {
   delete m_rhs;
 }
 
-basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) {
+basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
   os << m_op << '(';
   m_lhs->printTo(os);
   os << ',';
@@ -87,7 +87,7 @@ AstSeq* AstSeq::Add(AstNode* child1, AstNode* child2, AstNode* child3) {
   return this;
 }
 
-basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) {
+basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) const {
   os << "seq("; 
   for (list<AstNode*>::const_iterator i=m_childs.begin();
        i!=m_childs.end(); ++i) {
