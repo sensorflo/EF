@@ -6,6 +6,7 @@
 
 class AstNode;
 class AstNumber;
+class AstFunCall;
 class AstOperator;
 class AstSeq;
 class AstCtList;
@@ -18,6 +19,7 @@ public:
   virtual void visit(const AstCtList& ctList) =0;
   virtual void visit(const AstOperator& op) =0;
   virtual void visit(const AstNumber& number) =0;
+  virtual void visit(const AstFunCall& funCall) =0;
   virtual void visit(const AstFunDef& funDef) =0;
 };
 
@@ -55,6 +57,19 @@ public:
   int value() const { return m_value; }
 private:
   const int m_value;
+};
+
+class AstFunCall : public AstValue {
+public:
+  AstFunCall(const std::string& name, AstCtList* args );
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
+  virtual const std::string& name () const { return m_name; }
+  virtual const AstCtList& args () const { return *m_args; }
+private:
+  const std::string m_name;
+  /** We're the owner. Is garanteed to be non-null */
+  const AstCtList* const m_args;
 };
 
 class AstOperator : public AstValue {

@@ -64,12 +64,16 @@ fun                 return yy::Parser::make_FUN(loc);
   return yy::Parser::make_NUMBER(number, loc);
 }
 
+";"                 return yy::Parser::make_SEMICOLON(loc);
 ","                 return yy::Parser::make_COMMA(loc);
 "+"                 return yy::Parser::make_PLUS(loc);
 "-"                 return yy::Parser::make_MINUS(loc);
 "*"                 return yy::Parser::make_STAR(loc);
 "/"                 return yy::Parser::make_SLASH(loc);
 "="                 return yy::Parser::make_EQUAL(loc);
+"("                 return yy::Parser::make_LPAREN(loc);
+")"                 return yy::Parser::make_RPAREN(loc);
+
 
 {ID}                return yy::Parser::make_ID(yytext, loc);
 <<EOF>>             return yy::Parser::make_END_OF_FILE(loc);

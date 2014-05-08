@@ -23,4 +23,9 @@ TEST(AstTest,test_toString) {
 
   // AstFunDef
   EXPECT_EQ( "fun(foo,seq())", AstFunDef("foo",new AstSeq()).toStr() );
+
+  // AstFunCall
+  EXPECT_EQ( "foo()", AstFunCall("foo", new AstCtList()).toStr() );
+  EXPECT_EQ( "foo(42,77)", AstFunCall("foo",
+      new AstCtList(new AstNumber(42), new AstNumber(77))).toStr() );
 }

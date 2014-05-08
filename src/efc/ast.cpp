@@ -58,6 +58,19 @@ void AstOperator::accept(AstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
+AstFunCall::AstFunCall(const std::string& name, AstCtList* args) :
+  m_name(name),
+  m_args(args ? args : new AstCtList()) {
+  assert(m_args);
+}
+
+basic_ostream<char>& AstFunCall::printTo(basic_ostream<char>& os) const {
+  os << m_name << "(";
+  m_args->printTo(os);
+  os << ")";
+  return os;
+}
+
 /** When child is NULL it is ignored */
 AstSeq::AstSeq(AstNode* child) {
   if (child) { m_childs.push_back(child); }

@@ -58,3 +58,12 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   testParse( "fun foo = 42 end", "seq(fun(foo,seq(42)))");
   testParse( "fun foo = 42, 1+2 end", "seq(fun(foo,seq(42,+(1,2))))");
 }
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    function_call,
+    parse,
+    succeeds_AND_returns_AST_form_of_function_call) ) {
+  testParse( "foo()", "seq(foo())");
+  testParse( "foo(42)", "seq(foo(seq(42)))");
+  testParse( "foo(42;77)", "seq(foo(seq(42),seq(77)))");
+}

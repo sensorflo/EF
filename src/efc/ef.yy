@@ -44,10 +44,13 @@
   FUN "fun"
   EQUAL "="
   COMMA ","
+  SEMICOLON ";"
   PLUS "+"
   MINUS "-"
   STAR "*"
   SLASH "/"
+  LPAREN "("
+  RPAREN ")"
 ;
 
 %token <std::string> ID "identifier"
@@ -57,6 +60,7 @@
 %left STAR
       SLASH
 
+%type <AstCtList*> ct_list pure_ct_list
 %type <AstSeq*> maybe_empty_sa_expr sa_expr pure_sa_expr
 %type <AstValue*> expr expr_leaf 
 %type <AstNode*> fun_def sa_expr_leaf
@@ -93,12 +97,28 @@ sa_expr_leaf
   | fun_def { $$=$1; }
   ;
 
+ct_list
+  : %empty { $$ = new AstCtList(); }
+  | pure_ct_list opt_semicolon { std::swap($$,$1); }
+  ;
+
+pure_ct_list
+  : sa_expr { $$ = new AstCtList($1); }
+  | pure_ct_list SEMICOLON sa_expr { $$ = ($1)->Add($3); }
+  ;
+
+opt_semicolon
+  : %empty
+  | SEMICOLON
+  ;
+
 fun_def
   : FUN ID EQUAL maybe_empty_sa_expr END { $$ = new AstFunDef($2, $4); }
   ;
 
 expr
   : expr_leaf { std::swap($$,$1); }
+  | ID LPAREN ct_list RPAREN { $$ = new AstFunCall($1, $3); }
   | expr PLUS expr { $$ = new AstOperator('+', $1, $3); }
   | expr MINUS expr { $$ = new AstOperator('-', $1, $3); }
   | expr STAR expr { $$ = new AstOperator('*', $1, $3); }
