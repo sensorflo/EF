@@ -57,7 +57,7 @@
 %left STAR
       SLASH
 
-%type <AstSeq*> sa_expr pure_sa_expr
+%type <AstSeq*> maybe_empty_sa_expr sa_expr pure_sa_expr
 %type <AstValue*> expr expr_leaf 
 %type <AstNode*> fun_def sa_expr_leaf
 
@@ -68,12 +68,16 @@
 %start program;
 
 program
-  : sa_expr END_OF_FILE { driver.astRoot() = $1; }
+  : maybe_empty_sa_expr END_OF_FILE { driver.astRoot() = $1; }
+  ;
+
+maybe_empty_sa_expr
+  : %empty { $$ = new AstSeq(); }
+  | sa_expr { std::swap($$,$1); }
   ;
 
 sa_expr
-  : %empty { $$ = new AstSeq(); }
-  | expr { $$ = new AstSeq($1); }
+  : expr { $$ = new AstSeq($1); }
   | pure_sa_expr { std::swap($$,$1); }
   | pure_sa_expr expr { $$ = ($1)->Add($2); }
   ;
@@ -90,7 +94,7 @@ sa_expr_leaf
   ;
 
 fun_def
-  : FUN ID EQUAL sa_expr END { $$ = new AstFunDef($2, $4); }
+  : FUN ID EQUAL maybe_empty_sa_expr END { $$ = new AstFunDef($2, $4); }
   ;
 
 expr
