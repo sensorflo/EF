@@ -84,7 +84,7 @@ void IrBuilderAst::visit(const AstOperator& op) {
 }
 
 void IrBuilderAst::visit(const AstNumber& number) {
-  llvm::Value* valueIr = ConstantInt::get( getGlobalContext(),
+  Value* valueIr = ConstantInt::get( getGlobalContext(),
     APInt(32, number.value()));
   m_valueStack.push(valueIr);
 }
