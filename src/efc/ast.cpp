@@ -1,5 +1,6 @@
 #include "ast.h"
 #include <sstream>
+#include <cassert>
 using namespace std;
 
 string AstNode::toStr() const {
@@ -15,6 +16,7 @@ basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {
 AstFunDef::AstFunDef(const std::string& name, AstSeq* body) :
   m_name(name),
   m_body(body ? body : new AstSeq()) {
+  assert(m_body);
 }
 
 AstFunDef::~AstFunDef() {
@@ -32,7 +34,8 @@ AstOperator::AstOperator(char op, AstValue* lhs, AstValue* rhs) :
   m_op(op),
   m_lhs(lhs ? lhs : new AstNumber(0)),
   m_rhs(rhs ? rhs : new AstNumber(0)) {
-  // todo: handle the case that lhs/rhs are still NULL due to out of memory
+  assert(m_lhs);
+  assert(m_rhs);
 }
 
 AstOperator::~AstOperator() {
