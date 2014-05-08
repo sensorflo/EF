@@ -18,7 +18,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     concatenated_keywords,
     yylex,
     returns_TOK_ID_AND_succeeds)) {
-  DriverOnTmpFile driver( "ifelse " );
+  DriverOnTmpFile driver( "ifelse" );
   EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
   EXPECT_FALSE( driver.d().gotError() );
 }
@@ -27,9 +27,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     keywords_separated_by_blanks,
     yylex_is_called_repeatedly,
     returns_the_keyword_tokens_AND_succeeds)) {
-  // ef.l currently cannot handle keywords at the very end of a file, thus the
-  // trailing blank
-  DriverOnTmpFile driver( "if else " );
+  DriverOnTmpFile driver( "if else" );
   EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() );
   EXPECT_EQ(Parser::token::TOK_ELSE, yylex(driver).token() );
   EXPECT_FALSE( driver.d().gotError() );
@@ -37,23 +35,21 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
 TEST(ScannerTest, number) {
   {
-    // ef.l currently cannot handle numbers at the very end of a file, thus
-    // the trailing blank
-    DriverOnTmpFile driver( "42 " );
+    DriverOnTmpFile driver( "42" );
     EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
     EXPECT_FALSE( driver.d().gotError() );
   }
 
   {
-    DriverOnTmpFile driver( "42if " );
+    DriverOnTmpFile driver( "42if" );
     EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
     EXPECT_TRUE( driver.d().gotError() );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
   }
 
   {
-    DriverOnTmpFile driver( "flo 42 " );
+    DriverOnTmpFile driver( "flo 42" );
     EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );

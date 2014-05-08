@@ -34,7 +34,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   string example = "trivial example";
   {
     // setup
-    DriverOnTmpFile driver( "42, 64, 77 " );
+    DriverOnTmpFile driver( "42, 64, 77" );
 
     // exercise
     AstNode* astRoot = NULL;
@@ -52,7 +52,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   example = "trailing comma";
   {
     // setup
-    DriverOnTmpFile driver( "42, " );
+    DriverOnTmpFile driver( "42," );
 
     // exercise
     AstNode* astRoot = NULL;
@@ -73,7 +73,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_AST_form_of_math_expression) ) {
   // setup
-  DriverOnTmpFile driver( "42 + 77 " );
+  DriverOnTmpFile driver( "42 + 77" );
 
   // exercise
   AstNode* astRoot = NULL;
