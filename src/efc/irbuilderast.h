@@ -19,6 +19,7 @@ private:
   void visit(const AstSeq& seq);
   void visit(const AstOperator& op);
   void visit(const AstNumber& number);
+  void visit(const AstFunDef& funDef) {};
 
   std::stack<llvm::Value*> m_valueStack;
   llvm::IRBuilder<> m_builder;

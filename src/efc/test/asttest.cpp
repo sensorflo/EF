@@ -15,4 +15,7 @@ TEST(AstTest,test_toString) {
   // AstOperator
   EXPECT_EQ( "+(42,77)",
     AstOperator('+',new AstNumber(42), new AstNumber(77)).toStr() );
+
+  // AstFunDef
+  EXPECT_EQ( "fun(foo,seq())", AstFunDef("foo",new AstSeq()).toStr() );
 }

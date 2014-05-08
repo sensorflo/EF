@@ -38,9 +38,11 @@
 %define api.token.prefix {TOK_}
 %token
   END_OF_FILE  0  "end of file"
+  END "end"
   IF "if"
   ELSE "else"
-  ID "identifier"
+  FUN "fun"
+  EQUAL "="
   COMMA ","
   PLUS "+"
   MINUS "-"
@@ -48,14 +50,16 @@
   SLASH "/"
 ;
 
-%token <int> NUMBER
+%token <std::string> ID "identifier"
+%token <int> NUMBER "number"
 %left PLUS
       MINUS
 %left STAR
       SLASH
 
 %type <AstSeq*> sa_expr pure_sa_expr
-%type <AstValue*> sa_expr_leaf expr expr_leaf 
+%type <AstValue*> expr expr_leaf 
+%type <AstNode*> fun_def sa_expr_leaf
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -81,7 +85,12 @@ pure_sa_expr
   ;
 
 sa_expr_leaf
-  : expr COMMA { std::swap($$,$1); }
+  : expr COMMA { $$=$1; }
+  | fun_def { $$=$1; }
+  ;
+
+fun_def
+  : FUN ID EQUAL sa_expr END { $$ = new AstFunDef($2, $4); }
   ;
 
 expr

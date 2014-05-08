@@ -8,6 +8,7 @@ class AstNode;
 class AstNumber;
 class AstOperator;
 class AstSeq;
+class AstFunDef;
 
 class AstVisitor {
 public:
@@ -15,6 +16,7 @@ public:
   virtual void visit(const AstSeq& seq) =0;
   virtual void visit(const AstOperator& op) =0;
   virtual void visit(const AstNumber& number) =0;
+  virtual void visit(const AstFunDef& funDef) =0;
 };
 
 class AstNode {
@@ -23,6 +25,20 @@ public:
   virtual void accept(AstVisitor& visitor) const =0;
   virtual std::string toStr();
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) = 0;
+};
+
+class AstFunDef : public AstNode {
+public:
+  AstFunDef(const std::string& name, AstSeq* body);
+  virtual ~AstFunDef();
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&);
+  virtual const std::string& name() const { return m_name; }
+  virtual const AstSeq& body() const { return *m_body; }
+private:
+  std::string m_name;
+  /** We're the owner. Is garanteed to be non-null */
+  AstSeq* m_body;
 };
 
 class AstValue : public AstNode {

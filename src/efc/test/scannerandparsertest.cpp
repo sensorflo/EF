@@ -50,3 +50,11 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   testParse( "1+2*3-4/5", "seq(-(+(1,*(2,3)),/(4,5)))",
     "* and / have higher precedence than + and -");
 }
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    function_definition,
+    parse,
+    succeeds_AND_returns_AST_form_of_function_definition) ) {
+  testParse( "fun foo = 42 end", "seq(fun(foo,seq(42)))");
+  testParse( "fun foo = 42, 1+2 end", "seq(fun(foo,seq(42,+(1,2))))");
+}

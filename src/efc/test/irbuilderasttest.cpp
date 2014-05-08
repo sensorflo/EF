@@ -36,3 +36,14 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstOperator('*', new AstNumber(4), new AstNumber(5))),
     /*2+3,*/ 4*5);
 }
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    a_seq_containing_function_definitions,
+    buildAndRunModule,
+    returns______________)) {
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstFunDef("foo", new AstSeq()),
+      new AstNumber(42)),
+    42);
+}

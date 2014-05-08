@@ -12,6 +12,22 @@ basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) {
   return os << m_value;
 }
 
+AstFunDef::AstFunDef(const std::string& name, AstSeq* body) :
+  m_name(name),
+  m_body(body ? body : new AstSeq()) {
+}
+
+AstFunDef::~AstFunDef() {
+  delete m_body;
+}
+
+basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) {
+  os << "fun(" << m_name << ",";
+  m_body->printTo(os);
+  os <<")"; 
+  return os;
+}
+
 AstOperator::AstOperator(char op, AstValue* lhs, AstValue* rhs) :
   m_op(op),
   m_lhs(lhs ? lhs : new AstNumber(0)),

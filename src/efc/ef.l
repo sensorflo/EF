@@ -38,8 +38,10 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 %}
  
 [ \t]+              loc.step();
+end                 return yy::Parser::make_END(loc);
 if                  return yy::Parser::make_IF(loc);
 else                return yy::Parser::make_ELSE(loc);
+fun                 return yy::Parser::make_FUN(loc);
 
 [0-9]+{ID}?  {
   errno = 0;
@@ -67,8 +69,9 @@ else                return yy::Parser::make_ELSE(loc);
 "-"                 return yy::Parser::make_MINUS(loc);
 "*"                 return yy::Parser::make_STAR(loc);
 "/"                 return yy::Parser::make_SLASH(loc);
+"="                 return yy::Parser::make_EQUAL(loc);
 
-{ID}                return yy::Parser::make_ID(loc);
+{ID}                return yy::Parser::make_ID(yytext, loc);
 <<EOF>>             return yy::Parser::make_END_OF_FILE(loc);
 .                   driver.error(loc, "invalid character");
 
