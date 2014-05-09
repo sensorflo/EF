@@ -8,6 +8,7 @@ using namespace llvm;
 
 class TestingIrBuilderAst : public IrBuilderAst {
 public:
+  using IrBuilderAst::jitExecFunction;
   using IrBuilderAst::m_module;
 };
 
@@ -106,4 +107,23 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   EXPECT_TRUE(functionIr!=NULL);
   EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
   EXPECT_EQ(functionIr->arg_size(), 0);
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    function_definition_foo_returning_a_value_x,
+    buildModule,
+    JIT_executing_foo_returns_x)) {
+  // setup
+  // IrBuilder is currently dumb and expects an expression having a value at
+  // the end of a seq, thus provide one altought not needed for this test
+  auto_ptr<AstSeq> astSeq(new AstSeq(
+      new AstFunDef("foo", new AstSeq(new AstNumber(77))),
+      new AstNumber(42)));
+  TestingIrBuilderAst UUT;
+
+  // execute
+  UUT.buildModule(*astSeq);
+
+  // verify
+  EXPECT_EQ( 77, UUT.jitExecFunction("foo") );
 }
