@@ -30,6 +30,15 @@ basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
+AstFunDecl::AstFunDecl(const std::string& name) :
+  m_name(name) {
+}
+
+basic_ostream<char>& AstFunDecl::printTo(basic_ostream<char>& os) const {
+  os << "declfun(" << m_name << ")";
+  return os;
+}
+
 AstOperator::AstOperator(char op, AstValue* lhs, AstValue* rhs) :
   m_op(op),
   m_lhs(lhs ? lhs : new AstNumber(0)),
