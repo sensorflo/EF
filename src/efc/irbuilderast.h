@@ -14,11 +14,12 @@ public:
   virtual ~IrBuilderAst();
   void buildModule(const AstSeq& seq);
   int buildAndRunModule(const AstSeq& seq);
-
+  
 private:
   friend class TestingIrBuilderAst;
 
-  int execMain();
+  int jitExecFunction(llvm::Function* function);
+  int jitExecFunction(const std::string& name);
 
   void visit(const AstSeq& seq, Place place, int childNo);
   void visit(const AstCtList& ctList) {};

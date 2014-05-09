@@ -60,16 +60,20 @@ void IrBuilderAst::buildModule(const AstSeq& seq) {
 
 int IrBuilderAst::buildAndRunModule(const AstSeq& seq) {
   buildModule(seq);
-  return execMain();
+  return jitExecFunction(m_mainFunction);
 }
 
-int IrBuilderAst::execMain() {
-  void* mainFunctionVoidPtr =
-    m_executionEngine->getPointerToFunction(m_mainFunction);
-  assert(mainFunctionVoidPtr);
-  int (*mainFunction)() = (int (*)())(intptr_t)mainFunctionVoidPtr;
-  assert(mainFunction);
-  return mainFunction();
+int IrBuilderAst::jitExecFunction(const std::string& name) {
+  return jitExecFunction(m_module->getFunction(name));
+}
+
+int IrBuilderAst::jitExecFunction(llvm::Function* function) {
+  void* functionVoidPtr =
+    m_executionEngine->getPointerToFunction(function);
+  assert(functionVoidPtr);
+  int (*functionPtr)() = (int (*)())(intptr_t)functionVoidPtr;
+  assert(functionPtr);
+  return functionPtr();
 }
 
 void IrBuilderAst::visit(const AstSeq&, Place place, int childNo) {
