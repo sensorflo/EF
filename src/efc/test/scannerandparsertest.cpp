@@ -34,7 +34,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_an_AST_form) ) {
   testParse( "42", "seq(42)", "trivial example with only one element" );
-  testParse( "42, 64, 77", "seq(42,64,77)", "trivial example" );
+  testParse( "42 64 77", "seq(42,64,77)", "trivial example, blanks as separator" );
+  testParse( "42, 64, 77", "seq(42,64,77)", "trivial example, commas as separator" );
+  testParse( "42, 64 77", "seq(42,64,77)",
+    "trivial example, blanks and commas mixed as seperator" );
   testParse( "42,", "seq(42)", "trailing comma is allowed" );
 }
 

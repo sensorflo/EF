@@ -81,19 +81,16 @@ maybe_empty_sa_expr
   ;
 
 sa_expr
-  : expr { $$ = new AstSeq($1); }
-  | pure_sa_expr { std::swap($$,$1); }
-  | pure_sa_expr expr { $$ = ($1)->Add($2); }
+  : pure_sa_expr opt_comma { std::swap($$,$1); }
   ;
 
 pure_sa_expr
   : sa_expr_leaf { $$ = new AstSeq($1); }
-  /* implicit sequence operator */
-  | pure_sa_expr sa_expr_leaf { $$ = ($1)->Add($2); }
+  | pure_sa_expr opt_comma sa_expr_leaf { $$ = ($1)->Add($3); }
   ;
 
 sa_expr_leaf
-  : expr COMMA { $$=$1; }
+  : expr { $$=$1; }
   | fun_def { $$=$1; }
   ;
 
@@ -110,6 +107,11 @@ pure_ct_list
 opt_semicolon
   : %empty
   | SEMICOLON
+  ;
+
+opt_comma
+  : %empty
+  | COMMA
   ;
 
 fun_def
