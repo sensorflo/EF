@@ -1,8 +1,15 @@
 #include "test.h"
 #include "../irbuilderast.h"
+#include "llvm/IR/Module.h"
 #include <memory>
 using namespace testing;
 using namespace std;
+using namespace llvm;
+
+class TestingIrBuilderAst : public IrBuilderAst {
+public:
+  using IrBuilderAst::m_module;
+};
 
 void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
   const string& spec = "") {
@@ -48,4 +55,24 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstFunDef("foo", new AstSeq()),
       new AstNumber(42)),
     42, spec);
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    function_declaration,
+    buildModule,
+    adds_the_declaration_to_the_module_with_correct_signature)) {
+  // setup
+  // IrBuilder is currently dump and expects an expression having a value at
+  // the end of a seq, thus provide one altought not needed for this test
+  auto_ptr<AstSeq> astSeq(new AstSeq(new AstFunDecl("foo"), new AstNumber(42)));
+  TestingIrBuilderAst UUT;
+
+  // execute
+  UUT.buildModule(*astSeq);
+
+  // verify
+  Function* functionIr = UUT.m_module->getFunction("foo");
+  EXPECT_TRUE(functionIr!=NULL);
+  EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
+  EXPECT_EQ(functionIr->arg_size(), 0);
 }

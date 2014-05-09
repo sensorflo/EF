@@ -91,3 +91,19 @@ void IrBuilderAst::visit(const AstNumber& number) {
     APInt(32, number.value()));
   m_valueStack.push(valueIr);
 }
+
+void IrBuilderAst::visit(const AstFunDecl& funDecl) {
+  // currently always returns type int
+  Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
+  // currently always zero parameters
+  FunctionType* functionTypeIr = FunctionType::get(retTypeIr, false);
+  assert(functionTypeIr);
+  Function* functionIr = Function::Create( functionTypeIr,
+    Function::ExternalLinkage, funDecl.name(), m_module );
+  assert(functionIr);
+  if ( functionIr->getName() != funDecl.name() ) {
+    functionIr->eraseFromParent();
+    functionIr = m_module->getFunction(funDecl.name());
+    assert(functionIr->arg_size() == 0);
+  }
+}

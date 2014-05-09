@@ -15,6 +15,8 @@ public:
   int buildAndRunModule(const AstSeq& seq);
 
 private:
+  friend class TestingIrBuilderAst;
+
   int execMain();
 
   void visit(const AstSeq& seq);
@@ -23,7 +25,7 @@ private:
   void visit(const AstNumber& number);
   void visit(const AstFunCall& funCall) {};
   void visit(const AstFunDef& funDef) {};
-  void visit(const AstFunDecl& funDecl) {};
+  void visit(const AstFunDecl& funDecl);
 
   std::stack<llvm::Value*> m_valueStack;
   llvm::IRBuilder<> m_builder;
