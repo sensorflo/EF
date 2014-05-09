@@ -39,7 +39,7 @@ IrBuilderAst::~IrBuilderAst() {
   if (m_executionEngine) { delete m_executionEngine; }
 }
 
-int IrBuilderAst::buildAndRunModule(const AstSeq& seq) {
+void IrBuilderAst::buildModule(const AstSeq& seq) {
   seq.accept(*this);
 
   assert(!m_valueStack.empty());
@@ -48,7 +48,10 @@ int IrBuilderAst::buildAndRunModule(const AstSeq& seq) {
 
   m_builder.CreateRet(retValIr);
   verifyFunction(*m_mainFunction);
+}
 
+int IrBuilderAst::buildAndRunModule(const AstSeq& seq) {
+  buildModule(seq);
   return execMain();
 }
 

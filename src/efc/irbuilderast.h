@@ -11,6 +11,7 @@ public:
   static void staticOneTimeInit();
   IrBuilderAst();
   virtual ~IrBuilderAst();
+  void buildModule(const AstSeq& seq);
   int buildAndRunModule(const AstSeq& seq);
 
 private:
