@@ -55,6 +55,13 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstFunDef("foo", new AstSeq()),
       new AstNumber(42)),
     42, spec);
+  spec = "Sequence containing a function definition and a declaration";
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstFunDef("foo", new AstSeq()),
+      new AstFunDecl("bar"),
+      new AstNumber(42)),
+    42, spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(

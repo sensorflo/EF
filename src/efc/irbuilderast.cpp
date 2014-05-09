@@ -116,4 +116,9 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl) {
     functionIr = m_module->getFunction(funDecl.name());
     assert(functionIr->arg_size() == 0);
   }
+
+  // push dummy value to m_values stack, so sequence operator has something to
+  // remove. This dummy push can hopefully be removed as soon as metatypes are
+  // introduced.
+  m_values.push_back(ConstantInt::get( getGlobalContext(), APInt(32, 0)));
 }
