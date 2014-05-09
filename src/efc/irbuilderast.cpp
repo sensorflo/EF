@@ -108,6 +108,47 @@ void IrBuilderAst::visit(const AstNumber& number) {
   m_values.push_back(valueIr);
 }
 
+void IrBuilderAst::visit(const AstFunDef& funDef, Place place) {
+  // ePreOrder
+  // ---------------
+  if ( ePreOrder==place ) { /*nop*/ }
+
+  // outer iterator makes funDef.decl() being visited.
+  // ---------------
+
+  // eInOrder
+  // ---------------
+  else if ( eInOrder==place ) {
+    Function* functionIr = m_module->getFunction(funDef.decl().name());
+    assert(functionIr);
+    m_builder.SetInsertPoint(
+      BasicBlock::Create(getGlobalContext(), "entry", functionIr));
+  }
+
+  // outer iterator makes funDef.body() being visited. That pushes a dummy
+  // value onto m_values
+  // ---------------
+
+  // ePostOrder
+  // ---------------
+  else {
+    Function* functionIr = m_module->getFunction(funDef.decl().name());
+    assert(functionIr);
+
+    assert(!m_values.empty());
+    m_builder.CreateRet(m_values.back());
+    m_values.pop_back();
+
+    verifyFunction(*functionIr);
+
+    // Previous building block is again the insert point
+    m_builder.SetInsertPoint(m_mainBasicBlock);
+
+    // Don't push a dummy value, AstFunDef re-uses the dummy value of its
+    // child AstFunDecl
+  }
+}
+
 void IrBuilderAst::visit(const AstFunDecl& funDecl) {
   // currently always returns type int
   Type* retTypeIr = Type::getInt32Ty(getGlobalContext());

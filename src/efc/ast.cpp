@@ -24,6 +24,17 @@ AstFunDef::~AstFunDef() {
   delete m_body;
 }
 
+void AstFunDef::accept(AstVisitor& visitor) const {
+  visitor.visit(*this, AstVisitor::ePreOrder); 
+
+  m_decl->accept(visitor);
+  visitor.visit(*this, AstVisitor::eInOrder); 
+
+  m_body->accept(visitor);
+
+  visitor.visit(*this, AstVisitor::ePostOrder); 
+}
+
 basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) const {
   os << "fun(";
   m_decl->printTo(os);
