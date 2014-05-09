@@ -48,11 +48,10 @@ void IrBuilderAst::buildModule(const AstSeq& seq) {
   // The single last value remaining in m_values is the return value of the
   // implicit main method.
   assert(!m_values.empty());
-  Value* retValIr = m_values.back();
+  m_builder.CreateRet(m_values.back());
   m_values.pop_back();
   assert(m_values.empty()); // Ensure that it was really the last value
 
-  m_builder.CreateRet(retValIr);
   verifyFunction(*m_mainFunction);
 }
 
