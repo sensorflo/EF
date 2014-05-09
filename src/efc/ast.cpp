@@ -25,7 +25,9 @@ AstFunDef::~AstFunDef() {
 }
 
 basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) const {
-  os << "fun(" << m_decl->name() << " ";
+  os << "fun(";
+  m_decl->printTo(os);
+  os << " ";
   m_body->printTo(os);
   os <<")"; 
   return os;

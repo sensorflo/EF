@@ -69,8 +69,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     function_definition,
     parse,
     succeeds_AND_returns_AST_form_of_function_definition) ) {
-  testParse( "fun foo = 42 end", "seq(fun(foo seq(42)))");
-  testParse( "fun foo = 42; 1+2 end", "seq(fun(foo seq(42 +(1 2))))");
+  testParse( "fun foo = 42 end", "seq(fun(declfun(foo) seq(42)))");
+  testParse( "fun foo = 42; 1+2 end", "seq(fun(declfun(foo) seq(42 +(1 2))))");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

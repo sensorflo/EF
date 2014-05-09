@@ -25,7 +25,7 @@ TEST(AstTest,test_toString) {
   EXPECT_EQ( "declfun(foo)", AstFunDecl("foo").toStr() );
 
   // AstFunDef
-  EXPECT_EQ( "fun(foo seq())", AstFunDef("foo",new AstSeq()).toStr() );
+  EXPECT_EQ( "fun(declfun(foo) seq())", AstFunDef("foo",new AstSeq()).toStr() );
 
   // AstFunCall
   EXPECT_EQ( "foo()", AstFunCall("foo", new AstCtList()).toStr() );
