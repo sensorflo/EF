@@ -44,9 +44,9 @@ IrBuilderAst::~IrBuilderAst() {
 void IrBuilderAst::buildModule(const AstSeq& seq) {
   seq.accept(*this);
 
-  assert(!m_valueStack.empty());
-  Value* retValIr = m_valueStack.top();
-  stack<Value*> empty; swap( m_valueStack, empty ); // clears the m_valueStack
+  assert(!m_values.empty());
+  Value* retValIr = m_values.back();
+  m_values.clear();
 
   m_builder.CreateRet(retValIr);
   verifyFunction(*m_mainFunction);
@@ -74,10 +74,10 @@ void IrBuilderAst::visit(const AstOperator& op) {
   Value* result = NULL;
   // order of visit childs = order of push: lhs, rhs
   // ie top=rhs, top-1=lhs
-  assert(!m_valueStack.empty());
-  Value* rhs = m_valueStack.top(); m_valueStack.pop();
-  assert(!m_valueStack.empty());
-  Value* lhs = m_valueStack.top(); m_valueStack.pop();
+  assert(!m_values.empty());
+  Value* rhs = m_values.back(); m_values.pop_back();
+  assert(!m_values.empty());
+  Value* lhs = m_values.back(); m_values.pop_back();
   switch (op.op()) {
   case '-': result = m_builder.CreateSub(lhs, rhs, "subtmp"); break;
   case '+': result = m_builder.CreateAdd(lhs, rhs, "addtmp"); break;
@@ -85,13 +85,13 @@ void IrBuilderAst::visit(const AstOperator& op) {
   case '/': result = m_builder.CreateSDiv(lhs, rhs, "divtmp"); break;
   default: break;
   }
-  m_valueStack.push(result);
+  m_values.push_back(result);
 }
 
 void IrBuilderAst::visit(const AstNumber& number) {
   Value* valueIr = ConstantInt::get( getGlobalContext(),
     APInt(32, number.value()));
-  m_valueStack.push(valueIr);
+  m_values.push_back(valueIr);
 }
 
 void IrBuilderAst::visit(const AstFunDecl& funDecl) {

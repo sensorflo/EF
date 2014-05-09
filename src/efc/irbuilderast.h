@@ -28,7 +28,7 @@ private:
   void visit(const AstFunDef& funDef, Place place) {};
   void visit(const AstFunDecl& funDecl);
 
-  std::stack<llvm::Value*> m_valueStack;
+  std::list<llvm::Value*> m_values;
   llvm::IRBuilder<> m_builder;
   /** m_executionEngine is the owner */
   llvm::Module* m_module;
