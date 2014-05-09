@@ -127,3 +127,14 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // verify
   EXPECT_EQ( 77, UUT.jitExecFunction("foo") );
 }
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    a_function_definition_foo_returning_x_AND_a_function_call_to_foo,
+    buildAndRunModule,
+    returns_x)) {
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstFunDef("foo", new AstSeq(new AstNumber(42))),
+      new AstFunCall("foo", new AstCtList())),
+    42);
+}

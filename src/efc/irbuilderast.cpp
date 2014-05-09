@@ -173,3 +173,10 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl) {
   // introduced.
   m_values.push_back(ConstantInt::get( getGlobalContext(), APInt(32, 0)));
 }
+
+void IrBuilderAst::visit(const AstFunCall& funCall) {
+  Function* callee = m_module->getFunction(funCall.name());
+  assert(callee);
+  Value* value = m_builder.CreateCall(callee, vector<Value*>(), "calltmp");
+  m_values.push_back( value );
+}
