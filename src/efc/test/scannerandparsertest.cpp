@@ -34,9 +34,9 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_an_AST_form) ) {
   testParse( "42", "seq(42)", "trivial example with only one element" );
-  testParse( "42 64 77", "seq(42,64,77)", "trivial example, blanks as separator" );
-  testParse( "42; 64; 77", "seq(42,64,77)", "trivial example, semicolons as separator" );
-  testParse( "42; 64 77", "seq(42,64,77)",
+  testParse( "42 64 77", "seq(42 64 77)", "trivial example, blanks as separator" );
+  testParse( "42; 64; 77", "seq(42 64 77)", "trivial example, semicolons as separator" );
+  testParse( "42; 64 77", "seq(42 64 77)",
     "trivial example, blanks and semicolons mixed as seperator" );
   testParse( "42;", "seq(42)", "trailing semicolon is allowed" );
 }
@@ -45,12 +45,12 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     math_expression,
     parse,
     succeeds_AND_returns_AST_form_of_math_expression) ) {
-  testParse( "42 + 77", "seq(+(42,77))", "trivial example");
-  testParse( "1+2+3-4-5", "seq(-(-(+(+(1,2),3),4),5))",
+  testParse( "42 + 77", "seq(+(42 77))", "trivial example");
+  testParse( "1+2+3-4-5", "seq(-(-(+(+(1 2) 3) 4) 5))",
     "+ and - have same precedence and are both left associative");
-  testParse( "1*2*3/4/5", "seq(/(/(*(*(1,2),3),4),5))",
+  testParse( "1*2*3/4/5", "seq(/(/(*(*(1 2) 3) 4) 5))",
     "* and / have same precedence and are both left associative");
-  testParse( "1+2*3-4/5", "seq(-(+(1,*(2,3)),/(4,5)))",
+  testParse( "1+2*3-4/5", "seq(-(+(1 *(2 3)) /(4 5)))",
     "* and / have higher precedence than + and -");
 }
 
@@ -58,8 +58,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     function_definition,
     parse,
     succeeds_AND_returns_AST_form_of_function_definition) ) {
-  testParse( "fun foo = 42 end", "seq(fun(foo,seq(42)))");
-  testParse( "fun foo = 42; 1+2 end", "seq(fun(foo,seq(42,+(1,2))))");
+  testParse( "fun foo = 42 end", "seq(fun(foo seq(42)))");
+  testParse( "fun foo = 42; 1+2 end", "seq(fun(foo seq(42 +(1 2))))");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -68,5 +68,5 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_AST_form_of_function_call) ) {
   testParse( "foo()", "seq(foo())");
   testParse( "foo(42)", "seq(foo(seq(42)))");
-  testParse( "foo(42,77)", "seq(foo(seq(42),seq(77)))");
+  testParse( "foo(42,77)", "seq(foo(seq(42) seq(77)))");
 }

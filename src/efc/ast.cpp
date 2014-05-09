@@ -24,7 +24,7 @@ AstFunDef::~AstFunDef() {
 }
 
 basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) const {
-  os << "fun(" << m_name << ",";
+  os << "fun(" << m_name << " ";
   m_body->printTo(os);
   os <<")"; 
   return os;
@@ -46,7 +46,7 @@ AstOperator::~AstOperator() {
 basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
   os << m_op << '(';
   m_lhs->printTo(os);
-  os << ',';
+  os << ' ';
   m_rhs->printTo(os);
   os << ')';
   return os;
@@ -107,7 +107,7 @@ basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) const {
   os << "seq("; 
   for (list<AstNode*>::const_iterator i=m_childs.begin();
        i!=m_childs.end(); ++i) {
-    if (i!=m_childs.begin()) { os << ","; }
+    if (i!=m_childs.begin()) { os << " "; }
     (*i)->printTo(os);
   }
   os << ")";
@@ -157,7 +157,7 @@ AstCtList* AstCtList::Add(AstNode* child1, AstNode* child2, AstNode* child3) {
 basic_ostream<char>& AstCtList::printTo(basic_ostream<char>& os) const {
   for (list<AstNode*>::const_iterator i=m_childs.begin();
        i!=m_childs.end(); ++i) {
-    if (i!=m_childs.begin()) { os << ","; }
+    if (i!=m_childs.begin()) { os << " "; }
     (*i)->printTo(os);
   }
   return os;
