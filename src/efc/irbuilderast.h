@@ -20,7 +20,7 @@ private:
 
   int execMain();
 
-  void visit(const AstSeq& seq);
+  void visit(const AstSeq& seq, Place place, int childNo);
   void visit(const AstCtList& ctList) {};
   void visit(const AstOperator& op);
   void visit(const AstNumber& number);

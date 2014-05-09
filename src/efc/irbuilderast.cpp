@@ -42,11 +42,15 @@ IrBuilderAst::~IrBuilderAst() {
 }
 
 void IrBuilderAst::buildModule(const AstSeq& seq) {
+  // this kicks off ast traversal
   seq.accept(*this);
 
+  // The single last value remaining in m_values is the return value of the
+  // implicit main method.
   assert(!m_values.empty());
   Value* retValIr = m_values.back();
-  m_values.clear();
+  m_values.pop_back();
+  assert(m_values.empty()); // Ensure that it was really the last value
 
   m_builder.CreateRet(retValIr);
   verifyFunction(*m_mainFunction);
@@ -66,8 +70,12 @@ int IrBuilderAst::execMain() {
   return mainFunction();
 }
 
-void IrBuilderAst::visit(const AstSeq& /*seq*/) {
-  //nop
+void IrBuilderAst::visit(const AstSeq&, Place place, int childNo) {
+  if (place==ePreOrder || childNo<2 ) return;
+  // remove 2nd last value
+  std::list<llvm::Value*>::iterator it = m_values.end();
+  std::advance(it, -2);
+  m_values.erase( it );
 }
 
 void IrBuilderAst::visit(const AstOperator& op) {

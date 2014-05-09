@@ -17,10 +17,11 @@ class AstVisitor {
 public:
   enum Place {
     ePreOrder,
+    eInOrder,
     ePostOrder
   };
   virtual ~AstVisitor() {};
-  virtual void visit(const AstSeq& seq) =0;
+  virtual void visit(const AstSeq& seq, Place place, int childNo) =0;
   virtual void visit(const AstCtList& ctList) =0;
   virtual void visit(const AstOperator& op) =0;
   virtual void visit(const AstNumber& number) =0;
