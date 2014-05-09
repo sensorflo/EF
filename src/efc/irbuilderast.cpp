@@ -9,6 +9,7 @@
 #include "llvm/Support/TargetSelect.h"
 #include <algorithm>
 #include <cstdlib>
+#include <stdexcept>
 using namespace std;
 using namespace llvm;
 
@@ -70,11 +71,15 @@ int IrBuilderAst::execMain() {
 }
 
 void IrBuilderAst::visit(const AstSeq&, Place place, int childNo) {
-  if (place==ePreOrder || childNo<2 ) return;
+  if (place==ePostOrder && childNo==0) {
+    throw runtime_error::runtime_error("Empty sequence not allowed (yet)");
+  }
+  if (place==ePreOrder || childNo<2) return;
   // remove 2nd last value
-  std::list<llvm::Value*>::iterator it = m_values.end();
-  std::advance(it, -2);
-  m_values.erase( it );
+  assert(!m_values.empty());
+  Value* lastValue = m_values.back(); m_values.pop_back();
+  assert(!m_values.empty()); m_values.pop_back();
+  m_values.push_back(lastValue);  
 }
 
 void IrBuilderAst::visit(const AstOperator& op) {

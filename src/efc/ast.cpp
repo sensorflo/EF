@@ -130,10 +130,11 @@ void AstSeq::accept(AstVisitor& visitor) const {
   visitor.visit(*this, AstVisitor::ePreOrder, 0);
   int childNo = 0;
   for (list<AstNode*>::const_iterator i=m_childs.begin();
-       i!=m_childs.end(); ++i) {
+       i!=m_childs.end(); ++i, ++childNo) {
     if (i!=m_childs.begin()) {
-      visitor.visit(*this, AstVisitor::eInOrder, childNo);
-      ++childNo;
+      // visit with eInOrder _after_ accept, but not after accecpt of last
+      // child
+      visitor.visit(*this, AstVisitor::eInOrder, childNo-1);
     }
     (*i)->accept(visitor);
   }

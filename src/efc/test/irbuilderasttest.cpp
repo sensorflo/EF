@@ -46,20 +46,22 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    an_empty_seq,
+    buildAndRunModule,
+    throws)) {
+  auto_ptr<AstSeq> astSeq(new AstSeq());
+  IrBuilderAst UUT;
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq));
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_seq_with_some_expressions_not_having_a_value_but_the_last_having_a_value,
     buildAndRunModule,
     returns_the_result_of_the_last_expression)) {
-  string spec = "Sequence containing a function definition";
+  string spec = "Sequence containing a function declaration";
   testbuilAndRunModule(
     new AstSeq(
-      new AstFunDef("foo", new AstSeq()),
-      new AstNumber(42)),
-    42, spec);
-  spec = "Sequence containing a function definition and a declaration";
-  testbuilAndRunModule(
-    new AstSeq(
-      new AstFunDef("foo", new AstSeq()),
-      new AstFunDecl("bar"),
+      new AstFunDecl("foo"),
       new AstNumber(42)),
     42, spec);
 }
