@@ -20,7 +20,8 @@ IrBuilderAst::IrBuilderAst() :
   m_builder(getGlobalContext()),
   m_module(new Module("Main", getGlobalContext())),
   m_executionEngine(EngineBuilder(m_module).setErrorStr(&m_errStr).create()),
-  m_mainFunction(NULL) {
+  m_mainFunction(NULL),
+  m_mainBasicBlock(NULL) {
 
   assert(m_executionEngine);
 
@@ -30,9 +31,10 @@ IrBuilderAst::IrBuilderAst() :
   m_mainFunction = Function::Create( functionTypeIr,
     Function::ExternalLinkage, "main", m_module );
 
-  BasicBlock* bb = BasicBlock::Create(getGlobalContext(), "entry",
+  m_mainBasicBlock = BasicBlock::Create(getGlobalContext(), "entry",
     m_mainFunction);
-  m_builder.SetInsertPoint(bb);
+  assert(m_mainBasicBlock);
+  m_builder.SetInsertPoint(m_mainBasicBlock);
 }
 
 IrBuilderAst::~IrBuilderAst() {

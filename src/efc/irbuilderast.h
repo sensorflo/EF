@@ -4,6 +4,7 @@
 namespace llvm {
   class Module;
   class ExecutionEngine;
+  class BasicBlock;
 }
 
 class IrBuilderAst : public AstVisitor {
@@ -35,4 +36,5 @@ private:
   /** We're the owner */
   llvm::ExecutionEngine* m_executionEngine;
   llvm::Function* m_mainFunction;
+  llvm::BasicBlock* m_mainBasicBlock;
 };
