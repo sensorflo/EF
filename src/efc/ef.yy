@@ -51,6 +51,8 @@
   SLASH "/"
   LPAREN "("
   RPAREN ")"
+  LBRACE "{"
+  RBRACE "}"
 ;
 
 %token <std::string> ID "identifier"
@@ -129,6 +131,7 @@ expr
 
 expr_leaf
   : NUMBER { $$ = new AstNumber($1); }
+  | LBRACE expr RBRACE { std::swap($$,$2); }
   ;
 
 /* Epilogue section

@@ -73,6 +73,8 @@ fun                 return yy::Parser::make_FUN(loc);
 "="                 return yy::Parser::make_EQUAL(loc);
 "("                 return yy::Parser::make_LPAREN(loc);
 ")"                 return yy::Parser::make_RPAREN(loc);
+"{"                 return yy::Parser::make_LBRACE(loc);
+"}"                 return yy::Parser::make_RBRACE(loc);
 
 
 {ID}                return yy::Parser::make_ID(yytext, loc);

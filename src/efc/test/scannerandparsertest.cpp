@@ -16,14 +16,16 @@ void testParse(const string& efProgram, const string& expectedAst,
   int res = driver.d().parse(astRoot);
 
   // verify
+  EXPECT_FALSE( driver.d().gotError() ) << "Scanner or parser found error.\n" <<
+    "ef program = \"" << efProgram << "\"\n";
   EXPECT_EQ( 0, res) <<
     (res==1 ? "parser failed due to invalid input, i.e. input contains a syntax error\n" :
       (res==2 ? "parser failed due to memory exhaustion\n" :
         "parser failed for unknown reason\n")) <<
-    "ef program = \"" << efProgram << "\"";
+    "ef program = \"" << efProgram << "\"\n";
   ASSERT_TRUE( NULL != astRoot );
   EXPECT_EQ( expectedAst, astRoot->toStr() ) <<
-    "ef program = \"" << efProgram << "\"";
+    "ef program = \"" << efProgram << "\"\n";
 
   // tear down
   if (astRoot) { delete astRoot; }
@@ -52,6 +54,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     "* and / have same precedence and are both left associative");
   testParse( "1+2*3-4/5", "seq(-(+(1 *(2 3)) /(4 5)))",
     "* and / have higher precedence than + and -");
+  testParse( "{1+2}*{3-4}/5", "seq(/(*(+(1 2) -(3 4)) 5))",
+    "{} groups expressions and thus overwrites precedence");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
