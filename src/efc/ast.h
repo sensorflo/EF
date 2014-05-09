@@ -39,10 +39,11 @@ public:
   virtual ~AstFunDef();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
-  virtual const std::string& name() const { return m_name; }
+  virtual const AstFunDecl& decl() const { return *m_decl; }
   virtual const AstSeq& body() const { return *m_body; }
 private:
-  const std::string m_name;
+  /** We're the owner. Is garanteed to be non-null */
+  const AstFunDecl* const m_decl;
   /** We're the owner. Is garanteed to be non-null */
   const AstSeq* const m_body;
 };
