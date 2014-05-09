@@ -25,7 +25,7 @@ private:
   void visit(const AstOperator& op);
   void visit(const AstNumber& number);
   void visit(const AstFunCall& funCall) {};
-  void visit(const AstFunDef& funDef) {};
+  void visit(const AstFunDef& funDef, Place place) {};
   void visit(const AstFunDecl& funDecl);
 
   std::stack<llvm::Value*> m_valueStack;

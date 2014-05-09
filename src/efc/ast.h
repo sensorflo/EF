@@ -15,13 +15,17 @@ class AstFunDecl;
 
 class AstVisitor {
 public:
+  enum Place {
+    ePreOrder,
+    ePostOrder
+  };
   virtual ~AstVisitor() {};
   virtual void visit(const AstSeq& seq) =0;
   virtual void visit(const AstCtList& ctList) =0;
   virtual void visit(const AstOperator& op) =0;
   virtual void visit(const AstNumber& number) =0;
   virtual void visit(const AstFunCall& funCall) =0;
-  virtual void visit(const AstFunDef& funDef) =0;
+  virtual void visit(const AstFunDef& funDef, Place place) =0;
   virtual void visit(const AstFunDecl& funDecl) =0;
 };
 
@@ -37,7 +41,7 @@ class AstFunDef : public AstNode {
 public:
   AstFunDef(const std::string& name, AstSeq* body);
   virtual ~AstFunDef();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this, AstVisitor::ePreOrder); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstFunDecl& decl() const { return *m_decl; }
   virtual const AstSeq& body() const { return *m_body; }
