@@ -24,6 +24,7 @@ IrBuilderAst::IrBuilderAst() :
   m_mainFunction(NULL),
   m_mainBasicBlock(NULL) {
 
+  assert(m_module);
   assert(m_executionEngine);
 
   vector<Type*> argsIr(0);
@@ -31,6 +32,7 @@ IrBuilderAst::IrBuilderAst() :
   FunctionType* functionTypeIr = FunctionType::get( retTypeIr, argsIr, false);
   m_mainFunction = Function::Create( functionTypeIr,
     Function::ExternalLinkage, "main", m_module );
+  assert(m_mainFunction);
 
   m_mainBasicBlock = BasicBlock::Create(getGlobalContext(), "entry",
     m_mainFunction);
