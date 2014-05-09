@@ -62,7 +62,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildModule,
     adds_the_declaration_to_the_module_with_correct_signature)) {
   // setup
-  // IrBuilder is currently dump and expects an expression having a value at
+  // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
   auto_ptr<AstSeq> astSeq(new AstSeq(new AstFunDecl("foo"), new AstNumber(42)));
   TestingIrBuilderAst UUT;
