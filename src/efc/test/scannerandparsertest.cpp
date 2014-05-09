@@ -59,6 +59,13 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    function_declaration,
+    parse,
+    succeeds_AND_returns_AST_form_of_function_declaration) ) {
+  testParse( "decl fun foo end", "seq(declfun(foo))");
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     function_definition,
     parse,
     succeeds_AND_returns_AST_form_of_function_definition) ) {

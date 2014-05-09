@@ -39,6 +39,7 @@
 %token
   END_OF_FILE  0  "end of file"
   END "end"
+  DECL "decl"
   IF "if"
   ELSE "else"
   FUN "fun"
@@ -65,7 +66,7 @@
 %type <AstCtList*> ct_list pure_ct_list
 %type <AstSeq*> maybe_empty_sa_expr sa_expr pure_sa_expr
 %type <AstValue*> expr expr_leaf 
-%type <AstNode*> fun_def sa_expr_leaf
+%type <AstNode*> fun_def fun_decl sa_expr_leaf
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -94,6 +95,7 @@ pure_sa_expr
 sa_expr_leaf
   : expr { $$=$1; }
   | fun_def { $$=$1; }
+  | fun_decl { $$=$1; }
   ;
 
 ct_list
@@ -118,6 +120,10 @@ opt_comma
 
 fun_def
   : FUN ID EQUAL maybe_empty_sa_expr END { $$ = new AstFunDef($2, $4); }
+  ;
+
+fun_decl
+  : DECL FUN ID END { $$ = new AstFunDecl($3); }
   ;
 
 expr
