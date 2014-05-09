@@ -20,7 +20,10 @@ GEN_HEADERS:=gensrc/parser.hpp gensrc/stack.hh gensrc/position.hh gensrc/locatio
 efc: out/efc
 
 gensrc/parser.cpp $(GEN_HEADERS): ef.yy *.h
-	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $< || xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml
+	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $<;\
+    yaccexitstatus=$$?;\
+    xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml;\
+    exit $$yaccexitstatus
 
 gensrc/scanner.cpp: ef.l $(GEN_HEADERS) *.h
 	$(LEX) $(LFLAGS) -o $@ $<
