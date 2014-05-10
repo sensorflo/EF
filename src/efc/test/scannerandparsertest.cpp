@@ -80,6 +80,15 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    reference_to_symbol_in_a_function_definition,
+    parse,
+    succeeds_AND_returns_AST_form_of_function_definition) ) {
+
+  string spec = "example with one argument and a body just returning the arg";
+  testParse( "fun foo: (x) = x end", "seq(fun(declfun(foo (x)) seq(x)))");
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     function_definition,
     parse,
     succeeds_AND_returns_AST_form_of_function_definition) ) {

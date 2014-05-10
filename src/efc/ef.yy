@@ -67,7 +67,7 @@
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
 %type <AstSeq*> maybe_empty_sa_expr sa_expr pure_sa_expr
-%type <AstValue*> expr expr_leaf 
+%type <AstValue*> expr expr_leaf
 %type <AstNode*> fun_def fun_decl sa_expr_leaf
 
 /* Grammar rules section
@@ -157,6 +157,7 @@ expr
 expr_leaf
   : NUMBER { $$ = new AstNumber($1); }
   | LBRACE expr RBRACE { std::swap($$,$2); }
+  | ID { $$ = new AstSymbol(new std::string($1)); }
   ;
 
 /* Epilogue section
