@@ -13,6 +13,19 @@ basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {
   return os << m_value;
 }
 
+AstSymbol::AstSymbol(const string* name) :
+  m_name(name ? name : new string("<unknown_name>")) {
+  assert(m_name);
+}
+
+AstSymbol::~AstSymbol() {
+  delete m_name;
+}
+
+basic_ostream<char>& AstSymbol::printTo(basic_ostream<char>& os) const {
+  return os << *m_name;
+}
+
 AstFunDef::AstFunDef(AstFunDecl* decl, AstSeq* body) :
   m_decl(decl ? decl : new AstFunDecl("<unknown_name>")),
   m_body(body ? body : new AstSeq()) {

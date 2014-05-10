@@ -27,6 +27,7 @@ private:
   void visit(const AstCtList& ctList) {};
   void visit(const AstOperator& op);
   void visit(const AstNumber& number);
+  void visit(const AstSymbol& symbol) {};
   void visit(const AstFunCall& funCall);
   void visit(const AstFunDef& funDef, Place place);
   void visit(const AstFunDecl& funDecl);

@@ -7,6 +7,9 @@ TEST(AstTest,test_toString) {
   // AstNumber
   EXPECT_EQ( "42", AstNumber(42).toStr() );
 
+  // AstSymbol
+  EXPECT_EQ( "foo", AstSymbol(new string("foo")).toStr() );
+
   // AstSeq
   EXPECT_EQ( "seq()", AstSeq().toStr() );
   EXPECT_EQ( "seq(42)", AstSeq(new AstNumber(42)).toStr() );
