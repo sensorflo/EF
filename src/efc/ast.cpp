@@ -44,12 +44,24 @@ basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-AstFunDecl::AstFunDecl(const std::string& name) :
-  m_name(name) {
+AstFunDecl::AstFunDecl(const string& name, list<string>* args) :
+  m_name(name),
+  m_args(args ? args : new list<string>()) {
+  assert(m_args);
+}
+
+AstFunDecl::~AstFunDecl() {
+  delete m_args;
 }
 
 basic_ostream<char>& AstFunDecl::printTo(basic_ostream<char>& os) const {
-  os << "declfun(" << m_name << ")";
+  os << "declfun(" << m_name << " (";
+  for (list<string>::const_iterator i=m_args->begin();
+       i!=m_args->end(); ++i) {
+    if (i!=m_args->begin()) { os << " "; }
+    os << *i;
+  }
+  os << "))";
   return os;
 }
 

@@ -55,12 +55,16 @@ private:
 
 class AstFunDecl : public AstNode {
 public:
-  AstFunDecl(const std::string& name);
+  AstFunDecl(const std::string& name, std::list<std::string>* args = NULL);
+  ~AstFunDecl();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
+  virtual const std::list<std::string>& args() const { return *m_args; }
 private:
   const std::string m_name;
+  /** We're the owner. Is garanteed to be non-null */
+  const std::list<std::string>* const m_args;
 };
 
 class AstValue : public AstNode {

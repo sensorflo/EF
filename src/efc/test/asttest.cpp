@@ -22,10 +22,18 @@ TEST(AstTest,test_toString) {
   EXPECT_EQ( "42 77", AstCtList(new AstNumber(42),new AstNumber(77)).toStr() );
 
   // AstFunDecl
-  EXPECT_EQ( "declfun(foo)", AstFunDecl("foo").toStr() );
+  EXPECT_EQ( "declfun(foo ())", AstFunDecl("foo").toStr() );
+  EXPECT_EQ( "declfun(foo ())", AstFunDecl("foo", new list<string>()).toStr() );
+  list<string>* args = new list<string>();
+  args->push_back("arg1");
+  EXPECT_EQ( "declfun(foo (arg1))", AstFunDecl("foo", args).toStr() );
+  args = new list<string>();
+  args->push_back("arg1");
+  args->push_back("arg2");
+  EXPECT_EQ( "declfun(foo (arg1 arg2))", AstFunDecl("foo", args).toStr() );
 
   // AstFunDef
-  EXPECT_EQ( "fun(declfun(foo) seq())", AstFunDef(new AstFunDecl("foo"),new AstSeq()).toStr() );
+  EXPECT_EQ( "fun(declfun(foo ()) seq())", AstFunDef(new AstFunDecl("foo"),new AstSeq()).toStr() );
 
   // AstFunCall
   EXPECT_EQ( "foo()", AstFunCall("foo", new AstCtList()).toStr() );

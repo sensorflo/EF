@@ -62,15 +62,47 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     function_declaration,
     parse,
     succeeds_AND_returns_AST_form_of_function_declaration) ) {
-  testParse( "decl fun foo end", "seq(declfun(foo))");
+  string spec = "example with zero arguments";
+  testParse( "decl fun foo: () end", "seq(declfun(foo ()))", spec);
+  testParse( "decl fun foo: end", "seq(declfun(foo ()))", spec);
+
+  spec = "example with one argument";
+  testParse( "decl fun foo: arg1 end", "seq(declfun(foo (arg1)))", spec);
+  testParse( "decl fun foo: (arg1) end", "seq(declfun(foo (arg1)))", spec);
+
+  spec = "example with two arguments";
+  testParse( "decl fun foo: arg1, arg2 end", "seq(declfun(foo (arg1 arg2)))", spec);
+  testParse( "decl fun foo: (arg1, arg2) end", "seq(declfun(foo (arg1 arg2)))", spec);
+
+  spec = "should allow trailing comma in argument list";
+  testParse( "decl fun foo: arg1, end", "seq(declfun(foo (arg1)))", spec);
+  testParse( "decl fun foo: (arg1,) end", "seq(declfun(foo (arg1)))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     function_definition,
     parse,
     succeeds_AND_returns_AST_form_of_function_definition) ) {
-  testParse( "fun foo = 42 end", "seq(fun(declfun(foo) seq(42)))");
-  testParse( "fun foo = 42; 1+2 end", "seq(fun(declfun(foo) seq(42 +(1 2))))");
+
+  string spec = "example with zero arguments and trivial body";
+  testParse( "fun foo: = 42 end", "seq(fun(declfun(foo ()) seq(42)))");
+  testParse( "fun foo: () = 42 end", "seq(fun(declfun(foo ()) seq(42)))");
+
+  spec = "example with zero arguments and simple but not trivial body";
+  testParse( "fun foo: = 42; 1+2 end", "seq(fun(declfun(foo ()) seq(42 +(1 2))))");
+  testParse( "fun foo: () = 42; 1+2 end", "seq(fun(declfun(foo ()) seq(42 +(1 2))))");
+
+  spec = "example with one argument and trivial body";
+  testParse( "fun foo: arg1 = 42 end", "seq(fun(declfun(foo (arg1)) seq(42)))");
+  testParse( "fun foo: (arg1) = 42 end", "seq(fun(declfun(foo (arg1)) seq(42)))");
+
+  spec = "should allow trailing comma in argument list";
+  testParse( "fun foo: arg1, = 42 end", "seq(fun(declfun(foo (arg1)) seq(42)))");
+  testParse( "fun foo: (arg1,) = 42 end", "seq(fun(declfun(foo (arg1)) seq(42)))");
+
+  spec = "example with two arguments and trivial body";
+  testParse( "fun foo: arg1, arg2 = 42 end", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))");
+  testParse( "fun foo: (arg1, arg2) = 42 end", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

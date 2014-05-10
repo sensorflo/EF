@@ -46,6 +46,7 @@
   EQUAL "="
   COMMA ","
   SEMICOLON ";"
+  COLON ":"
   PLUS "+"
   MINUS "-"
   STAR "*"
@@ -64,6 +65,7 @@
       SLASH
 
 %type <AstCtList*> ct_list pure_ct_list
+%type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
 %type <AstSeq*> maybe_empty_sa_expr sa_expr pure_sa_expr
 %type <AstValue*> expr expr_leaf 
 %type <AstNode*> fun_def fun_decl sa_expr_leaf
@@ -108,6 +110,23 @@ pure_ct_list
   | pure_ct_list COMMA sa_expr { $$ = ($1)->Add($3); }
   ;
 
+/* I'm not sure yet whether EF will allow omitting parentheses also in future,
+but for now I want to have the option for that way */
+param_ct_list
+  : %empty { $$ = new std::list<std::string>(); }
+  | LPAREN RPAREN { $$ = new std::list<std::string>(); }
+  | pure_naked_param_ct_list opt_comma { std::swap($$,$1); }
+  | LPAREN pure_naked_param_ct_list opt_comma RPAREN { std::swap($$,$2); }
+  ;
+
+/* 'pure' means at least one element, all elements separated by commas, no
+trailing comma since comma is separator, not delimiter. 'naked' means no
+enclosing parentheses. */
+pure_naked_param_ct_list
+  : ID { $$ = new std::list<std::string>(); ($$)->push_back($1); }
+  | pure_naked_param_ct_list COMMA ID { ($1)->push_back($3); std::swap($$,$1); }
+  ;
+
 opt_semicolon
   : %empty
   | SEMICOLON
@@ -119,11 +138,11 @@ opt_comma
   ;
 
 fun_def
-  : FUN ID EQUAL maybe_empty_sa_expr END { $$ = new AstFunDef(new AstFunDecl($2), $4); }
+  : FUN ID COLON param_ct_list EQUAL maybe_empty_sa_expr END { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
   ;
 
 fun_decl
-  : DECL FUN ID END { $$ = new AstFunDecl($3); }
+  : DECL FUN ID COLON param_ct_list END { $$ = new AstFunDecl($3, $5); }
   ;
 
 expr
