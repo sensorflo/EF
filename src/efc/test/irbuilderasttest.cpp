@@ -266,14 +266,3 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   int y = 3;
   EXPECT_EQ( x*y, UUT.jitExecFunction2Arg("foo", x, y) );
 }
-
-TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    a_function_definition_foo_returning_x_AND_a_function_call_to_foo,
-    buildAndRunModule,
-    returns_x)) {
-  testbuilAndRunModule(
-    new AstSeq(
-      new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(42))),
-      new AstFunCall("foo", new AstCtList())),
-    42);
-}
