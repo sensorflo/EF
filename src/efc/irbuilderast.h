@@ -29,6 +29,9 @@ private:
   void visit(const AstFunDef& funDef, Place place);
   void visit(const AstFunDecl& funDecl);
 
+  llvm::Value* valuesBackAndPop();
+  llvm::Function* valuesBackToFunction();
+
   std::list<llvm::Value*> m_values;
   llvm::IRBuilder<> m_builder;
   /** m_executionEngine is the owner */

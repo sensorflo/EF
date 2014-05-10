@@ -50,9 +50,7 @@ void IrBuilderAst::buildModule(const AstSeq& seq) {
 
   // The single last value remaining in m_values is the return value of the
   // implicit main method.
-  assert(!m_values.empty());
-  m_builder.CreateRet(m_values.back());
-  m_values.pop_back();
+  m_builder.CreateRet(valuesBackAndPop());
   assert(m_values.empty()); // Ensure that it was really the last value
 
   verifyFunction(*m_mainFunction);
@@ -82,20 +80,17 @@ void IrBuilderAst::visit(const AstSeq&, Place place, int childNo) {
   }
   if (place==ePreOrder || childNo<2) return;
   // remove 2nd last value
-  assert(!m_values.empty());
-  Value* lastValue = m_values.back(); m_values.pop_back();
-  assert(!m_values.empty()); m_values.pop_back();
-  m_values.push_back(lastValue);  
+  Value* lastValue = valuesBackAndPop();
+  m_values.pop_back();
+  m_values.push_back(lastValue);
 }
 
 void IrBuilderAst::visit(const AstOperator& op) {
   Value* result = NULL;
   // order of visit childs = order of push: lhs, rhs
   // ie top=rhs, top-1=lhs
-  assert(!m_values.empty());
-  Value* rhs = m_values.back(); m_values.pop_back();
-  assert(!m_values.empty());
-  Value* lhs = m_values.back(); m_values.pop_back();
+  Value* rhs = valuesBackAndPop();
+  Value* lhs = valuesBackAndPop();
   switch (op.op()) {
   case '-': result = m_builder.CreateSub(lhs, rhs, "subtmp"); break;
   case '+': result = m_builder.CreateAdd(lhs, rhs, "addtmp"); break;
@@ -124,12 +119,8 @@ void IrBuilderAst::visit(const AstFunDef& funDef, Place place) {
   // eInOrder
   // ---------------
   else if ( eInOrder==place ) {
-    assert(!m_values.empty());
-    Function* functionIr = dynamic_cast<Function*>(m_values.back());
-    assert(functionIr);
-
     m_builder.SetInsertPoint(
-      BasicBlock::Create(getGlobalContext(), "entry", functionIr));
+      BasicBlock::Create(getGlobalContext(), "entry", valuesBackToFunction()));
     // Don't pop the Function* from m_values, see below
   }
 
@@ -139,14 +130,9 @@ void IrBuilderAst::visit(const AstFunDef& funDef, Place place) {
   // ePostOrder
   // ---------------
   else {
-    assert(!m_values.empty());
-    m_builder.CreateRet(m_values.back());
-    m_values.pop_back();
+    m_builder.CreateRet(valuesBackAndPop());
 
-    assert(!m_values.empty());
-    Function* functionIr = dynamic_cast<Function*>(m_values.back());
-    assert(functionIr);
-    verifyFunction(*functionIr);
+    verifyFunction(*valuesBackToFunction());
 
     // Previous building block is again the insert point
     m_builder.SetInsertPoint(m_mainBasicBlock);
@@ -179,4 +165,19 @@ void IrBuilderAst::visit(const AstFunCall& funCall) {
   assert(callee);
   Value* value = m_builder.CreateCall(callee, vector<Value*>(), "calltmp");
   m_values.push_back( value );
+}
+
+Value* IrBuilderAst::valuesBackAndPop() {
+  assert(!m_values.empty());
+  Value* value = m_values.back();
+  m_values.pop_back();
+  assert(value);
+  return value; 
+}
+
+Function* IrBuilderAst::valuesBackToFunction() {
+  assert(!m_values.empty());
+  Function* function = dynamic_cast<Function*>(m_values.back());
+  assert(function);
+  return function;
 }
