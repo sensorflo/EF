@@ -117,39 +117,42 @@ void IrBuilderAst::visit(const AstFunDef& funDef, Place place) {
   // ---------------
   if ( ePreOrder==place ) { /*nop*/ }
 
-  // outer iterator makes funDef.decl() being visited.
+  // outer iterator makes funDef.decl() being visited. That pushes a Function*
+  // onto m_values
   // ---------------
 
   // eInOrder
   // ---------------
   else if ( eInOrder==place ) {
-    Function* functionIr = m_module->getFunction(funDef.decl().name());
+    assert(!m_values.empty());
+    Function* functionIr = dynamic_cast<Function*>(m_values.back());
     assert(functionIr);
+
     m_builder.SetInsertPoint(
       BasicBlock::Create(getGlobalContext(), "entry", functionIr));
+    // Don't pop the Function* from m_values, see below
   }
 
-  // outer iterator makes funDef.body() being visited. That pushes a dummy
-  // value onto m_values
+  // outer iterator makes funDef.body() being visited. 
   // ---------------
 
   // ePostOrder
   // ---------------
   else {
-    Function* functionIr = m_module->getFunction(funDef.decl().name());
-    assert(functionIr);
-
     assert(!m_values.empty());
     m_builder.CreateRet(m_values.back());
     m_values.pop_back();
 
+    assert(!m_values.empty());
+    Function* functionIr = dynamic_cast<Function*>(m_values.back());
+    assert(functionIr);
     verifyFunction(*functionIr);
 
     // Previous building block is again the insert point
     m_builder.SetInsertPoint(m_mainBasicBlock);
 
-    // Don't push a dummy value, AstFunDef re-uses the dummy value of its
-    // child AstFunDecl
+    // Don't push onto the m_values stack, since the Function* we would push
+    // is already on the stack due to funDef.decl()
   }
 }
 
@@ -168,10 +171,7 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl) {
     assert(functionIr->arg_size() == 0);
   }
 
-  // push dummy value to m_values stack, so sequence operator has something to
-  // remove. This dummy push can hopefully be removed as soon as metatypes are
-  // introduced.
-  m_values.push_back(ConstantInt::get( getGlobalContext(), APInt(32, 0)));
+  m_values.push_back(functionIr);
 }
 
 void IrBuilderAst::visit(const AstFunCall& funCall) {
