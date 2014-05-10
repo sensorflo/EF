@@ -10,6 +10,7 @@ class TestingIrBuilderAst : public IrBuilderAst {
 public:
   using IrBuilderAst::jitExecFunction;
   using IrBuilderAst::jitExecFunction1Arg;
+  using IrBuilderAst::jitExecFunction2Arg;
   using IrBuilderAst::m_module;
 };
 
@@ -206,6 +207,64 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // verify
     EXPECT_EQ( 42, UUT.jitExecFunction1Arg("foo", 256) );
   }
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    function_definition_foo_returning_its_single_argument_x,
+    buildModule,
+    JIT_executing_foo_returns_x)) {
+  // setup
+  // IrBuilder is currently dumb and expects an expression having a value at
+  // the end of a seq, thus provide one altought not needed for this test
+  list<string>* args = new list<string>();
+  args->push_back("x");
+  auto_ptr<AstSeq> astSeq(
+    new AstSeq(
+      new AstFunDef(
+        new AstFunDecl("foo", args),
+        new AstSeq(new AstSymbol(new string("x")))),
+      new AstNumber(77)));
+  TestingIrBuilderAst UUT;
+
+  // execute
+  UUT.buildModule(*astSeq);
+
+  // verify
+  int x = 256;
+  EXPECT_EQ( x, UUT.jitExecFunction1Arg("foo", x) );
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    function_definition_foo_returning_simple_calculation_with_its_arguments,
+    buildModule,
+    JIT_executing_foo_returns_result_of_that_calculation)) {
+
+  // Culcultation: x*y
+
+  // setup
+  // IrBuilder is currently dumb and expects an expression having a value at
+  // the end of a seq, thus provide one altought not needed for this test
+  list<string>* args = new list<string>();
+  args->push_back("x");
+  args->push_back("y");
+  auto_ptr<AstSeq> astSeq(
+    new AstSeq(
+      new AstFunDef(
+        new AstFunDecl("foo", args),
+        new AstSeq(
+          new AstOperator('*',
+            new AstSymbol(new string("x")),
+            new AstSymbol(new string("y"))))),
+      new AstNumber(77)));
+  TestingIrBuilderAst UUT;
+
+  // execute
+  UUT.buildModule(*astSeq);
+
+  // verify
+  int x = 2;
+  int y = 3;
+  EXPECT_EQ( x*y, UUT.jitExecFunction2Arg("foo", x, y) );
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(

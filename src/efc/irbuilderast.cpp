@@ -69,6 +69,10 @@ int IrBuilderAst::jitExecFunction1Arg(const std::string& name, int arg1) {
   return jitExecFunction1Arg(m_module->getFunction(name), arg1);
 }
 
+int IrBuilderAst::jitExecFunction2Arg(const std::string& name, int arg1, int arg2) {
+  return jitExecFunction2Arg(m_module->getFunction(name), arg1, arg2);
+}
+
 int IrBuilderAst::jitExecFunction(llvm::Function* function) {
   void* functionVoidPtr =
     m_executionEngine->getPointerToFunction(function);
@@ -85,6 +89,15 @@ int IrBuilderAst::jitExecFunction1Arg(llvm::Function* function, int arg1) {
   int (*functionPtr)(int) = (int (*)(int))(intptr_t)functionVoidPtr;
   assert(functionPtr);
   return functionPtr(arg1);
+}
+
+int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2) {
+  void* functionVoidPtr =
+    m_executionEngine->getPointerToFunction(function);
+  assert(functionVoidPtr);
+  int (*functionPtr)(int, int) = (int (*)(int, int))(intptr_t)functionVoidPtr;
+  assert(functionPtr);
+  return functionPtr(arg1, arg2);
 }
 
 void IrBuilderAst::visit(const AstSeq&, Place place, int childNo) {
@@ -120,6 +133,13 @@ void IrBuilderAst::visit(const AstNumber& number) {
   m_values.push_back(valueIr);
 }
 
+void IrBuilderAst::visit(const AstSymbol& symbol) {
+  Value* valueIr = m_symbolTable[symbol.name()];
+  assert(valueIr);
+  m_values.push_back(
+    m_builder.CreateLoad(valueIr, symbol.name().c_str()));
+}
+
 void IrBuilderAst::visit(const AstFunDef& funDef, Place place) {
   // ePreOrder
   // ---------------
@@ -132,8 +152,21 @@ void IrBuilderAst::visit(const AstFunDef& funDef, Place place) {
   // eInOrder
   // ---------------
   else if ( eInOrder==place ) {
+    m_symbolTable.clear();
+
+    Function* functionIr = valuesBackToFunction();
     m_builder.SetInsertPoint(
-      BasicBlock::Create(getGlobalContext(), "entry", valuesBackToFunction()));
+      BasicBlock::Create(getGlobalContext(), "entry", functionIr));
+
+    // Add all arguments to the symbol table and create their allocas.
+    Function::arg_iterator iterIr = functionIr->arg_begin();
+    list<string>::const_iterator iterAst = funDef.decl().args().begin();
+    for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
+      AllocaInst *alloca = createEntryBlockAlloca(functionIr, *iterAst);
+      m_builder.CreateStore(iterIr, alloca);
+      m_symbolTable[*iterAst] = alloca;
+    }
+
     // Don't pop the Function* from m_values, see below
   }
 
@@ -201,4 +234,12 @@ Function* IrBuilderAst::valuesBackToFunction() {
   Function* function = dynamic_cast<Function*>(m_values.back());
   assert(function);
   return function;
+}
+
+AllocaInst* IrBuilderAst::createEntryBlockAlloca(Function *functionIr,
+  const string &varName) {
+  IRBuilder<> irBuilder(&functionIr->getEntryBlock(),
+    functionIr->getEntryBlock().begin());
+  return m_builder.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0,
+    varName.c_str());
 }
