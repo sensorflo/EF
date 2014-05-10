@@ -119,7 +119,7 @@ opt_comma
   ;
 
 fun_def
-  : FUN ID EQUAL maybe_empty_sa_expr END { $$ = new AstFunDef($2, $4); }
+  : FUN ID EQUAL maybe_empty_sa_expr END { $$ = new AstFunDef(new AstFunDecl($2), $4); }
   ;
 
 fun_decl

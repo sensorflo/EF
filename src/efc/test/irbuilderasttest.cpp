@@ -95,7 +95,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
   auto_ptr<AstSeq> astSeq(new AstSeq(
-      new AstFunDef("foo",new AstSeq(new AstNumber(77))),
+      new AstFunDef(new AstFunDecl("foo"),new AstSeq(new AstNumber(77))),
       new AstNumber(42)));
   TestingIrBuilderAst UUT;
 
@@ -117,7 +117,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
   auto_ptr<AstSeq> astSeq(new AstSeq(
-      new AstFunDef("foo", new AstSeq(new AstNumber(77))),
+      new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(77))),
       new AstNumber(42)));
   TestingIrBuilderAst UUT;
 
@@ -134,7 +134,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     returns_x)) {
   testbuilAndRunModule(
     new AstSeq(
-      new AstFunDef("foo", new AstSeq(new AstNumber(42))),
+      new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(42))),
       new AstFunCall("foo", new AstCtList())),
     42);
 }

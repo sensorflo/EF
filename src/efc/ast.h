@@ -40,7 +40,7 @@ public:
 
 class AstFunDef : public AstNode {
 public:
-  AstFunDef(const std::string& name, AstSeq* body);
+  AstFunDef(AstFunDecl* decl, AstSeq* body);
   virtual ~AstFunDef();
   virtual void accept(AstVisitor& visitor) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;

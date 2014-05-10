@@ -13,8 +13,8 @@ basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {
   return os << m_value;
 }
 
-AstFunDef::AstFunDef(const std::string& name, AstSeq* body) :
-  m_decl(new AstFunDecl(name)),
+AstFunDef::AstFunDef(AstFunDecl* decl, AstSeq* body) :
+  m_decl(decl ? decl : new AstFunDecl("<unknown_name>")),
   m_body(body ? body : new AstSeq()) {
   assert(m_decl);
   assert(m_body);
