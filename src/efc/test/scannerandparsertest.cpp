@@ -59,6 +59,15 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    assignement_expression,
+    parse,
+    succeeds_AND_returns_AST_form_of_assignement_expression) ) {
+  testParse( "foo = 42", "seq(=(foo 42))", "trivial example");
+  testParse( "foo = 1+2*3", "seq(=(foo +(1 *(2 3))))", "simple example");
+  testParse( "foo = bar = 42", "seq(=(foo =(bar 42)))", "= is right associative");
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     function_declaration,
     parse,
     succeeds_AND_returns_AST_form_of_function_declaration) ) {
