@@ -65,6 +65,10 @@ int IrBuilderAst::jitExecFunction(const std::string& name) {
   return jitExecFunction(m_module->getFunction(name));
 }
 
+int IrBuilderAst::jitExecFunction1Arg(const std::string& name, int arg1) {
+  return jitExecFunction1Arg(m_module->getFunction(name), arg1);
+}
+
 int IrBuilderAst::jitExecFunction(llvm::Function* function) {
   void* functionVoidPtr =
     m_executionEngine->getPointerToFunction(function);
@@ -72,6 +76,15 @@ int IrBuilderAst::jitExecFunction(llvm::Function* function) {
   int (*functionPtr)() = (int (*)())(intptr_t)functionVoidPtr;
   assert(functionPtr);
   return functionPtr();
+}
+
+int IrBuilderAst::jitExecFunction1Arg(llvm::Function* function, int arg1) {
+  void* functionVoidPtr =
+    m_executionEngine->getPointerToFunction(function);
+  assert(functionVoidPtr);
+  int (*functionPtr)(int) = (int (*)(int))(intptr_t)functionVoidPtr;
+  assert(functionPtr);
+  return functionPtr(arg1);
 }
 
 void IrBuilderAst::visit(const AstSeq&, Place place, int childNo) {
@@ -143,10 +156,11 @@ void IrBuilderAst::visit(const AstFunDef& funDef, Place place) {
 }
 
 void IrBuilderAst::visit(const AstFunDecl& funDecl) {
-  // currently always returns type int
+  // currently rettype and type of args is always int
+  vector<Type*> argsIr(funDecl.args().size(),
+    Type::getInt32Ty(getGlobalContext()));
   Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
-  // currently always zero parameters
-  FunctionType* functionTypeIr = FunctionType::get(retTypeIr, false);
+  FunctionType* functionTypeIr = FunctionType::get(retTypeIr, argsIr, false);
   assert(functionTypeIr);
   Function* functionIr = Function::Create( functionTypeIr,
     Function::ExternalLinkage, funDecl.name(), m_module );
@@ -154,7 +168,14 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl) {
   if ( functionIr->getName() != funDecl.name() ) {
     functionIr->eraseFromParent();
     functionIr = m_module->getFunction(funDecl.name());
-    assert(functionIr->arg_size() == 0);
+    assert(functionIr->arg_size() == funDecl.args.size());
+  }
+  else {
+    list<string>::const_iterator iterAst = funDecl.args().begin();
+    Function::arg_iterator iterIr = functionIr->arg_begin();
+    for (/*nop*/; iterAst!=funDecl.args().end(); ++iterAst, ++iterIr) {
+      iterIr->setName(*iterAst);
+    }
   }
 
   m_values.push_back(functionIr);

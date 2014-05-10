@@ -9,6 +9,7 @@ using namespace llvm;
 class TestingIrBuilderAst : public IrBuilderAst {
 public:
   using IrBuilderAst::jitExecFunction;
+  using IrBuilderAst::jitExecFunction1Arg;
   using IrBuilderAst::m_module;
 };
 
@@ -71,61 +72,140 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     function_declaration,
     buildModule,
     adds_the_declaration_to_the_module_with_correct_signature)) {
-  // setup
-  // IrBuilder is currently dumb and expects an expression having a value at
-  // the end of a seq, thus provide one altought not needed for this test
-  auto_ptr<AstSeq> astSeq(new AstSeq(new AstFunDecl("foo"), new AstNumber(42)));
-  TestingIrBuilderAst UUT;
 
-  // execute
-  UUT.buildModule(*astSeq);
+  // zero arguments
+  {
+    // setup
+    // IrBuilder is currently dumb and expects an expression having a value at
+    // the end of a seq, thus provide one altought not needed for this test
+    auto_ptr<AstSeq> astSeq(new AstSeq(new AstFunDecl("foo"), new AstNumber(42)));
+    TestingIrBuilderAst UUT;
 
-  // verify
-  Function* functionIr = UUT.m_module->getFunction("foo");
-  EXPECT_TRUE(functionIr!=NULL);
-  EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
-  EXPECT_EQ(functionIr->arg_size(), 0);
+    // execute
+    UUT.buildModule(*astSeq);
+
+    // verify
+    Function* functionIr = UUT.m_module->getFunction("foo");
+    EXPECT_TRUE(functionIr!=NULL);
+    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
+    EXPECT_EQ(functionIr->arg_size(), 0);
+  }
+
+  // two arguments
+  {
+    // setup
+    // IrBuilder is currently dumb and expects an expression having a value at
+    // the end of a seq, thus provide one altought not needed for this test
+    list<string>* args = new list<string>();
+    args->push_back("arg1");
+    args->push_back("arg2");
+    auto_ptr<AstSeq> astSeq(
+      new AstSeq( new AstFunDecl("foo", args), new AstNumber(42)));
+    TestingIrBuilderAst UUT;
+
+    // execute
+    UUT.buildModule(*astSeq);
+
+    // verify
+    Function* functionIr = UUT.m_module->getFunction("foo");
+    EXPECT_TRUE(functionIr!=NULL);
+    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
+    EXPECT_EQ(functionIr->arg_size(), args->size());
+  }
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     function_definition,
     buildModule,
     adds_the_definition_to_the_module_with_correct_signature)) {
-  // setup
-  // IrBuilder is currently dumb and expects an expression having a value at
-  // the end of a seq, thus provide one altought not needed for this test
-  auto_ptr<AstSeq> astSeq(new AstSeq(
-      new AstFunDef(new AstFunDecl("foo"),new AstSeq(new AstNumber(77))),
-      new AstNumber(42)));
-  TestingIrBuilderAst UUT;
+  // zero arguments
+  {
+    // setup
+    // IrBuilder is currently dumb and expects an expression having a value at
+    // the end of a seq, thus provide one altought not needed for this test
+    auto_ptr<AstSeq> astSeq(new AstSeq(
+        new AstFunDef(new AstFunDecl("foo"),new AstSeq(new AstNumber(77))),
+        new AstNumber(42)));
+    TestingIrBuilderAst UUT;
 
-  // execute
-  UUT.buildModule(*astSeq);
+    // execute
+    UUT.buildModule(*astSeq);
 
-  // verify
-  Function* functionIr = UUT.m_module->getFunction("foo");
-  EXPECT_TRUE(functionIr!=NULL);
-  EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
-  EXPECT_EQ(functionIr->arg_size(), 0);
+    // verify
+    Function* functionIr = UUT.m_module->getFunction("foo");
+    EXPECT_TRUE(functionIr!=NULL);
+    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
+    EXPECT_EQ(functionIr->arg_size(), 0);
+  }
+
+  // two arguments
+  {
+    // setup
+    // IrBuilder is currently dumb and expects an expression having a value at
+    // the end of a seq, thus provide one altought not needed for this test
+    list<string>* args = new list<string>();
+    args->push_back("arg1");
+    args->push_back("arg2");
+    auto_ptr<AstSeq> astSeq( new AstSeq(
+        new AstFunDef(
+          new AstFunDecl("foo", args),
+          new AstSeq(new AstNumber(77))),
+        new AstNumber(42)));
+    TestingIrBuilderAst UUT;
+
+    // execute
+    UUT.buildModule(*astSeq);
+
+    // verify
+    Function* functionIr = UUT.m_module->getFunction("foo");
+    EXPECT_TRUE(functionIr!=NULL);
+    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
+    EXPECT_EQ(functionIr->arg_size(), args->size());
+  }
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     function_definition_foo_returning_a_value_x,
     buildModule,
     JIT_executing_foo_returns_x)) {
-  // setup
-  // IrBuilder is currently dumb and expects an expression having a value at
-  // the end of a seq, thus provide one altought not needed for this test
-  auto_ptr<AstSeq> astSeq(new AstSeq(
-      new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(77))),
-      new AstNumber(42)));
-  TestingIrBuilderAst UUT;
+  // zero arguments
+  {
+    // setup
+    // IrBuilder is currently dumb and expects an expression having a value at
+    // the end of a seq, thus provide one altought not needed for this test
+    auto_ptr<AstSeq> astSeq(new AstSeq(
+        new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(77))),
+        new AstNumber(42)));
+    TestingIrBuilderAst UUT;
 
-  // execute
-  UUT.buildModule(*astSeq);
+    // execute
+    UUT.buildModule(*astSeq);
 
-  // verify
-  EXPECT_EQ( 77, UUT.jitExecFunction("foo") );
+    // verify
+    EXPECT_EQ( 77, UUT.jitExecFunction("foo") );
+  }
+
+  // one argument, which however is ignored
+  {
+    // setup
+    // IrBuilder is currently dumb and expects an expression having a value at
+    // the end of a seq, thus provide one altought not needed for this test
+    list<string>* args = new list<string>();
+    args->push_back("arg1");
+    auto_ptr<AstSeq> astSeq(
+      new AstSeq(
+        new AstFunDef(
+          new AstFunDecl("foo", args),
+          new AstSeq(new AstNumber(42))),
+        new AstNumber(77)));
+    TestingIrBuilderAst UUT;
+
+    // execute
+    UUT.buildModule(*astSeq);
+
+    // verify
+    EXPECT_EQ( 42, UUT.jitExecFunction1Arg("foo", 256) );
+  }
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(

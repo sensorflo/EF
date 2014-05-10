@@ -19,7 +19,9 @@ private:
   friend class TestingIrBuilderAst;
 
   int jitExecFunction(llvm::Function* function);
+  int jitExecFunction1Arg(llvm::Function* function, int arg1);
   int jitExecFunction(const std::string& name);
+  int jitExecFunction1Arg(const std::string& name, int arg1);
 
   void visit(const AstSeq& seq, Place place, int childNo);
   void visit(const AstCtList& ctList) {};
