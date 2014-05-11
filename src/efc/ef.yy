@@ -68,9 +68,9 @@
 
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> maybe_empty_sa_expr sa_expr pure_sa_expr
-%type <AstValue*> expr expr_leaf
-%type <AstNode*> sa_expr_leaf
+%type <AstSeq*> maybe_empty_expr expr
+%type <AstValue*> sub_expr sub_expr_leaf
+
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -79,25 +79,17 @@
 %start program;
 
 program
-  : maybe_empty_sa_expr END_OF_FILE { driver.astRoot() = $1; }
+  : maybe_empty_expr END_OF_FILE { driver.astRoot() = $1; }
   ;
 
-maybe_empty_sa_expr
+maybe_empty_expr
   : %empty { $$ = new AstSeq(); }
-  | sa_expr { std::swap($$,$1); }
+  | expr { std::swap($$,$1); }
   ;
 
-sa_expr
-  : pure_sa_expr { std::swap($$,$1); }
-  ;
-
-pure_sa_expr
-  : sa_expr_leaf { $$ = new AstSeq($1); }
-  | pure_sa_expr sa_expr_leaf { $$ = ($1)->Add($2); }
-  ;
-
-sa_expr_leaf
-  : expr { $$=$1; }
+expr
+  : sub_expr { $$ = new AstSeq($1); }
+  | expr sub_expr { $$ = ($1)->Add($2); }
   ;
 
 ct_list
@@ -106,8 +98,8 @@ ct_list
   ;
 
 pure_ct_list
-  : sa_expr { $$ = new AstCtList($1); }
-  | pure_ct_list COMMA sa_expr { $$ = ($1)->Add($3); }
+  : expr { $$ = new AstCtList($1); }
+  | pure_ct_list COMMA expr { $$ = ($1)->Add($3); }
   ;
 
 /* I'm not sure yet whether EF will allow omitting parentheses also in future,
@@ -132,29 +124,29 @@ opt_comma
   | COMMA
   ;
 
-expr
-  : expr_leaf { std::swap($$,$1); }
+sub_expr
+  : sub_expr_leaf { std::swap($$,$1); }
   | ID LPAREN ct_list RPAREN { $$ = new AstFunCall($1, $3); }
-  | ID EQUAL expr %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
-  | ID COLON EQUAL expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), new AstSeq($4)); }
-  | expr PLUS expr { $$ = new AstOperator('+', $1, $3); }
-  | expr MINUS expr { $$ = new AstOperator('-', $1, $3); }
-  | expr STAR expr { $$ = new AstOperator('*', $1, $3); }
-  | expr SLASH expr { $$ = new AstOperator('/', $1, $3); }
+  | ID EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
+  | ID COLON EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), new AstSeq($4)); }
+  | sub_expr PLUS sub_expr { $$ = new AstOperator('+', $1, $3); }
+  | sub_expr MINUS sub_expr { $$ = new AstOperator('-', $1, $3); }
+  | sub_expr STAR sub_expr { $$ = new AstOperator('*', $1, $3); }
+  | sub_expr SLASH sub_expr { $$ = new AstOperator('/', $1, $3); }
   ;
 
-expr_leaf
+sub_expr_leaf
   : NUMBER { $$ = new AstNumber($1); }
-  | LBRACE expr RBRACE { std::swap($$,$2); }
+  | LBRACE sub_expr RBRACE { std::swap($$,$2); }
   | ID { $$ = new AstSymbol(new std::string($1)); }
   | DECL VAL ID COLON /*type*/ SEMICOLON { $$ = new AstDataDecl($3); }
   | DECL VAR ID COLON /*type*/ SEMICOLON { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
-  | VAL ID COLON /*type*/ EQUAL sa_expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $5); }
-  | VAR ID COLON /*type*/ EQUAL sa_expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
+  | VAL ID COLON /*type*/ EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $5); }
+  | VAR ID COLON /*type*/ EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
   | VAL ID COLON /*type*/ SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
   | VAR ID COLON /*type*/ SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
   | DECL FUN ID COLON param_ct_list SEMICOLON { $$ = new AstFunDecl($3, $5); }
-  | FUN ID COLON param_ct_list EQUAL maybe_empty_sa_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
+  | FUN ID COLON param_ct_list EQUAL maybe_empty_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
   ;
 
 
