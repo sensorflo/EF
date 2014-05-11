@@ -110,6 +110,11 @@ basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
+void AstDataDef::accept(AstVisitor& visitor) const {
+  m_initValue->accept(visitor);
+  visitor.visit(*this);
+}
+
 AstOperator::AstOperator(char op, AstValue* lhs, AstValue* rhs) :
   m_op(op),
   m_lhs(lhs ? lhs : new AstNumber(0)),

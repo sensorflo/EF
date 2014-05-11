@@ -90,7 +90,7 @@ class AstDataDef : public AstValue {
 public:
   AstDataDef(AstDataDecl* decl, AstSeq* initValue = NULL);
   ~AstDataDef();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstDataDecl& decl() const { return *m_decl; }
   virtual const AstSeq& intVal() const { return *m_initValue; }

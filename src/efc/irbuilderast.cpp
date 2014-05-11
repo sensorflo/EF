@@ -135,12 +135,12 @@ void IrBuilderAst::visit(const AstNumber& number) {
 }
 
 void IrBuilderAst::visit(const AstSymbol& symbol) {
-  Value* valueIr = m_symbolTable[symbol.name()];
-  assert(valueIr);
+  const SymbolTableEntry& stentry = m_symbolTable[symbol.name()];
+  assert(stentry && stentry.m_value);
   m_values.push_back(
-    symbol.valueCategory()==AstSymbol::eLValue ?
-    valueIr :
-    m_builder.CreateLoad(valueIr, symbol.name().c_str()));
+    symbol.valueCategory()==AstSymbol::eLValue || stentry.m_storage==eValue ?
+    stentry.m_value :
+    m_builder.CreateLoad(stentry.m_value, symbol.name().c_str()));
 }
 
 void IrBuilderAst::visit(const AstFunDef& funDef, Place place) {
@@ -167,7 +167,7 @@ void IrBuilderAst::visit(const AstFunDef& funDef, Place place) {
     for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
       AllocaInst *alloca = createEntryBlockAlloca(functionIr, *iterAst);
       m_builder.CreateStore(iterIr, alloca);
-      m_symbolTable[*iterAst] = alloca;
+      m_symbolTable[*iterAst] = SymbolTableEntry( alloca, eAlloca);
     }
 
     // Don't pop the Function* from m_values, see below
@@ -224,10 +224,21 @@ void IrBuilderAst::visit(const AstFunCall& funCall) {
   m_values.push_back( value );
 }
 
+void IrBuilderAst::visit(const AstDataDef& dataDef) {
+  m_symbolTable[dataDef.decl().name()] = SymbolTableEntry(valuesBack(), eValue);  
+}
+
 Value* IrBuilderAst::valuesBackAndPop() {
   assert(!m_values.empty());
   Value* value = m_values.back();
   m_values.pop_back();
+  assert(value);
+  return value; 
+}
+
+Value* IrBuilderAst::valuesBack() {
+  assert(!m_values.empty());
+  Value* value = m_values.back();
   assert(value);
   return value; 
 }

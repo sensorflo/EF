@@ -17,6 +17,17 @@ public:
   
 private:
   friend class TestingIrBuilderAst;
+  enum EStorage {
+    eValue,
+    eAlloca
+  };
+  struct SymbolTableEntry {
+    SymbolTableEntry() : m_value(NULL), m_storage(eValue) {}
+    SymbolTableEntry(llvm::Value* value, EStorage storage) :
+      m_value(value), m_storage(storage) {}
+    llvm::Value* m_value;
+    EStorage m_storage;
+  };
 
   int jitExecFunction(llvm::Function* function);
   int jitExecFunction1Arg(llvm::Function* function, int arg1);
@@ -34,9 +45,10 @@ private:
   void visit(const AstFunDef& funDef, Place place);
   void visit(const AstFunDecl& funDecl);
   void visit(const AstDataDecl& dataDecl) {};
-  void visit(const AstDataDef& dataDef) {};
+  void visit(const AstDataDef& dataDef);
 
   llvm::Value* valuesBackAndPop();
+  llvm::Value* valuesBack();
   llvm::Function* valuesBackToFunction();
   llvm::AllocaInst* createEntryBlockAlloca(llvm::Function* functionIr,
     const std::string& varName);
@@ -50,5 +62,6 @@ private:
   llvm::ExecutionEngine* m_executionEngine;
   llvm::Function* m_mainFunction;
   llvm::BasicBlock* m_mainBasicBlock;
-  std::map<std::string, llvm::Value*> m_symbolTable;
+
+  std::map<std::string, SymbolTableEntry> m_symbolTable;
 };

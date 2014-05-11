@@ -300,3 +300,30 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   int x = 2;
   EXPECT_EQ( x+1, UUT.jitExecFunction1Arg("foo", x) );
 }
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    variable_declaration_initializing_with_x,
+    buildAndRunModule,
+    returns_x)) {
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstDataDef(
+        new AstDataDecl("foo"),
+        new AstSeq(new AstNumber(42)))),
+    42);
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    variable_declaration_x_initializing_followed_by_simple_expression_referencing_x,
+    buildAndRunModule,
+    returns_result_of_that_expression)) {
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstDataDef(
+        new AstDataDecl("foo"),
+        new AstSeq(new AstNumber(42))),
+      new AstOperator('+',
+        new AstSymbol(new string("foo")),
+        new AstNumber(77))),
+    42+77);
+}
