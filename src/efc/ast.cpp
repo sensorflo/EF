@@ -79,6 +79,37 @@ basic_ostream<char>& AstFunDecl::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
+AstDataDecl::AstDataDecl(const string& name) :
+  m_name(name) {
+}
+
+basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
+  os << "declval(" << m_name << ")";
+  return os;
+}
+
+AstDataDef::AstDataDef(AstDataDecl* decl, AstSeq* initValue) :
+  m_decl(decl ? decl : new AstDataDecl("<unknown_name>")),
+  m_initValue(initValue) {
+  assert(m_decl);
+}
+
+AstDataDef::~AstDataDef() {
+  delete m_decl;
+  if ( m_initValue ) { delete m_initValue; }
+}
+
+basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
+  os << "val(";
+  m_decl->printTo(os);
+  if (m_initValue) {
+    os << " ";
+    m_initValue->printTo(os);
+  }
+  os << ")";
+  return os;
+}
+
 AstOperator::AstOperator(char op, AstValue* lhs, AstValue* rhs) :
   m_op(op),
   m_lhs(lhs ? lhs : new AstNumber(0)),

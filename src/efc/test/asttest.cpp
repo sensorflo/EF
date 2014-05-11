@@ -19,6 +19,15 @@ TEST(AstTest,test_toString) {
   EXPECT_EQ( "+(42 77)",
     AstOperator('+',new AstNumber(42), new AstNumber(77)).toStr() );
 
+  // AstDataDecl
+  EXPECT_EQ( "declval(foo)", AstDataDecl("foo").toStr() );
+  
+  // AstDataDef
+  EXPECT_EQ( "val(declval(foo))", AstDataDef(new AstDataDecl("foo")).toStr() );
+  EXPECT_EQ( "val(declval(foo) seq(42))", AstDataDef(
+      new AstDataDecl("foo"),
+      new AstSeq(new AstNumber(42))).toStr() );
+  
   // AstCtList
   EXPECT_EQ( "", AstCtList().toStr() );
   EXPECT_EQ( "42", AstCtList(new AstNumber(42)).toStr() );

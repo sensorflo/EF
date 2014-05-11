@@ -43,6 +43,7 @@
   IF "if"
   ELSE "else"
   FUN "fun"
+  VAL "val"
   EQUAL "="
   COMMA ","
   SEMICOLON ";"
@@ -150,6 +151,7 @@ expr
   : expr_leaf { std::swap($$,$1); }
   | ID LPAREN ct_list RPAREN { $$ = new AstFunCall($1, $3); }
   | ID EQUAL expr %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
+  | ID COLON EQUAL expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), new AstSeq($4)); }
   | expr PLUS expr { $$ = new AstOperator('+', $1, $3); }
   | expr MINUS expr { $$ = new AstOperator('-', $1, $3); }
   | expr STAR expr { $$ = new AstOperator('*', $1, $3); }
@@ -160,7 +162,11 @@ expr_leaf
   : NUMBER { $$ = new AstNumber($1); }
   | LBRACE expr RBRACE { std::swap($$,$2); }
   | ID { $$ = new AstSymbol(new std::string($1)); }
+  | DECL VAL ID COLON /*type*/ END { $$ = new AstDataDecl($3); }
+  | VAL ID COLON /*type*/ EQUAL sa_expr END { $$ = new AstDataDef(new AstDataDecl($2), $5); }
+  | VAL ID COLON /*type*/ END { $$ = new AstDataDef(new AstDataDecl($2)); }
   ;
+
 
 /* Epilogue section
 ----------------------------------------------------------------------*/

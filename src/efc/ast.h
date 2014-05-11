@@ -13,6 +13,8 @@ class AstSeq;
 class AstCtList;
 class AstFunDef;
 class AstFunDecl;
+class AstDataDecl;
+class AstDataDef;
 
 class AstVisitor {
 public:
@@ -30,6 +32,8 @@ public:
   virtual void visit(const AstFunCall& funCall) =0;
   virtual void visit(const AstFunDef& funDef, Place place) =0;
   virtual void visit(const AstFunDecl& funDecl) =0;
+  virtual void visit(const AstDataDecl& dataDecl) =0;
+  virtual void visit(const AstDataDef& dataDef) =0;
 };
 
 class AstNode {
@@ -70,6 +74,31 @@ private:
 };
 
 class AstValue : public AstNode {
+};
+
+class AstDataDecl : public AstValue {
+public:
+  AstDataDecl(const std::string& name);
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
+  virtual const std::string& name() const { return m_name; }
+private:
+  const std::string m_name;
+};
+
+class AstDataDef : public AstValue {
+public:
+  AstDataDef(AstDataDecl* decl, AstSeq* initValue = NULL);
+  ~AstDataDef();
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
+  virtual const AstDataDecl& decl() const { return *m_decl; }
+  virtual const AstSeq& intVal() const { return *m_initValue; }
+private:
+  /** We're the owner. Is garanteed to be non-null */
+  const AstDataDecl* const m_decl;
+  /** We're the owner. Is _NOT_ garanteed to be non-null */
+  const AstSeq* const m_initValue;
 };
 
 /** Literal number */

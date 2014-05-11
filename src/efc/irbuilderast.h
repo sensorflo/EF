@@ -33,6 +33,8 @@ private:
   void visit(const AstFunCall& funCall);
   void visit(const AstFunDef& funDef, Place place);
   void visit(const AstFunDecl& funDecl);
+  void visit(const AstDataDecl& dataDecl) {};
+  void visit(const AstDataDef& dataDef) {};
 
   llvm::Value* valuesBackAndPop();
   llvm::Function* valuesBackToFunction();

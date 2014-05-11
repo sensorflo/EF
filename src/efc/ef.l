@@ -42,6 +42,7 @@ end                 return yy::Parser::make_END(loc);
 if                  return yy::Parser::make_IF(loc);
 else                return yy::Parser::make_ELSE(loc);
 fun                 return yy::Parser::make_FUN(loc);
+val                 return yy::Parser::make_VAL(loc);
 decl                return yy::Parser::make_DECL(loc);
 
 [0-9]+{ID}?  {
