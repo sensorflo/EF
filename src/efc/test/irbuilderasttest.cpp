@@ -350,6 +350,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstNumber(77))),
     42+77, spec);
 }
+
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     foo_defined_as_variable_initialized_with_x_followed_by_assigning_y_to_foo,
     buildAndRunModule,
