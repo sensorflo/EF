@@ -305,18 +305,30 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     data_declaration_initializing_with_x,
     buildAndRunModule,
     returns_x)) {
+
+  string spec = "value/const/immutable data";
   testbuilAndRunModule(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo"),
         new AstSeq(new AstNumber(42)))),
-    42);
+    42, spec);
+
+  spec = "variable/mutable data";
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstDataDef(
+        new AstDataDecl("foo", AstDataDecl::eAlloca),
+        new AstSeq(new AstNumber(42)))),
+    42, spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    data_declaration_x_initializing_followed_by_simple_expression_referencing_x,
+    foo_defined_as_data_followed_by_a_simple_expression_referencing_foo,
     buildAndRunModule,
     returns_result_of_that_expression)) {
+
+  string spec = "value/const/immutable data";
   testbuilAndRunModule(
     new AstSeq(
       new AstDataDef(
@@ -325,5 +337,31 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstOperator('+',
         new AstSymbol(new string("foo")),
         new AstNumber(77))),
-    42+77);
+    42+77, spec);
+
+  spec = "variable/mutable data";
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstDataDef(
+        new AstDataDecl("foo", AstDataDecl::eAlloca),
+        new AstSeq(new AstNumber(42))),
+      new AstOperator('+',
+        new AstSymbol(new string("foo")),
+        new AstNumber(77))),
+    42+77, spec);
+}
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    foo_defined_as_variable_initialized_with_x_followed_by_assigning_y_to_foo,
+    buildAndRunModule,
+    returns_y)) {
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstDataDef(
+        new AstDataDecl("foo", AstDataDecl::eAlloca),
+        new AstSeq(new AstNumber(42))),
+      new AstOperator('=',
+        new AstSymbol(new string("foo"), AstSymbol::eLValue),
+        new AstNumber(77)),
+      new AstSymbol(new string("foo"), AstSymbol::eRValue)),
+    77);
 }

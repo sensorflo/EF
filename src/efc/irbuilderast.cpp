@@ -225,7 +225,19 @@ void IrBuilderAst::visit(const AstFunCall& funCall) {
 }
 
 void IrBuilderAst::visit(const AstDataDef& dataDef) {
-  m_symbolTable[dataDef.decl().name()] = SymbolTableEntry(valuesBack(), eValue);  
+  Value* const initValue = valuesBack();
+  SymbolTableEntry& stentry = m_symbolTable[dataDef.decl().name()];
+  if ( dataDef.decl().storage()==AstDataDecl::eAlloca ) {
+    Function* functionIr = m_builder.GetInsertBlock()->getParent();
+    assert(functionIr);
+    AllocaInst* alloca =
+      createEntryBlockAlloca(functionIr, dataDef.decl().name());
+    assert(alloca);
+    m_builder.CreateStore(initValue, alloca);
+    stentry = SymbolTableEntry(alloca, eAlloca);
+  } else {
+    stentry = SymbolTableEntry(initValue, eValue);  
+  }
 }
 
 Value* IrBuilderAst::valuesBackAndPop() {
