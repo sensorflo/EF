@@ -85,14 +85,17 @@ private:
 
 class AstSymbol : public AstValue {
 public:
-  AstSymbol(const std::string* name);
+  enum ValueCategory { eRValue, eLValue };
+  AstSymbol(const std::string* name, ValueCategory valueCategory = eRValue);
   virtual ~AstSymbol();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   const std::string& name() const { return *m_name; }
+  const ValueCategory valueCategory() const { return m_valueCategory; }
 private:
   /** We're the owner. Is garanteed to be non-null */
   const std::string* const m_name;
+  const ValueCategory m_valueCategory;
 };
 
 class AstFunCall : public AstValue {

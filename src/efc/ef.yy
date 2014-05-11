@@ -149,7 +149,7 @@ fun_decl
 expr
   : expr_leaf { std::swap($$,$1); }
   | ID LPAREN ct_list RPAREN { $$ = new AstFunCall($1, $3); }
-  | ID EQUAL expr %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1)), $3); }
+  | ID EQUAL expr %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
   | expr PLUS expr { $$ = new AstOperator('+', $1, $3); }
   | expr MINUS expr { $$ = new AstOperator('-', $1, $3); }
   | expr STAR expr { $$ = new AstOperator('*', $1, $3); }

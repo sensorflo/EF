@@ -266,3 +266,37 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   int y = 3;
   EXPECT_EQ( x*y, UUT.jitExecFunction2Arg("foo", x, y) );
 }
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    function_definition_foo_containing_simple_expression_containing_an_simple_assignement,
+    buildModule,
+    JIT_executing_foo_returns_result_of_that_calculation)) {
+
+  // Culcultation: x = x+1, return x
+
+  // setup
+  // IrBuilder is currently dumb and expects an expression having a value at
+  // the end of a seq, thus provide one altought not needed for this test
+  list<string>* args = new list<string>();
+  args->push_back("x");
+  auto_ptr<AstSeq> astSeq(
+    new AstSeq(
+      new AstFunDef(
+        new AstFunDecl("foo", args),
+        new AstSeq(
+          new AstOperator('=',
+            new AstSymbol(new string("x"), AstSymbol::eLValue),
+            new AstOperator('+',
+              new AstSymbol(new string("x")),
+              new AstNumber(1))),
+          new AstSymbol(new string("x")))),
+      new AstNumber(77)));
+  TestingIrBuilderAst UUT;
+
+  // execute
+  UUT.buildModule(*astSeq);
+
+  // verify
+  int x = 2;
+  EXPECT_EQ( x+1, UUT.jitExecFunction1Arg("foo", x) );
+}

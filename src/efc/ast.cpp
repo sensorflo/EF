@@ -13,8 +13,9 @@ basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {
   return os << m_value;
 }
 
-AstSymbol::AstSymbol(const string* name) :
-  m_name(name ? name : new string("<unknown_name>")) {
+AstSymbol::AstSymbol(const string* name, ValueCategory valueCategory) :
+  m_name(name ? name : new string("<unknown_name>")),
+  m_valueCategory(valueCategory) {
   assert(m_name);
 }
 

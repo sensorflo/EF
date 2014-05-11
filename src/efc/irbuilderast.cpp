@@ -118,6 +118,7 @@ void IrBuilderAst::visit(const AstOperator& op) {
   Value* rhs = valuesBackAndPop();
   Value* lhs = valuesBackAndPop();
   switch (op.op()) {
+  case '=': result = m_builder.CreateStore(rhs, lhs); break;
   case '-': result = m_builder.CreateSub(lhs, rhs, "subtmp"); break;
   case '+': result = m_builder.CreateAdd(lhs, rhs, "addtmp"); break;
   case '*': result = m_builder.CreateMul(lhs, rhs, "multmp"); break;
@@ -137,6 +138,8 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
   Value* valueIr = m_symbolTable[symbol.name()];
   assert(valueIr);
   m_values.push_back(
+    symbol.valueCategory()==AstSymbol::eLValue ?
+    valueIr :
     m_builder.CreateLoad(valueIr, symbol.name().c_str()));
 }
 
