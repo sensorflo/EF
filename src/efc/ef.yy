@@ -70,7 +70,7 @@
 %type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
 %type <AstSeq*> maybe_empty_sa_expr sa_expr pure_sa_expr
 %type <AstValue*> expr expr_leaf
-%type <AstNode*> fun_def fun_decl sa_expr_leaf
+%type <AstNode*> sa_expr_leaf
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -98,8 +98,6 @@ pure_sa_expr
 
 sa_expr_leaf
   : expr { $$=$1; }
-  | fun_def { $$=$1; }
-  | fun_decl { $$=$1; }
   ;
 
 ct_list
@@ -134,14 +132,6 @@ opt_comma
   | COMMA
   ;
 
-fun_def
-  : FUN ID COLON param_ct_list EQUAL maybe_empty_sa_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
-  ;
-
-fun_decl
-  : DECL FUN ID COLON param_ct_list SEMICOLON { $$ = new AstFunDecl($3, $5); }
-  ;
-
 expr
   : expr_leaf { std::swap($$,$1); }
   | ID LPAREN ct_list RPAREN { $$ = new AstFunCall($1, $3); }
@@ -163,6 +153,8 @@ expr_leaf
   | VAR ID COLON /*type*/ EQUAL sa_expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
   | VAL ID COLON /*type*/ SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
   | VAR ID COLON /*type*/ SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
+  | DECL FUN ID COLON param_ct_list SEMICOLON { $$ = new AstFunDecl($3, $5); }
+  | FUN ID COLON param_ct_list EQUAL maybe_empty_sa_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
   ;
 
 

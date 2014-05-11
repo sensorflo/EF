@@ -44,7 +44,10 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const = 0;
 };
 
-class AstFunDef : public AstNode {
+class AstValue : public AstNode {
+};
+
+class AstFunDef : public AstValue {
 public:
   AstFunDef(AstFunDecl* decl, AstSeq* body);
   virtual ~AstFunDef();
@@ -59,7 +62,7 @@ private:
   const AstSeq* const m_body;
 };
 
-class AstFunDecl : public AstNode {
+class AstFunDecl : public AstValue {
 public:
   AstFunDecl(const std::string& name, std::list<std::string>* args = NULL);
   ~AstFunDecl();
@@ -71,9 +74,6 @@ private:
   const std::string m_name;
   /** We're the owner. Is garanteed to be non-null */
   const std::list<std::string>* const m_args;
-};
-
-class AstValue : public AstNode {
 };
 
 class AstDataDecl : public AstValue {
