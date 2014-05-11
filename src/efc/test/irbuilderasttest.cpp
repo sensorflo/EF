@@ -302,7 +302,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    variable_declaration_initializing_with_x,
+    data_declaration_initializing_with_x,
     buildAndRunModule,
     returns_x)) {
   testbuilAndRunModule(
@@ -314,7 +314,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    variable_declaration_x_initializing_followed_by_simple_expression_referencing_x,
+    data_declaration_x_initializing_followed_by_simple_expression_referencing_x,
     buildAndRunModule,
     returns_result_of_that_expression)) {
   testbuilAndRunModule(
