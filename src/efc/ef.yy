@@ -139,14 +139,22 @@ sub_expr_leaf
   : NUMBER { $$ = new AstNumber($1); }
   | LBRACE sub_expr RBRACE { std::swap($$,$2); }
   | ID { $$ = new AstSymbol(new std::string($1)); }
-  | DECL VAL ID COLON /*type*/ SEMICOLON { $$ = new AstDataDecl($3); }
-  | DECL VAR ID COLON /*type*/ SEMICOLON { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
-  | VAL ID COLON /*type*/ EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $5); }
-  | VAR ID COLON /*type*/ EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
-  | VAL ID COLON /*type*/ SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
-  | VAR ID COLON /*type*/ SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
-  | DECL FUN ID COLON param_ct_list SEMICOLON { $$ = new AstFunDecl($3, $5); }
-  | FUN ID COLON param_ct_list EQUAL maybe_empty_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
+
+  /* declarations of data object */
+  | DECL VAL ID COLON /*type*/            SEMICOLON { $$ = new AstDataDecl($3); }
+  | DECL VAR ID COLON /*type*/            SEMICOLON { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
+
+  /* definitions of data object */
+  |      VAL ID COLON /*type*/ EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $5); }
+  |      VAR ID COLON /*type*/ EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
+  |      VAL ID COLON /*type*/            SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
+  |      VAR ID COLON /*type*/            SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
+
+  /* declaration of code object */
+  | DECL FUN ID COLON param_ct_list                        SEMICOLON { $$ = new AstFunDecl($3, $5); }
+
+  /* definition of code object */
+  |      FUN ID COLON param_ct_list EQUAL maybe_empty_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
   ;
 
 
