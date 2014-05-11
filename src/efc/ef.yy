@@ -142,13 +142,19 @@ sub_expr_leaf
 
   /* declarations of data object */
   | DECL VAL ID COLON /*type*/            SEMICOLON { $$ = new AstDataDecl($3); }
+  | DECL VAL ID                           SEMICOLON { $$ = new AstDataDecl($3); }
   | DECL VAR ID COLON /*type*/            SEMICOLON { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
+  | DECL VAR ID                           SEMICOLON { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
 
   /* definitions of data object */
   |      VAL ID COLON /*type*/ EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $5); }
+  |      VAL ID                EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $4); }
   |      VAR ID COLON /*type*/ EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
+  |      VAR ID                EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $4); }
   |      VAL ID COLON /*type*/            SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
+  |      VAL ID                           SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
   |      VAR ID COLON /*type*/            SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
+  |      VAR ID                           SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
 
   /* declaration of code object */
   | DECL FUN ID COLON param_ct_list                        SEMICOLON { $$ = new AstFunDecl($3, $5); }
