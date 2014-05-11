@@ -50,5 +50,5 @@ private:
   llvm::ExecutionEngine* m_executionEngine;
   llvm::Function* m_mainFunction;
   llvm::BasicBlock* m_mainBasicBlock;
-  std::map<std::string, llvm::AllocaInst*> m_symbolTable;
+  std::map<std::string, llvm::Value*> m_symbolTable;
 };
