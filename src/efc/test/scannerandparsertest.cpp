@@ -138,6 +138,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_AST_form_of_data_declaration) ) {
   string spec = "trivial example";
   testParse( "decl val foo: end", "seq(decldata(foo))", spec);
+  testParse( "decl var foo: end", "seq(decldata(foo mut))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -147,9 +148,11 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   string spec = "trivial example";
   testParse( "val foo:= 42 end", "seq(data(decldata(foo) seq(42)))", spec);
+  testParse( "var foo:= 42 end", "seq(data(decldata(foo mut) seq(42)))", spec);
 
   spec = "implicit init value";
   testParse( "val foo: end", "seq(data(decldata(foo)))", spec);
+  testParse( "var foo: end", "seq(data(decldata(foo mut)))", spec);
 
   spec = "short version with implicit type";
   testParse( "foo:=42", "seq(data(decldata(foo) seq(42)))", spec);
@@ -168,4 +171,3 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   testParse( "bar:=foo=42",
     "seq(data(decldata(bar) seq(=(foo 42))))", spec);
 }
-

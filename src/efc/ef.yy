@@ -44,6 +44,7 @@
   ELSE "else"
   FUN "fun"
   VAL "val"
+  VAR "var"
   EQUAL "="
   COMMA ","
   SEMICOLON ";"
@@ -163,8 +164,11 @@ expr_leaf
   | LBRACE expr RBRACE { std::swap($$,$2); }
   | ID { $$ = new AstSymbol(new std::string($1)); }
   | DECL VAL ID COLON /*type*/ END { $$ = new AstDataDecl($3); }
+  | DECL VAR ID COLON /*type*/ END { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
   | VAL ID COLON /*type*/ EQUAL sa_expr END { $$ = new AstDataDef(new AstDataDecl($2), $5); }
+  | VAR ID COLON /*type*/ EQUAL sa_expr END { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
   | VAL ID COLON /*type*/ END { $$ = new AstDataDef(new AstDataDecl($2)); }
+  | VAR ID COLON /*type*/ END { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
   ;
 
 
