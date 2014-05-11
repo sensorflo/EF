@@ -36,11 +36,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_an_AST_form) ) {
   testParse( "42", "seq(42)", "trivial example with only one element" );
-  testParse( "42 64 77", "seq(42 64 77)", "trivial example, blanks as separator" );
-  testParse( "42; 64; 77", "seq(42 64 77)", "trivial example, semicolons as separator" );
-  testParse( "42; 64 77", "seq(42 64 77)",
-    "trivial example, blanks and semicolons mixed as seperator" );
-  testParse( "42;", "seq(42)", "trailing semicolon is allowed" );
+  testParse( "42 64 77", "seq(42 64 77)", "trivial example" );
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -72,20 +68,20 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_AST_form_of_function_declaration) ) {
   string spec = "example with zero arguments";
-  testParse( "decl fun foo: () end", "seq(declfun(foo ()))", spec);
-  testParse( "decl fun foo: end", "seq(declfun(foo ()))", spec);
+  testParse( "decl fun foo: ();", "seq(declfun(foo ()))", spec);
+  testParse( "decl fun foo:;", "seq(declfun(foo ()))", spec);
 
   spec = "example with one argument";
-  testParse( "decl fun foo: arg1 end", "seq(declfun(foo (arg1)))", spec);
-  testParse( "decl fun foo: (arg1) end", "seq(declfun(foo (arg1)))", spec);
+  testParse( "decl fun foo: arg1;", "seq(declfun(foo (arg1)))", spec);
+  testParse( "decl fun foo: (arg1);", "seq(declfun(foo (arg1)))", spec);
 
   spec = "example with two arguments";
-  testParse( "decl fun foo: arg1, arg2 end", "seq(declfun(foo (arg1 arg2)))", spec);
-  testParse( "decl fun foo: (arg1, arg2) end", "seq(declfun(foo (arg1 arg2)))", spec);
+  testParse( "decl fun foo: arg1, arg2;", "seq(declfun(foo (arg1 arg2)))", spec);
+  testParse( "decl fun foo: (arg1, arg2);", "seq(declfun(foo (arg1 arg2)))", spec);
 
   spec = "should allow trailing comma in argument list";
-  testParse( "decl fun foo: arg1, end", "seq(declfun(foo (arg1)))", spec);
-  testParse( "decl fun foo: (arg1,) end", "seq(declfun(foo (arg1)))", spec);
+  testParse( "decl fun foo: arg1,;", "seq(declfun(foo (arg1)))", spec);
+  testParse( "decl fun foo: (arg1,);", "seq(declfun(foo (arg1)))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -94,7 +90,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_AST_form_of_function_definition) ) {
 
   string spec = "example with one argument and a body just returning the arg";
-  testParse( "fun foo: (x) = x end", "seq(fun(declfun(foo (x)) seq(x)))");
+  testParse( "fun foo: (x) = x;", "seq(fun(declfun(foo (x)) seq(x)))");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -103,24 +99,24 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_AST_form_of_function_definition) ) {
 
   string spec = "example with zero arguments and trivial body";
-  testParse( "fun foo: = 42 end", "seq(fun(declfun(foo ()) seq(42)))");
-  testParse( "fun foo: () = 42 end", "seq(fun(declfun(foo ()) seq(42)))");
+  testParse( "fun foo: = 42;", "seq(fun(declfun(foo ()) seq(42)))");
+  testParse( "fun foo: () = 42;", "seq(fun(declfun(foo ()) seq(42)))");
 
   spec = "example with zero arguments and simple but not trivial body";
-  testParse( "fun foo: = 42; 1+2 end", "seq(fun(declfun(foo ()) seq(42 +(1 2))))");
-  testParse( "fun foo: () = 42; 1+2 end", "seq(fun(declfun(foo ()) seq(42 +(1 2))))");
+  testParse( "fun foo: = 42 1+2;", "seq(fun(declfun(foo ()) seq(42 +(1 2))))");
+  testParse( "fun foo: () = 42 1+2;", "seq(fun(declfun(foo ()) seq(42 +(1 2))))");
 
   spec = "example with one argument and trivial body";
-  testParse( "fun foo: arg1 = 42 end", "seq(fun(declfun(foo (arg1)) seq(42)))");
-  testParse( "fun foo: (arg1) = 42 end", "seq(fun(declfun(foo (arg1)) seq(42)))");
+  testParse( "fun foo: arg1 = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))");
+  testParse( "fun foo: (arg1) = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))");
 
   spec = "should allow trailing comma in argument list";
-  testParse( "fun foo: arg1, = 42 end", "seq(fun(declfun(foo (arg1)) seq(42)))");
-  testParse( "fun foo: (arg1,) = 42 end", "seq(fun(declfun(foo (arg1)) seq(42)))");
+  testParse( "fun foo: arg1, = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))");
+  testParse( "fun foo: (arg1,) = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))");
 
   spec = "example with two arguments and trivial body";
-  testParse( "fun foo: arg1, arg2 = 42 end", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))");
-  testParse( "fun foo: (arg1, arg2) = 42 end", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))");
+  testParse( "fun foo: arg1, arg2 = 42;", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))");
+  testParse( "fun foo: (arg1, arg2) = 42;", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -137,8 +133,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_AST_form_of_data_declaration) ) {
   string spec = "trivial example";
-  testParse( "decl val foo: end", "seq(decldata(foo))", spec);
-  testParse( "decl var foo: end", "seq(decldata(foo mut))", spec);
+  testParse( "decl val foo:;", "seq(decldata(foo))", spec);
+  testParse( "decl var foo:;", "seq(decldata(foo mut))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -147,12 +143,12 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_AST_form_of_data_definition) ) {
 
   string spec = "trivial example";
-  testParse( "val foo:= 42 end", "seq(data(decldata(foo) seq(42)))", spec);
-  testParse( "var foo:= 42 end", "seq(data(decldata(foo mut) seq(42)))", spec);
+  testParse( "val foo:= 42;", "seq(data(decldata(foo) seq(42)))", spec);
+  testParse( "var foo:= 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
 
   spec = "implicit init value";
-  testParse( "val foo: end", "seq(data(decldata(foo)))", spec);
-  testParse( "var foo: end", "seq(data(decldata(foo mut)))", spec);
+  testParse( "val foo:;", "seq(data(decldata(foo)))", spec);
+  testParse( "var foo:;", "seq(data(decldata(foo mut)))", spec);
 
   spec = "short version with implicit type";
   testParse( "foo:=42", "seq(data(decldata(foo) seq(42)))", spec);

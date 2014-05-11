@@ -38,7 +38,6 @@
 %define api.token.prefix {TOK_}
 %token
   END_OF_FILE  0  "end of file"
-  END "end"
   DECL "decl"
   IF "if"
   ELSE "else"
@@ -89,12 +88,12 @@ maybe_empty_sa_expr
   ;
 
 sa_expr
-  : pure_sa_expr opt_semicolon { std::swap($$,$1); }
+  : pure_sa_expr { std::swap($$,$1); }
   ;
 
 pure_sa_expr
   : sa_expr_leaf { $$ = new AstSeq($1); }
-  | pure_sa_expr opt_semicolon sa_expr_leaf { $$ = ($1)->Add($3); }
+  | pure_sa_expr sa_expr_leaf { $$ = ($1)->Add($2); }
   ;
 
 sa_expr_leaf
@@ -130,22 +129,17 @@ pure_naked_param_ct_list
   | pure_naked_param_ct_list COMMA ID { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
-opt_semicolon
-  : %empty
-  | SEMICOLON
-  ;
-
 opt_comma
   : %empty
   | COMMA
   ;
 
 fun_def
-  : FUN ID COLON param_ct_list EQUAL maybe_empty_sa_expr END { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
+  : FUN ID COLON param_ct_list EQUAL maybe_empty_sa_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
   ;
 
 fun_decl
-  : DECL FUN ID COLON param_ct_list END { $$ = new AstFunDecl($3, $5); }
+  : DECL FUN ID COLON param_ct_list SEMICOLON { $$ = new AstFunDecl($3, $5); }
   ;
 
 expr
@@ -163,12 +157,12 @@ expr_leaf
   : NUMBER { $$ = new AstNumber($1); }
   | LBRACE expr RBRACE { std::swap($$,$2); }
   | ID { $$ = new AstSymbol(new std::string($1)); }
-  | DECL VAL ID COLON /*type*/ END { $$ = new AstDataDecl($3); }
-  | DECL VAR ID COLON /*type*/ END { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
-  | VAL ID COLON /*type*/ EQUAL sa_expr END { $$ = new AstDataDef(new AstDataDecl($2), $5); }
-  | VAR ID COLON /*type*/ EQUAL sa_expr END { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
-  | VAL ID COLON /*type*/ END { $$ = new AstDataDef(new AstDataDecl($2)); }
-  | VAR ID COLON /*type*/ END { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
+  | DECL VAL ID COLON /*type*/ SEMICOLON { $$ = new AstDataDecl($3); }
+  | DECL VAR ID COLON /*type*/ SEMICOLON { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
+  | VAL ID COLON /*type*/ EQUAL sa_expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $5); }
+  | VAR ID COLON /*type*/ EQUAL sa_expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
+  | VAL ID COLON /*type*/ SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
+  | VAR ID COLON /*type*/ SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
   ;
 
 
