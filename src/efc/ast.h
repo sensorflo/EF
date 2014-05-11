@@ -79,8 +79,8 @@ class AstValue : public AstNode {
 class AstDataDecl : public AstValue {
 public:
   enum EStorage {
-    eValue,
-    eAlloca
+    eValue, ///< aka const
+    eAlloca ///< aka mut(able)
   };
   AstDataDecl(const std::string& name, EStorage storage = eValue);
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };

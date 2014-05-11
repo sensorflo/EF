@@ -20,13 +20,13 @@ TEST(AstTest,test_toString) {
     AstOperator('+',new AstNumber(42), new AstNumber(77)).toStr() );
 
   // AstDataDecl
-  EXPECT_EQ( "declval(foo)", AstDataDecl("foo").toStr() );
-  EXPECT_EQ( "declvar(foo)", AstDataDecl("foo",AstDataDecl::eAlloca).toStr() );
+  EXPECT_EQ( "decldata(foo)", AstDataDecl("foo").toStr() );
+  EXPECT_EQ( "decldata(foo mut)", AstDataDecl("foo",AstDataDecl::eAlloca).toStr() );
   
   // AstDataDef
-  EXPECT_EQ( "val(declval(foo))", AstDataDef(new AstDataDecl("foo")).toStr() );
-  EXPECT_EQ( "val(declval(foo) seq(42))", AstDataDef(
-      new AstDataDecl("foo"),
+  EXPECT_EQ( "data(decldata(foo))", AstDataDef(new AstDataDecl("foo")).toStr() );
+  EXPECT_EQ( "data(decldata(foo mut) seq(42))", AstDataDef(
+      new AstDataDecl("foo",AstDataDecl::eAlloca),
       new AstSeq(new AstNumber(42))).toStr() );
   
   // AstCtList

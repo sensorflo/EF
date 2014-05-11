@@ -85,7 +85,7 @@ AstDataDecl::AstDataDecl(const std::string& name, EStorage storage) :
 }
 
 basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
-  os << (m_storage==eValue ? "declval" : "declvar") << "(" << m_name << ")";
+  os << "decldata(" << m_name << (m_storage==eAlloca ? " mut" : "") << ")";
   return os;
 }
 
@@ -101,7 +101,7 @@ AstDataDef::~AstDataDef() {
 }
 
 basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
-  os << "val(";
+  os << "data(";
   m_decl->printTo(os);
   if (m_initValue) {
     os << " ";

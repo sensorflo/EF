@@ -137,7 +137,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_AST_form_of_data_declaration) ) {
   string spec = "trivial example";
-  testParse( "decl val foo: end", "seq(declval(foo))", spec);
+  testParse( "decl val foo: end", "seq(decldata(foo))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -146,26 +146,26 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_AST_form_of_data_definition) ) {
 
   string spec = "trivial example";
-  testParse( "val foo:= 42 end", "seq(val(declval(foo) seq(42)))", spec);
+  testParse( "val foo:= 42 end", "seq(data(decldata(foo) seq(42)))", spec);
 
   spec = "implicit init value";
-  testParse( "val foo: end", "seq(val(declval(foo)))", spec);
+  testParse( "val foo: end", "seq(data(decldata(foo)))", spec);
 
   spec = "short version with implicit type";
-  testParse( "foo:=42", "seq(val(declval(foo) seq(42)))", spec);
+  testParse( "foo:=42", "seq(data(decldata(foo) seq(42)))", spec);
 
   spec = ":= has lower precedence than * +";
   testParse( "foo:=1+2*3",
-    "seq(val(declval(foo) seq(+(1 *(2 3)))))", spec);
+    "seq(data(decldata(foo) seq(+(1 *(2 3)))))", spec);
 
   spec = ":= is right associative";
   testParse( "bar:=foo:=42",
-    "seq(val(declval(bar) seq(val(declval(foo) seq(42)))))", spec);
+    "seq(data(decldata(bar) seq(data(decldata(foo) seq(42)))))", spec);
 
   spec = ":= and = have same precedence";
   testParse( "bar=foo:=42",
-    "seq(=(bar val(declval(foo) seq(42))))", spec);
+    "seq(=(bar data(decldata(foo) seq(42))))", spec);
   testParse( "bar:=foo=42",
-    "seq(val(declval(bar) seq(=(foo 42))))", spec);
+    "seq(data(decldata(bar) seq(=(foo 42))))", spec);
 }
 
