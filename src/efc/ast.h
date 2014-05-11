@@ -78,12 +78,18 @@ class AstValue : public AstNode {
 
 class AstDataDecl : public AstValue {
 public:
-  AstDataDecl(const std::string& name);
+  enum EStorage {
+    eValue,
+    eAlloca
+  };
+  AstDataDecl(const std::string& name, EStorage storage = eValue);
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
+  virtual EStorage storage() const { return m_storage; }
 private:
   const std::string m_name;
+  const EStorage m_storage;
 };
 
 class AstDataDef : public AstValue {

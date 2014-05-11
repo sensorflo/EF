@@ -79,12 +79,13 @@ basic_ostream<char>& AstFunDecl::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-AstDataDecl::AstDataDecl(const string& name) :
-  m_name(name) {
+AstDataDecl::AstDataDecl(const std::string& name, EStorage storage) :
+  m_name(name),
+  m_storage(storage){
 }
 
 basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
-  os << "declval(" << m_name << ")";
+  os << (m_storage==eValue ? "declval" : "declvar") << "(" << m_name << ")";
   return os;
 }
 

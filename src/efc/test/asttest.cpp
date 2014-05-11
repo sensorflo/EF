@@ -21,6 +21,7 @@ TEST(AstTest,test_toString) {
 
   // AstDataDecl
   EXPECT_EQ( "declval(foo)", AstDataDecl("foo").toStr() );
+  EXPECT_EQ( "declvar(foo)", AstDataDecl("foo",AstDataDecl::eAlloca).toStr() );
   
   // AstDataDef
   EXPECT_EQ( "val(declval(foo))", AstDataDef(new AstDataDecl("foo")).toStr() );
