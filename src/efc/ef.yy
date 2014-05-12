@@ -76,6 +76,21 @@
 ----------------------------------------------------------------------*/
 %%
 
+/* terminology
+
+pure
+  For list constructs: At least one element, all elements separated by
+  separator token, no trailing separator token (since its a separator, not
+  delimiter)
+
+(unqualified)
+  For list constructs: Allows an optional trailing separator token
+
+naked
+  No enclosing parentheses.
+*/
+
+
 %start program;
 
 program
@@ -119,9 +134,6 @@ param_ct_list
   | LPAREN pure_naked_param_ct_list opt_comma RPAREN{ std::swap($$,$2); }
   ;
 
-/* 'pure' means at least one element, all elements separated by commas, no
-trailing comma since comma is separator, not delimiter. 'naked' means no
-enclosing parentheses. */
 pure_naked_param_ct_list
   : ID                                              { $$ = new std::list<std::string>(); ($$)->push_back($1); }
   | pure_naked_param_ct_list COMMA ID               { ($1)->push_back($3); std::swap($$,$1); }
