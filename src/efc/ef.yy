@@ -68,7 +68,7 @@
 
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> maybe_empty_expr expr expr_without_comma
+%type <AstSeq*> maybe_empty_expr expr pure_expr expr_without_comma
 %type <AstValue*> sub_expr sub_expr_leaf
 
 
@@ -106,8 +106,12 @@ maybe_empty_expr
 former commas as separator are optionally allowed, while in the later they are
 disallowed */
 expr
+  : pure_expr opt_comma                             { std::swap($$,$1); }
+  ;
+  
+pure_expr
   : sub_expr                                        { $$ = new AstSeq($1); }
-  | expr opt_comma sub_expr                         { $$ = ($1)->Add($3); }
+  | pure_expr opt_comma sub_expr                    { $$ = ($1)->Add($3); }
   ;
 
 expr_without_comma

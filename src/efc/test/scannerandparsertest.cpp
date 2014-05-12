@@ -40,6 +40,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   testParse( "42, 64, 77", "seq(42 64 77)", "trivial example, commas as separator" );
   testParse( "42, 64 77", "seq(42 64 77)",
     "trivial example, blanks and commas mixed as seperator" );
+  testParse( "42,", "seq(42)", "trailing comma is allowed" );
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
