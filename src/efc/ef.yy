@@ -68,7 +68,7 @@
 
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> maybe_empty_expr expr
+%type <AstSeq*> maybe_empty_expr expr expr_without_comma
 %type <AstValue*> sub_expr sub_expr_leaf
 
 
@@ -87,9 +87,17 @@ maybe_empty_expr
   | expr                                            { std::swap($$,$1); }
   ;
 
+/* the _only_ difference between expr and expr_without_comma is that in the
+former commas as separator are optionally allowed, while in the later they are
+disallowed */
 expr
   : sub_expr                                        { $$ = new AstSeq($1); }
-  | expr sub_expr                                   { $$ = ($1)->Add($2); }
+  | expr opt_comma sub_expr                         { $$ = ($1)->Add($3); }
+  ;
+
+expr_without_comma
+  : sub_expr                                        { $$ = new AstSeq($1); }
+  | expr_without_comma sub_expr                     { $$ = ($1)->Add($2); } 
   ;
 
 ct_list
@@ -98,8 +106,8 @@ ct_list
   ;
 
 pure_ct_list
-  : expr                                            { $$ = new AstCtList($1); }
-  | pure_ct_list COMMA expr                         { $$ = ($1)->Add($3); }
+  : expr_without_comma                              { $$ = new AstCtList($1); }
+  | pure_ct_list COMMA expr_without_comma           { $$ = ($1)->Add($3); }
   ;
 
 /* I'm not sure yet whether EF will allow omitting parentheses also in future,
