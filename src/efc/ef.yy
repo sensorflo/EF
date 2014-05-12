@@ -79,44 +79,44 @@
 %start program;
 
 program
-  : maybe_empty_expr END_OF_FILE { driver.astRoot() = $1; }
+  : maybe_empty_expr END_OF_FILE                    { driver.astRoot() = $1; }
   ;
 
 maybe_empty_expr
-  : %empty { $$ = new AstSeq(); }
-  | expr { std::swap($$,$1); }
+  : %empty                                          { $$ = new AstSeq(); }
+  | expr                                            { std::swap($$,$1); }
   ;
 
 expr
-  : sub_expr { $$ = new AstSeq($1); }
-  | expr sub_expr { $$ = ($1)->Add($2); }
+  : sub_expr                                        { $$ = new AstSeq($1); }
+  | expr sub_expr                                   { $$ = ($1)->Add($2); }
   ;
 
 ct_list
-  : %empty { $$ = new AstCtList(); }
-  | pure_ct_list opt_comma { std::swap($$,$1); }
+  : %empty                                          { $$ = new AstCtList(); }
+  | pure_ct_list opt_comma                          { std::swap($$,$1); }
   ;
 
 pure_ct_list
-  : expr { $$ = new AstCtList($1); }
-  | pure_ct_list COMMA expr { $$ = ($1)->Add($3); }
+  : expr                                            { $$ = new AstCtList($1); }
+  | pure_ct_list COMMA expr                         { $$ = ($1)->Add($3); }
   ;
 
 /* I'm not sure yet whether EF will allow omitting parentheses also in future,
 but for now I want to have the option for that way */
 param_ct_list
-  : %empty { $$ = new std::list<std::string>(); }
-  | LPAREN RPAREN { $$ = new std::list<std::string>(); }
-  | pure_naked_param_ct_list opt_comma { std::swap($$,$1); }
-  | LPAREN pure_naked_param_ct_list opt_comma RPAREN { std::swap($$,$2); }
+  : %empty                                          { $$ = new std::list<std::string>(); }
+  | LPAREN RPAREN                                   { $$ = new std::list<std::string>(); }
+  | pure_naked_param_ct_list opt_comma              { std::swap($$,$1); }
+  | LPAREN pure_naked_param_ct_list opt_comma RPAREN{ std::swap($$,$2); }
   ;
 
 /* 'pure' means at least one element, all elements separated by commas, no
 trailing comma since comma is separator, not delimiter. 'naked' means no
 enclosing parentheses. */
 pure_naked_param_ct_list
-  : ID { $$ = new std::list<std::string>(); ($$)->push_back($1); }
-  | pure_naked_param_ct_list COMMA ID { ($1)->push_back($3); std::swap($$,$1); }
+  : ID                                              { $$ = new std::list<std::string>(); ($$)->push_back($1); }
+  | pure_naked_param_ct_list COMMA ID               { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 opt_comma
@@ -125,20 +125,24 @@ opt_comma
   ;
 
 sub_expr
-  : sub_expr_leaf { std::swap($$,$1); }
-  | ID LPAREN ct_list RPAREN { $$ = new AstFunCall($1, $3); }
-  | ID EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
-  | ID COLON EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), new AstSeq($4)); }
-  | sub_expr PLUS sub_expr { $$ = new AstOperator('+', $1, $3); }
-  | sub_expr MINUS sub_expr { $$ = new AstOperator('-', $1, $3); }
-  | sub_expr STAR sub_expr { $$ = new AstOperator('*', $1, $3); }
-  | sub_expr SLASH sub_expr { $$ = new AstOperator('/', $1, $3); }
+  /* misc */
+  : sub_expr_leaf                                   { std::swap($$,$1); }
+  | ID LPAREN ct_list RPAREN                        { $$ = new AstFunCall($1, $3); }
+
+  /* binary operators */
+  | ID       EQUAL       sub_expr %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
+  | ID       COLON EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), new AstSeq($4)); }
+  | sub_expr PLUS        sub_expr                   { $$ = new AstOperator('+', $1, $3); }
+  | sub_expr MINUS       sub_expr                   { $$ = new AstOperator('-', $1, $3); }
+  | sub_expr STAR        sub_expr                   { $$ = new AstOperator('*', $1, $3); }
+  | sub_expr SLASH       sub_expr                   { $$ = new AstOperator('/', $1, $3); }
   ;
 
 sub_expr_leaf
-  : NUMBER { $$ = new AstNumber($1); }
-  | LBRACE sub_expr RBRACE { std::swap($$,$2); }
-  | ID { $$ = new AstSymbol(new std::string($1)); }
+  /* misc */
+  : NUMBER                                          { $$ = new AstNumber($1); }
+  | LBRACE sub_expr RBRACE                          { std::swap($$,$2); }
+  | ID                                              { $$ = new AstSymbol(new std::string($1)); }
 
   /* declarations of data object */
   | DECL VAL ID COLON /*type*/            SEMICOLON { $$ = new AstDataDecl($3); }
