@@ -112,7 +112,9 @@ basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
 }
 
 void AstDataDef::accept(AstVisitor& visitor) const {
-  m_initValue->accept(visitor);
+  if (m_initValue) {
+    m_initValue->accept(visitor);
+  }
   visitor.visit(*this);
 }
 

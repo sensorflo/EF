@@ -366,3 +366,15 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstSymbol(new string("foo"), AstSymbol::eRValue)),
     77);
 }
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    a_value_definition_of_foo_with_no_explicit_initializer_followed_by_a_reference_to_foo,
+    buildAndRunModule,
+    returns_the_default)) {
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstDataDef(
+        new AstDataDecl("foo")),
+      new AstSymbol(new string("foo"))),
+    0);
+}

@@ -225,7 +225,13 @@ void IrBuilderAst::visit(const AstFunCall& funCall) {
 }
 
 void IrBuilderAst::visit(const AstDataDef& dataDef) {
-  Value* const initValue = valuesBack();
+  Value* initValue = NULL;
+  if (dataDef.initValue()) {
+    initValue = valuesBack();
+  } else {
+    initValue = ConstantInt::get( getGlobalContext(), APInt(32, 0));
+    m_values.push_back( initValue );
+  }
   SymbolTableEntry& stentry = m_symbolTable[dataDef.decl().name()];
   if ( dataDef.decl().storage()==AstDataDecl::eAlloca ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();

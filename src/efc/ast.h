@@ -101,7 +101,7 @@ public:
   virtual void accept(AstVisitor& visitor) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstDataDecl& decl() const { return *m_decl; }
-  virtual const AstSeq& intVal() const { return *m_initValue; }
+  virtual const AstSeq* initValue() const { return m_initValue; }
 private:
   /** We're the owner. Is garanteed to be non-null */
   const AstDataDecl* const m_decl;
