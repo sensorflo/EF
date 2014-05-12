@@ -168,20 +168,29 @@ private:
 /* If flow control expression */
 class AstIf : public AstValue {
 public:
-  AstIf(AstSeq* cond, AstSeq* then, AstSeq* else_ = NULL);
+  struct ConditionActionPair {
+    ConditionActionPair(AstSeq* condition, AstSeq* action) :
+      m_condition(condition), m_action(action) {}
+    /** We're the owner. Is garanteed to be non-null */
+    AstSeq* m_condition;
+    /** We're the owner. Is garanteed to be non-null */
+    AstSeq* m_action;
+  };
+  AstIf(std::list<ConditionActionPair>* conditionActionPairs, AstSeq* elseAction = NULL);
+  AstIf(AstSeq* cond, AstSeq* action, AstSeq* elseAction = NULL);
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
-  const AstSeq& cond() const { return *m_cond; }
-  const AstSeq& then() const { return *m_then; }
-  const AstSeq* else_() const { return m_else; }
+  const std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
+  const AstSeq* elseAction() const { return m_elseAction; }
 private:
-  /** We're the owner. Is garanteed to be non-null */
-  const AstSeq* const m_cond;
-  /** We're the owner. Is garanteed to be non-null */
-  const AstSeq* const m_then;
+  static std::list<ConditionActionPair>* makeDefaultConditionActionPairs();
+  static std::list<ConditionActionPair>* makeConditionActionPairs(
+    AstSeq* cond, AstSeq* action);
+  /** We're the owner. Is garanteed to be non-null and size>=1*/
+  const std::list<ConditionActionPair>* const m_conditionActionPairs;
   /** We're the owner. Is NOT garanteed to be non-null */
-  const AstSeq* const m_else;
+  const AstSeq* const m_elseAction;
 };
 
 class AstSeq : public AstValue {

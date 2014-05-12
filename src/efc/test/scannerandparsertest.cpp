@@ -187,3 +187,15 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   testParse( "bar:=foo=42",
     "seq(data(decldata(bar) seq(=(foo 42))))", spec);
 }
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    an_ifelse_flow_control_expression,
+    parse,
+    succeeds_AND_returns_AST_form_of_ifelse_expression) ) {
+  testParse( "if x: 1;                           ", "seq(if(seq(x) seq(1)))");
+  testParse( "if x: 1                     else 2;", "seq(if(seq(x) seq(1) seq(2)))");
+  testParse( "if x: 1 elif y: 2;                 ", "seq(if(seq(x) seq(1) seq(y) seq(2)))");
+  testParse( "if x: 1 elif y: 2           else 3;", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(3)))");
+  testParse( "if x: 1 elif y: 2 elif z: 3;       ", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(z) seq(3)))");
+  testParse( "if x: 1 elif y: 2 elif z: 3 else 4;", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(z) seq(3) seq(4)))");
+}

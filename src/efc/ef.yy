@@ -40,6 +40,7 @@
   END_OF_FILE  0  "end of file"
   DECL "decl"
   IF "if"
+  ELIF "elif"
   ELSE "else"
   FUN "fun"
   VAL "val"
@@ -69,9 +70,9 @@
 
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> maybe_empty_expr expr pure_expr expr_without_comma
+%type <AstSeq*> maybe_empty_expr expr pure_expr expr_without_comma opt_else
 %type <AstValue*> sub_expr sub_expr_leaf
-
+%type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -190,8 +191,20 @@ sub_expr_leaf
 
   /* definition of code object */
   |      FUN ID COLON param_ct_list EQUAL maybe_empty_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
+
+  /* flow control - conditionals */
+  | IF expr COLON expr opt_elif_list opt_else SEMICOLON              { ($5)->push_front(AstIf::ConditionActionPair($2, $4)); $$ = new AstIf($5, $6); }
   ;
 
+opt_elif_list
+  : %empty                                                           { $$ = new std::list<AstIf::ConditionActionPair>(); }  
+  | opt_elif_list ELIF expr COLON expr                               { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
+  ;  
+
+opt_else
+  : %empty                                                           { $$ = NULL; }
+  | ELSE expr                                                        { std::swap($$,$2); }
+  ;
 
 /* Epilogue section
 ----------------------------------------------------------------------*/

@@ -146,28 +146,57 @@ void AstOperator::accept(AstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
-AstIf::AstIf(AstSeq* cond, AstSeq* then, AstSeq* else_) :
-  m_cond(cond ? cond : new AstSeq()),
-  m_then(then ? then : new AstSeq()),
-  m_else(else_) {
-  assert(m_cond);
-  assert(m_then);
+AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstSeq* elseAction) :
+  m_conditionActionPairs(
+    conditionActionPairs ? conditionActionPairs : makeDefaultConditionActionPairs()),
+  m_elseAction(elseAction) {
+  assert(m_conditionActionPairs);
+  assert(!m_conditionActionPairs->empty());
+  assert(m_conditionActionPairs.front().m_condition);
+  assert(m_conditionActionPairs.front().m_action);
+}
+  
+AstIf::AstIf(AstSeq* cond, AstSeq* action, AstSeq* elseAction) :
+  m_conditionActionPairs(makeConditionActionPairs(cond,action)),
+  m_elseAction(elseAction) {
+  assert(m_conditionActionPairs);
+  assert(!m_conditionActionPairs->empty());
+  assert(m_conditionActionPairs.front().m_condition);
+  assert(m_conditionActionPairs.front().m_action);
 }
   
 AstIf::~AstIf() {
-  delete m_cond;
-  delete m_then;
-  if (m_else) { delete m_else; }
+  delete m_conditionActionPairs->front().m_condition;
+  delete m_conditionActionPairs->front().m_action;
+  delete m_conditionActionPairs;
+  if (m_elseAction) { delete m_elseAction; }
+}
+
+list<AstIf::ConditionActionPair>* AstIf::makeDefaultConditionActionPairs() {
+  list<ConditionActionPair>* tmp = new list<AstIf::ConditionActionPair>();
+  tmp->push_back(ConditionActionPair(new AstSeq(),new AstSeq()));
+  return tmp;
+}
+
+list<AstIf::ConditionActionPair>* AstIf::makeConditionActionPairs(
+  AstSeq* cond, AstSeq* action) {
+  list<ConditionActionPair>* tmp = new list<AstIf::ConditionActionPair>();
+  tmp->push_back(ConditionActionPair(cond, action));
+  return tmp;
 }
 
 basic_ostream<char>& AstIf::printTo(basic_ostream<char>& os) const {
   os << "if(";
-  m_cond->printTo(os);
-  os << " ";
-  m_then->printTo(os);
-  if (m_else) {
+  list<ConditionActionPair>::const_iterator i = m_conditionActionPairs->begin();
+  for ( /*nop*/; i!=m_conditionActionPairs->end(); ++i ) {
+    if ( i!=m_conditionActionPairs->begin() ) { os << " "; }
+    i->m_condition->printTo(os);
     os << " ";
-    m_else->printTo(os); }
+    i->m_action->printTo(os);
+  }
+  if (m_elseAction) {
+    os << " ";
+    m_elseAction->printTo(os); }
   os << ")";
   return os;
 }
