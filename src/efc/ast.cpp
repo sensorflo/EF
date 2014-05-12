@@ -79,7 +79,7 @@ basic_ostream<char>& AstFunDecl::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-AstDataDecl::AstDataDecl(const std::string& name, EStorage storage) :
+AstDataDecl::AstDataDecl(const string& name, EStorage storage) :
   m_name(name),
   m_storage(storage){
 }
@@ -172,7 +172,7 @@ basic_ostream<char>& AstIf::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-AstFunCall::AstFunCall(const std::string& name, AstCtList* args) :
+AstFunCall::AstFunCall(const string& name, AstCtList* args) :
   m_name(name),
   m_args(args ? args : new AstCtList()) {
   assert(m_args);
