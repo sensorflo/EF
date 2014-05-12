@@ -144,6 +144,32 @@ void AstOperator::accept(AstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
+AstIf::AstIf(AstSeq* cond, AstSeq* then, AstSeq* else_) :
+  m_cond(cond ? cond : new AstSeq()),
+  m_then(then ? then : new AstSeq()),
+  m_else(else_) {
+  assert(m_cond);
+  assert(m_then);
+}
+  
+AstIf::~AstIf() {
+  delete m_cond;
+  delete m_then;
+  if (m_else) { delete m_else; }
+}
+
+basic_ostream<char>& AstIf::printTo(basic_ostream<char>& os) const {
+  os << "if(";
+  m_cond->printTo(os);
+  os << " ";
+  m_then->printTo(os);
+  if (m_else) {
+    os << " ";
+    m_else->printTo(os); }
+  os << ")";
+  return os;
+}
+
 AstFunCall::AstFunCall(const std::string& name, AstCtList* args) :
   m_name(name),
   m_args(args ? args : new AstCtList()) {

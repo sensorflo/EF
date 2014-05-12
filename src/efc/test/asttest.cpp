@@ -19,6 +19,15 @@ TEST(AstTest,test_toString) {
   EXPECT_EQ( "+(42 77)",
     AstOperator('+',new AstNumber(42), new AstNumber(77)).toStr() );
 
+  // AstIf
+  EXPECT_EQ( "if(seq(x) seq(1))", AstIf(
+      new AstSeq(new AstSymbol(new string("x"))),
+      new AstSeq(new AstNumber(1))).toStr() );
+  EXPECT_EQ( "if(seq(x) seq(1) seq(0))", AstIf(
+      new AstSeq(new AstSymbol(new string("x"))),
+      new AstSeq(new AstNumber(1)),
+      new AstSeq(new AstNumber(0))).toStr() );
+
   // AstDataDecl
   EXPECT_EQ( "decldata(foo)", AstDataDecl("foo").toStr() );
   EXPECT_EQ( "decldata(foo mut)", AstDataDecl("foo",AstDataDecl::eAlloca).toStr() );

@@ -15,6 +15,7 @@ class AstFunDef;
 class AstFunDecl;
 class AstDataDecl;
 class AstDataDef;
+class AstIf;
 
 class AstVisitor {
 public:
@@ -34,6 +35,7 @@ public:
   virtual void visit(const AstFunDecl& funDecl) =0;
   virtual void visit(const AstDataDecl& dataDecl) =0;
   virtual void visit(const AstDataDef& dataDef) =0;
+  virtual void visit(const AstIf& if_) =0;
 };
 
 class AstNode {
@@ -161,6 +163,25 @@ private:
   const char m_op;
   const AstValue* const m_lhs;
   const AstValue* const m_rhs;
+};
+
+/* If flow control expression */
+class AstIf : public AstValue {
+public:
+  AstIf(AstSeq* cond, AstSeq* then, AstSeq* else_ = NULL);
+  virtual ~AstIf();
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
+  const AstSeq& cond() const { return *m_cond; }
+  const AstSeq& then() const { return *m_then; }
+  const AstSeq* else_() const { return m_else; }
+private:
+  /** We're the owner. Is garanteed to be non-null */
+  const AstSeq* const m_cond;
+  /** We're the owner. Is garanteed to be non-null */
+  const AstSeq* const m_then;
+  /** We're the owner. Is NOT garanteed to be non-null */
+  const AstSeq* const m_else;
 };
 
 class AstSeq : public AstValue {

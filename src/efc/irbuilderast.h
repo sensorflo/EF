@@ -46,6 +46,7 @@ private:
   void visit(const AstFunDecl& funDecl);
   void visit(const AstDataDecl& dataDecl) {};
   void visit(const AstDataDef& dataDef);
+  void visit(const AstIf& if_) {};
 
   llvm::Value* valuesBackAndPop();
   llvm::Value* valuesBack();
