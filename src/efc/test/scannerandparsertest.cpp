@@ -159,10 +159,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_AST_form_of_data_definition) ) {
 
   string spec = "trivial example";
-  testParse( "val foo:= 42;", "seq(data(decldata(foo) seq(42)))", spec);
-  testParse( "val foo = 42;", "seq(data(decldata(foo) seq(42)))", spec);
-  testParse( "var foo:= 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
-  testParse( "var foo = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
+  testParse( "val foo: = 42;", "seq(data(decldata(foo) seq(42)))", spec);
+  testParse( "val foo  = 42;", "seq(data(decldata(foo) seq(42)))", spec);
+  testParse( "var foo: = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
+  testParse( "var foo  = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
 
   spec = "implicit init value";
   testParse( "val foo:;", "seq(data(decldata(foo)))", spec);

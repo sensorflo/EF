@@ -72,3 +72,24 @@ TEST(ScannerTest, id) {
     EXPECT_FALSE( driver.d().gotError() );
   }
 }
+
+TEST(ScannerTest, MAKE_TEST_NAME(
+    a_colon_followd_by_an_equal_without_blanks_inbetween,
+    yylex_is_called,
+    returns_the_single_token_COLON_EQUAL_opposed_to_the_two_separate_tokens_COLON_and_EQUAL)) {
+  DriverOnTmpFile driver( ":=" );
+  EXPECT_EQ(Parser::token::TOK_COLON_EQUAL, yylex(driver).token() );
+  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  EXPECT_FALSE( driver.d().gotError() );
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
+    a_colon_followed_by_blanks_followed_by_an_equal,
+    yylex_is_called_repeatedly,
+    returns_two_separate_tokens_COLON_and_EQUAL_opposed_to_the_single_token_COLON_EQUAL)) {
+  DriverOnTmpFile driver( ": =" );
+  EXPECT_EQ(Parser::token::TOK_COLON, yylex(driver).token() );
+  EXPECT_EQ(Parser::token::TOK_EQUAL, yylex(driver).token() );
+  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  EXPECT_FALSE( driver.d().gotError() );
+}

@@ -45,6 +45,7 @@
   VAL "val"
   VAR "var"
   EQUAL "="
+  COLON_EQUAL ":="
   COMMA ","
   SEMICOLON ";"
   COLON ":"
@@ -155,7 +156,7 @@ sub_expr
 
   /* binary operators */
   | ID       EQUAL       sub_expr %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
-  | ID       COLON EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), new AstSeq($4)); }
+  | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), new AstSeq($3)); }
   | sub_expr PLUS        sub_expr                   { $$ = new AstOperator('+', $1, $3); }
   | sub_expr MINUS       sub_expr                   { $$ = new AstOperator('-', $1, $3); }
   | sub_expr STAR        sub_expr                   { $$ = new AstOperator('*', $1, $3); }
