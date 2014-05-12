@@ -50,8 +50,18 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     "* and / have same precedence and are both left associative");
   testParse( "1+2*3-4/5", "seq(-(+(1 *(2 3)) /(4 5)))",
     "* and / have higher precedence than + and -");
-  testParse( "{1+2}*{3-4}/5", "seq(/(*(+(1 2) -(3 4)) 5))",
-    "{} groups expressions and thus overwrites precedence");
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    math_expression_containing_brace_grouping,
+    parse,
+    succeeds_AND_returns_AST_form_of_brace_grouping) ) {
+  testParse( "{1+2}*{3-4}/5", "seq(/(*(seq(+(1 2)) seq(-(3 4))) 5))",
+    "{} group: 1) overwrites precedence and 2) turns sub_expr into expr (aka seq)");
+  testParse( "{1 2}", "seq(seq(1 2))",
+    "{} group can contain not only a sub_expr but also an expr (aka seq)");
+  testParse( "{1 2}*3", "seq(*(seq(1 2) 3))",
+    "{} group can contain not only a sub_expr but also an expr (aka seq)");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

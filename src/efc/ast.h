@@ -163,7 +163,7 @@ private:
   const AstValue* const m_rhs;
 };
 
-class AstSeq : public AstNode {
+class AstSeq : public AstValue {
 public:
   AstSeq(AstNode* child1 = NULL);
   AstSeq(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);

@@ -141,7 +141,7 @@ sub_expr
 sub_expr_leaf
   /* misc */
   : NUMBER                                          { $$ = new AstNumber($1); }
-  | LBRACE sub_expr RBRACE                          { std::swap($$,$2); }
+  | LBRACE expr RBRACE                              { $$ = $2; }
   | ID                                              { $$ = new AstSymbol(new std::string($1)); }
 
   /* declarations of data object */
