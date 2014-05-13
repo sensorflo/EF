@@ -17,7 +17,7 @@
 }
 
 %param { Driver& driver }
-%parse-param { AstNode*& astRoot }
+%parse-param { AstSeq*& astRoot }
 
 %locations
 %initial-action

@@ -19,7 +19,7 @@ public:
   Driver(const std::string& fileName);
   virtual ~Driver();
   
-  int parse(AstNode*& astRoot);
+  int parse(AstSeq*& astRoot);
 
   // referenced by both Scanner and Parser
   // --------------------------------------------------
@@ -28,7 +28,7 @@ public:
   void exitInternError(const yy::location& loc, const std::string& msg);
   void exitInternError(const std::string& msg);
 
-  AstNode*& astRoot() { return m_astRoot; }
+  AstSeq*& astRoot() { return m_astRoot; }
   std::string& fileName() { return m_fileName; }
   bool gotError() const { return m_gotError; }
   bool gotWarning() const { return m_gotWarning; }
@@ -38,7 +38,7 @@ private:
   std::string m_fileName;
   bool m_gotError;
   bool m_gotWarning;
-  AstNode* m_astRoot;
+  AstSeq* m_astRoot;
   /** We're the owner. Guaranteed to be non-NULL */
   yy::Parser* m_parser;
 };

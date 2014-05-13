@@ -31,7 +31,7 @@ void testParse(const string& efProgram, const string& expectedAst,
   DriverOnTmpFile driver(efProgram);
 
   // exercise
-  AstNode* actualAst = NULL;
+  AstSeq* actualAst = NULL;
   int res = driver.d().parse(actualAst);
 
   // verify

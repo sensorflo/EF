@@ -32,7 +32,7 @@ Driver::~Driver() {
   delete m_parser;
 }
 
-int Driver::parse(AstNode*& astRoot) {
+int Driver::parse(AstSeq*& astRoot) {
   int ret = m_parser->parse(); // as a side-effect, sets m_astRoot
   astRoot = m_astRoot;
   return ret;
