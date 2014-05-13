@@ -22,7 +22,9 @@ void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
   IrBuilderAst UUT;
 
   // execute & verify
-  EXPECT_EQ(expectedResult, UUT.buildAndRunModule(*astSeq)) << spec;
+  EXPECT_EQ(expectedResult, UUT.buildAndRunModule(*astSeq)) <<
+    (spec.empty() ? "" : "sub-specification: " + spec + (spec[spec.length()-1]=='\n' ? "" : "\n")) <<
+    "AST: " << astSeq->toStr();
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
