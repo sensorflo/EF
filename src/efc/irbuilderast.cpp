@@ -272,10 +272,12 @@ void IrBuilderAst::visit(const AstIf& if_) {
   functionIr->getBasicBlockList().push_back(ElseBB);
   m_builder.SetInsertPoint(ElseBB);
   Value* elseValue = NULL;
-  assert( if_.elseAction() ); // currently an else action is mandatory. else
-                              // its not trivial to calculate phi below
-  if_.elseAction()->accept(*this);
-  elseValue = valuesBackAndPop();
+  if ( if_.elseAction() ) {
+    if_.elseAction()->accept(*this);
+    elseValue = valuesBackAndPop();
+  } else {
+    elseValue = ConstantInt::get( getGlobalContext(), APInt(32, 0));
+  }
   m_builder.CreateBr(MergeBB);
   ElseBB = m_builder.GetInsertBlock();
 

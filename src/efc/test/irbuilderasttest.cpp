@@ -413,3 +413,15 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstSeq(new AstNumber(3)))), // else clause
     3);
 }
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    an_if_expression_without_else_WITH_a_condition_evaluating_to_false,
+    buildAndRunModule,
+    returns_default_value_of_expressions_type)) {
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstIf(
+        new AstSeq(new AstNumber(0)), // condition
+        new AstSeq(new AstNumber(2)))), // then clause
+    0); // default for int
+}
