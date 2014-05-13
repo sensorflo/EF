@@ -109,14 +109,14 @@ void IrBuilderAst::visit(const AstSeq& seq) {
        i!=childs.end(); ++i) {
     // Two consequtive childs are like the comma operator in C: the lhs is
     // evaluated, but its value is droped, and the value of the binary comma
-    // operator expression is the evaluated rhs. Here this is what happens:
-    // the n-th child on which accept is called in this loop replaces the
-    // value on the top of the values stack from the (n-1)th child
+    // operator expression is the evaluated rhs. lhs is the *i of the previous
+    // iteration, and rhs is the *i of the current iteration.
     if (i!=childs.begin()) {
       assert(!m_values.empty());
-      m_values.pop_back();
+      m_values.pop_back(); // drop lhs
     }
-    // will internally push one single value on the values stack
+    // evaluate rhs (lhs in the first iteration). will internally push one
+    // single value on the values stack
     (*i)->accept(*this);
   }
 }
@@ -238,6 +238,56 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
   } else {
     stentry = SymbolTableEntry(initValue, eValue);  
   }
+}
+
+void IrBuilderAst::visit(const AstIf& if_) {
+  // misc setup
+  const list<AstIf::ConditionActionPair>& capairs = if_.conditionActionPairs();
+  assert(!capairs.empty());
+  const AstIf::ConditionActionPair& capair = capairs.front(); 
+
+  // setup needed basic blocks
+  Function* functionIr = m_builder.GetInsertBlock()->getParent();
+  BasicBlock* ThenBB = BasicBlock::Create(getGlobalContext(), "then", functionIr);
+  BasicBlock* ElseBB = BasicBlock::Create(getGlobalContext(), "else");
+  BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
+
+  // IR for evaluate condition
+  capair.m_condition->accept(*this);
+  Value* condIr = valuesBackAndPop();
+  Value* condCmpIr = m_builder.CreateICmpNE(condIr,
+    ConstantInt::get(getGlobalContext(), APInt(32, 0)), "ifcond");
+
+  // IR for branch based on condition
+  m_builder.CreateCondBr(condCmpIr, ThenBB, ElseBB);
+
+  // IR for then clause
+  m_builder.SetInsertPoint(ThenBB);
+  capair.m_action->accept(*this);
+  Value* thenValue = valuesBackAndPop();
+  m_builder.CreateBr(MergeBB);
+  ThenBB = m_builder.GetInsertBlock();
+
+  // IR for else clause
+  functionIr->getBasicBlockList().push_back(ElseBB);
+  m_builder.SetInsertPoint(ElseBB);
+  Value* elseValue = NULL;
+  assert( if_.elseAction() ); // currently an else action is mandatory. else
+                              // its not trivial to calculate phi below
+  if_.elseAction()->accept(*this);
+  elseValue = valuesBackAndPop();
+  m_builder.CreateBr(MergeBB);
+  ElseBB = m_builder.GetInsertBlock();
+
+  // IR for merge of then/else clauses
+  functionIr->getBasicBlockList().push_back(MergeBB);
+  m_builder.SetInsertPoint(MergeBB);
+  PHINode* phi = m_builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2,
+    "iftmp");
+  assert(phi);
+  phi->addIncoming(thenValue, ThenBB);
+  phi->addIncoming(elseValue, ElseBB);
+  m_values.push_back(phi);
 }
 
 Value* IrBuilderAst::valuesBackAndPop() {

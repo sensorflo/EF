@@ -387,3 +387,29 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstSymbol(new string("foo"))),
     0, "");
 }
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    an_if_else_expression_WITH_a_condition_evaluating_to_true,
+    buildAndRunModule,
+    returns_the_value_of_the_then_clause)) {
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstIf(
+        new AstSeq(new AstNumber(1)), // condition
+        new AstSeq(new AstNumber(2)), // then clause
+        new AstSeq(new AstNumber(3)))), // else clause
+    2);
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    an_if_else_expression_WITH_a_condition_evaluating_to_false,
+    buildAndRunModule,
+    returns_the_value_of_the_else_clause)) {
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstIf(
+        new AstSeq(new AstNumber(0)), // condition
+        new AstSeq(new AstNumber(2)), // then clause
+        new AstSeq(new AstNumber(3)))), // else clause
+    3);
+}
