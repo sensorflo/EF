@@ -16,6 +16,7 @@ public:
 
 void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
   const string& spec = "") {
+
   // setup
   ENV_ASSERT_TRUE( astSeq!=NULL );
   auto_ptr<AstSeq> astSeqAp(astSeq);
@@ -23,7 +24,7 @@ void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
 
   // execute & verify
   EXPECT_EQ(expectedResult, UUT.buildAndRunModule(*astSeq)) <<
-    (spec.empty() ? "" : "sub-specification: " + spec + (spec[spec.length()-1]=='\n' ? "" : "\n")) <<
+    amendSpec(spec) <<
     "\nInput AST in its canonical form:\n" << astSeq->toStr() << "\n";
 }
 

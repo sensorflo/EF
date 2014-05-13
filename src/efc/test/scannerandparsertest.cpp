@@ -14,29 +14,45 @@ string amendEfProgram(const string& efProgram) {
     "\n--------------------\n";
 }
 
+string explainParseErrorCode(int errorCode) {
+  if (errorCode==0)
+    return "parser succeeded\n";
+  if (errorCode==1)
+    return "parser failed due to invalid input, i.e. input contains a syntax error\n";
+  else if (errorCode==2)
+    return "parser failed due to memory exhaustion\n";
+  else
+    return "parser failed for unknown reason\n";
+}
+
 void testParse(const string& efProgram, const string& expectedAst,
   const string& spec = "") {
   // setup
   DriverOnTmpFile driver(efProgram);
 
   // exercise
-  AstNode* astRoot = NULL;
-  int res = driver.d().parse(astRoot);
+  AstNode* actualAst = NULL;
+  int res = driver.d().parse(actualAst);
 
   // verify
-  EXPECT_FALSE( driver.d().gotError() ) << "Scanner or parser found error.\n" <<
+  EXPECT_FALSE( driver.d().gotError() ) <<
+    "Scanner or parser reported an error to Driver\n" <<
+    amendSpec(spec) <<
     amendEfProgram(efProgram);
   EXPECT_EQ( 0, res) <<
-    (res==1 ? "parser failed due to invalid input, i.e. input contains a syntax error\n" :
-      (res==2 ? "parser failed due to memory exhaustion\n" :
-        "parser failed for unknown reason\n")) <<
+    explainParseErrorCode(res) <<
+    amendSpec(spec) <<
     amendEfProgram(efProgram);
-  ASSERT_TRUE( NULL != astRoot );
-  EXPECT_EQ( expectedAst, astRoot->toStr() ) <<
+  ASSERT_TRUE( NULL != actualAst ) <<
+    "parse did return NULL as actualAst\n" <<
+    amendSpec(spec) <<
+    amendEfProgram(efProgram);
+  EXPECT_EQ( expectedAst, actualAst->toStr() ) <<
+    amendSpec(spec) <<
     amendEfProgram(efProgram);
 
   // tear down
-  if (astRoot) { delete astRoot; }
+  if (actualAst) { delete actualAst; }
 }
 
 #define TEST_PARSE( efProgram, expectedAst, spec ) \

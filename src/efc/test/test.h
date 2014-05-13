@@ -1,6 +1,7 @@
 #ifndef TEST_H
 #define TEST_H
 #include "gtest/gtest.h"
+#include <string>
 
 /** Helper macros to make a test name, which really is a specification in
 prose in the "given when then sothat/because" DSL. Using the testdox tool
@@ -30,5 +31,7 @@ out/specs.html using the tools testdox and asciidoc.*/
 #define ENV_ASSERT_TRUE(actual) ASSERT_TRUE(actual) << ABORT_MSG
 #define ENV_ASSERT_FALSE(actual) ASSERT_FALSE(actual) << ABORT_MSG
 #define ABORT_MSG "test aborted due to failing assertion in test's environment\\n"
+
+std::string amendSpec(const std::string& spec);
 
 #endif
