@@ -24,30 +24,36 @@ void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
   // execute & verify
   EXPECT_EQ(expectedResult, UUT.buildAndRunModule(*astSeq)) <<
     (spec.empty() ? "" : "sub-specification: " + spec + (spec[spec.length()-1]=='\n' ? "" : "\n")) <<
-    "AST: " << astSeq->toStr();
+    "\nInput AST in its canonical form:\n" << astSeq->toStr() << "\n";
 }
+
+#define TEST_BUILD_AND_RUN_MODULE(astSeq, expectedResult, spec) \
+  {\
+    SCOPED_TRACE("");\
+    testbuilAndRunModule(astSeq, expectedResult, spec);\
+  }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_seq_with_one_or_more_numbers,
     buildAndRunModule,
     returns_the_last_number)) {
-  testbuilAndRunModule(new AstSeq(new AstNumber(42)), 42);
-  testbuilAndRunModule(new AstSeq(new AstNumber(11), new AstNumber(22)), 22);
+  TEST_BUILD_AND_RUN_MODULE(new AstSeq(new AstNumber(42)), 42, "");
+  TEST_BUILD_AND_RUN_MODULE(new AstSeq(new AstNumber(11), new AstNumber(22)), 22, "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_seq_with_one_or_more_expressions_built_with_literal_numbers,
     buildAndRunModule,
     returns_the_result_of_the_last_expression)) {
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstOperator('+', new AstNumber(2), new AstNumber(3))),
-    2+3);
-  testbuilAndRunModule(
+    2+3, "");
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstOperator('+', new AstNumber(2), new AstNumber(3)),
       new AstOperator('*', new AstNumber(4), new AstNumber(5))),
-    /*2+3,*/ 4*5);
+    /*2+3,*/ 4*5, "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -64,7 +70,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     returns_the_result_of_the_last_expression)) {
   string spec = "Sequence containing a function declaration";
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstFunDecl("foo"),
       new AstNumber(42)),
@@ -309,7 +315,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     returns_x)) {
 
   string spec = "value/const/immutable data";
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo"),
@@ -317,7 +323,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     42, spec);
 
   spec = "variable/mutable data";
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", AstDataDecl::eAlloca),
@@ -331,7 +337,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     returns_result_of_that_expression)) {
 
   string spec = "value/const/immutable data";
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo"),
@@ -342,7 +348,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     42+77, spec);
 
   spec = "variable/mutable data";
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", AstDataDecl::eAlloca),
@@ -357,7 +363,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     foo_defined_as_variable_initialized_with_x_followed_by_assigning_y_to_foo,
     buildAndRunModule,
     returns_y)) {
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", AstDataDecl::eAlloca),
@@ -366,17 +372,17 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstSymbol(new string("foo"), AstSymbol::eLValue),
         new AstNumber(77)),
       new AstSymbol(new string("foo"), AstSymbol::eRValue)),
-    77);
+    77, "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_value_definition_of_foo_with_no_explicit_initializer_followed_by_a_reference_to_foo,
     buildAndRunModule,
     returns_the_default)) {
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo")),
       new AstSymbol(new string("foo"))),
-    0);
+    0, "");
 }

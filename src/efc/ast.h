@@ -42,7 +42,9 @@ class AstNode {
 public:
   virtual ~AstNode() {};
   virtual void accept(AstVisitor& visitor) const =0;
+  /** Similar to printTo; the resulting text is returned as string. */
   virtual std::string toStr() const;
+  /** Print node recursively in its canonical form to given stream */
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const = 0;
 };
 

@@ -1,6 +1,6 @@
 /* flex definitions section
 ----------------------------------------------------------------------*/
-%option noyywrap nounput batch debug noinput 8bit full
+%option noyywrap nounput batch noinput 8bit full
 
 %{
   #include <cerrno>
