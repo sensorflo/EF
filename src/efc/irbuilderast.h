@@ -1,3 +1,5 @@
+#ifndef IR_BUILDER_AST_H
+#define IR_BUILDER_AST_H
 #include "ast.h"
 #include "llvm/IR/IRBuilder.h"
 #include <stack>
@@ -66,3 +68,5 @@ private:
 
   std::map<std::string, SymbolTableEntry> m_symbolTable;
 };
+
+#endif
