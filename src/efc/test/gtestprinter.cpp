@@ -1,4 +1,5 @@
 #include "gtestprinter.h"
+#include <stdio.h>
 using namespace testing;
 using namespace testing::internal;
 
@@ -125,18 +126,34 @@ namespace testing {
 
     // Prints a TestPartResult to an std::string.
     static std::string PrintTestPartResultToString(
-      const TestPartResult& test_part_result) {
+      const TestPartResult& test_part_result,
+      const string& test_name) {
+
+      FILE* stream = popen((string("testdox -t -n ") + test_name).c_str() , "r");
+      assert(stream);
+      string prettyTestName;
+      while (!feof(stream)) {
+        char buf[1024];
+        if (fgets(buf, sizeof(buf), stream) != NULL) {
+          prettyTestName += buf;
+        }
+      }  
+      pclose(stream);
+
       return (Message()
         << internal::FormatFileLocation(test_part_result.file_name(),
           test_part_result.line_number())
         << " " << TestPartResultTypeToString(test_part_result.type())
+        << "Specification was not met:\n"
+        << prettyTestName << "\n"
         << test_part_result.message()).GetString();
     }
 
     // Prints a TestPartResult.
-    static void PrintTestPartResult(const TestPartResult& test_part_result) {
+    static void PrintTestPartResult(const TestPartResult& test_part_result,
+      const string& testName) {
       const std::string& result =
-        PrintTestPartResultToString(test_part_result);
+        PrintTestPartResultToString(test_part_result, testName);
       printf("%s\n", result.c_str());
       fflush(stdout);
       // If the test program runs in Visual Studio or a debugger, the
@@ -217,6 +234,7 @@ void GTestPrinter::OnTestStart(const TestInfo& test_info) {
   PrintTestName(test_info.test_case_name(), test_info.name());
   printf("\n");
   fflush(stdout);
+  m_testName = test_info.name();
 }
 
 // Called after an assertion failure.
@@ -227,7 +245,7 @@ void GTestPrinter::OnTestPartResult(
     return;
 
   // Print failure message from the assertion (e.g. expected this and got that).
-  PrintTestPartResult(result);
+  PrintTestPartResult(result, m_testName);
   fflush(stdout);
 }
 

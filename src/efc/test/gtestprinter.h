@@ -1,6 +1,7 @@
 #ifndef GTEST_PRINTER_H
 #define GTEST_PRINTER_H
 #include "gtest/gtest.h"
+#include <string>
 
 /** \internal Essentially a copy of gtest's PrettyUnitTestResultPrinter with
 tiny modifications. */
@@ -27,6 +28,7 @@ public:
 
 private:
   static void PrintFailedTests(const testing::UnitTest& unit_test);
+  std::string m_testName;
 };
 
 #endif
