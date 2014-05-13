@@ -38,13 +38,13 @@ private:
   int jitExecFunction1Arg(const std::string& name, int arg1);
   int jitExecFunction2Arg(const std::string& name, int arg1, int arg2);
 
-  void visit(const AstSeq& seq, Place place, int childNo);
+  void visit(const AstSeq& seq);
   void visit(const AstCtList& ctList) {};
   void visit(const AstOperator& op);
   void visit(const AstNumber& number);
   void visit(const AstSymbol& symbol);
   void visit(const AstFunCall& funCall);
-  void visit(const AstFunDef& funDef, Place place);
+  void visit(const AstFunDef& funDef);
   void visit(const AstFunDecl& funDecl);
   void visit(const AstDataDecl& dataDecl) {};
   void visit(const AstDataDef& dataDef);

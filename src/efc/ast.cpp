@@ -38,17 +38,6 @@ AstFunDef::~AstFunDef() {
   delete m_body;
 }
 
-void AstFunDef::accept(AstVisitor& visitor) const {
-  visitor.visit(*this, AstVisitor::ePreOrder); 
-
-  m_decl->accept(visitor);
-  visitor.visit(*this, AstVisitor::eInOrder); 
-
-  m_body->accept(visitor);
-
-  visitor.visit(*this, AstVisitor::ePostOrder); 
-}
-
 basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) const {
   os << "fun(";
   m_decl->printTo(os);
@@ -111,13 +100,6 @@ basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-void AstDataDef::accept(AstVisitor& visitor) const {
-  if (m_initValue) {
-    m_initValue->accept(visitor);
-  }
-  visitor.visit(*this);
-}
-
 AstOperator::AstOperator(char op, AstValue* lhs, AstValue* rhs) :
   m_op(op),
   m_lhs(lhs ? lhs : new AstNumber(0)),
@@ -138,12 +120,6 @@ basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
   m_rhs->printTo(os);
   os << ')';
   return os;
-}
-
-void AstOperator::accept(AstVisitor& visitor) const {
-  m_lhs->accept(visitor);
-  m_rhs->accept(visitor);
-  visitor.visit(*this);
 }
 
 AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstSeq* elseAction) :
@@ -257,21 +233,6 @@ basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-void AstSeq::accept(AstVisitor& visitor) const {
-  visitor.visit(*this, AstVisitor::ePreOrder, 0);
-  int childNo = 0;
-  for (list<AstNode*>::const_iterator i=m_childs.begin();
-       i!=m_childs.end(); ++i, ++childNo) {
-    if (i!=m_childs.begin()) {
-      // visit with eInOrder _after_ accept, but not after accecpt of last
-      // child
-      visitor.visit(*this, AstVisitor::eInOrder, childNo-1);
-    }
-    (*i)->accept(visitor);
-  }
-  visitor.visit(*this, AstVisitor::ePostOrder, childNo);
-}
-
 /** When child is NULL it is ignored */
 AstCtList::AstCtList(AstNode* child) {
   if (child) { m_childs.push_back(child); }
@@ -313,10 +274,3 @@ basic_ostream<char>& AstCtList::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-void AstCtList::accept(AstVisitor& visitor) const {
-  for (list<AstNode*>::const_iterator i=m_childs.begin();
-       i!=m_childs.end(); ++i) {
-    (*i)->accept(visitor);
-  }
-  visitor.visit(*this);
-}

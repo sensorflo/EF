@@ -100,23 +100,33 @@ int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int ar
   return functionPtr(arg1, arg2);
 }
 
-void IrBuilderAst::visit(const AstSeq&, Place place, int childNo) {
-  if (place==ePostOrder && childNo==0) {
+void IrBuilderAst::visit(const AstSeq& seq) {
+  const std::list<AstNode*>& childs = seq.childs();
+  if (childs.empty()) {
     throw runtime_error::runtime_error("Empty sequence not allowed (yet)");
   }
-  if (place==ePreOrder || childNo<2) return;
-  // remove 2nd last value
-  Value* lastValue = valuesBackAndPop();
-  m_values.pop_back();
-  m_values.push_back(lastValue);
+  for (list<AstNode*>::const_iterator i = childs.begin();
+       i!=childs.end(); ++i) {
+    // Two consequtive childs are like the comma operator in C: the lhs is
+    // evaluated, but its value is droped, and the value of the binary comma
+    // operator expression is the evaluated rhs. Here this is what happens:
+    // the n-th child on which accept is called in this loop replaces the
+    // value on the top of the values stack from the (n-1)th child
+    if (i!=childs.begin()) {
+      assert(!m_values.empty());
+      m_values.pop_back();
+    }
+    // will internally push one single value on the values stack
+    (*i)->accept(*this);
+  }
 }
 
 void IrBuilderAst::visit(const AstOperator& op) {
-  Value* result = NULL;
-  // order of visit childs = order of push: lhs, rhs
-  // ie top=rhs, top-1=lhs
-  Value* rhs = valuesBackAndPop();
+  op.lhs().accept(*this);
   Value* lhs = valuesBackAndPop();
+  op.rhs().accept(*this);
+  Value* rhs = valuesBackAndPop();
+  Value* result = NULL;
   switch (op.op()) {
   case '=': result = m_builder.CreateStore(rhs, lhs); break;
   case '-': result = m_builder.CreateSub(lhs, rhs, "subtmp"); break;
@@ -144,52 +154,33 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
     m_builder.CreateLoad(stentry.m_value, symbol.name().c_str()));
 }
 
-void IrBuilderAst::visit(const AstFunDef& funDef, Place place) {
-  // ePreOrder
-  // ---------------
-  if ( ePreOrder==place ) { /*nop*/ }
+void IrBuilderAst::visit(const AstFunDef& funDef) {
+  funDef.decl().accept(*this);
+  Function* functionIr = valuesBackToFunction();
 
-  // outer iterator makes funDef.decl() being visited. That pushes a Function*
-  // onto m_values
-  // ---------------
+  m_symbolTable.clear();
+  m_builder.SetInsertPoint(
+    BasicBlock::Create(getGlobalContext(), "entry", functionIr));
 
-  // eInOrder
-  // ---------------
-  else if ( eInOrder==place ) {
-    m_symbolTable.clear();
-
-    Function* functionIr = valuesBackToFunction();
-    m_builder.SetInsertPoint(
-      BasicBlock::Create(getGlobalContext(), "entry", functionIr));
-
-    // Add all arguments to the symbol table and create their allocas.
-    Function::arg_iterator iterIr = functionIr->arg_begin();
-    list<string>::const_iterator iterAst = funDef.decl().args().begin();
-    for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
-      AllocaInst *alloca = createEntryBlockAlloca(functionIr, *iterAst);
-      m_builder.CreateStore(iterIr, alloca);
-      m_symbolTable[*iterAst] = SymbolTableEntry( alloca, eAlloca);
-    }
-
-    // Don't pop the Function* from m_values, see below
+  // Add all arguments to the symbol table and create their allocas.
+  Function::arg_iterator iterIr = functionIr->arg_begin();
+  list<string>::const_iterator iterAst = funDef.decl().args().begin();
+  for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
+    AllocaInst *alloca = createEntryBlockAlloca(functionIr, *iterAst);
+    m_builder.CreateStore(iterIr, alloca);
+    m_symbolTable[*iterAst] = SymbolTableEntry( alloca, eAlloca);
   }
 
-  // outer iterator makes funDef.body() being visited. 
-  // ---------------
+  funDef.body().accept(*this);
+  m_builder.CreateRet(valuesBackAndPop());
 
-  // ePostOrder
-  // ---------------
-  else {
-    m_builder.CreateRet(valuesBackAndPop());
+  verifyFunction(*functionIr);
 
-    verifyFunction(*valuesBackToFunction());
+  // Previous building block is again the insert point
+  m_builder.SetInsertPoint(m_mainBasicBlock);
 
-    // Previous building block is again the insert point
-    m_builder.SetInsertPoint(m_mainBasicBlock);
-
-    // Don't push onto the m_values stack, since the Function* we would push
-    // is already on the stack due to funDef.decl()
-  }
+  // Don't push onto the m_values stack, since the Function* we would push
+  // is already on the stack due to funDef.decl()
 }
 
 void IrBuilderAst::visit(const AstFunDecl& funDecl) {
@@ -228,11 +219,13 @@ void IrBuilderAst::visit(const AstFunCall& funCall) {
 void IrBuilderAst::visit(const AstDataDef& dataDef) {
   Value* initValue = NULL;
   if (dataDef.initValue()) {
-    initValue = valuesBack();
+    dataDef.initValue()->accept(*this);
+    initValue = valuesBack(); 
   } else {
     initValue = ConstantInt::get( getGlobalContext(), APInt(32, 0));
     m_values.push_back( initValue );
   }
+  assert(initValue);
   SymbolTableEntry& stentry = m_symbolTable[dataDef.decl().name()];
   if ( dataDef.decl().storage()==AstDataDecl::eAlloca ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();

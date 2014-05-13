@@ -19,19 +19,14 @@ class AstIf;
 
 class AstVisitor {
 public:
-  enum Place {
-    ePreOrder,
-    eInOrder,
-    ePostOrder
-  };
   virtual ~AstVisitor() {};
-  virtual void visit(const AstSeq& seq, Place place, int childNo) =0;
+  virtual void visit(const AstSeq& seq) =0;
   virtual void visit(const AstCtList& ctList) =0;
   virtual void visit(const AstOperator& op) =0;
   virtual void visit(const AstNumber& number) =0;
   virtual void visit(const AstSymbol& symbol) =0;
   virtual void visit(const AstFunCall& funCall) =0;
-  virtual void visit(const AstFunDef& funDef, Place place) =0;
+  virtual void visit(const AstFunDef& funDef) =0;
   virtual void visit(const AstFunDecl& funDecl) =0;
   virtual void visit(const AstDataDecl& dataDecl) =0;
   virtual void visit(const AstDataDef& dataDef) =0;
@@ -55,7 +50,7 @@ class AstFunDef : public AstValue {
 public:
   AstFunDef(AstFunDecl* decl, AstSeq* body);
   virtual ~AstFunDef();
-  virtual void accept(AstVisitor& visitor) const;
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); }
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstFunDecl& decl() const { return *m_decl; }
   virtual const AstSeq& body() const { return *m_body; }
@@ -100,7 +95,7 @@ class AstDataDef : public AstValue {
 public:
   AstDataDef(AstDataDecl* decl, AstSeq* initValue = NULL);
   ~AstDataDef();
-  virtual void accept(AstVisitor& visitor) const;
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstDataDecl& decl() const { return *m_decl; }
   virtual const AstSeq* initValue() const { return m_initValue; }
@@ -154,7 +149,7 @@ class AstOperator : public AstValue {
 public:
   AstOperator(char op, AstValue* lhs, AstValue* rhs);
   virtual ~AstOperator();
-  virtual void accept(AstVisitor& visitor) const;
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   char op() const { return m_op; }
   const AstValue& lhs() const { return *m_lhs; }
@@ -200,7 +195,7 @@ public:
   AstSeq(AstNode* child1 = NULL);
   AstSeq(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
   ~AstSeq();
-  virtual void accept(AstVisitor& visitor) const;
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); }
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   AstSeq* Add(AstNode* child);
   AstSeq* Add(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
@@ -218,7 +213,7 @@ public:
   AstCtList(AstNode* child1 = NULL);
   AstCtList(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
   ~AstCtList();
-  virtual void accept(AstVisitor& visitor) const;
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   AstCtList* Add(AstNode* child);
   AstCtList* Add(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
