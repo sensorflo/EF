@@ -59,6 +59,9 @@ runtest runefctest: out/efctest
 out/efctest.o: test/efctest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
+out/gtestprinter.o: test/gtestprinter.cpp $(GEN_HEADERS) *.h test/*.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 out/scannertest.o: test/scannertest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
@@ -71,7 +74,7 @@ out/irbuilderasttest.o: test/irbuilderasttest.cpp $(GEN_HEADERS) *.h test/*.h
 out/asttest.o: test/asttest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efctest: out/scanner.o out/ast.o out/irbuilderast.o out/parser.o out/driver.o out/asttest.o out/scannertest.o out/scannerandparsertest.o out/irbuilderasttest.o out/efctest.o out/libgtest.a
+out/efctest: out/scanner.o out/ast.o out/irbuilderast.o out/parser.o out/driver.o out/asttest.o out/scannertest.o out/scannerandparsertest.o out/irbuilderasttest.o out/gtestprinter.o out/efctest.o out/libgtest.a
 	$(CXX)  $(LDFLAGS) -pthread -o $@ $^ $(LIBS)
 
 
