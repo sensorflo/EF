@@ -81,6 +81,17 @@ out/libgtest.a: ${GTEST_DIR}/src/gtest-all.cc
 	$(AR) $(ARFLAGS) $@ out/gtest-all.o
 
 
+doc: out/specs.html
+
+out/specs.html: test/*.cpp
+	-if type testdox ; then\
+		if type asciidoc ; then\
+			testdox -f asciidoc $^ | asciidoc -a toc -o $@ -;\
+		else\
+			testdox $^ > $@;\
+		fi ;\
+	fi
+
 
 clean:
 	rm -rf out/*

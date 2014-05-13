@@ -2,7 +2,11 @@
 #define TEST_H
 #include "gtest/gtest.h"
 
-/** make test name */
+/** Helper macros to make a test name, which really is a specification in
+prose in the "given when then sothat/because" DSL. Using the testdox tool
+(https://github.com/sensorflo/testdox) you can create a pretty printed summary
+of all your specifications aka tests. The makefile target doc creates
+out/specs.html using the tools testdox and asciidoc.*/
 #define MAKE_TEST_NAME4(given, when, then, sothat_or_because) \
   given ## __ ## when ## __ ## then ## __ ## sothat_or_because
 #define MAKE_TEST_NAME3(clause1, clause2, clause3)  \

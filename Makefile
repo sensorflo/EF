@@ -10,6 +10,7 @@ efc efctest runefctest:
 	cd src/efc && $(MAKE) $@
 
 doc:
+	cd src/efc && $(MAKE) $@
 	cd doc && $(MAKE) $@
 
 clean:
