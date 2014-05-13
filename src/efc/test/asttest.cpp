@@ -3,7 +3,7 @@
 using namespace std;
 using namespace testing;
 
-TEST(AstTest,test_toString) {
+TEST(AstTest, MAKE_TEST_NAME1(toStr)) {
   // AstNumber
   EXPECT_EQ( "42", AstNumber(42).toStr() );
 

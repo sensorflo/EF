@@ -72,9 +72,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    function_declaration,
+    a_function_declaration,
     buildModule,
-    adds_the_declaration_to_the_module_with_correct_signature)) {
+    adds_the_function_declaration_to_the_module_with_the_correct_signature)) {
 
   // zero arguments
   {
@@ -118,9 +118,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    function_definition,
+    a_function_definition,
     buildModule,
-    adds_the_definition_to_the_module_with_correct_signature)) {
+    adds_the_definition_to_the_module_with_the_correct_signature)) {
   // zero arguments
   {
     // setup
@@ -168,7 +168,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    function_definition_foo_returning_a_value_x,
+    a_function_definition_foo_with_body_returning_a_value_x,
     buildModule,
     JIT_executing_foo_returns_x)) {
   // zero arguments
@@ -212,7 +212,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    function_definition_foo_returning_its_single_argument_x,
+    a_function_definition_foo_with_argument_x_with_body_returning_x,
     buildModule,
     JIT_executing_foo_returns_x)) {
   // setup
@@ -237,7 +237,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    function_definition_foo_returning_simple_calculation_with_its_arguments,
+    a_function_definition_foo_with_body_returning_a_simple_calculation_with_its_arguments,
     buildModule,
     JIT_executing_foo_returns_result_of_that_calculation)) {
 
@@ -270,7 +270,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    function_definition_foo_containing_simple_expression_containing_an_simple_assignement,
+    a_function_definition_foo_with_argument_x_and_with_body_containing_a_simple_assignement_to_x_and_as_last_expr_in_bodies_seq_x,
     buildModule,
     JIT_executing_foo_returns_result_of_that_calculation)) {
 
@@ -304,7 +304,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    data_declaration_initializing_with_x,
+    a_data_definition_of_foo_being_initialized_with_x,
     buildAndRunModule,
     returns_x)) {
 

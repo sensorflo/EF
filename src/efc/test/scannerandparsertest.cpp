@@ -32,9 +32,9 @@ void testParse(const string& efProgram, const string& expectedAst,
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    literal_number_sequence,
+    a_literal_number_sequence,
     parse,
-    succeeds_AND_returns_an_AST_form) ) {
+    succeeds_AND_returns_correct_AST) ) {
   testParse( "42", "seq(42)", "trivial example with only one element" );
   testParse( "42 64 77", "seq(42 64 77)", "trivial example, blanks as separator" );
   testParse( "42, 64, 77", "seq(42 64 77)", "trivial example, commas as separator" );
@@ -44,9 +44,9 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    math_expression,
+    a_math_expression,
     parse,
-    succeeds_AND_returns_AST_form_of_math_expression) ) {
+    succeeds_AND_returns_correct_AST) ) {
   testParse( "42 + 77", "seq(+(42 77))", "trivial example");
   testParse( "1+2+3-4-5", "seq(-(-(+(+(1 2) 3) 4) 5))",
     "+ and - have same precedence and are both left associative");
@@ -57,9 +57,9 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    math_expression_containing_brace_grouping,
+    a_math_expression_containing_brace_grouping,
     parse,
-    succeeds_AND_returns_AST_form_of_brace_grouping) ) {
+    succeeds_AND_returns_correct_AST) ) {
   testParse( "{1+2}*{3-4}/5", "seq(/(*(seq(+(1 2)) seq(-(3 4))) 5))",
     "{} group: 1) overwrites precedence and 2) turns sub_expr into expr (aka seq)");
   testParse( "{1 2}", "seq(seq(1 2))",
@@ -69,18 +69,18 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    assignement_expression,
+    an_assignement_expression,
     parse,
-    succeeds_AND_returns_AST_form_of_assignement_expression) ) {
+    succeeds_AND_returns_correct_AST) ) {
   testParse( "foo = 42", "seq(=(foo 42))", "trivial example");
   testParse( "foo = 1+2*3", "seq(=(foo +(1 *(2 3))))", "simple example");
   testParse( "foo = bar = 42", "seq(=(foo =(bar 42)))", "= is right associative");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    function_declaration,
+    a_function_declaration,
     parse,
-    succeeds_AND_returns_AST_form_of_function_declaration) ) {
+    succeeds_AND_returns_correct_AST) ) {
   string spec = "example with zero arguments";
   testParse( "decl fun foo: ();", "seq(declfun(foo ()))", spec);
   testParse( "decl fun foo:;", "seq(declfun(foo ()))", spec);
@@ -99,18 +99,18 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    reference_to_symbol_in_a_function_definition,
+    a_reference_to_a_symbol_within_a_function_definition,
     parse,
-    succeeds_AND_returns_AST_form_of_function_definition) ) {
+    succeeds_AND_returns_correct_AST) ) {
 
   string spec = "example with one argument and a body just returning the arg";
   testParse( "fun foo: (x) = x;", "seq(fun(declfun(foo (x)) seq(x)))");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    function_definition,
+    a_function_definition,
     parse,
-    succeeds_AND_returns_AST_form_of_function_definition) ) {
+    succeeds_AND_returns_correct_AST) ) {
 
   string spec = "example with zero arguments and trivial body";
   testParse( "fun foo: = 42;", "seq(fun(declfun(foo ()) seq(42)))");
@@ -134,18 +134,18 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    function_call,
+    a_function_call,
     parse,
-    succeeds_AND_returns_AST_form_of_function_call) ) {
+    succeeds_AND_returns_correct_AST) ) {
   testParse( "foo()", "seq(foo())");
   testParse( "foo(42)", "seq(foo(seq(42)))");
   testParse( "foo(42,77)", "seq(foo(seq(42) seq(77)))");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    data_declaration,
+    a_data_declaration,
     parse,
-    succeeds_AND_returns_AST_form_of_data_declaration) ) {
+    succeeds_AND_returns_correct_AST) ) {
   string spec = "trivial example";
   testParse( "decl val foo:;", "seq(decldata(foo))", spec);
   testParse( "decl val foo ;", "seq(decldata(foo))", spec);
@@ -154,9 +154,9 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    data_definition,
+    a_data_definition,
     parse,
-    succeeds_AND_returns_AST_form_of_data_definition) ) {
+    succeeds_AND_returns_correct_AST) ) {
 
   string spec = "trivial example";
   testParse( "val foo: = 42;", "seq(data(decldata(foo) seq(42)))", spec);
@@ -191,7 +191,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_ifelse_flow_control_expression,
     parse,
-    succeeds_AND_returns_AST_form_of_ifelse_expression) ) {
+    succeeds_AND_returns_correct_AST) ) {
   testParse( "if x: 1;                           ", "seq(if(seq(x) seq(1)))");
   testParse( "if x: 1                     else 2;", "seq(if(seq(x) seq(1) seq(2)))");
   testParse( "if x: 1 elif y: 2;                 ", "seq(if(seq(x) seq(1) seq(y) seq(2)))");
