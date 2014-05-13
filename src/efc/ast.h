@@ -134,7 +134,7 @@ private:
 
 class AstFunCall : public AstValue {
 public:
-  AstFunCall(const std::string& name, AstCtList* args );
+  AstFunCall(const std::string& name, AstCtList* args = NULL);
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   virtual const std::string& name () const { return m_name; }
