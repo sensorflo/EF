@@ -123,8 +123,9 @@ void IrBuilderAst::visit(const AstOperator& op) {
   case '+': result = m_builder.CreateAdd(lhs, rhs, "addtmp"); break;
   case '*': result = m_builder.CreateMul(lhs, rhs, "multmp"); break;
   case '/': result = m_builder.CreateSDiv(lhs, rhs, "divtmp"); break;
-  default: break;
+  default: assert(false); break;
   }
+  assert(result);
   m_values.push_back(result);
 }
 
