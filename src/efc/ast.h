@@ -222,7 +222,7 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   AstCtList* Add(AstNode* child);
   AstCtList* Add(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
-  const std::list<AstNode*>& childs() { return m_childs; }
+  const std::list<AstNode*>& childs() const { return m_childs; }
 private:
   AstCtList(const AstCtList&);
   AstCtList& operator=(const AstCtList&);
