@@ -210,9 +210,25 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl) {
 
 void IrBuilderAst::visit(const AstFunCall& funCall) {
   Function* callee = m_module->getFunction(funCall.name());
-  assert(callee);
-  Value* value = m_builder.CreateCall(callee, vector<Value*>(), "calltmp");
-  m_values.push_back( value );
+  if (!callee) {
+    throw runtime_error::runtime_error("Function not defined");
+  }
+
+  const list<AstNode*>& argsAst = funCall.args().childs();
+
+  if (callee->arg_size() != argsAst.size()) {
+    throw runtime_error::runtime_error("Number of arguments do not match");
+  }
+
+  vector<Value*> argsIr;
+  for ( list<AstNode*>::const_iterator i = argsAst.begin();
+        i != argsAst.end(); ++i ) {
+    (*i)->accept(*this);
+    argsIr.push_back(valuesBackAndPop());
+  }
+
+  Value* callsValueIr = m_builder.CreateCall(callee, argsIr, "calltmp");
+  m_values.push_back( callsValueIr );
 }
 
 void IrBuilderAst::visit(const AstDataDef& dataDef) {
