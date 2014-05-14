@@ -16,6 +16,6 @@ int main(int argc, char** argv) {
     exit(1);
   }
   IrBuilderAst irBuilderAst;
-  cout << "Result = " << irBuilderAst.buildAndRunModule(*ast) << "\n";
+  cout << irBuilderAst.buildAndRunModule(*ast) << "\n";
   return 0;
 }
