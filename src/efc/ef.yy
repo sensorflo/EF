@@ -14,6 +14,18 @@
 {
   class Driver;
   #include "../ast.h"
+
+  struct RawAstDataDecl {
+    RawAstDataDecl(const std::string& name) : m_name(name) {};
+    std::string m_name;
+  };  
+
+  struct RawAstDataDef {
+    RawAstDataDef(RawAstDataDecl* decl, AstSeq* initValue = NULL) :
+      m_decl(decl), m_initValue(initValue) {};
+    RawAstDataDecl* m_decl;
+    AstSeq* m_initValue;
+  };  
 }
 
 %param { Driver& driver }
@@ -72,10 +84,14 @@
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
 %type <AstSeq*> maybe_empty_expr expr pure_expr expr_without_comma opt_else
-%type <AstValue*> sub_expr sub_expr_leaf
+%type <AstValue*> sub_expr sub_expr_leaf naked_if
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <std::string> param_decl
 %type <AstDataDecl::EStorage> valvar
+%type <RawAstDataDecl*> naked_data_decl naked_data_decl_opt_type
+%type <RawAstDataDef*> naked_data_def
+%type <AstFunDecl*> naked_fun_decl
+%type <AstFunDef*> naked_fun_def
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -193,21 +209,53 @@ sub_expr_leaf
   | LBRACE expr RBRACE                              { $$ = $2; }
   | ID                                              { $$ = new AstSymbol(new std::string($1)); }
 
+
   /* declarations of data object */
-  | DECL valvar ID COLON type_expr                SEMICOLON { $$ = new AstDataDecl($3, $2); }
+  | DECL        valvar naked_data_decl SEMICOLON                     { $$ = new AstDataDecl($3->m_name, $2); delete $3; } 
+  | DECL LPAREN valvar naked_data_decl RPAREN                        { $$ = new AstDataDecl($4->m_name, $3); delete $4; } 
 
   /* definitions of data object */
-  |      valvar ID opt_colon_type_expr EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, $1), $5); }
-  |      valvar ID COLON type_expr                SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, $1)); }
+  | valvar        naked_data_def SEMICOLON                           { $$ = new AstDataDef( new AstDataDecl($2->m_decl->m_name, $1), $2->m_initValue); delete $2->m_decl; delete $2; }
+  | valvar LPAREN naked_data_def RPAREN                              { $$ = new AstDataDef( new AstDataDecl($3->m_decl->m_name, $1), $3->m_initValue); delete $3->m_decl; delete $3; }
 
-  /* declaration of code object */
-  | DECL FUN ID COLON param_ct_list opt_arrow_type SEMICOLON                        { $$ = new AstFunDecl($3, $5); }
 
-  /* definition of code object */
-  |      FUN ID COLON param_ct_list opt_arrow_type EQUAL maybe_empty_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $7); }
+  /* declarations of code object */
+  | DECL        FUN naked_fun_decl SEMICOLON                         { $$ = $3; }
+  | DECL LPAREN FUN naked_fun_decl RPAREN                            { $$ = $4; }
+
+  /* definitions of code object */
+  | FUN        naked_fun_def SEMICOLON                               { $$ = $2; }
+  | FUN LPAREN naked_fun_def RPAREN                                  { $$ = $3; }
+
 
   /* flow control - conditionals */
-  | IF expr COLON expr opt_elif_list opt_else SEMICOLON              { ($5)->push_front(AstIf::ConditionActionPair($2, $4)); $$ = new AstIf($5, $6); }
+  | IF        naked_if SEMICOLON                                     { std::swap($$,$2); }
+  | IF LPAREN naked_if RPAREN                                        { std::swap($$,$3); }
+  ;
+
+naked_data_decl
+  : ID COLON type_expr                                               { $$ = new RawAstDataDecl($1); }
+  ;
+
+naked_data_decl_opt_type
+  : ID opt_colon_type_expr                                           { $$ = new RawAstDataDecl($1); }
+  ;
+
+naked_data_def
+  : naked_data_decl_opt_type EQUAL expr                              { $$ = new RawAstDataDef($1, $3); }
+  | naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
+  ;
+
+naked_fun_def
+  : naked_fun_decl EQUAL maybe_empty_expr                            { $$ = new AstFunDef($1, $3); }
+  ;
+  
+naked_fun_decl
+  : ID COLON param_ct_list opt_arrow_type                            { $$ = new AstFunDecl($1, $3); }
+  ;
+
+naked_if
+  : expr COLON expr opt_elif_list opt_else                           { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
   ;
 
 valvar
