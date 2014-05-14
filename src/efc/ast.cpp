@@ -128,8 +128,8 @@ AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstSeq* els
   m_elseAction(elseAction) {
   assert(m_conditionActionPairs);
   assert(!m_conditionActionPairs->empty());
-  assert(m_conditionActionPairs.front().m_condition);
-  assert(m_conditionActionPairs.front().m_action);
+  assert(m_conditionActionPairs->front().m_condition);
+  assert(m_conditionActionPairs->front().m_action);
 }
   
 AstIf::AstIf(AstSeq* cond, AstSeq* action, AstSeq* elseAction) :
@@ -137,8 +137,8 @@ AstIf::AstIf(AstSeq* cond, AstSeq* action, AstSeq* elseAction) :
   m_elseAction(elseAction) {
   assert(m_conditionActionPairs);
   assert(!m_conditionActionPairs->empty());
-  assert(m_conditionActionPairs.front().m_condition);
-  assert(m_conditionActionPairs.front().m_action);
+  assert(m_conditionActionPairs->front().m_condition);
+  assert(m_conditionActionPairs->front().m_action);
 }
   
 AstIf::~AstIf() {

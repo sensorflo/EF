@@ -147,7 +147,6 @@ void IrBuilderAst::visit(const AstNumber& number) {
 
 void IrBuilderAst::visit(const AstSymbol& symbol) {
   const SymbolTableEntry& stentry = m_symbolTable[symbol.name()];
-  assert(stentry && stentry.m_value);
   m_values.push_back(
     symbol.valueCategory()==AstSymbol::eLValue || stentry.m_storage==eValue ?
     stentry.m_value :
@@ -196,7 +195,7 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl) {
   if ( functionIr->getName() != funDecl.name() ) {
     functionIr->eraseFromParent();
     functionIr = m_module->getFunction(funDecl.name());
-    assert(functionIr->arg_size() == funDecl.args.size());
+    assert(functionIr->arg_size() == funDecl.args().size());
   }
   else {
     list<string>::const_iterator iterAst = funDecl.args().begin();

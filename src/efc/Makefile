@@ -1,4 +1,4 @@
-CXXFLAGS += `llvm-config --cxxflags | sed 's/-fno-exceptions//'` -O0 -Wall -Werror -ggdb3 -std=c++98 #-pedantic
+CXXFLAGS += `llvm-config --cxxflags | sed 's/-fno-exceptions\|-DNDEBUG//g'` -O0 -Wall -Werror -ggdb3 -std=c++98 #-pedantic
 LDFLAGS += `llvm-config --ldflags`
 LIBS += `llvm-config --libs core jit native interpreter`
 CXX = clang++
