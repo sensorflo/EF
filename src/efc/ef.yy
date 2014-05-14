@@ -75,6 +75,7 @@
 %type <AstValue*> sub_expr sub_expr_leaf
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <std::string> param_decl
+%type <AstDataDecl::EStorage> valvar
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -193,14 +194,11 @@ sub_expr_leaf
   | ID                                              { $$ = new AstSymbol(new std::string($1)); }
 
   /* declarations of data object */
-  | DECL VAL ID COLON type_expr                SEMICOLON { $$ = new AstDataDecl($3); }
-  | DECL VAR ID COLON type_expr                SEMICOLON { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
+  | DECL valvar ID COLON type_expr                SEMICOLON { $$ = new AstDataDecl($3, $2); }
 
   /* definitions of data object */
-  |      VAL ID opt_colon_type_expr EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $5); }
-  |      VAR ID opt_colon_type_expr EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
-  |      VAL ID COLON type_expr                SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
-  |      VAR ID COLON type_expr                SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
+  |      valvar ID opt_colon_type_expr EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, $1), $5); }
+  |      valvar ID COLON type_expr                SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, $1)); }
 
   /* declaration of code object */
   | DECL FUN ID COLON param_ct_list opt_arrow_type SEMICOLON                        { $$ = new AstFunDecl($3, $5); }
@@ -210,6 +208,11 @@ sub_expr_leaf
 
   /* flow control - conditionals */
   | IF expr COLON expr opt_elif_list opt_else SEMICOLON              { ($5)->push_front(AstIf::ConditionActionPair($2, $4)); $$ = new AstIf($5, $6); }
+  ;
+
+valvar
+  : VAL                                                              { $$ = AstDataDecl::eValue; }
+  | VAR	                                                             { $$ = AstDataDecl::eAlloca; }
   ;
 
 opt_elif_list
