@@ -119,7 +119,7 @@ basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
 }
 
 AstOperator::AstOperator(char op, AstValue* lhs, AstValue* rhs) :
-  m_op(op),
+  m_op(static_cast<EOperation>(op)),
   m_lhs(lhs ? lhs : new AstNumber(0)),
   m_rhs(rhs ? rhs : new AstNumber(0)) {
   assert(m_lhs);
@@ -132,7 +132,7 @@ AstOperator::~AstOperator() {
 }
 
 basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
-  os << m_op << '(';
+  os << static_cast<char>(m_op) << '(';
   m_lhs->printTo(os);
   os << ' ';
   m_rhs->printTo(os);

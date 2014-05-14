@@ -128,11 +128,11 @@ void IrBuilderAst::visit(const AstOperator& op) {
   Value* rhs = valuesBackAndPop();
   Value* result = NULL;
   switch (op.op()) {
-  case '=': result = m_builder.CreateStore(rhs, lhs); break;
-  case '-': result = m_builder.CreateSub(lhs, rhs, "subtmp"); break;
-  case '+': result = m_builder.CreateAdd(lhs, rhs, "addtmp"); break;
-  case '*': result = m_builder.CreateMul(lhs, rhs, "multmp"); break;
-  case '/': result = m_builder.CreateSDiv(lhs, rhs, "divtmp"); break;
+  case AstOperator::eAssign   : result = m_builder.CreateStore(rhs, lhs); break;
+  case AstOperator::eSub      : result = m_builder.CreateSub(lhs, rhs, "subtmp"); break;
+  case AstOperator::eAdd      : result = m_builder.CreateAdd(lhs, rhs, "addtmp"); break;
+  case AstOperator::eMul      : result = m_builder.CreateMul(lhs, rhs, "multmp"); break;
+  case AstOperator::eDiv      : result = m_builder.CreateSDiv(lhs, rhs, "divtmp"); break;
   default: assert(false); break;
   }
   assert(result);

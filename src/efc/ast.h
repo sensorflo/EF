@@ -151,17 +151,25 @@ private:
 
 class AstOperator : public AstValue {
 public:
+  enum EOperation {
+    eAssign = '=',
+    eAdd = '+',
+    eSub = '-',
+    eMul = '*',
+    eDiv = '/',
+    ePlus = '+'
+  };
   AstOperator(char op, AstValue* lhs, AstValue* rhs);
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
-  char op() const { return m_op; }
+  EOperation op() const { return m_op; }
   const AstValue& lhs() const { return *m_lhs; }
   const AstValue& rhs() const { return *m_rhs; }
 private:
   AstOperator(const AstOperator&);
   AstOperator& operator=(const AstOperator&);
-  const char m_op;
+  const EOperation m_op;
   const AstValue* const m_lhs;
   const AstValue* const m_rhs;
 };
