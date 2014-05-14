@@ -98,3 +98,24 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
   EXPECT_FALSE( driver.d().gotError() );
 }
+
+TEST(ScannerTest, MAKE_TEST_NAME(
+    a_comment_given_by_a_sharp_sign_upto_newline,
+    yylex_is_called_repeatedly,
+    returns_a_token_sequence_which_ignores_the_comment)) {
+  DriverOnTmpFile driver( "x #foo\n y" );
+  EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
+  EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
+  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  EXPECT_FALSE( driver.d().gotError() );
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
+    a_comment_on_last_line_of_file,
+    yylex_is_called_repeatedly,
+    returns_a_token_sequence_which_ignores_the_comment)) {
+  DriverOnTmpFile driver( "x #foo" );
+  EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
+  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+  EXPECT_FALSE( driver.d().gotError() );
+}

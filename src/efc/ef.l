@@ -37,6 +37,7 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
   loc.step();
 %}
  
+#[^\n]*             loc.step();
 [ \t]+              loc.step();
 if                  return yy::Parser::make_IF(loc);
 elif                return yy::Parser::make_ELIF(loc);
