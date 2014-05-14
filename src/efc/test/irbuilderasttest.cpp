@@ -14,6 +14,15 @@ public:
   using IrBuilderAst::m_module;
 };
 
+string amendAst(const AstNode* ast) {
+  assert(ast);
+  return string("\nInput AST in its canonical form:\n") + ast->toStr() + "\n";
+}
+
+string amendAst(const auto_ptr<AstSeq>& ast) {
+  return amendAst(ast.get());
+}
+
 void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
   const string& spec = "") {
 
@@ -25,7 +34,7 @@ void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
   // execute & verify
   EXPECT_EQ(expectedResult, UUT.buildAndRunModule(*astSeq)) <<
     amendSpec(spec) <<
-    "\nInput AST in its canonical form:\n" << astSeq->toStr() << "\n";
+    amendAst(astSeq);
 }
 
 #define TEST_BUILD_AND_RUN_MODULE(astSeq, expectedResult, spec) \
