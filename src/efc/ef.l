@@ -36,9 +36,12 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 %{
   loc.step();
 %}
- 
+
+  /* comments and blanks */
 #[^\n]*             loc.step();
 [ \t]+              loc.step();
+
+  /* keywords */
 if                  return yy::Parser::make_IF(loc);
 elif                return yy::Parser::make_ELIF(loc);
 else                return yy::Parser::make_ELSE(loc);
@@ -47,6 +50,7 @@ val                 return yy::Parser::make_VAL(loc);
 var                 return yy::Parser::make_VAR(loc);
 decl                return yy::Parser::make_DECL(loc);
 
+  /* literal number */
 [0-9]+{ID}?  {
   errno = 0;
   char* suffix = NULL;
@@ -68,6 +72,7 @@ decl                return yy::Parser::make_DECL(loc);
   return yy::Parser::make_NUMBER(number, loc);
 }
 
+  /* punctuation */
 ":="                return yy::Parser::make_COLON_EQUAL(loc);
 "->"                return yy::Parser::make_ARROW(loc);
 
@@ -84,7 +89,7 @@ decl                return yy::Parser::make_DECL(loc);
 "{"                 return yy::Parser::make_LBRACE(loc);
 "}"                 return yy::Parser::make_RBRACE(loc);
 
-
+  /* misc */
 {ID}                return yy::Parser::make_ID(yytext, loc);
 <<EOF>>             return yy::Parser::make_END_OF_FILE(loc);
 .                   driver.error(loc, "invalid character");
