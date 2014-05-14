@@ -40,6 +40,7 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
   /* comments and blanks */
 #[^*\n][^\n]*       loc.step();
 #$                  loc.step();
+#\*[^*]*(\*[^#*][^*]*)*\*+#   loc.step();
 [ \t]+              loc.step();
 
   /* keywords */

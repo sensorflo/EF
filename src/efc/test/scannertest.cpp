@@ -150,11 +150,55 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    a_comment_on_last_line_of_file,
+    a_program_containing_a_multi_line_comment_defined_as_chars_between_sharp_star_and_star_sharp,
     yylex_is_called_repeatedly,
     returns_a_token_sequence_which_ignores_the_comment)) {
-  DriverOnTmpFile driver( "x #foo" );
-  EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
-  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
-  EXPECT_FALSE( driver.d().gotError() );
+
+  string spec = "trivial example";
+  {
+    DriverOnTmpFile driver( "#*foo*#" );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+    EXPECT_FALSE( driver.d().gotError() );
+  }
+
+  spec = "simple example";
+  {
+    DriverOnTmpFile driver( "x #*foo*# y" );
+    EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+    EXPECT_FALSE( driver.d().gotError() );
+  }
+
+  spec = "example: comment contains newlines";
+  {
+    DriverOnTmpFile driver( "x #*foo\nbar*# y" );
+    EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+    EXPECT_FALSE( driver.d().gotError() );
+  }
+
+  spec = "example: comment contains *";
+  {
+    DriverOnTmpFile driver( "x #* foo*bar *# y" );
+    EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+    EXPECT_FALSE( driver.d().gotError() );
+  }
+
+  spec = "border case example: empty comment";
+  {
+    DriverOnTmpFile driver( "#**#" );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+    EXPECT_FALSE( driver.d().gotError() );
+  }
+
+  spec = "border case example: only stars inside comment";
+  {
+    DriverOnTmpFile driver( "#***#" );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+    EXPECT_FALSE( driver.d().gotError() );
+  }
 }
