@@ -100,14 +100,53 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    a_comment_given_by_a_sharp_sign_upto_newline,
+    a_program_containing_a_comment_defined_by_a_sharp_sign_upto_and_inclusive_next_newline_or_end_of_file,
     yylex_is_called_repeatedly,
     returns_a_token_sequence_which_ignores_the_comment)) {
-  DriverOnTmpFile driver( "x #foo\n y" );
-  EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
-  EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
-  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
-  EXPECT_FALSE( driver.d().gotError() );
+
+  string spec = "Trivial example";
+  {
+    DriverOnTmpFile driver( "#foo\n" );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+
+  spec = "Simple example";
+  {
+    DriverOnTmpFile driver( "if #foo\n if" );
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+
+  spec = "Border case example: the # is the last char before the newline";
+  {
+    DriverOnTmpFile driver( "if #\n if" );
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+
+  spec = "Border case example: the single line comment is on the last line"
+    "of the file which is not delimited by newline";
+  {
+    DriverOnTmpFile driver( "if #foo" );
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+
+  /* Sadly I can't get this to work
+  spec = "Border case example: the # is the last char in the file";
+  {
+    DriverOnTmpFile driver( "if #" );
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+  */
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
