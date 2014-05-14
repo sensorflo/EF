@@ -58,6 +58,7 @@
   RPAREN ")"
   LBRACE "{"
   RBRACE "}"
+  ARROW "->"
 ;
 
 %token <std::string> ID "identifier"
@@ -73,6 +74,7 @@
 %type <AstSeq*> maybe_empty_expr expr pure_expr expr_without_comma opt_else
 %type <AstValue*> sub_expr sub_expr_leaf
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
+%type <std::string> param_decl
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -141,8 +143,28 @@ param_ct_list
   ;
 
 pure_naked_param_ct_list
-  : ID                                              { $$ = new std::list<std::string>(); ($$)->push_back($1); }
-  | pure_naked_param_ct_list COMMA ID               { ($1)->push_back($3); std::swap($$,$1); }
+  : param_decl                                      { $$ = new std::list<std::string>(); ($$)->push_back($1); }
+  | pure_naked_param_ct_list COMMA param_decl       { ($1)->push_back($3); std::swap($$,$1); }
+  ;
+
+param_decl
+  : ID COLON type_expr                              { swap($$,$1); /* currently ignores type */ }
+  ;
+  
+type_expr
+  : ID
+  ;
+
+opt_colon_type_expr
+  : %empty
+  | COLON 
+  | COLON type_expr
+  ;
+
+opt_arrow_type
+  : %empty
+  | ARROW 
+  | ARROW type_expr
   ;
 
 opt_comma
@@ -171,26 +193,20 @@ sub_expr_leaf
   | ID                                              { $$ = new AstSymbol(new std::string($1)); }
 
   /* declarations of data object */
-  | DECL VAL ID COLON /*type*/            SEMICOLON { $$ = new AstDataDecl($3); }
-  | DECL VAL ID                           SEMICOLON { $$ = new AstDataDecl($3); }
-  | DECL VAR ID COLON /*type*/            SEMICOLON { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
-  | DECL VAR ID                           SEMICOLON { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
+  | DECL VAL ID COLON type_expr                SEMICOLON { $$ = new AstDataDecl($3); }
+  | DECL VAR ID COLON type_expr                SEMICOLON { $$ = new AstDataDecl($3, AstDataDecl::eAlloca); }
 
   /* definitions of data object */
-  |      VAL ID COLON /*type*/ EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $5); }
-  |      VAL ID                EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $4); }
-  |      VAR ID COLON /*type*/ EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
-  |      VAR ID                EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $4); }
-  |      VAL ID COLON /*type*/            SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
-  |      VAL ID                           SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
-  |      VAR ID COLON /*type*/            SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
-  |      VAR ID                           SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
+  |      VAL ID opt_colon_type_expr EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2), $5); }
+  |      VAR ID opt_colon_type_expr EQUAL expr SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca), $5); }
+  |      VAL ID COLON type_expr                SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2)); }
+  |      VAR ID COLON type_expr                SEMICOLON { $$ = new AstDataDef(new AstDataDecl($2, AstDataDecl::eAlloca)); }
 
   /* declaration of code object */
-  | DECL FUN ID COLON param_ct_list                        SEMICOLON { $$ = new AstFunDecl($3, $5); }
+  | DECL FUN ID COLON param_ct_list opt_arrow_type SEMICOLON                        { $$ = new AstFunDecl($3, $5); }
 
   /* definition of code object */
-  |      FUN ID COLON param_ct_list EQUAL maybe_empty_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $6); }
+  |      FUN ID COLON param_ct_list opt_arrow_type EQUAL maybe_empty_expr SEMICOLON { $$ = new AstFunDef(new AstFunDecl($2, $4), $7); }
 
   /* flow control - conditionals */
   | IF expr COLON expr opt_elif_list opt_else SEMICOLON              { ($5)->push_front(AstIf::ConditionActionPair($2, $4)); $$ = new AstIf($5, $6); }

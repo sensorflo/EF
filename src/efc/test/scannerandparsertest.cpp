@@ -111,21 +111,30 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_function_declaration,
     parse,
     succeeds_AND_returns_correct_AST) ) {
-  string spec = "example with zero arguments";
-  TEST_PARSE( "decl fun foo: ();", "seq(declfun(foo ()))", spec);
-  TEST_PARSE( "decl fun foo:;", "seq(declfun(foo ()))", spec);
+  string spec = "example with zero arguments and explicit return type";
+  TEST_PARSE( "decl fun foo: () -> int;", "seq(declfun(foo ()))", spec);
+  TEST_PARSE( "decl fun foo: () -> int;", "seq(declfun(foo ()))", spec);
+  TEST_PARSE( "decl fun foo:    -> int;", "seq(declfun(foo ()))", spec);
 
-  spec = "example with one argument";
-  TEST_PARSE( "decl fun foo: arg1;", "seq(declfun(foo (arg1)))", spec);
-  TEST_PARSE( "decl fun foo: (arg1);", "seq(declfun(foo (arg1)))", spec);
+  spec = "example with one argument and explicity return type";
+  TEST_PARSE( "decl fun foo: arg1:int   -> int;", "seq(declfun(foo (arg1)))", spec);
+  TEST_PARSE( "decl fun foo: (arg1:int) -> int;", "seq(declfun(foo (arg1)))", spec);
 
-  spec = "example with two arguments";
-  TEST_PARSE( "decl fun foo: arg1, arg2;", "seq(declfun(foo (arg1 arg2)))", spec);
-  TEST_PARSE( "decl fun foo: (arg1, arg2);", "seq(declfun(foo (arg1 arg2)))", spec);
+  spec = "example with two arguments and explicity return type";
+  TEST_PARSE( "decl fun foo: arg1:int, arg2:int   -> int;", "seq(declfun(foo (arg1 arg2)))", spec);
+  TEST_PARSE( "decl fun foo: (arg1:int, arg2:int) -> int;", "seq(declfun(foo (arg1 arg2)))", spec);
+
+  spec = "example with implicit return type";
+  TEST_PARSE( "decl fun foo:           ;", "seq(declfun(foo ()))", spec);
+  TEST_PARSE( "decl fun foo: ()        ;", "seq(declfun(foo ()))", spec);
+  TEST_PARSE( "decl fun foo: arg1:int  ;", "seq(declfun(foo (arg1)))", spec);
+  TEST_PARSE( "decl fun foo: (arg1:int);", "seq(declfun(foo (arg1)))", spec);
 
   spec = "should allow trailing comma in argument list";
-  TEST_PARSE( "decl fun foo: arg1,;", "seq(declfun(foo (arg1)))", spec);
-  TEST_PARSE( "decl fun foo: (arg1,);", "seq(declfun(foo (arg1)))", spec);
+  TEST_PARSE( "decl fun foo: arg1:int,   -> int;", "seq(declfun(foo (arg1)))", spec);
+  TEST_PARSE( "decl fun foo: (arg1:int,) -> int;", "seq(declfun(foo (arg1)))", spec);
+  TEST_PARSE( "decl fun foo: arg1:int,         ;", "seq(declfun(foo (arg1)))", spec);
+  TEST_PARSE( "decl fun foo: (arg1:int,)       ;", "seq(declfun(foo (arg1)))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -134,7 +143,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "example with one argument and a body just returning the arg";
-  TEST_PARSE( "fun foo: (x) = x;", "seq(fun(declfun(foo (x)) seq(x)))", "");
+  TEST_PARSE( "fun foo: (x:int) -> int = x;", "seq(fun(declfun(foo (x)) seq(x)))", "");
+  TEST_PARSE( "fun foo: (x:int) -> int = x;", "seq(fun(declfun(foo (x)) seq(x)))", "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -143,24 +153,29 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "example with zero arguments and trivial body";
-  TEST_PARSE( "fun foo: = 42;", "seq(fun(declfun(foo ()) seq(42)))", spec);
-  TEST_PARSE( "fun foo: () = 42;", "seq(fun(declfun(foo ()) seq(42)))", spec);
+  TEST_PARSE( "fun foo:           = 42;", "seq(fun(declfun(foo ()) seq(42)))", spec);
+  TEST_PARSE( "fun foo: ()        = 42;", "seq(fun(declfun(foo ()) seq(42)))", spec);
+  TEST_PARSE( "fun foo: () -> int = 42;", "seq(fun(declfun(foo ()) seq(42)))", spec);
 
   spec = "example with zero arguments and simple but not trivial body";
-  TEST_PARSE( "fun foo: = 42 1+2;", "seq(fun(declfun(foo ()) seq(42 +(1 2))))", spec);
-  TEST_PARSE( "fun foo: () = 42 1+2;", "seq(fun(declfun(foo ()) seq(42 +(1 2))))", spec);
+  TEST_PARSE( "fun foo:           = 42 1+2;", "seq(fun(declfun(foo ()) seq(42 +(1 2))))", spec);
+  TEST_PARSE( "fun foo: ()        = 42 1+2;", "seq(fun(declfun(foo ()) seq(42 +(1 2))))", spec);
+  TEST_PARSE( "fun foo: () -> int = 42 1+2;", "seq(fun(declfun(foo ()) seq(42 +(1 2))))", spec);
 
   spec = "example with one argument and trivial body";
-  TEST_PARSE( "fun foo: arg1 = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))", spec);
-  TEST_PARSE( "fun foo: (arg1) = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))", spec);
+  TEST_PARSE( "fun foo: arg1:int          = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))", spec);
+  TEST_PARSE( "fun foo: (arg1:int)        = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))", spec);
+  TEST_PARSE( "fun foo: (arg1:int) -> int = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))", spec);
 
   spec = "should allow trailing comma in argument list";
-  TEST_PARSE( "fun foo: arg1, = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))", spec);
-  TEST_PARSE( "fun foo: (arg1,) = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))", spec);
+  TEST_PARSE( "fun foo: arg1:int,          = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))", spec);
+  TEST_PARSE( "fun foo: (arg1:int,)        = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))", spec);
+  TEST_PARSE( "fun foo: (arg1:int,) -> int = 42;", "seq(fun(declfun(foo (arg1)) seq(42)))", spec);
 
   spec = "example with two arguments and trivial body";
-  TEST_PARSE( "fun foo: arg1, arg2 = 42;", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))", spec);
-  TEST_PARSE( "fun foo: (arg1, arg2) = 42;", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))", spec);
+  TEST_PARSE( "fun foo: arg1:int, arg2:int          = 42;", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))", spec);
+  TEST_PARSE( "fun foo: (arg1:int, arg2:int)        = 42;", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))", spec);
+  TEST_PARSE( "fun foo: (arg1:int, arg2:int) -> int = 42;", "seq(fun(declfun(foo (arg1 arg2)) seq(42)))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -177,10 +192,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_correct_AST) ) {
   string spec = "trivial example";
-  TEST_PARSE( "decl val foo:;", "seq(decldata(foo))", spec);
-  TEST_PARSE( "decl val foo ;", "seq(decldata(foo))", spec);
-  TEST_PARSE( "decl var foo:;", "seq(decldata(foo mut))", spec);
-  TEST_PARSE( "decl var foo ;", "seq(decldata(foo mut))", spec);
+  TEST_PARSE( "decl val foo:int;", "seq(decldata(foo))", spec);
+  TEST_PARSE( "decl var foo:int;", "seq(decldata(foo mut))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -188,17 +201,17 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_correct_AST) ) {
 
-  string spec = "trivial example";
-  TEST_PARSE( "val foo: = 42;", "seq(data(decldata(foo) seq(42)))", spec);
-  TEST_PARSE( "val foo  = 42;", "seq(data(decldata(foo) seq(42)))", spec);
-  TEST_PARSE( "var foo: = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
-  TEST_PARSE( "var foo  = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
+  string spec = "trivial example with explicit init value";
+  TEST_PARSE( "val foo: int = 42;", "seq(data(decldata(foo) seq(42)))", spec);
+  TEST_PARSE( "val foo:     = 42;", "seq(data(decldata(foo) seq(42)))", spec);
+  TEST_PARSE( "val foo      = 42;", "seq(data(decldata(foo) seq(42)))", spec);
+  TEST_PARSE( "var foo: int = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
+  TEST_PARSE( "var foo:     = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
+  TEST_PARSE( "var foo      = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
 
-  spec = "implicit init value";
-  TEST_PARSE( "val foo:;", "seq(data(decldata(foo)))", spec);
-  TEST_PARSE( "val foo ;", "seq(data(decldata(foo)))", spec);
-  TEST_PARSE( "var foo:;", "seq(data(decldata(foo mut)))", spec);
-  TEST_PARSE( "var foo ;", "seq(data(decldata(foo mut)))", spec);
+  spec = "trivial example with implicit init value";
+  TEST_PARSE( "val foo:int;", "seq(data(decldata(foo)))", spec);
+  TEST_PARSE( "var foo:int;", "seq(data(decldata(foo mut)))", spec);
 
   spec = "short version with implicit type";
   TEST_PARSE( "foo:=42", "seq(data(decldata(foo) seq(42)))", spec);

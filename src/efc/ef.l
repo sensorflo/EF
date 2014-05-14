@@ -68,6 +68,7 @@ decl                return yy::Parser::make_DECL(loc);
 }
 
 ":="                return yy::Parser::make_COLON_EQUAL(loc);
+"->"                return yy::Parser::make_ARROW(loc);
 
 ";"                 return yy::Parser::make_SEMICOLON(loc);
 ":"                 return yy::Parser::make_COLON(loc);
