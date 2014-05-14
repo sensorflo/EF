@@ -64,12 +64,16 @@ private:
 class AstFunDecl : public AstValue {
 public:
   AstFunDecl(const std::string& name, std::list<std::string>* args = NULL);
+  AstFunDecl(const std::string& name, const std::string& arg1,
+    const std::string& arg2 = "", const std::string& arg3 = "");
   ~AstFunDecl();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
   virtual const std::list<std::string>& args() const { return *m_args; }
 private:
+  static std::list<std::string>* createArgs(const std::string& arg1 = "",
+    const std::string& arg2 = "", const std::string& arg3 = "");
   const std::string m_name;
   /** We're the owner. Is garanteed to be non-null */
   const std::list<std::string>* const m_args;

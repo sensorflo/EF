@@ -53,6 +53,15 @@ AstFunDecl::AstFunDecl(const string& name, list<string>* args) :
   assert(m_args);
 }
 
+/** Same as overloaded ctor for convenience; it's easier to pass short
+argument lists. An empty string means 'no argument'. */
+AstFunDecl::AstFunDecl(const string& name, const string& arg1,
+  const string& arg2, const string& arg3) :
+  m_name(name),
+  m_args(createArgs(arg1, arg2, arg3)) {
+  assert(m_args);
+}
+
 AstFunDecl::~AstFunDecl() {
   delete m_args;
 }
@@ -66,6 +75,15 @@ basic_ostream<char>& AstFunDecl::printTo(basic_ostream<char>& os) const {
   }
   os << "))";
   return os;
+}
+
+list<string>* AstFunDecl::createArgs(const string& arg1, const string& arg2,
+  const string& arg3) {
+  list<string>* args = new list<string>;
+  if (!arg1.empty()) { args->push_back(arg1); }
+  if (!arg2.empty()) { args->push_back(arg2); }
+  if (!arg3.empty()) { args->push_back(arg3); }
+  return args;
 }
 
 AstDataDecl::AstDataDecl(const string& name, EStorage storage) :
