@@ -265,13 +265,15 @@ void IrBuilderAst::visit(const AstDataDecl& dataDecl,
 
 void IrBuilderAst::visit(const AstDataDef& dataDef) {
   // process data declaration. That ensures an entry in the symbol table
-  dataDef.decl().accept(*this);
+  SymbolTableEntry* stentry = NULL;
+  visit(dataDef.decl(), stentry);
   assert(!m_values.empty());
   m_values.pop_back(); // pop dummy value pushed by visiting AstDataDecl
+  assert(stentry);
 
-  // process initizialization of data object. Also already push value of our
-  // new symbol on the values stack; the value equals the initializations
-  // value
+  // Calculate value to initialzie new data object with. Also already push
+  // that value on the values stack, since that is the result of the data
+  // object declaration expression.
   Value* initValue = NULL;
   if (dataDef.initValue()) {
     dataDef.initValue()->accept(*this);
@@ -282,19 +284,21 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
   }
   assert(initValue);
 
-  // 
-  SymbolTableEntry& stentry = m_symbolTable[dataDef.decl().name()];
-  if ( dataDef.decl().storage()==AstDataDecl::eAlloca ) {
+  // define m_value (type Value*) of symbol table entry. For values that is
+  // trivial. For variables aka allocas first an alloca has to be created.
+  if ( stentry->m_storage==eValue ) {
+    stentry->m_value = initValue;
+  }
+  else if ( stentry->m_storage==eAlloca ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
     assert(functionIr);
     AllocaInst* alloca =
       createEntryBlockAlloca(functionIr, dataDef.decl().name());
     assert(alloca);
     m_builder.CreateStore(initValue, alloca);
-    stentry = SymbolTableEntry(alloca, eAlloca);
-  } else {
-    stentry = SymbolTableEntry(initValue, eValue);  
+    stentry->m_value = alloca;
   }
+  else { assert(false); }
 
   // Nothing to push on the values stack, that was already done earlier in
   // this method.
