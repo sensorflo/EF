@@ -19,8 +19,7 @@ val foo1 =  if x: y else z;
 
 
 # Conceptually every construct is a call 
-# ----------------------------------------
-# 
+# --------------------------------------
 # Conceptually, from syntax point of view, everything, also flow control
 # constructs, declarations, definitions etc., are function calls like
 # 'foo(arg1,arg2)'. Its only that EF provides another syntax which however is

@@ -22,6 +22,6 @@ fun square: (x:int) -> int =
 # Function calls
 # --------------
 # A function call has same syntax as in C languages: 'foo(arg1,arg2)'.
-square(2) # result of the implicit main method
+square(2)
 
 

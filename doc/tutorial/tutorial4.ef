@@ -22,4 +22,3 @@ fun factorial: (x:int) -> int =
 # overwrite precedence.
 {1 + 2} * 3 # evaluates to 9, equivalent to '(1 + 2) * 3' in most languages
 
-
