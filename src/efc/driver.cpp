@@ -8,6 +8,7 @@ using namespace yy;
 
 extern FILE* yyin;
 extern void yyrestart(FILE*);
+extern void yyinitializeParserLoc(string* filename);
 
 Driver::Driver(const std::string& fileName) :
   m_gotError(false),
@@ -24,6 +25,7 @@ Driver::Driver(const std::string& fileName) :
   } else if (!(yyin = fopen(m_fileName.c_str(), "r"))) {
     exitInternError("cannot open " + m_fileName + ": " + strerror(errno));
   }
+  yyinitializeParserLoc(&m_fileName);
   yyrestart(yyin);
 }
 

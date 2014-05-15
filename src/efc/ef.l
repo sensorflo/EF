@@ -22,7 +22,10 @@
 
  using namespace std;
  using namespace yy;
- static yy::location loc;
+ yy::location loc;
+ void yyinitializeParserLoc(string* filename) {
+   loc.initialize(filename);
+ }
 %}
 
   /* identifier */
