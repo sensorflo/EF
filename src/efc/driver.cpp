@@ -40,18 +40,25 @@ int Driver::parse(AstSeq*& astRoot) {
   return ret;
 }
 
+static std::basic_ostream<char>& print(std::basic_ostream<char>& os,
+  const location& loc) {
+  return os << *loc.begin.filename << ":" <<
+    loc.begin.line << ":" << 
+    loc.begin.column << ": ";
+}
+
 void Driver::warning(const location& loc, const string& msg) {
-  cerr << loc << ": warning: " << msg << "\n";
+  print(cerr,loc) << "warning: " << msg << "\n";
   m_gotWarning = true;
 }
 
 void Driver::error(const location& loc, const string& msg) {
-  cerr << loc << ": error: " << msg << "\n";
+  print(cerr,loc) << "error: " << msg << "\n";
   m_gotError = true;
 }
 
 void Driver::exitInternError(const location& loc, const string& msg) {
-  cerr << loc << ": internal error: " << msg << "\n";
+  print(cerr,loc) << "internal error: " << msg << "\n";
   exit(1);
 }
 
