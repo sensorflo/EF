@@ -100,15 +100,21 @@
 /* terminology
 
 pure
-  For list constructs: At least one element, all elements separated by
+  For list constructs: At least one element, all elements separated by a
   separator token, no trailing separator token (since its a separator, not
-  delimiter)
+  delimiter).
 
 (unqualified)
-  For list constructs: Allows an optional trailing separator token
+  For list constructs: Allows an optional trailing separator token.
 
 naked
-  No enclosing parentheses.
+  No enclosing delimiter like for example parentheses or keyword...;
+
+opt
+  Optional
+
+maybe_empty
+  Contains an empty rule among other non-empty rules.
 */
 
 
