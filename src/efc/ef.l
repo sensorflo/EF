@@ -40,7 +40,11 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
   /* comments and blanks */
 #[^*\n][^\n]*       loc.step();
 #$                  loc.step();
-#\*[^*]*(\*+[^#*]+)*\*+#   loc.step();
+#\*[^*]*(\*+[^#*]+)*\*+#   loc.step(); /* todo : loc.lines(countnewlines(yytext))
+                                          todo : ensure [^foo] matches newline
+                                          todo : loc.colums was updated with
+                                                 yyleng, which is a bug, since
+                                                 yytext contains newlines*/
 [ \t]+              loc.step();
 
   /* keywords */

@@ -7,6 +7,8 @@
 #include <errno.h>
 #include <stdlib.h>
 
+// todo: better use flex's yy_scan_string or yy_scan_buffer
+
 /** Creates a temporary file with the given content. The file is removed in
 the destructor. */
 class TmpFile {
