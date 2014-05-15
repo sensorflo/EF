@@ -208,19 +208,6 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    a_data_declaration,
-    parse,
-    succeeds_AND_returns_correct_AST) ) {
-  string spec = "trivial example";
-  //Toggling 1) val vs var
-  //Toggling 2) 'keyword...;' vs 'keyword(...)' syntax
-  TEST_PARSE( "decl val foo:int;", "seq(decldata(foo))", spec);
-  TEST_PARSE( "decl var foo:int;", "seq(decldata(foo mut))", spec);
-  TEST_PARSE( "decl(val foo:int)", "seq(decldata(foo))", spec);
-  TEST_PARSE( "decl(var foo:int)", "seq(decldata(foo mut))", spec);
-}
-
-TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_data_definition,
     parse,
     succeeds_AND_returns_correct_AST) ) {

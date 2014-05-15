@@ -3,15 +3,19 @@
 # The EF programming language tutorial part 5
 # ===========================================
 # 
-# Function / variable / value declarations
-# ----------------------------------------
-# Above we learned how to _define_ functions / variables / values. The
-# following shows how to _declare_ them. Declaring things will most likely be
-# a very seldom used feature since EF will have modules like most modern
-# programming languages (e.g. Java, D, Python etc) and not source/header files
-# like C/C++.
+# Function declarations
+# ---------------------
+# Above we learned how to _define_ functions. The following shows how to
+# _declare_ functions. Declaring things will most likely be a very seldom used
+# feature since EF will have modules like most modern programming languages
+# (e.g. Java, D, Python etc) and not source/header files like C/C++.
 decl fun fibonacci: (x:int) -> int;
-decl val x: int;
-decl var y: int;
+
+
+# Data object declarations
+# ------------------------
+# Declaring data object makes sense for global data objects, but not for local
+# data objects. EF currently only provides local data object, thus declaring
+# (global) data objects is not provided.
 
 42

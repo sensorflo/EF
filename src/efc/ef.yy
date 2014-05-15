@@ -216,11 +216,7 @@ sub_expr_leaf
   | ID                                              { $$ = new AstSymbol(new std::string($1)); }
 
 
-  /* declarations of data object */
-  | DECL        valvar naked_data_decl SEMICOLON                     { $$ = new AstDataDecl($3->m_name, $2); delete $3; } 
-  | DECL LPAREN valvar naked_data_decl RPAREN                        { $$ = new AstDataDecl($4->m_name, $3); delete $4; } 
-
-  /* definitions of data object */
+  /* definitions of data object. Declarations make no sense for local variables, and globals are not yet available. */
   | valvar        naked_data_def SEMICOLON                           { $$ = new AstDataDef( new AstDataDecl($2->m_decl->m_name, $1), $2->m_initValue); delete $2->m_decl; delete $2; }
   | valvar LPAREN naked_data_def RPAREN                              { $$ = new AstDataDef( new AstDataDecl($3->m_decl->m_name, $1), $3->m_initValue); delete $3->m_decl; delete $3; }
 
