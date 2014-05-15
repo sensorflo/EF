@@ -72,7 +72,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     throws)) {
   auto_ptr<AstSeq> astSeq(new AstSeq());
   IrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq));
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
