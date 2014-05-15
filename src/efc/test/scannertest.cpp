@@ -150,7 +150,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    a_program_containing_a_multi_line_comment_defined_as_chars_between_sharp_star_and_star_sharp,
+    a_program_containing_a_multi_line_comment_which_is_defined_as_everything_between_sharp_star_and_star_sharp,
     yylex_is_called_repeatedly,
     returns_a_token_sequence_which_ignores_the_comment)) {
 
