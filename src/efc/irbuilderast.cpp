@@ -160,8 +160,8 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
 }
 
 void IrBuilderAst::visit(const AstFunDef& funDef) {
-  funDef.decl().accept(*this);
-  Function* functionIr = valuesBackToFunction();
+  Function* functionIr = NULL;
+  visit(funDef.decl(), functionIr);
 
   m_symbolTable.clear();
   m_builder.SetInsertPoint(
@@ -189,13 +189,18 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
 }
 
 void IrBuilderAst::visit(const AstFunDecl& funDecl) {
+  Function* dummy;
+  visit(funDecl, dummy);
+}
+
+void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr) {
   // currently rettype and type of args is always int
   vector<Type*> argsIr(funDecl.args().size(),
     Type::getInt32Ty(getGlobalContext()));
   Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
   FunctionType* functionTypeIr = FunctionType::get(retTypeIr, argsIr, false);
   assert(functionTypeIr);
-  Function* functionIr = Function::Create( functionTypeIr,
+  functionIr = Function::Create( functionTypeIr,
     Function::ExternalLinkage, funDecl.name(), m_module );
   assert(functionIr);
   if ( functionIr->getName() != funDecl.name() ) {
@@ -240,6 +245,10 @@ void IrBuilderAst::visit(const AstFunCall& funCall) {
 void IrBuilderAst::visit(const AstDataDecl& dataDecl) {
   SymbolTableEntry* dummy;
   visit(dataDecl, dummy);
+
+  // dummy, since each visit meth _must_ push _one_ element on the values
+  // stack
+  m_values.push_back( ConstantInt::get( getGlobalContext(), APInt(32, 0)) );
 }
 
 void IrBuilderAst::visit(const AstDataDecl& dataDecl,
@@ -257,18 +266,12 @@ void IrBuilderAst::visit(const AstDataDecl& dataDecl,
         "' declared or defined again with a different type.");
     }
   }
-
-  // dummy, since each visit meth _must_ push _one_ element on the values
-  // stack
-  m_values.push_back( ConstantInt::get( getGlobalContext(), APInt(32, 0)) );
 }
 
 void IrBuilderAst::visit(const AstDataDef& dataDef) {
   // process data declaration. That ensures an entry in the symbol table
   SymbolTableEntry* stentry = NULL;
   visit(dataDef.decl(), stentry);
-  assert(!m_values.empty());
-  m_values.pop_back(); // pop dummy value pushed by visiting AstDataDecl
   assert(stentry);
 
   // Calculate value to initialzie new data object with. Also already push
