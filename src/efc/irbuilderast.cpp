@@ -267,8 +267,11 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
   // process data declaration. That ensures an entry in the symbol table
   dataDef.decl().accept(*this);
   assert(!m_values.empty());
-  m_values.pop_back();
+  m_values.pop_back(); // pop dummy value pushed by visiting AstDataDecl
 
+  // process initizialization of data object. Also already push value of our
+  // new symbol on the values stack; the value equals the initializations
+  // value
   Value* initValue = NULL;
   if (dataDef.initValue()) {
     dataDef.initValue()->accept(*this);
@@ -278,6 +281,8 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
     m_values.push_back( initValue );
   }
   assert(initValue);
+
+  // 
   SymbolTableEntry& stentry = m_symbolTable[dataDef.decl().name()];
   if ( dataDef.decl().storage()==AstDataDecl::eAlloca ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
@@ -290,6 +295,9 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
   } else {
     stentry = SymbolTableEntry(initValue, eValue);  
   }
+
+  // Nothing to push on the values stack, that was already done earlier in
+  // this method.
 }
 
 void IrBuilderAst::visit(const AstIf& if_) {
