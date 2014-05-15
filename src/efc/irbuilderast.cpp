@@ -237,10 +237,37 @@ void IrBuilderAst::visit(const AstFunCall& funCall) {
 }
 
 void IrBuilderAst::visit(const AstDataDecl& dataDecl) {
+  SymbolTableEntry* dummy;
+  visit(dataDecl, dummy);
+}
+
+void IrBuilderAst::visit(const AstDataDecl& dataDecl,
+  SymbolTableEntry*& stentry) {
+
+  SymbolTableEntry newStEnry(NULL, static_cast<EStorage>(dataDecl.storage()));
+  SymbolTableInsertResult stir = m_symbolTable.insert(
+    make_pair(dataDecl.name(), newStEnry));
+  bool wasAlreadyInMap = !stir.second;
+  SymbolTableIter sti = stir.first;
+  stentry = &sti->second;
+  if (wasAlreadyInMap) {
+    if ( stentry->m_storage != static_cast<EStorage>(dataDecl.storage()) ) {
+      throw runtime_error::runtime_error("Idenifier '" + dataDecl.name() +
+        "' declared or defined again with a different type.");
+    }
+  }
+
+  // dummy, since each visit meth _must_ push _one_ element on the values
+  // stack
   m_values.push_back( ConstantInt::get( getGlobalContext(), APInt(32, 0)) );
 }
 
 void IrBuilderAst::visit(const AstDataDef& dataDef) {
+  // process data declaration. That ensures an entry in the symbol table
+  dataDef.decl().accept(*this);
+  assert(!m_values.empty());
+  m_values.pop_back();
+
   Value* initValue = NULL;
   if (dataDef.initValue()) {
     dataDef.initValue()->accept(*this);

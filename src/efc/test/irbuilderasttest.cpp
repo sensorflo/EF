@@ -522,6 +522,25 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    multiple_data_obj_declaration_of_x_WITH_nonidentical_type,
+    buildAndRunModule,
+    throws)) {
+
+  string spec = "Example: one uses 'val' (aka 'var const'), the other 'var' "
+    "(aka 'val mutable'). The two also contribute to the type";
+  {
+    auto_ptr<AstSeq> astSeq(
+      new AstSeq(
+        new AstDataDecl("x", AstDataDecl::eValue),
+        new AstDataDecl("x", AstDataDecl::eAlloca),
+        new AstNumber(42)));
+    IrBuilderAst UUT;
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) <<
+      amendSpec(spec) << amendAst(astSeq);
+  }
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_if_else_expression_WITH_a_condition_evaluating_to_true,
     buildAndRunModule,
     returns_the_value_of_the_then_clause)) {

@@ -20,8 +20,8 @@ public:
 private:
   friend class TestingIrBuilderAst;
   enum EStorage {
-    eValue,
-    eAlloca
+    eValue = AstDataDecl::eValue,
+    eAlloca = AstDataDecl::eAlloca
   };
   struct SymbolTableEntry {
     SymbolTableEntry() : m_value(NULL), m_storage(eValue) {}
@@ -32,6 +32,7 @@ private:
   };
   typedef std::map<std::string, SymbolTableEntry> SymbolTable;
   typedef std::map<std::string, SymbolTableEntry>::iterator SymbolTableIter;
+  typedef std::pair<SymbolTableIter, bool> SymbolTableInsertResult;
   
   int jitExecFunction(llvm::Function* function);
   int jitExecFunction1Arg(llvm::Function* function, int arg1);
@@ -49,6 +50,7 @@ private:
   void visit(const AstFunDef& funDef);
   void visit(const AstFunDecl& funDecl);
   void visit(const AstDataDecl& dataDecl);
+  void visit(const AstDataDecl& dataDecl, SymbolTableEntry*& stentry);
   void visit(const AstDataDef& dataDef);
   void visit(const AstIf& if_);
 
