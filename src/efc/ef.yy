@@ -34,7 +34,7 @@
 %locations
 %initial-action
 {
-  @$.begin.filename = @$.end.filename = &driver.fileName();
+  @$.initialize(&driver.fileName());
 };
 
 /*%define parse.trace*/
