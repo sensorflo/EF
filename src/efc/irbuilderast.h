@@ -30,7 +30,9 @@ private:
     llvm::Value* m_value;
     EStorage m_storage;
   };
-
+  typedef std::map<std::string, SymbolTableEntry> SymbolTable;
+  typedef std::map<std::string, SymbolTableEntry>::iterator SymbolTableIter;
+  
   int jitExecFunction(llvm::Function* function);
   int jitExecFunction1Arg(llvm::Function* function, int arg1);
   int jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2);
@@ -66,7 +68,7 @@ private:
   llvm::Function* m_mainFunction;
   llvm::BasicBlock* m_mainBasicBlock;
 
-  std::map<std::string, SymbolTableEntry> m_symbolTable;
+  SymbolTable m_symbolTable;
 };
 
 #endif
