@@ -1,0 +1,52 @@
+#!/usr/bin/env efc
+# 
+# The EF programming language tutorial part 6
+# ===========================================
+# 
+# Everything is an expressions -- no statements
+# ---------------------------------------------
+# 
+# In EF everything is an expression. There are no statements. Also a control
+# flow construct like 'if cond_expr: then_expr else else_expr;' is actually an
+# expression having a value: the value of the expression then_expr if
+# expression cond_expr evaluates to true, and the value of else_expr
+# otherwise.
+val foo1 =  if x: y else z;
+
+# Also definitions and declarations like 'val foo: int = 3;' and 'decl fun
+# foo: () -> int;' are expressions. Their value is that of the identifier
+# being declared / defined.
+
+
+# Conceptually every construct is a call 
+# ----------------------------------------
+# 
+# Conceptually, from syntax point of view, everything, also flow control
+# constructs, declarations, definitions etc., are function calls like
+# 'foo(arg1,arg2)'. Its only that EF provides another syntax which however is
+# actually pretty close to the well known function call syntax
+# 'foo(arg1,arg2)'. Its only that a) the opening parenthesis is not needed
+# since for a keyword that is implicit b) other argument separators instead
+# comma are used - eg ':' or 'else' or '->' c) semicolon is used instead the
+# closing parenthesis as closing delimiter.
+# 
+#                | func  open   arg1    arg    arg2  arg     arg3  close
+#                | name  deli-          sepa-        sepa-         deli-
+#                |       miter          rator        rator         miter
+#                |------------------------------------------------------
+# EF syntax 1    | if            a       :      b    else     c      ;
+# EF syntax 2    | if     (      a       :      b    else     c      )
+# classic syntax | if     (      a       ,      b     ,       c      )
+#
+# Alternatively EF also lets you write all expressions in the call syntax with
+# open/close parenthesis like 'if(a : b else c)'. Maybe a future version also
+# allows the 'pure' classic syntax with always commas as separators like this
+# 'if(a , b , c)'.
+
+# the following three lines are equivalent
+val foo2 =  if x: y else z; + 3
+val foo2 =  if(x: y else z) + 3
+val foo3 = {if(x: y else z) + 3}
+
+# Also operators can be written in the call syntax. 'a+b' and '+(a,b)' are
+# equivalent. This is however not yet implemented in the current version.

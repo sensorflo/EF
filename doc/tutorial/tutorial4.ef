@@ -1,0 +1,25 @@
+#!/usr/bin/env efc
+# 
+# The EF programming language tutorial part 4
+# ===========================================
+# 
+# Control flow expressions
+# -------------------------
+# An 'if' expression for conditional control flow is in the form 'if cond1_expr:
+# action1_expr elif cond2_expr: action2_expr else action3_expr;'
+fun factorial: (x:int) -> int =
+  if x:
+    x * factorial(x-1)
+  else
+    1
+  ;  
+;
+
+# braces '{}' to group sub expressions
+# ------------------------------------
+# 
+# Unlike most other languages, curly braces are used to group expressions /
+# overwrite precedence.
+{1 + 2} * 3 # evaluates to 9, equivalent to '(1 + 2) * 3' in most languages
+
+
