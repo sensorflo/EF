@@ -171,23 +171,23 @@ pure_naked_param_ct_list
   ;
 
 param_decl
-  : ID COLON type_expr                              { swap($$,$1); /* currently ignores type */ }
+  : ID COLON type                                   { swap($$,$1); /* currently ignores type */ }
   ;
   
-type_expr
+type
   : ID
   ;
 
-opt_colon_type_expr
+opt_colon_type
   : %empty
   | COLON 
-  | COLON type_expr
+  | COLON type
   ;
 
 opt_arrow_type
   : %empty
   | ARROW 
-  | ARROW type_expr
+  | ARROW type
   ;
 
 opt_comma
@@ -240,11 +240,11 @@ sub_expr_leaf
   ;
 
 naked_data_decl
-  : ID COLON type_expr                                               { $$ = new RawAstDataDecl($1); }
+  : ID COLON type                                                    { $$ = new RawAstDataDecl($1); }
   ;
 
 naked_data_decl_opt_type
-  : ID opt_colon_type_expr                                           { $$ = new RawAstDataDecl($1); }
+  : ID opt_colon_type                                                { $$ = new RawAstDataDecl($1); }
   ;
 
 naked_data_def
