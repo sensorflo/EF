@@ -347,6 +347,18 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    multiple_identical_function_declarations,
+    buildAndRunModule,
+    succeeds)) {
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstFunDecl("foo"),
+      new AstFunDecl("foo"),
+      new AstNumber(42)),
+    42, "");
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_call_to_an_defined_function,
     buildAndRunModule,
     returns_result_of_that_function_call)) {
