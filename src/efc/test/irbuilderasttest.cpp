@@ -320,6 +320,33 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    a_reference_to_an_inexistent_data_object,
+    buildModule,
+    throws)) {
+
+  string spec = "Example: at global scope";
+  {
+    auto_ptr<AstSeq> astSeq(new AstSeq(new AstSymbol(new string("x"))));
+    IrBuilderAst UUT;
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
+      << amendAst(astSeq) << amendSpec(spec);
+  }
+
+  spec = "Example: within a function body";
+  {
+    auto_ptr<AstSeq> astSeq(
+      new AstSeq(
+        new AstFunDef(
+          new AstFunDecl("foo"),
+          new AstSeq(new AstSymbol(new string("x")))),
+        new AstNumber(42)));
+    IrBuilderAst UUT;
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
+      << amendAst(astSeq) << amendSpec(spec);
+  }
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_call_to_an_defined_function,
     buildAndRunModule,
     returns_result_of_that_function_call)) {

@@ -146,7 +146,12 @@ void IrBuilderAst::visit(const AstNumber& number) {
 }
 
 void IrBuilderAst::visit(const AstSymbol& symbol) {
-  const SymbolTableEntry& stentry = m_symbolTable[symbol.name()];
+  SymbolTableIter stentryi = m_symbolTable.find(symbol.name());
+  if (stentryi==m_symbolTable.end()) {
+    throw runtime_error::runtime_error("Symbol '" + symbol.name() +
+      "' not defined");
+  }
+  const SymbolTableEntry& stentry = stentryi->second;
   m_values.push_back(
     symbol.valueCategory()==AstSymbol::eLValue || stentry.m_storage==eValue ?
     stentry.m_value :
