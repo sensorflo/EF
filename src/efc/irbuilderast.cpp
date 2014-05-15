@@ -152,6 +152,7 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
       "' not declared");
   }
   const SymbolTableEntry& stentry = stentryi->second;
+  assert( stentry.m_value );
   m_values.push_back(
     symbol.valueCategory()==AstSymbol::eLValue || stentry.m_storage==eValue ?
     stentry.m_value :
