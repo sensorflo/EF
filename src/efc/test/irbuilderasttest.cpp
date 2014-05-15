@@ -510,6 +510,18 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    multiple_identical_data_object_declaration_of_x,
+    buildAndRunModule,
+    succeeds)) {
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstDataDecl("x"),
+      new AstDataDecl("x"),
+      new AstNumber(42)),
+    42, "");
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_if_else_expression_WITH_a_condition_evaluating_to_true,
     buildAndRunModule,
     returns_the_value_of_the_then_clause)) {

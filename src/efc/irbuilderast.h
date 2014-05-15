@@ -48,7 +48,7 @@ private:
   void visit(const AstFunCall& funCall);
   void visit(const AstFunDef& funDef);
   void visit(const AstFunDecl& funDecl);
-  void visit(const AstDataDecl& dataDecl) {};
+  void visit(const AstDataDecl& dataDecl);
   void visit(const AstDataDef& dataDef);
   void visit(const AstIf& if_);
 

@@ -236,6 +236,10 @@ void IrBuilderAst::visit(const AstFunCall& funCall) {
   m_values.push_back( callsValueIr );
 }
 
+void IrBuilderAst::visit(const AstDataDecl& dataDecl) {
+  m_values.push_back( ConstantInt::get( getGlobalContext(), APInt(32, 0)) );
+}
+
 void IrBuilderAst::visit(const AstDataDef& dataDef) {
   Value* initValue = NULL;
   if (dataDef.initValue()) {
