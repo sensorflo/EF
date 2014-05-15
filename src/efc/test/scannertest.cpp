@@ -100,7 +100,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    a_program_containing_a_comment_defined_by_a_sharp_sign_upto_and_inclusive_next_newline_or_end_of_file,
+    a_program_containing_a_single_line_comment_which_is_defined_by_a_sharp_sign_upto_and_inclusive_next_newline_or_end_of_file,
     yylex_is_called_repeatedly,
     returns_a_token_sequence_which_ignores_the_comment)) {
 
