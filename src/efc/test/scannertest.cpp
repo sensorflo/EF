@@ -201,4 +201,11 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
     EXPECT_FALSE( driver.d().gotError() );
   }
+
+  spec = "border case example: stars inside comment";
+  {
+    DriverOnTmpFile driver( "#* foo**bar *#" );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+    EXPECT_FALSE( driver.d().gotError() );
+  }
 }
