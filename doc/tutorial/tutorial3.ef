@@ -40,7 +40,7 @@ fun square_minus_four: (x:int) -> int =
 # only type currently is int, deducing the correct type is trivial since its
 # always int.
 fun square_minus_four_v2: (x:int) -> int =
-   squaretmp := x * x
+   square := x * x
    var tmp: = square - 1;
    tmp - 3
 ;
