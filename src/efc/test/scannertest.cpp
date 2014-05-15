@@ -24,7 +24,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    concatenated_keywords,
+    an_id_consisting_of_concatenated_keywords,
     yylex,
     returns_TOK_ID_AND_succeeds)) {
   DriverOnTmpFile driver( "ifelse" );
