@@ -37,11 +37,12 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
   loc.step();
 %}
 
-  /* comments and blanks */
+  /* comments and blanks. They are all skiped and thus produce no token. */
 #[^*\n][^\n]*       loc.step();
 #$                  loc.step();
 #\*[^*]*(\*+[^#*]+)*\*+#   loc.step();
 [ \t]+              loc.step();
+[\n]+               loc.lines(yyleng); loc.step();
 
   /* keywords */
 if                  return yy::Parser::make_IF(loc);
