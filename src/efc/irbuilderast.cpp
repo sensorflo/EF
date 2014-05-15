@@ -149,7 +149,7 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
   SymbolTableIter stentryi = m_symbolTable.find(symbol.name());
   if (stentryi==m_symbolTable.end()) {
     throw runtime_error::runtime_error("Symbol '" + symbol.name() +
-      "' not defined");
+      "' not declared");
   }
   const SymbolTableEntry& stentry = stentryi->second;
   m_values.push_back(
