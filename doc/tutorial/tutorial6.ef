@@ -12,7 +12,7 @@
 # expression cond_expr evaluates to true, and the value of else_expr
 # otherwise.
 x:=1  y:=2  z:=3
-foo1 := if x: y else z;
+foo1 := if x: y else z;;
 
 # Also definitions and declarations like 'val foo: int = 3;' and 'decl fun
 # foo: () -> int;' are expressions. Their value is that of the identifier
