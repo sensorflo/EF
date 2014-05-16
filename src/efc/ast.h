@@ -159,19 +159,19 @@ public:
     eDiv = '/',
     ePlus = '+'
   };
-  AstOperator(char op, AstValue* lhs, AstValue* rhs);
+  AstOperator(char op, AstCtList* args);
+  AstOperator(char op, AstNode* operand);
+  AstOperator(char op, AstNode* lhs, AstNode* rhs);
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   EOperation op() const { return m_op; }
-  const AstValue& lhs() const { return *m_lhs; }
-  const AstValue& rhs() const { return *m_rhs; }
+  const std::list<AstNode*>& argschilds() const;
 private:
   AstOperator(const AstOperator&);
   AstOperator& operator=(const AstOperator&);
   const EOperation m_op;
-  const AstValue* const m_lhs;
-  const AstValue* const m_rhs;
+  const AstCtList* const m_args;
 };
 
 /* If flow control expression */

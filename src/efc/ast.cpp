@@ -118,26 +118,37 @@ basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-AstOperator::AstOperator(char op, AstValue* lhs, AstValue* rhs) :
+AstOperator::AstOperator(char op, AstCtList* args) :
   m_op(static_cast<EOperation>(op)),
-  m_lhs(lhs ? lhs : new AstNumber(0)),
-  m_rhs(rhs ? rhs : new AstNumber(0)) {
-  assert(m_lhs);
-  assert(m_rhs);
+  m_args(args ? args : new AstCtList) {
+  assert(m_args);
+}
+
+AstOperator::AstOperator(char op, AstNode* operand) :
+  m_op(static_cast<EOperation>(op)),
+  m_args(new AstCtList(operand)) {
+  assert(m_args);
+}
+
+AstOperator::AstOperator(char op, AstNode* lhs, AstNode* rhs) :
+  m_op(static_cast<EOperation>(op)),
+  m_args(new AstCtList(lhs,rhs)) {
+  assert(m_args);
 }
 
 AstOperator::~AstOperator() {
-  delete m_lhs;
-  delete m_rhs;
+  delete m_args;
 }
 
 basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
   os << static_cast<char>(m_op) << '(';
-  m_lhs->printTo(os);
-  os << ' ';
-  m_rhs->printTo(os);
+  m_args->printTo(os);
   os << ')';
   return os;
+}
+
+const list<AstNode*>& AstOperator::argschilds() const {
+  return m_args->childs();
 }
 
 AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstSeq* elseAction) :

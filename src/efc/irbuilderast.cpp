@@ -122,10 +122,18 @@ void IrBuilderAst::visit(const AstSeq& seq) {
 }
 
 void IrBuilderAst::visit(const AstOperator& op) {
-  op.lhs().accept(*this);
+  const list<AstNode*>& argschilds = op.argschilds();
+  assert(argschilds.size()==2); // currently there are only binary operators
+  list<AstNode*>::const_iterator iter = argschilds.begin();
+
+  const AstNode& lhsNode = **iter; ++iter;
+  lhsNode.accept(*this);
   Value* lhs = valuesBackAndPop();
-  op.rhs().accept(*this);
+
+  const AstNode& rhsNode = **iter;
+  rhsNode.accept(*this);
   Value* rhs = valuesBackAndPop();
+
   Value* result = NULL;
   switch (op.op()) {
   case AstOperator::eAssign   : result = m_builder.CreateStore(rhs, lhs); break;
