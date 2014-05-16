@@ -61,15 +61,15 @@ int IrBuilderAst::buildAndRunModule(const AstSeq& seq) {
   return jitExecFunction(m_mainFunction);
 }
 
-int IrBuilderAst::jitExecFunction(const std::string& name) {
+int IrBuilderAst::jitExecFunction(const string& name) {
   return jitExecFunction(m_module->getFunction(name));
 }
 
-int IrBuilderAst::jitExecFunction1Arg(const std::string& name, int arg1) {
+int IrBuilderAst::jitExecFunction1Arg(const string& name, int arg1) {
   return jitExecFunction1Arg(m_module->getFunction(name), arg1);
 }
 
-int IrBuilderAst::jitExecFunction2Arg(const std::string& name, int arg1, int arg2) {
+int IrBuilderAst::jitExecFunction2Arg(const string& name, int arg1, int arg2) {
   return jitExecFunction2Arg(m_module->getFunction(name), arg1, arg2);
 }
 
@@ -101,7 +101,7 @@ int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int ar
 }
 
 void IrBuilderAst::visit(const AstSeq& seq) {
-  const std::list<AstNode*>& childs = seq.childs();
+  const list<AstNode*>& childs = seq.childs();
   if (childs.empty()) {
     throw runtime_error::runtime_error("Empty sequence not allowed (yet)");
   }
