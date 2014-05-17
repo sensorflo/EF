@@ -99,6 +99,16 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    an_operator_in_call_syntax,
+    parse,
+    succeeds_AND_returns_correct_AST) ) {
+  TEST_PARSE( "+()", "seq(+())", "");
+  TEST_PARSE( "-(1)", "seq(-(seq(1)))", "");
+  TEST_PARSE( "*(1,2)", "seq(*(seq(1) seq(2)))", "");
+  TEST_PARSE( "/(1,2,3)", "seq(/(seq(1) seq(2) seq(3)))", "");
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_assignement_expression,
     parse,
     succeeds_AND_returns_correct_AST) ) {
@@ -273,3 +283,4 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4;", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(z) seq(3) seq(4)))", "");
   TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3 else 4)", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(z) seq(3) seq(4)))", "");
 }
+

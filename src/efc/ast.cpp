@@ -124,15 +124,10 @@ AstOperator::AstOperator(char op, AstCtList* args) :
   assert(m_args);
 }
 
-AstOperator::AstOperator(char op, AstNode* operand) :
+AstOperator::AstOperator(char op, AstNode* operand1, AstNode* operand2,
+  AstNode* operand3) :
   m_op(static_cast<EOperation>(op)),
-  m_args(new AstCtList(operand)) {
-  assert(m_args);
-}
-
-AstOperator::AstOperator(char op, AstNode* lhs, AstNode* rhs) :
-  m_op(static_cast<EOperation>(op)),
-  m_args(new AstCtList(lhs,rhs)) {
+  m_args(new AstCtList(operand1, operand2, operand3)) {
   assert(m_args);
 }
 

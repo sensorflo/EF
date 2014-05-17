@@ -73,6 +73,7 @@
   ARROW "->"
 ;
 
+%token <char> OP_LPAREN 
 %token <std::string> ID "identifier"
 %token <int> NUMBER "number"
 %precedence ASSIGNEMENT
@@ -198,7 +199,11 @@ opt_comma
 sub_expr
   /* misc */
   : sub_expr_leaf                                   { std::swap($$,$1); }
+
+  /* calls */
   | ID LPAREN ct_list RPAREN                        { $$ = new AstFunCall($1, $3); }
+  | OP_LPAREN ct_list RPAREN                        { $$ = new AstOperator($1, $2); }
+
 
   /* binary operators */
   | ID       EQUAL       sub_expr %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }

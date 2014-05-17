@@ -160,8 +160,8 @@ public:
     ePlus = '+'
   };
   AstOperator(char op, AstCtList* args);
-  AstOperator(char op, AstNode* operand);
-  AstOperator(char op, AstNode* lhs, AstNode* rhs);
+  AstOperator(char op, AstNode* operand1 = NULL, AstNode* operand2 = NULL,
+    AstNode* operand3 = NULL);
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 

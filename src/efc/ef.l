@@ -81,6 +81,7 @@ decl                return yy::Parser::make_DECL(loc);
   /* punctuation */
 ":="                return yy::Parser::make_COLON_EQUAL(loc);
 "->"                return yy::Parser::make_ARROW(loc);
+[-+*/][ \t]*"("     return yy::Parser::make_OP_LPAREN(yytext[0],loc);/*todo: allow comments and newlines intbetween*/
 
 ";"                 return yy::Parser::make_SEMICOLON(loc);
 ":"                 return yy::Parser::make_COLON(loc);

@@ -67,6 +67,84 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    an_AstOperator_like_it_results_from_op_call_syntax_constructs,
+    buildAndRunModule,
+    returns_the_correct_result)) {
+
+  // such operators are
+  // - n-ary
+  // - have AstSeq as childs
+
+  string spec = "null-ary minus: -() = 0";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator('-')),
+    0, spec);
+  spec = "null-ary minus: +() = 0";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator('+')),
+    0, spec);
+  spec = "null-ary mult: *() = 1";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator('*')),
+    1, spec);
+  //null-ary div "/()" is invalid
+
+
+  spec = "unary minus: -(x)";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstOperator('-',
+        new AstSeq(new AstNumber(1)))),
+    -1, spec);
+  spec = "unary plus: +(x) = x";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstOperator('+',
+        new AstSeq(new AstNumber(1)))),
+    +1, spec);
+  spec = "spec = unary mult: *(x) = x";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstOperator('*',
+        new AstSeq(new AstNumber(1)))),
+    1, spec);
+  // unary div "/(x)" is invalid
+
+  spec = "n-ary plus: +(1,2,3)";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstOperator('+',
+        new AstSeq(new AstNumber(1)),
+        new AstSeq(new AstNumber(2)),
+        new AstSeq(new AstNumber(3)))),
+    1+2+3, spec);
+  spec = "n-ary minus: -(1,2,3)";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstOperator('-',
+        new AstSeq(new AstNumber(1)),
+        new AstSeq(new AstNumber(2)),
+        new AstSeq(new AstNumber(3)))),
+    1-2-3, spec);
+  spec = "n-ary mult: *(1,2,3)";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstOperator('*',
+        new AstSeq(new AstNumber(1)),
+        new AstSeq(new AstNumber(2)),
+        new AstSeq(new AstNumber(3)))),
+    1*2*3, spec);
+  spec = "n-ary div: /(24,4,3)";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstOperator('/',
+        new AstSeq(new AstNumber(24)),
+        new AstSeq(new AstNumber(4)),
+        new AstSeq(new AstNumber(3)))),
+    24/4/3, spec);
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_empty_seq,
     buildAndRunModule,
     throws)) {

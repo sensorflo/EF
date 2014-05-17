@@ -89,6 +89,32 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
+    a_binary_operator_followed_by_lparen_AND_optionally_blanks_and_or_comments_inbetween,
+    yylex_is_called,
+    returns_the_single_token_OP_LPAREN_AND_the_oparators_char_as_semantic_value)) {
+
+  string spec = "trivial example";
+  {
+    DriverOnTmpFile driver( "*(" );
+    Parser::symbol_type st = yylex(driver);
+    EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
+    EXPECT_EQ('*', st.value.as<char>()) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+
+  spec = "blanks inbetween";
+  {
+    DriverOnTmpFile driver( "*  (" );
+    Parser::symbol_type st = yylex(driver);
+    EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
+    EXPECT_EQ('*', st.value.as<char>()) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
     a_colon_followed_by_blanks_followed_by_an_equal,
     yylex_is_called_repeatedly,
     returns_two_separate_tokens_COLON_and_EQUAL_opposed_to_the_single_token_COLON_EQUAL)) {

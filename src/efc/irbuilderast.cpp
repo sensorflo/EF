@@ -123,26 +123,51 @@ void IrBuilderAst::visit(const AstSeq& seq) {
 
 void IrBuilderAst::visit(const AstOperator& op) {
   const list<AstNode*>& argschilds = op.argschilds();
-  assert(argschilds.size()==2); // currently there are only binary operators
   list<AstNode*>::const_iterator iter = argschilds.begin();
-
-  const AstNode& lhsNode = **iter; ++iter;
-  lhsNode.accept(*this);
-  Value* lhs = valuesBackAndPop();
-
-  const AstNode& rhsNode = **iter;
-  rhsNode.accept(*this);
-  Value* rhs = valuesBackAndPop();
-
   Value* result = NULL;
+
+  // Determine initial value of chain. Some operators start with constants,
+  // other already need to read in one or two operands.
   switch (op.op()) {
-  case AstOperator::eAssign   : result = m_builder.CreateStore(rhs, lhs); break;
-  case AstOperator::eSub      : result = m_builder.CreateSub(lhs, rhs, "subtmp"); break;
-  case AstOperator::eAdd      : result = m_builder.CreateAdd(lhs, rhs, "addtmp"); break;
-  case AstOperator::eMul      : result = m_builder.CreateMul(lhs, rhs, "multmp"); break;
-  case AstOperator::eDiv      : result = m_builder.CreateSDiv(lhs, rhs, "divtmp"); break;
-  default: assert(false); break;
+  case AstOperator::eSub:
+    if (argschilds.size()<=1) {
+      result = ConstantInt::get( getGlobalContext(), APInt(32, 0));
+    } else {
+      const AstNode& lhsNode = **(iter++);
+      lhsNode.accept(*this);
+      result /*aka lhs*/ = valuesBackAndPop();
+    }
+    break;
+  case AstOperator::eAdd:
+    result = ConstantInt::get( getGlobalContext(), APInt(32, 0));
+    break;
+  case AstOperator::eMul:
+    result = ConstantInt::get( getGlobalContext(), APInt(32, 1));
+    break;
+  case AstOperator::eAssign: // fallthrough
+  case AstOperator::eDiv:
+    if ( op.op()==AstOperator::eAssign ) { assert(argschilds.size()==2); }
+    if ( op.op()==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
+    const AstNode& lhsNode = **(iter++);
+    lhsNode.accept(*this);
+    result /*aka lhs*/ = valuesBackAndPop();
   }
+
+  // Iterate trough all operands
+  for (; iter!=argschilds.end(); ++iter) {
+    const AstNode& operandNode = **iter;
+    operandNode.accept(*this);
+    Value* operand = valuesBackAndPop();
+    switch (op.op()) {
+    case AstOperator::eAssign   : result = m_builder.CreateStore(operand, result); break;
+    case AstOperator::eSub      : result = m_builder.CreateSub(result, operand, "subtmp"); break;
+    case AstOperator::eAdd      : result = m_builder.CreateAdd(result, operand, "addtmp"); break;
+    case AstOperator::eMul      : result = m_builder.CreateMul(result, operand, "multmp"); break;
+    case AstOperator::eDiv      : result = m_builder.CreateSDiv(result, operand, "divtmp"); break;
+    default: assert(false); break;
+    }
+  }
+
   assert(result);
   m_values.push_back(result);
 }
