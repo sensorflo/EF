@@ -563,6 +563,19 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     foo_defined_as_variable_initialized_with_x_followed_by_assigning_y_to_foo,
     buildAndRunModule,
     returns_y)) {
+
+  string spec = "Example: Assignement 'foo=77' being last expression in sequence"; 
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstDataDef(
+        new AstDataDecl("foo", AstDataDecl::eAlloca),
+        new AstSeq(new AstNumber(42))),
+      new AstOperator('=',
+        new AstSymbol(new string("foo"), AstSymbol::eLValue),
+        new AstNumber(77))),
+    77, spec);
+
+  spec = "Example: After assignment 'foo=77', there is a further 'foo' expression"; 
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
@@ -571,8 +584,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstOperator('=',
         new AstSymbol(new string("foo"), AstSymbol::eLValue),
         new AstNumber(77)),
-      new AstSymbol(new string("foo"), AstSymbol::eRValue)),
-    77, "");
+      new AstSymbol(new string("foo"))),
+    77, spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(

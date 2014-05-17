@@ -159,7 +159,8 @@ void IrBuilderAst::visit(const AstOperator& op) {
     operandNode.accept(*this);
     Value* operand = valuesBackAndPop();
     switch (op.op()) {
-    case AstOperator::eAssign   : result = m_builder.CreateStore(operand, result); break;
+    case AstOperator::eAssign   : m_builder.CreateStore(operand, result);
+                                  result = operand; break;
     case AstOperator::eSub      : result = m_builder.CreateSub(result, operand, "subtmp"); break;
     case AstOperator::eAdd      : result = m_builder.CreateAdd(result, operand, "addtmp"); break;
     case AstOperator::eMul      : result = m_builder.CreateMul(result, operand, "multmp"); break;
