@@ -78,12 +78,53 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "42 + 77", "seq(+(42 77))", "trivial example");
-  TEST_PARSE( "1+2+3-4-5", "seq(-(-(+(+(1 2) 3) 4) 5))",
-    "+ and - have same precedence and are both left associative");
-  TEST_PARSE( "1*2*3/4/5", "seq(/(/(*(*(1 2) 3) 4) 5))",
-    "* and / have same precedence and are both left associative");
-  TEST_PARSE( "1+2*3-4/5", "seq(-(+(1 *(2 3)) /(4 5)))",
-    "* and / have higher precedence than + and -");
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    a_math_expression,
+    parse,
+    it_honors_precedence_and_associativity) ) {
+
+  // for each precedence level
+  // - List the operators which belong to this precedence level. The first
+  //   operator listed is the 'main' operator of this precedence level. The
+  //   'main' operator is a concept only used in this test as a mean to
+  //   specifiy relative precedence. Having a 'main' operator per group means
+  //   that each operator's precedence only has to be specified relative to
+  //   the main of its group, or if it is itself the 'main' operator, to the
+  //   'main' operator of the next higher precedence level group.
+  //
+  // for each operator
+  // - specifiy its associativity 
+  // - specifiy its precedence
+
+  // precedence is ordered from high to low
+
+  // precedence level group: binary * /
+  string spec = "* is left associative";
+  TEST_PARSE( "a*b*c", "seq(*(*(a b) c))", spec);
+
+  spec = "/ is left associative";
+  TEST_PARSE( "a/b/c", "seq(/(/(a b) c))", spec);
+
+  spec = "/ has same precedence as *";
+  TEST_PARSE( "a/b*c", "seq(*(/(a b) c))", spec);
+  TEST_PARSE( "a*b/c", "seq(/(*(a b) c))", spec);
+
+  // precedence level group: binary + -
+  spec = "+ is left associative";
+  TEST_PARSE( "a+b+c", "seq(+(+(a b) c))", spec);
+
+  spec = "- is left associative";
+  TEST_PARSE( "a-b-c", "seq(-(-(a b) c))", spec);
+
+  spec = "- has same precedence as +";
+  TEST_PARSE( "a-b+c", "seq(+(-(a b) c))", spec);
+  TEST_PARSE( "a+b-c", "seq(-(+(a b) c))", spec);
+
+  spec = "+ has lower precedence than *";
+  TEST_PARSE( "a+b*c", "seq(+(a *(b c)))", spec);
+  TEST_PARSE( "a*b+c", "seq(+(*(a b) c))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

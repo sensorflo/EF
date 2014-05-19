@@ -52,18 +52,21 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    a_seq_with_one_or_more_expressions_built_with_literal_numbers,
+    an_operator,
     buildAndRunModule,
-    returns_the_result_of_the_last_expression)) {
+    returns_the_result_of_that_operator)) {
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator('+', new AstNumber(2), new AstNumber(3))),
-    2+3, "");
+    new AstSeq(new AstOperator('+', new AstNumber(1), new AstNumber(2))),
+    1+2, "");
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator('+', new AstNumber(2), new AstNumber(3)),
-      new AstOperator('*', new AstNumber(4), new AstNumber(5))),
-    /*2+3,*/ 4*5, "");
+    new AstSeq(new AstOperator('-', new AstNumber(1), new AstNumber(2))),
+    1-2, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator('*', new AstNumber(1), new AstNumber(2))),
+    1*2, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator('/', new AstNumber(6), new AstNumber(3))),
+    6/3, "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
