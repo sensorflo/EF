@@ -84,8 +84,8 @@
 
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> maybe_empty_expr expr pure_expr expr_without_comma opt_else
-%type <AstValue*> sub_expr sub_expr_leaf naked_if
+%type <AstSeq*> maybe_empty_seq seq pure_seq seq_without_comma opt_else
+%type <AstValue*> expr expr_leaf naked_if
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <std::string> param_decl
 %type <AstDataDecl::EStorage> valvar
@@ -122,29 +122,29 @@ maybe_empty
 %start program;
 
 program
-  : maybe_empty_expr END_OF_FILE                    { driver.astRoot() = $1; }
+  : maybe_empty_seq END_OF_FILE                     { driver.astRoot() = $1; }
   ;
 
-maybe_empty_expr
+maybe_empty_seq
   : %empty                                          { $$ = new AstSeq(); }
-  | expr                                            { std::swap($$,$1); }
+  | seq                                             { std::swap($$,$1); }
   ;
 
-/* the _only_ difference between expr and expr_without_comma is that in the
+/* the _only_ difference between seq and seq_without_comma is that in the
 former commas as separator are optionally allowed, while in the later they are
 disallowed */
-expr
-  : pure_expr opt_comma                             { std::swap($$,$1); }
+seq
+  : pure_seq opt_comma                              { std::swap($$,$1); }
   ;
   
-pure_expr
-  : sub_expr                                        { $$ = new AstSeq($1); }
-  | pure_expr opt_comma sub_expr                    { $$ = ($1)->Add($3); }
+pure_seq
+  : expr                                            { $$ = new AstSeq($1); }
+  | pure_seq opt_comma expr                         { $$ = ($1)->Add($3); }
   ;
 
-expr_without_comma
-  : sub_expr                                        { $$ = new AstSeq($1); }
-  | expr_without_comma sub_expr                     { $$ = ($1)->Add($2); } 
+seq_without_comma
+  : expr                                            { $$ = new AstSeq($1); }
+  | seq_without_comma expr                          { $$ = ($1)->Add($2); } 
   ;
 
 ct_list
@@ -153,8 +153,8 @@ ct_list
   ;
 
 pure_ct_list
-  : expr_without_comma                              { $$ = new AstCtList($1); }
-  | pure_ct_list COMMA expr_without_comma           { $$ = ($1)->Add($3); }
+  : seq_without_comma                               { $$ = new AstCtList($1); }
+  | pure_ct_list COMMA seq_without_comma            { $$ = ($1)->Add($3); }
   ;
 
 /* I'm not sure yet whether EF will allow omitting parentheses also in future,
@@ -196,9 +196,9 @@ opt_comma
   | COMMA
   ;
 
-sub_expr
+expr
   /* misc */
-  : sub_expr_leaf                                   { std::swap($$,$1); }
+  : expr_leaf                                       { std::swap($$,$1); }
 
   /* calls */
   | ID LPAREN ct_list RPAREN                        { $$ = new AstFunCall($1, $3); }
@@ -206,18 +206,18 @@ sub_expr
 
 
   /* binary operators */
-  | ID       EQUAL       sub_expr %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
-  | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), new AstSeq($3)); }
-  | sub_expr PLUS        sub_expr                   { $$ = new AstOperator('+', $1, $3); }
-  | sub_expr MINUS       sub_expr                   { $$ = new AstOperator('-', $1, $3); }
-  | sub_expr STAR        sub_expr                   { $$ = new AstOperator('*', $1, $3); }
-  | sub_expr SLASH       sub_expr                   { $$ = new AstOperator('/', $1, $3); }
+  | ID   EQUAL       expr         %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
+  | ID   COLON_EQUAL expr         %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), new AstSeq($3)); }
+  | expr PLUS        expr                           { $$ = new AstOperator('+', $1, $3); }
+  | expr MINUS       expr                           { $$ = new AstOperator('-', $1, $3); }
+  | expr STAR        expr                           { $$ = new AstOperator('*', $1, $3); }
+  | expr SLASH       expr                           { $$ = new AstOperator('/', $1, $3); }
   ;
 
-sub_expr_leaf
+expr_leaf
   /* misc */
   : NUMBER                                          { $$ = new AstNumber($1); }
-  | LBRACE expr RBRACE                              { $$ = $2; }
+  | LBRACE seq RBRACE                               { $$ = $2; }
   | ID                                              { $$ = new AstSymbol(new std::string($1)); }
 
 
@@ -249,12 +249,12 @@ naked_data_decl_opt_type
   ;
 
 naked_data_def
-  : naked_data_decl_opt_type EQUAL expr                              { $$ = new RawAstDataDef($1, $3); }
+  : naked_data_decl_opt_type EQUAL seq                               { $$ = new RawAstDataDef($1, $3); }
   | naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
   ;
 
 naked_fun_def
-  : naked_fun_decl EQUAL maybe_empty_expr                            { $$ = new AstFunDef($1, $3); }
+  : naked_fun_decl EQUAL maybe_empty_seq                             { $$ = new AstFunDef($1, $3); }
   ;
   
 naked_fun_decl
@@ -262,7 +262,7 @@ naked_fun_decl
   ;
 
 naked_if
-  : expr COLON expr opt_elif_list opt_else                           { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
+  : seq COLON seq opt_elif_list opt_else                             { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
   ;
 
 valvar
@@ -272,12 +272,12 @@ valvar
 
 opt_elif_list
   : %empty                                                           { $$ = new std::list<AstIf::ConditionActionPair>(); }  
-  | opt_elif_list ELIF expr COLON expr                               { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
+  | opt_elif_list ELIF seq COLON seq                                 { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
   ;  
 
 opt_else
   : %empty                                                           { $$ = NULL; }
-  | ELSE expr                                                        { std::swap($$,$2); }
+  | ELSE seq                                                         { std::swap($$,$2); }
   ;
 
 /* Epilogue section
