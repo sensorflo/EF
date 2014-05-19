@@ -270,17 +270,33 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_ifelse_flow_control_expression,
     parse,
     succeeds_AND_returns_correct_AST) ) {
+  // toggling 1) no elif part, one elif part, two elif parts
+  // toggling 2) without/with else part
+  // toggling 3) syntax ala 'if...;' or call syntax ala 'if(...)'
+  // toggling 4) with/without colon after condition
   TEST_PARSE( "if  x: 1                           ;", "seq(if(x seq(1)))", "");
+  TEST_PARSE( "if  x  1                           ;", "seq(if(x seq(1)))", "");
   TEST_PARSE( "if( x: 1                           )", "seq(if(x seq(1)))", "");
+  TEST_PARSE( "if( x  1                           )", "seq(if(x seq(1)))", "");
   TEST_PARSE( "if  x: 1                     else 2;", "seq(if(x seq(1) seq(2)))", "");
+  TEST_PARSE( "if  x  1                     else 2;", "seq(if(x seq(1) seq(2)))", "");
   TEST_PARSE( "if( x: 1                     else 2)", "seq(if(x seq(1) seq(2)))", "");
+  TEST_PARSE( "if( x  1                     else 2)", "seq(if(x seq(1) seq(2)))", "");
   TEST_PARSE( "if  x: 1 elif y: 2                 ;", "seq(if(x seq(1) y seq(2)))", "");
+  TEST_PARSE( "if  x  1 elif y  2                 ;", "seq(if(x seq(1) y seq(2)))", "");
   TEST_PARSE( "if( x: 1 elif y: 2                 )", "seq(if(x seq(1) y seq(2)))", "");
+  TEST_PARSE( "if( x  1 elif y  2                 )", "seq(if(x seq(1) y seq(2)))", "");
   TEST_PARSE( "if  x: 1 elif y: 2           else 3;", "seq(if(x seq(1) y seq(2) seq(3)))", "");
+  TEST_PARSE( "if  x  1 elif y  2           else 3;", "seq(if(x seq(1) y seq(2) seq(3)))", "");
   TEST_PARSE( "if( x: 1 elif y: 2           else 3)", "seq(if(x seq(1) y seq(2) seq(3)))", "");
+  TEST_PARSE( "if( x  1 elif y  2           else 3)", "seq(if(x seq(1) y seq(2) seq(3)))", "");
   TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3       ;", "seq(if(x seq(1) y seq(2) z seq(3)))", "");
+  TEST_PARSE( "if  x  1 elif y  2 elif z  3       ;", "seq(if(x seq(1) y seq(2) z seq(3)))", "");
   TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3       )", "seq(if(x seq(1) y seq(2) z seq(3)))", "");
+  TEST_PARSE( "if( x  1 elif y  2 elif z  3       )", "seq(if(x seq(1) y seq(2) z seq(3)))", "");
   TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4;", "seq(if(x seq(1) y seq(2) z seq(3) seq(4)))", "");
+  TEST_PARSE( "if  x  1 elif y  2 elif z  3 else 4;", "seq(if(x seq(1) y seq(2) z seq(3) seq(4)))", "");
   TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3 else 4)", "seq(if(x seq(1) y seq(2) z seq(3) seq(4)))", "");
+  TEST_PARSE( "if( x  1 elif y  2 elif z  3 else 4)", "seq(if(x seq(1) y seq(2) z seq(3) seq(4)))", "");
 }
 

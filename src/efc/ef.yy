@@ -179,9 +179,13 @@ type
   : ID
   ;
 
-opt_colon_type
+opt_colon
   : %empty
-  | COLON 
+  | COLON
+  ;
+
+opt_colon_type
+  : opt_colon
   | COLON type
   ;
 
@@ -262,7 +266,7 @@ naked_fun_decl
   ;
 
 naked_if
-  : expr COLON seq opt_elif_list opt_else                            { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
+  : expr opt_colon seq opt_elif_list opt_else                        { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
   ;
 
 valvar
@@ -272,7 +276,7 @@ valvar
 
 opt_elif_list
   : %empty                                                           { $$ = new std::list<AstIf::ConditionActionPair>(); }  
-  | opt_elif_list ELIF expr COLON seq                                { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
+  | opt_elif_list ELIF expr opt_colon seq                            { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
   ;  
 
 opt_else
