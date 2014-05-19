@@ -124,9 +124,22 @@ AstOperator::AstOperator(char op, AstCtList* args) :
   assert(m_args);
 }
 
+AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
+  m_op(op),
+  m_args(args ? args : new AstCtList) {
+  assert(m_args);
+}
+
 AstOperator::AstOperator(char op, AstNode* operand1, AstNode* operand2,
   AstNode* operand3) :
   m_op(static_cast<EOperation>(op)),
+  m_args(new AstCtList(operand1, operand2, operand3)) {
+  assert(m_args);
+}
+
+AstOperator::AstOperator(AstOperator::EOperation op, AstNode* operand1, AstNode* operand2,
+  AstNode* operand3) :
+  m_op(op),
   m_args(new AstCtList(operand1, operand2, operand3)) {
   assert(m_args);
 }
@@ -136,7 +149,7 @@ AstOperator::~AstOperator() {
 }
 
 basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
-  os << static_cast<char>(m_op) << '(';
+  os << m_op << '(';
   m_args->printTo(os);
   os << ')';
   return os;
@@ -144,6 +157,21 @@ basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
 
 const list<AstNode*>& AstOperator::argschilds() const {
   return m_args->childs();
+}
+
+std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
+  AstOperator::EOperation op) {
+  switch (op) {
+  case AstOperator::eAnd: return os << "and";
+  case AstOperator::eOr: return os << "or";
+  case AstOperator::eNot: return os << "not";
+  default:
+    if (static_cast<int>(op)<128) {
+      return os << static_cast<char>(op);
+    } else {
+      assert(false);
+    }
+  }
 }
 
 AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstSeq* elseAction) :

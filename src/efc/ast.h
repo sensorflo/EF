@@ -157,10 +157,16 @@ public:
     eSub = '-',
     eMul = '*',
     eDiv = '/',
-    ePlus = '+'
+    ePlus = '+',
+    eAnd = 128,
+    eOr,
+    eNot
   };
   AstOperator(char op, AstCtList* args);
+  AstOperator(EOperation op, AstCtList* args);
   AstOperator(char op, AstNode* operand1 = NULL, AstNode* operand2 = NULL,
+    AstNode* operand3 = NULL);
+  AstOperator(EOperation op, AstNode* operand1 = NULL, AstNode* operand2 = NULL,
     AstNode* operand3 = NULL);
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
@@ -173,6 +179,9 @@ private:
   const EOperation m_op;
   const AstCtList* const m_args;
 };
+
+std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
+  AstOperator::EOperation op);
 
 /* If flow control expression */
 class AstIf : public AstValue {

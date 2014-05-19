@@ -55,6 +55,9 @@ fun                 return yy::Parser::make_FUN(loc);
 val                 return yy::Parser::make_VAL(loc);
 var                 return yy::Parser::make_VAR(loc);
 decl                return yy::Parser::make_DECL(loc);
+not                 return yy::Parser::make_NOT(loc);
+and                 return yy::Parser::make_AND(loc);
+or                  return yy::Parser::make_OR(loc);
 
   /* literal number */
 [0-9]+{ID}?  {
@@ -82,6 +85,8 @@ decl                return yy::Parser::make_DECL(loc);
 ":="                return yy::Parser::make_COLON_EQUAL(loc);
 "->"                return yy::Parser::make_ARROW(loc);
 [-+*/][ \t]*"("     return yy::Parser::make_OP_LPAREN(yytext[0],loc);/*todo: allow comments and newlines intbetween*/
+"&&"                return yy::Parser::make_AMPER_AMPER(loc);
+"||"                return yy::Parser::make_PIPE_PIPE(loc);
 
 ";"                 return yy::Parser::make_SEMICOLON(loc);
 ":"                 return yy::Parser::make_COLON(loc);
@@ -90,6 +95,7 @@ decl                return yy::Parser::make_DECL(loc);
 "-"                 return yy::Parser::make_MINUS(loc);
 "*"                 return yy::Parser::make_STAR(loc);
 "/"                 return yy::Parser::make_SLASH(loc);
+"!"                 return yy::Parser::make_EXCL(loc);
 "="                 return yy::Parser::make_EQUAL(loc);
 "("                 return yy::Parser::make_LPAREN(loc);
 ")"                 return yy::Parser::make_RPAREN(loc);

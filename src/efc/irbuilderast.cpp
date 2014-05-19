@@ -145,12 +145,16 @@ void IrBuilderAst::visit(const AstOperator& op) {
     result = ConstantInt::get( getGlobalContext(), APInt(32, 1));
     break;
   case AstOperator::eAssign: // fallthrough
-  case AstOperator::eDiv:
+  case AstOperator::eDiv: {
     if ( op.op()==AstOperator::eAssign ) { assert(argschilds.size()==2); }
     if ( op.op()==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
     const AstNode& lhsNode = **(iter++);
     lhsNode.accept(*this);
     result /*aka lhs*/ = valuesBackAndPop();
+    break;
+  }
+  default:
+    assert(false);
   }
 
   // Iterate trough all operands

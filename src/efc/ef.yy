@@ -65,6 +65,12 @@
   PLUS "+"
   MINUS "-"
   STAR "*"
+  NOT "not"
+  EXCL "!"
+  AND "and"
+  AMPER_AMPER "&&"
+  OR "or"
+  PIPE_PIPE "||"
   SLASH "/"
   LPAREN "("
   RPAREN ")"
@@ -77,10 +83,13 @@
 %token <std::string> ID "identifier"
 %token <int> NUMBER "number"
 %precedence ASSIGNEMENT
+%left PIPE_PIPE OR
+%left AMPER_AMPER AND
 %left PLUS
       MINUS
 %left STAR
       SLASH
+%precedence EXCL NOT
 
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
@@ -209,9 +218,17 @@ expr
   | OP_LPAREN ct_list RPAREN                        { $$ = new AstOperator($1, $2); }
 
 
+  /* unary prefix */
+  | NOT  expr                                       { $$ = new AstOperator(AstOperator::eNot, $2); }
+  | EXCL expr                                       { $$ = new AstOperator(AstOperator::eNot, $2); }
+
   /* binary operators */
   | ID   EQUAL       expr         %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
   | ID   COLON_EQUAL expr         %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), $3); }
+  | expr OR          expr                           { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
+  | expr PIPE_PIPE   expr                           { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
+  | expr AND         expr                           { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
+  | expr AMPER_AMPER expr                           { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
   | expr PLUS        expr                           { $$ = new AstOperator('+', $1, $3); }
   | expr MINUS       expr                           { $$ = new AstOperator('-', $1, $3); }
   | expr STAR        expr                           { $$ = new AstOperator('*', $1, $3); }

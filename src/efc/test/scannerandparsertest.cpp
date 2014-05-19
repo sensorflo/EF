@@ -100,9 +100,21 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   // precedence is ordered from high to low
 
+
+  // precedence level group: unary prefix not
+  string spec = "! aka 'not' is right associative. ! and 'not' are synonyms";
+  TEST_PARSE( "not not a", "seq(not(not(a)))", spec);
+  TEST_PARSE( "not !   a", "seq(not(not(a)))", spec);
+  TEST_PARSE( "!   not a", "seq(not(not(a)))", spec);
+  TEST_PARSE( "!   !   a", "seq(not(not(a)))", spec);
+
   // precedence level group: binary * /
-  string spec = "* is left associative";
+  spec = "* is left associative";
   TEST_PARSE( "a*b*c", "seq(*(*(a b) c))", spec);
+
+  spec = "* has lower precedence than !";
+  TEST_PARSE( "!a *  b", "seq(*(not(a) b))", spec);
+  TEST_PARSE( " a * !b", "seq(*(a not(b)))", spec);
 
   spec = "/ is left associative";
   TEST_PARSE( "a/b/c", "seq(/(/(a b) c))", spec);
@@ -115,6 +127,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   spec = "+ is left associative";
   TEST_PARSE( "a+b+c", "seq(+(+(a b) c))", spec);
 
+  spec = "+ has lower precedence than *";
+  TEST_PARSE( "a+b*c", "seq(+(a *(b c)))", spec);
+  TEST_PARSE( "a*b+c", "seq(+(*(a b) c))", spec);
+
   spec = "- is left associative";
   TEST_PARSE( "a-b-c", "seq(-(-(a b) c))", spec);
 
@@ -122,9 +138,35 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "a-b+c", "seq(+(-(a b) c))", spec);
   TEST_PARSE( "a+b-c", "seq(-(+(a b) c))", spec);
 
-  spec = "+ has lower precedence than *";
-  TEST_PARSE( "a+b*c", "seq(+(a *(b c)))", spec);
-  TEST_PARSE( "a*b+c", "seq(+(*(a b) c))", spec);
+  // precedence level group: binary and &&
+  spec = "&& aka 'and' is left associative. && and 'and' are synonyms.";
+  TEST_PARSE( "a &&  b &&  c", "seq(and(and(a b) c))", spec);
+  TEST_PARSE( "a &&  b and c", "seq(and(and(a b) c))", spec);
+  TEST_PARSE( "a and b &&  c", "seq(and(and(a b) c))", spec);
+  TEST_PARSE( "a and b and c", "seq(and(and(a b) c))", spec);
+
+  spec = "&& aka 'and' has lower precedence than +";
+  TEST_PARSE( "a &&  b +   c", "seq(and(a +(b c)))", spec);
+  TEST_PARSE( "a and b +   c", "seq(and(a +(b c)))", spec);
+  TEST_PARSE( "a +   b &&  c", "seq(and(+(a b) c))", spec);
+  TEST_PARSE( "a +   b and c", "seq(and(+(a b) c))", spec);
+
+  // precedence level group: binary or ||
+  spec = "|| aka 'or' is left associative. || and 'or' are synonyms.";
+  TEST_PARSE( "a || b || c", "seq(or(or(a b) c))", spec);
+  TEST_PARSE( "a || b or c", "seq(or(or(a b) c))", spec);
+  TEST_PARSE( "a or b || c", "seq(or(or(a b) c))", spec);
+  TEST_PARSE( "a or b or c", "seq(or(or(a b) c))", spec);
+
+  spec = "|| aka 'or' has lower precedence than && aka 'and'";
+  TEST_PARSE( "a ||  b &&  c", "seq(or(a and(b c)))", spec);
+  TEST_PARSE( "a ||  b and c", "seq(or(a and(b c)))", spec);
+  TEST_PARSE( "a or  b &&  c", "seq(or(a and(b c)))", spec);
+  TEST_PARSE( "a or  b and c", "seq(or(a and(b c)))", spec);
+  TEST_PARSE( "a &&  b ||  c", "seq(or(and(a b) c))", spec);
+  TEST_PARSE( "a &&  b or  c", "seq(or(and(a b) c))", spec);
+  TEST_PARSE( "a and b ||  c", "seq(or(and(a b) c))", spec);
+  TEST_PARSE( "a and b or  c", "seq(or(and(a b) c))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
