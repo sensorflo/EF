@@ -97,17 +97,17 @@ private:
 
 class AstDataDef : public AstValue {
 public:
-  AstDataDef(AstDataDecl* decl, AstSeq* initValue = NULL);
+  AstDataDef(AstDataDecl* decl, AstValue* initValue = NULL);
   ~AstDataDef();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstDataDecl& decl() const { return *m_decl; }
-  virtual const AstSeq* initValue() const { return m_initValue; }
+  virtual const AstValue* initValue() const { return m_initValue; }
 private:
   /** We're the owner. Is garanteed to be non-null */
   const AstDataDecl* const m_decl;
   /** We're the owner. Is _NOT_ garanteed to be non-null */
-  const AstSeq* const m_initValue;
+  const AstValue* const m_initValue;
 };
 
 /** Literal number */
@@ -178,15 +178,15 @@ private:
 class AstIf : public AstValue {
 public:
   struct ConditionActionPair {
-    ConditionActionPair(AstSeq* condition, AstSeq* action) :
+    ConditionActionPair(AstValue* condition, AstSeq* action) :
       m_condition(condition), m_action(action) {}
     /** We're the owner. Is garanteed to be non-null */
-    AstSeq* m_condition;
+    AstValue* m_condition;
     /** We're the owner. Is garanteed to be non-null */
     AstSeq* m_action;
   };
   AstIf(std::list<ConditionActionPair>* conditionActionPairs, AstSeq* elseAction = NULL);
-  AstIf(AstSeq* cond, AstSeq* action, AstSeq* elseAction = NULL);
+  AstIf(AstValue* cond, AstSeq* action, AstSeq* elseAction = NULL);
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
@@ -195,7 +195,7 @@ public:
 private:
   static std::list<ConditionActionPair>* makeDefaultConditionActionPairs();
   static std::list<ConditionActionPair>* makeConditionActionPairs(
-    AstSeq* cond, AstSeq* action);
+    AstValue* cond, AstSeq* action);
   /** We're the owner. Is garanteed to be non-null and size>=1*/
   const std::list<ConditionActionPair>* const m_conditionActionPairs;
   /** We're the owner. Is NOT garanteed to be non-null */

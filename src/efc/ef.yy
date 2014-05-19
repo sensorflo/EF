@@ -21,10 +21,10 @@
   };  
 
   struct RawAstDataDef {
-    RawAstDataDef(RawAstDataDecl* decl, AstSeq* initValue = NULL) :
+    RawAstDataDef(RawAstDataDecl* decl, AstValue* initValue = NULL) :
       m_decl(decl), m_initValue(initValue) {};
     RawAstDataDecl* m_decl;
-    AstSeq* m_initValue;
+    AstValue* m_initValue;
   };  
 }
 
@@ -207,7 +207,7 @@ expr
 
   /* binary operators */
   | ID   EQUAL       expr         %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
-  | ID   COLON_EQUAL expr         %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), new AstSeq($3)); }
+  | ID   COLON_EQUAL expr         %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), $3); }
   | expr PLUS        expr                           { $$ = new AstOperator('+', $1, $3); }
   | expr MINUS       expr                           { $$ = new AstOperator('-', $1, $3); }
   | expr STAR        expr                           { $$ = new AstOperator('*', $1, $3); }
@@ -249,7 +249,7 @@ naked_data_decl_opt_type
   ;
 
 naked_data_def
-  : naked_data_decl_opt_type EQUAL seq                               { $$ = new RawAstDataDef($1, $3); }
+  : naked_data_decl_opt_type EQUAL expr                              { $$ = new RawAstDataDef($1, $3); }
   | naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
   ;
 
@@ -262,7 +262,7 @@ naked_fun_decl
   ;
 
 naked_if
-  : seq COLON seq opt_elif_list opt_else                             { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
+  : expr COLON seq opt_elif_list opt_else                            { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
   ;
 
 valvar
@@ -272,7 +272,7 @@ valvar
 
 opt_elif_list
   : %empty                                                           { $$ = new std::list<AstIf::ConditionActionPair>(); }  
-  | opt_elif_list ELIF seq COLON seq                                 { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
+  | opt_elif_list ELIF expr COLON seq                                { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
   ;  
 
 opt_else

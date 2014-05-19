@@ -227,18 +227,18 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   //            b) implicit with ':' or ''  
   //Toggling 2) 'keyword...;' vs 'keyword(...)' syntax
   //Toggling 3) val vs var
-  TEST_PARSE( "val foo: int = 42;", "seq(data(decldata(foo) seq(42)))", spec);
-  TEST_PARSE( "val foo:     = 42;", "seq(data(decldata(foo) seq(42)))", spec);
-  TEST_PARSE( "val foo      = 42;", "seq(data(decldata(foo) seq(42)))", spec);
-  TEST_PARSE( "val(foo: int = 42)", "seq(data(decldata(foo) seq(42)))", spec);
-  TEST_PARSE( "val(foo:     = 42)", "seq(data(decldata(foo) seq(42)))", spec);
-  TEST_PARSE( "val(foo      = 42)", "seq(data(decldata(foo) seq(42)))", spec);
-  TEST_PARSE( "var foo: int = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
-  TEST_PARSE( "var foo:     = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
-  TEST_PARSE( "var foo      = 42;", "seq(data(decldata(foo mut) seq(42)))", spec);
-  TEST_PARSE( "var(foo: int = 42)", "seq(data(decldata(foo mut) seq(42)))", spec);
-  TEST_PARSE( "var(foo:     = 42)", "seq(data(decldata(foo mut) seq(42)))", spec);
-  TEST_PARSE( "var(foo      = 42)", "seq(data(decldata(foo mut) seq(42)))", spec);
+  TEST_PARSE( "val foo: int = 42;", "seq(data(decldata(foo) 42))", spec);
+  TEST_PARSE( "val foo:     = 42;", "seq(data(decldata(foo) 42))", spec);
+  TEST_PARSE( "val foo      = 42;", "seq(data(decldata(foo) 42))", spec);
+  TEST_PARSE( "val(foo: int = 42)", "seq(data(decldata(foo) 42))", spec);
+  TEST_PARSE( "val(foo:     = 42)", "seq(data(decldata(foo) 42))", spec);
+  TEST_PARSE( "val(foo      = 42)", "seq(data(decldata(foo) 42))", spec);
+  TEST_PARSE( "var foo: int = 42;", "seq(data(decldata(foo mut) 42))", spec);
+  TEST_PARSE( "var foo:     = 42;", "seq(data(decldata(foo mut) 42))", spec);
+  TEST_PARSE( "var foo      = 42;", "seq(data(decldata(foo mut) 42))", spec);
+  TEST_PARSE( "var(foo: int = 42)", "seq(data(decldata(foo mut) 42))", spec);
+  TEST_PARSE( "var(foo:     = 42)", "seq(data(decldata(foo mut) 42))", spec);
+  TEST_PARSE( "var(foo      = 42)", "seq(data(decldata(foo mut) 42))", spec);
 
   spec = "trivial example with implicit init value";
   //Toggling 1) 'keyword...;' vs 'keyword(...)' syntax
@@ -249,38 +249,38 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "var(foo:int)", "seq(data(decldata(foo mut)))", spec);
 
   spec = "short version with implicit type";
-  TEST_PARSE( "foo:=42", "seq(data(decldata(foo) seq(42)))", spec);
+  TEST_PARSE( "foo:=42", "seq(data(decldata(foo) 42))", spec);
 
   spec = ":= has lower precedence than * +";
   TEST_PARSE( "foo:=1+2*3",
-    "seq(data(decldata(foo) seq(+(1 *(2 3)))))", spec);
+    "seq(data(decldata(foo) +(1 *(2 3))))", spec);
 
   spec = ":= is right associative";
   TEST_PARSE( "bar:=foo:=42",
-    "seq(data(decldata(bar) seq(data(decldata(foo) seq(42)))))", spec);
+    "seq(data(decldata(bar) data(decldata(foo) 42)))", spec);
 
   spec = ":= and = have same precedence";
   TEST_PARSE( "bar=foo:=42",
-    "seq(=(bar data(decldata(foo) seq(42))))", spec);
+    "seq(=(bar data(decldata(foo) 42)))", spec);
   TEST_PARSE( "bar:=foo=42",
-    "seq(data(decldata(bar) seq(=(foo 42))))", spec);
+    "seq(data(decldata(bar) =(foo 42)))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_ifelse_flow_control_expression,
     parse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "if  x: 1                           ;", "seq(if(seq(x) seq(1)))", "");
-  TEST_PARSE( "if( x: 1                           )", "seq(if(seq(x) seq(1)))", "");
-  TEST_PARSE( "if  x: 1                     else 2;", "seq(if(seq(x) seq(1) seq(2)))", "");
-  TEST_PARSE( "if( x: 1                     else 2)", "seq(if(seq(x) seq(1) seq(2)))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2                 ;", "seq(if(seq(x) seq(1) seq(y) seq(2)))", "");
-  TEST_PARSE( "if( x: 1 elif y: 2                 )", "seq(if(seq(x) seq(1) seq(y) seq(2)))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2           else 3;", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(3)))", "");
-  TEST_PARSE( "if( x: 1 elif y: 2           else 3)", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(3)))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3       ;", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(z) seq(3)))", "");
-  TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3       )", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(z) seq(3)))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4;", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(z) seq(3) seq(4)))", "");
-  TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3 else 4)", "seq(if(seq(x) seq(1) seq(y) seq(2) seq(z) seq(3) seq(4)))", "");
+  TEST_PARSE( "if  x: 1                           ;", "seq(if(x seq(1)))", "");
+  TEST_PARSE( "if( x: 1                           )", "seq(if(x seq(1)))", "");
+  TEST_PARSE( "if  x: 1                     else 2;", "seq(if(x seq(1) seq(2)))", "");
+  TEST_PARSE( "if( x: 1                     else 2)", "seq(if(x seq(1) seq(2)))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2                 ;", "seq(if(x seq(1) y seq(2)))", "");
+  TEST_PARSE( "if( x: 1 elif y: 2                 )", "seq(if(x seq(1) y seq(2)))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2           else 3;", "seq(if(x seq(1) y seq(2) seq(3)))", "");
+  TEST_PARSE( "if( x: 1 elif y: 2           else 3)", "seq(if(x seq(1) y seq(2) seq(3)))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3       ;", "seq(if(x seq(1) y seq(2) z seq(3)))", "");
+  TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3       )", "seq(if(x seq(1) y seq(2) z seq(3)))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4;", "seq(if(x seq(1) y seq(2) z seq(3) seq(4)))", "");
+  TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3 else 4)", "seq(if(x seq(1) y seq(2) z seq(3) seq(4)))", "");
 }
 

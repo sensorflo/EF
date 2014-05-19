@@ -15,8 +15,8 @@ fun factorial: (x:int) -> int =
   ;  
 ;
 
-# braces '{}' to group sub expressions
-# ------------------------------------
+# braces '{}' to group expressions
+# --------------------------------
 # 
 # Unlike most other languages, curly braces are used to group expressions /
 # overwrite precedence.

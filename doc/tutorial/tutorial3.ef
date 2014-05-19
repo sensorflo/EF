@@ -3,19 +3,24 @@
 # The EF programming language tutorial part 3
 # ===========================================
 #
-# Expression sequences (aka blocks)
-# ---------------------------------
-# Demo part 2 and the following demonstrate
+# Expressions and (expression) sequences (aka blocks)
+# ---------------------------------------------------
+# Demo part 2 and the following definition of function square_minus_four
+# demonstrate:
+# 
+# - The expressions of an expressions sequence are separated by
+#   nothing. Informally the parser knows that they are separate expressions
+#   because no binary operator is inbetween. However you can optionally
+#   separate expressions by commas. The guideline is to leave the comma away
+#   when code continues on the next line and to use the comma when code
+#   continues on the same line. Also a trailing comma is allowed but naturally
+#   not required.
 # - The value of an expression sequence (aka block) is the value of its last
 #   expression. In body of the square method of demo 2 the expression sequence
 #   consists of just one expression 'x * x'. In the example below, it consists
 #   of five expressions, in the example one per line.
 # - The return value of a function is the value of its top level expression
 #   sequence (aka block). 
-# - The elements (being expressions) of an expression sequence are separated
-#   by nothing. However you can optionally separate them by commas. Also a
-#   trailing comma is allowed but not required. 'a b' and 'a , b' in EF are
-#   equivalent to 'a , b' in C/C++.
 
 
 # Data object definitions

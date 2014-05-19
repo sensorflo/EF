@@ -8,9 +8,9 @@
 # 
 # In EF everything is an expression. There are no statements. Also a control
 # flow construct like 'if cond_expr: then_expr else else_expr;' is actually an
-# expression having a value: the value of the expression then_expr if
-# expression cond_expr evaluates to true, and the value of else_expr
-# otherwise.
+# expression having a value. If cond_expr is true, then the overall value
+# equals to then_expr, and if cond_expr is false then the overall value equals
+# to else_expr.
 x:=1  y:=2  z:=3
 foo1 := if x: y else z;
 
@@ -34,8 +34,8 @@ foo1 := if x: y else z;
 #                | name  deli-          sepa-        sepa-         deli-
 #                |       miter          rator        rator         miter
 #                |------------------------------------------------------
-# EF syntax 1    | if            a       :      b    else     c      ;
-# EF syntax 2    | if     (      a       :      b    else     c      )
+# EF syntax 1    | if            a      [:]     b    else     c      ;
+# EF syntax 2    | if     (      a      [:]     b    else     c      )
 # classic syntax | if     (      a       ,      b     ,       c      )
 #
 # Alternatively EF also lets you write all expressions in the call syntax with
