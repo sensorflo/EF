@@ -125,10 +125,11 @@ void IrBuilderAst::visit(const AstOperator& op) {
   const list<AstNode*>& argschilds = op.argschilds();
   list<AstNode*>::const_iterator iter = argschilds.begin();
   Value* result = NULL;
+  AstOperator::EOperation op_ = op.op();
 
   // Determine initial value of chain. Some operators start with constants,
   // other already need to read in one or two operands.
-  switch (op.op()) {
+  switch (op_) {
   case AstOperator::eSub:
     if (argschilds.size()<=1) {
       result = ConstantInt::get( getGlobalContext(), APInt(32, 0));
@@ -146,8 +147,8 @@ void IrBuilderAst::visit(const AstOperator& op) {
     break;
   case AstOperator::eAssign: // fallthrough
   case AstOperator::eDiv: {
-    if ( op.op()==AstOperator::eAssign ) { assert(argschilds.size()==2); }
-    if ( op.op()==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
+    if ( op_==AstOperator::eAssign ) { assert(argschilds.size()==2); }
+    if ( op_==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
     const AstNode& lhsNode = **(iter++);
     lhsNode.accept(*this);
     result /*aka lhs*/ = valuesBackAndPop();
@@ -162,7 +163,7 @@ void IrBuilderAst::visit(const AstOperator& op) {
     const AstNode& operandNode = **iter;
     operandNode.accept(*this);
     Value* operand = valuesBackAndPop();
-    switch (op.op()) {
+    switch (op_) {
     case AstOperator::eAssign   : m_builder.CreateStore(operand, result);
                                   result = operand; break;
     case AstOperator::eSub      : result = m_builder.CreateSub(result, operand, "subtmp"); break;
