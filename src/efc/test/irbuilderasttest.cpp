@@ -6,6 +6,10 @@ using namespace testing;
 using namespace std;
 using namespace llvm;
 
+enum ECmpOp {
+  eEq, eNe, eLt, eGt, eGe, eLe
+};
+
 class TestingIrBuilderAst : public IrBuilderAst {
 public:
   using IrBuilderAst::jitExecFunction;
@@ -24,23 +28,37 @@ string amendAst(const auto_ptr<AstSeq>& ast) {
 }
 
 void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
-  const string& spec = "") {
+  const string& spec = "", ECmpOp cmpOp = eEq ) {
 
   // setup
   ENV_ASSERT_TRUE( astSeq!=NULL );
   auto_ptr<AstSeq> astSeqAp(astSeq);
   IrBuilderAst UUT;
 
-  // execute & verify
-  EXPECT_EQ(expectedResult, UUT.buildAndRunModule(*astSeq)) <<
-    amendSpec(spec) <<
-    amendAst(astSeq);
+  // execute
+  int result = UUT.buildAndRunModule(*astSeq);
+
+  // verify
+  switch (cmpOp) {
+  case eEq: EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
+  case eNe: EXPECT_NE(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
+  case eGt: EXPECT_GT(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
+  case eLt: EXPECT_LT(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
+  case eGe: EXPECT_GE(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
+  case eLe: EXPECT_LE(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
+  }
 }
 
 #define TEST_BUILD_AND_RUN_MODULE(astSeq, expectedResult, spec) \
   {\
     SCOPED_TRACE("");\
     testbuilAndRunModule(astSeq, expectedResult, spec);\
+  }
+
+#define TEST_BUILD_AND_RUN_MODULE_CMPOP(astSeq, expectedResult, spec, cmpop) \
+  {\
+    SCOPED_TRACE("");\
+    testbuilAndRunModule(astSeq, expectedResult, spec, cmpop);  \
   }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
