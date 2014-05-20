@@ -124,6 +124,12 @@ AstOperator::AstOperator(char op, AstCtList* args) :
   assert(m_args);
 }
 
+AstOperator::AstOperator(string op, AstCtList* args) :
+  m_op(static_cast<EOperation>(op[0])),
+  m_args(args ? args : new AstCtList) {
+  assert(m_args);
+}
+
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
   m_args(args ? args : new AstCtList) {

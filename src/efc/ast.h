@@ -163,6 +163,7 @@ public:
     eNot
   };
   AstOperator(char op, AstCtList* args);
+  AstOperator(std::string op, AstCtList* args);
   AstOperator(EOperation op, AstCtList* args);
   AstOperator(char op, AstNode* operand1 = NULL, AstNode* operand2 = NULL,
     AstNode* operand3 = NULL);

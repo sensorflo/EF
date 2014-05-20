@@ -79,7 +79,7 @@
   ARROW "->"
 ;
 
-%token <char> OP_LPAREN 
+%token <std::string> OP_LPAREN 
 %token <std::string> ID "identifier"
 %token <int> NUMBER "number"
 %precedence ASSIGNEMENT

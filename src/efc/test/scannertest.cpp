@@ -98,7 +98,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     DriverOnTmpFile driver( "*(" );
     Parser::symbol_type st = yylex(driver);
     EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
-    EXPECT_EQ('*', st.value.as<char>()) << amendSpec(spec);
+    EXPECT_EQ("*", st.value.as<string>()) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
@@ -108,10 +108,20 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     DriverOnTmpFile driver( "*  (" );
     Parser::symbol_type st = yylex(driver);
     EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
-    EXPECT_EQ('*', st.value.as<char>()) << amendSpec(spec);
+    EXPECT_EQ("*", st.value.as<string>()) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
+
+  // spec = "an operator with multiple chars";
+  // {
+  //   DriverOnTmpFile driver( "&&  (" );
+  //   Parser::symbol_type st = yylex(driver);
+  //   EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
+  //   EXPECT_EQ("&&", st.value.as<string>()) << amendSpec(spec);
+  //   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+  //   EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  // }
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
