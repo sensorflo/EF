@@ -185,6 +185,12 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_operator_in_call_syntax,
     parse,
     succeeds_AND_returns_correct_AST) ) {
+  TEST_PARSE( "!(x)", "seq(not(seq(x)))", "");
+  TEST_PARSE( "not(x)", "seq(not(seq(x)))", "");
+  TEST_PARSE( "and(x,y,z)", "seq(and(seq(x) seq(y) seq(z)))", "");
+  TEST_PARSE( "&&(x,y,z)", "seq(and(seq(x) seq(y) seq(z)))", "");
+  TEST_PARSE( "or(x,y,z)", "seq(or(seq(x) seq(y) seq(z)))", "");
+  TEST_PARSE( "||(x,y,z)", "seq(or(seq(x) seq(y) seq(z)))", "");
   TEST_PARSE( "+()", "seq(+())", "");
   TEST_PARSE( "-(1)", "seq(-(seq(1)))", "");
   TEST_PARSE( "*(1,2)", "seq(*(seq(1) seq(2)))", "");

@@ -19,8 +19,13 @@ TEST(AstTest, MAKE_TEST_NAME2(
   EXPECT_EQ( "seq(42 77)", AstSeq(new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
 
   spec = "AstOperator";
-  EXPECT_EQ( "+(42 77)",
-    AstOperator('+',new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "+(42 77)"  , AstOperator('+'       , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "not(42)"   , AstOperator('!'       , new AstNumber(42)).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "not(42)"   , AstOperator("not"     , new AstNumber(42)).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "and(42 77)", AstOperator("&&"      , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "and(42 77)", AstOperator("and"     , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "or(42 77)" , AstOperator("||"      , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "or(42 77)" , AstOperator("or"      , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
 
   spec = "AstIf";
   EXPECT_EQ( "if(seq(x) seq(1))", AstIf(

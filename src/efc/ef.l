@@ -86,7 +86,7 @@ or                  return yy::Parser::make_OR(loc);
 "->"                return yy::Parser::make_ARROW(loc);
 "&&"                return yy::Parser::make_AMPER_AMPER(loc);
 "||"                return yy::Parser::make_PIPE_PIPE(loc);
- ([-+*/!]|&&|"||")[ \t]*"("    {   /*todo: allow comments and newlines intbetween*/
+([-+*/!]|&&|"||"|"and"|"or"|"not")[ \t]*"("    {   /*todo: allow comments and newlines intbetween*/
   char* p = yytext;
   for (/*nop*/; *p && *p!=' ' && *p!='\t' && *p!='('; ++p ) /*nop*/;
   return yy::Parser::make_OP_LPAREN(string(yytext,p), loc);

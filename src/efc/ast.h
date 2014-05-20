@@ -3,6 +3,7 @@
 #include <string>
 #include <list>
 #include <iostream>
+#include <map>
 
 class AstNode;
 class AstNumber;
@@ -158,14 +159,16 @@ public:
     eMul = '*',
     eDiv = '/',
     ePlus = '+',
+    eNot = '!',
     eAnd = 128,
     eOr,
-    eNot
   };
   AstOperator(char op, AstCtList* args);
-  AstOperator(std::string op, AstCtList* args);
+  AstOperator(const std::string& op, AstCtList* args);
   AstOperator(EOperation op, AstCtList* args);
   AstOperator(char op, AstNode* operand1 = NULL, AstNode* operand2 = NULL,
+    AstNode* operand3 = NULL);
+  AstOperator(const std::string& op, AstNode* operand1 = NULL, AstNode* operand2 = NULL,
     AstNode* operand3 = NULL);
   AstOperator(EOperation op, AstNode* operand1 = NULL, AstNode* operand2 = NULL,
     AstNode* operand3 = NULL);
@@ -175,10 +178,12 @@ public:
   EOperation op() const { return m_op; }
   const std::list<AstNode*>& argschilds() const;
 private:
+  static EOperation toEOperation(const std::string& op);
   AstOperator(const AstOperator&);
   AstOperator& operator=(const AstOperator&);
   const EOperation m_op;
   const AstCtList* const m_args;
+  static std::map<std::string, EOperation> m_opMap;
 };
 
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
