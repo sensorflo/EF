@@ -73,6 +73,34 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_operator,
     buildAndRunModule,
     returns_the_result_of_that_operator)) {
+
+  // not
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator(AstOperator::eNot, new AstNumber(2))), 0, "");
+  TEST_BUILD_AND_RUN_MODULE_CMPOP(
+    new AstSeq(new AstOperator(AstOperator::eNot, new AstNumber(0))), 0, "", eNe);
+
+  // and
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator(AstOperator::eAnd, new AstNumber(0), new AstNumber(0))), 0, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator(AstOperator::eAnd, new AstNumber(0), new AstNumber(2))), 0, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator(AstOperator::eAnd, new AstNumber(2), new AstNumber(0))), 0, "");
+  TEST_BUILD_AND_RUN_MODULE_CMPOP(
+    new AstSeq(new AstOperator(AstOperator::eAnd, new AstNumber(2), new AstNumber(2))), 0, "", eNe);
+
+  // or
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator(AstOperator::eOr, new AstNumber(0), new AstNumber(0))), 0, "");
+  TEST_BUILD_AND_RUN_MODULE_CMPOP(
+    new AstSeq(new AstOperator(AstOperator::eOr, new AstNumber(0), new AstNumber(2))), 0, "", eNe);
+  TEST_BUILD_AND_RUN_MODULE_CMPOP(
+    new AstSeq(new AstOperator(AstOperator::eOr, new AstNumber(2), new AstNumber(0))), 0, "", eNe);
+  TEST_BUILD_AND_RUN_MODULE_CMPOP(
+    new AstSeq(new AstOperator(AstOperator::eOr, new AstNumber(2), new AstNumber(2))), 0, "", eNe);
+
+  // + - * /
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(new AstOperator('+', new AstNumber(1), new AstNumber(2))),
     1+2, "");
@@ -96,7 +124,16 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // - n-ary
   // - have AstSeq as childs
 
-  string spec = "null-ary minus: -() = 0";
+  //null-ary not "!()" is invalid 
+  string spec = "null-ary or: or() = false";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator(AstOperator::eOr)),
+    0, spec);
+  spec = "null-ary and: and() = true";
+  TEST_BUILD_AND_RUN_MODULE_CMPOP(
+    new AstSeq(new AstOperator(AstOperator::eAnd)),
+    0, spec, eNe);
+  spec = "null-ary minus: -() = 0";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(new AstOperator('-')),
     0, spec);
@@ -111,6 +148,19 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   //null-ary div "/()" is invalid
 
 
+  // unary not "!(x)" is the normal case and has been tested above
+  spec = "unary or: or(x) = bool(x)";
+  TEST_BUILD_AND_RUN_MODULE_CMPOP(
+    new AstSeq(
+      new AstOperator(AstOperator::eOr,
+        new AstSeq(new AstNumber(2)))),
+    0, spec, eNe);
+  spec = "unary and: and(x) = bool(x)";
+  TEST_BUILD_AND_RUN_MODULE_CMPOP(
+    new AstSeq(
+      new AstOperator(AstOperator::eAnd,
+        new AstSeq(new AstNumber(2)))),
+    0, spec, eNe);
   spec = "unary minus: -(x)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
@@ -131,6 +181,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     1, spec);
   // unary div "/(x)" is invalid
 
+  // n-ary not "!(x y z)" is invalid
   spec = "n-ary plus: +(1,2,3)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(

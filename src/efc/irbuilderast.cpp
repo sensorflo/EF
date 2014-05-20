@@ -130,6 +130,9 @@ void IrBuilderAst::visit(const AstOperator& op) {
   // Determine initial value of chain. Some operators start with constants,
   // other already need to read in one or two operands.
   switch (op_) {
+  case AstOperator::eNot:
+    assert(argschilds.size()==1);
+    break;
   case AstOperator::eSub:
     if (argschilds.size()<=1) {
       result = ConstantInt::get( getGlobalContext(), APInt(32, 0));
@@ -138,6 +141,12 @@ void IrBuilderAst::visit(const AstOperator& op) {
       lhsNode.accept(*this);
       result /*aka lhs*/ = valuesBackAndPop();
     }
+    break;
+  case AstOperator::eOr:
+    result = ConstantInt::get( getGlobalContext(), APInt(1, 0));
+    break;
+  case AstOperator::eAnd:
+    result = ConstantInt::get( getGlobalContext(), APInt(1, 1));
     break;
   case AstOperator::eAdd:
     result = ConstantInt::get( getGlobalContext(), APInt(32, 0));
@@ -163,9 +172,14 @@ void IrBuilderAst::visit(const AstOperator& op) {
     const AstNode& operandNode = **iter;
     operandNode.accept(*this);
     Value* operand = valuesBackAndPop();
+    Value* operandBool = m_builder.CreateICmpNE(operand,
+      ConstantInt::get( getGlobalContext(), APInt(32, 0)));
     switch (op_) {
     case AstOperator::eAssign   : m_builder.CreateStore(operand, result);
                                   result = operand; break;
+    case AstOperator::eNot      : result = m_builder.CreateNot(operandBool, "nottmp"); break;
+    case AstOperator::eAnd      : result = m_builder.CreateAnd(result, operandBool, "andtmp"); break;
+    case AstOperator::eOr       : result = m_builder.CreateOr(result, operandBool, "ortmp"); break;
     case AstOperator::eSub      : result = m_builder.CreateSub(result, operand, "subtmp"); break;
     case AstOperator::eAdd      : result = m_builder.CreateAdd(result, operand, "addtmp"); break;
     case AstOperator::eMul      : result = m_builder.CreateMul(result, operand, "multmp"); break;
@@ -175,6 +189,9 @@ void IrBuilderAst::visit(const AstOperator& op) {
   }
 
   assert(result);
+  if (op_==AstOperator::eNot || op_==AstOperator::eAnd || op_==AstOperator::eOr) {
+    result = m_builder.CreateZExt(result, Type::getInt32Ty(getGlobalContext()));
+  }
   m_values.push_back(result);
 }
 
