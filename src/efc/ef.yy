@@ -98,7 +98,7 @@
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <std::string> param_decl
 %type <AstDataDecl::EStorage> valvar
-%type <RawAstDataDecl*> naked_data_decl naked_data_decl_opt_type
+%type <RawAstDataDecl*> naked_data_decl
 %type <RawAstDataDef*> naked_data_def
 %type <AstFunDecl*> naked_fun_decl
 %type <AstFunDef*> naked_fun_def
@@ -263,15 +263,13 @@ expr_leaf
 
 naked_data_decl
   : ID COLON type                                                    { $$ = new RawAstDataDecl($1); }
-  ;
-
-naked_data_decl_opt_type
-  : ID opt_colon_type                                                { $$ = new RawAstDataDecl($1); }
+  | ID COLON                                                         { $$ = new RawAstDataDecl($1); }
   ;
 
 naked_data_def
-  : naked_data_decl_opt_type EQUAL expr                              { $$ = new RawAstDataDef($1, $3); }
-  | naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
+  : naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
+  | naked_data_decl EQUAL expr                                       { $$ = new RawAstDataDef($1, $3); }
+  | ID EQUAL expr opt_colon_type                                     { $$ = new RawAstDataDef(new RawAstDataDecl($1), $3); }
   ;
 
 naked_fun_def

@@ -27,10 +27,11 @@
 # -----------------------
 # The example below shows how values and variables are defined. A value is an
 # immutable (aka const) variable. 'Data object' is the generic term for
-# variable and value.
+# variable and value. The initializer can be after the identifier or after the
+# type.
 fun square_minus_four(x:int) int =
    val square: int = x * x;
-   var tmp: int = square - 1;
+   var tmp = square - 1 :int;
    tmp = tmp - 1
    tmp = tmp - 1,
    tmp = tmp - 1,
