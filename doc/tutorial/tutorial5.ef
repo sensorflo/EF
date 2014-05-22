@@ -9,7 +9,7 @@
 # _declare_ functions. Declaring things will most likely be a very seldom used
 # feature since EF will have modules like most modern programming languages
 # (e.g. Java, D, Python etc) and not source/header files like C/C++.
-decl fun fibonacci: (x:int) -> int;
+decl fun fibonacci(x:int) int;
 
 
 # Data object declarations

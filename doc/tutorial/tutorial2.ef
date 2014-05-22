@@ -9,7 +9,7 @@
 # parameter named 'x' of type 'int'. It's return type is 'int'. The functions
 # body aka implementation is 'x * x'. Thus the function square returns the
 # square of its argument. 
-fun square: (x:int) -> int =
+fun square(x:int) int =
     x * x
 ;
 

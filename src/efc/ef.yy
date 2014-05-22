@@ -166,12 +166,8 @@ pure_ct_list
   | pure_ct_list COMMA seq_without_comma            { $$ = ($1)->Add($3); }
   ;
 
-/* I'm not sure yet whether EF will allow omitting parentheses also in future,
-but for now I want to have the option for that way */
 param_ct_list
-  : %empty                                          { $$ = new std::list<std::string>(); }
-  | LPAREN RPAREN                                   { $$ = new std::list<std::string>(); }
-  | pure_naked_param_ct_list opt_comma              { std::swap($$,$1); }
+  : LPAREN RPAREN                                   { $$ = new std::list<std::string>(); }
   | LPAREN pure_naked_param_ct_list opt_comma RPAREN{ std::swap($$,$2); }
   ;
 
@@ -198,10 +194,14 @@ opt_colon_type
   | COLON type
   ;
 
+/* Most probably the grammar will not have the '->' since the closing ')' of
+the parameter list is already the delimiter. But for now I want to have the
+option of being able to allow the '->'.*/
 opt_arrow_type
   : %empty
   | ARROW 
   | ARROW type
+  | type
   ;
 
 opt_comma
@@ -279,7 +279,8 @@ naked_fun_def
   ;
   
 naked_fun_decl
-  : ID COLON param_ct_list opt_arrow_type                            { $$ = new AstFunDecl($1, $3); }
+  : ID opt_colon param_ct_list opt_arrow_type                        { $$ = new AstFunDecl($1, $3); }
+  | ID opt_colon                                                     { $$ = new AstFunDecl($1, new std::list<std::string>()); }
   ;
 
 naked_if
