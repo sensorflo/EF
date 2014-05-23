@@ -24,6 +24,8 @@ private:
     SymbolTableEntry() : m_value(NULL), m_qualifier(ObjType::eConst) {}
     SymbolTableEntry(llvm::Value* value, ObjType::EQualifier qualifier) :
       m_value(value), m_qualifier(qualifier) {}
+    bool operator==(const SymbolTableEntry& rhs) {
+      return m_value==rhs.m_value && m_qualifier==rhs.m_qualifier; } 
     llvm::Value* m_value;
     ObjType::EQualifier m_qualifier;
   };
