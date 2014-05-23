@@ -598,7 +598,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
-        new AstDataDecl("foo", AstDataDecl::eAlloca),
+        new AstDataDecl("foo", ObjType::eMutable),
         new AstSeq(new AstNumber(42)))),
     42, spec);
 }
@@ -623,7 +623,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
-        new AstDataDecl("foo", AstDataDecl::eAlloca),
+        new AstDataDecl("foo", ObjType::eMutable),
         new AstSeq(new AstNumber(42))),
       new AstOperator('+',
         new AstSymbol(new string("foo")),
@@ -640,7 +640,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
-        new AstDataDecl("foo", AstDataDecl::eAlloca),
+        new AstDataDecl("foo", ObjType::eMutable),
         new AstSeq(new AstNumber(42))),
       new AstOperator('=',
         new AstSymbol(new string("foo"), AstSymbol::eLValue),
@@ -651,7 +651,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
-        new AstDataDecl("foo", AstDataDecl::eAlloca),
+        new AstDataDecl("foo", ObjType::eMutable),
         new AstSeq(new AstNumber(42))),
       new AstOperator('=',
         new AstSymbol(new string("foo"), AstSymbol::eLValue),
@@ -694,8 +694,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   {
     auto_ptr<AstSeq> astSeq(
       new AstSeq(
-        new AstDataDecl("x", AstDataDecl::eValue),
-        new AstDataDecl("x", AstDataDecl::eAlloca),
+        new AstDataDecl("x", ObjType::eConst),
+        new AstDataDecl("x", ObjType::eMutable),
         new AstNumber(42)));
     IrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) <<

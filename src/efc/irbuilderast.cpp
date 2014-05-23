@@ -210,7 +210,7 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
   const SymbolTableEntry& stentry = stentryi->second;
   assert( stentry.m_value );
   m_values.push_back(
-    symbol.valueCategory()==AstSymbol::eLValue || stentry.m_storage==eValue ?
+    symbol.valueCategory()==AstSymbol::eLValue || stentry.m_qualifier==ObjType::eConst ?
     stentry.m_value :
     m_builder.CreateLoad(stentry.m_value, symbol.name().c_str()));
 }
@@ -229,7 +229,7 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
   for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
     AllocaInst *alloca = createEntryBlockAlloca(functionIr, *iterAst);
     m_builder.CreateStore(iterIr, alloca);
-    m_symbolTable[*iterAst] = SymbolTableEntry( alloca, eAlloca);
+    m_symbolTable[*iterAst] = SymbolTableEntry( alloca, ObjType::eMutable);
   }
 
   funDef.body().accept(*this);
@@ -310,14 +310,14 @@ void IrBuilderAst::visit(const AstDataDecl& dataDecl) {
 void IrBuilderAst::visit(const AstDataDecl& dataDecl,
   SymbolTableEntry*& stentry) {
 
-  SymbolTableEntry newStEnry(NULL, static_cast<EStorage>(dataDecl.storage()));
+  SymbolTableEntry newStEnry(NULL, dataDecl.qualifier());
   SymbolTableInsertResult stir = m_symbolTable.insert(
     make_pair(dataDecl.name(), newStEnry));
   bool wasAlreadyInMap = !stir.second;
   SymbolTableIter sti = stir.first;
   stentry = &sti->second;
   if (wasAlreadyInMap) {
-    if ( stentry->m_storage != static_cast<EStorage>(dataDecl.storage()) ) {
+    if ( stentry->m_qualifier != dataDecl.qualifier() ) {
       throw runtime_error::runtime_error("Idenifier '" + dataDecl.name() +
         "' declared or defined again with a different type.");
     }
@@ -345,10 +345,10 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
 
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.
-  if ( stentry->m_storage==eValue ) {
+  if ( stentry->m_qualifier==ObjType::eConst ) {
     stentry->m_value = initValue;
   }
-  else if ( stentry->m_storage==eAlloca ) {
+  else if ( stentry->m_qualifier==ObjType::eMutable ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
     assert(functionIr);
     AllocaInst* alloca =

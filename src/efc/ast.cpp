@@ -86,13 +86,13 @@ list<string>* AstFunDecl::createArgs(const string& arg1, const string& arg2,
   return args;
 }
 
-AstDataDecl::AstDataDecl(const string& name, EStorage storage) :
+AstDataDecl::AstDataDecl(const string& name, ObjType::EQualifier qualifier) :
   m_name(name),
-  m_storage(storage){
+  m_qualifier(qualifier){
 }
 
 basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
-  os << "decldata(" << m_name << (m_storage==eAlloca ? " mut" : "") << ")";
+  os << "decldata(" << m_name << (m_qualifier==ObjType::eMutable ? " mut" : "") << ")";
   return os;
 }
 

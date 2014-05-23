@@ -1,5 +1,6 @@
 #ifndef AST_H
 #define AST_H
+#include "objtype.h"
 #include <string>
 #include <list>
 #include <iostream>
@@ -82,18 +83,14 @@ private:
 
 class AstDataDecl : public AstValue {
 public:
-  enum EStorage {
-    eValue, ///< aka const
-    eAlloca ///< aka mut(able)
-  };
-  AstDataDecl(const std::string& name, EStorage storage = eValue);
+  AstDataDecl(const std::string& name, ObjType::EQualifier qualifier = ObjType::eConst);
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
-  virtual EStorage storage() const { return m_storage; }
+  virtual ObjType::EQualifier qualifier() const { return m_qualifier; }
 private:
   const std::string m_name;
-  const EStorage m_storage;
+  const ObjType::EQualifier m_qualifier;
 };
 
 class AstDataDef : public AstValue {

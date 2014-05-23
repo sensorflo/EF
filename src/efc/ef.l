@@ -47,7 +47,7 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 [ \t]+              loc.step();
 [\n]+               loc.lines(yyleng); loc.step();
 
-  /* keywords */
+  /* non-type keywords */
 if                  return yy::Parser::make_IF(loc);
 elif                return yy::Parser::make_ELIF(loc);
 else                return yy::Parser::make_ELSE(loc);
@@ -58,6 +58,11 @@ decl                return yy::Parser::make_DECL(loc);
 not                 return yy::Parser::make_NOT(loc);
 and                 return yy::Parser::make_AND(loc);
 or                  return yy::Parser::make_OR(loc);
+
+  /* type keywords. They are technically just IDs */
+int                 return yy::Parser::make_ID(yytext, loc);
+bool                return yy::Parser::make_ID(yytext, loc);
+
 
   /* literal number */
 [0-9]+{ID}?  {
@@ -105,6 +110,7 @@ or                  return yy::Parser::make_OR(loc);
 ")"                 return yy::Parser::make_RPAREN(loc);
 "{"                 return yy::Parser::make_LBRACE(loc);
 "}"                 return yy::Parser::make_RBRACE(loc);
+
 
   /* misc */
 {ID}                return yy::Parser::make_ID(yytext, loc);

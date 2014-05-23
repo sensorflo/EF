@@ -57,6 +57,8 @@
   FUN "fun"
   VAL "val"
   VAR "var"
+  INT "int"
+  BOOL "bool"
   EQUAL "="
   COLON_EQUAL ":="
   COMMA ","
@@ -97,7 +99,7 @@
 %type <AstValue*> expr expr_leaf naked_if
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <std::string> param_decl
-%type <AstDataDecl::EStorage> valvar
+%type <ObjType::EQualifier> valvar
 %type <RawAstDataDecl*> naked_data_decl
 %type <RawAstDataDef*> naked_data_def
 %type <AstFunDecl*> naked_fun_decl
@@ -286,8 +288,8 @@ naked_if
   ;
 
 valvar
-  : VAL                                                              { $$ = AstDataDecl::eValue; }
-  | VAR	                                                             { $$ = AstDataDecl::eAlloca; }
+  : VAL                                                              { $$ = ObjType::eConst; }
+  | VAR	                                                             { $$ = ObjType::eMutable; }
   ;
 
 opt_elif_list

@@ -1,6 +1,7 @@
 #ifndef IR_BUILDER_AST_H
 #define IR_BUILDER_AST_H
 #include "ast.h"
+#include "objtype.h"
 #include "llvm/IR/IRBuilder.h"
 #include <stack>
 namespace llvm {
@@ -19,16 +20,12 @@ public:
   
 private:
   friend class TestingIrBuilderAst;
-  enum EStorage {
-    eValue = AstDataDecl::eValue,
-    eAlloca = AstDataDecl::eAlloca
-  };
   struct SymbolTableEntry {
-    SymbolTableEntry() : m_value(NULL), m_storage(eValue) {}
-    SymbolTableEntry(llvm::Value* value, EStorage storage) :
-      m_value(value), m_storage(storage) {}
+    SymbolTableEntry() : m_value(NULL), m_qualifier(ObjType::eConst) {}
+    SymbolTableEntry(llvm::Value* value, ObjType::EQualifier qualifier) :
+      m_value(value), m_qualifier(qualifier) {}
     llvm::Value* m_value;
-    EStorage m_storage;
+    ObjType::EQualifier m_qualifier;
   };
   typedef std::map<std::string, SymbolTableEntry> SymbolTable;
   typedef std::map<std::string, SymbolTableEntry>::iterator SymbolTableIter;
