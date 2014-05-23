@@ -43,13 +43,16 @@ out/ast.o: ast.cpp $(GEN_HEADERS) *.h
 out/env.o: env.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
+out/objtype.o: objtype.cpp $(GEN_HEADERS) *.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 out/irbuilderast.o: irbuilderast.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 out/efc.o: efc.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efc: out/parser.o out/scanner.o out/driver.o out/ast.o out/env.o out/irbuilderast.o out/efc.o
+out/efc: out/parser.o out/scanner.o out/driver.o out/ast.o out/objtype.o out/env.o out/irbuilderast.o out/efc.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 
@@ -83,7 +86,7 @@ out/asttest.o: test/asttest.cpp $(GEN_HEADERS) *.h test/*.h
 out/envtest.o: test/envtest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efctest: out/scanner.o out/ast.o out/env.o out/irbuilderast.o out/parser.o out/driver.o out/envtest.o out/asttest.o out/scannertest.o out/scannerandparsertest.o out/irbuilderasttest.o out/gtestprinter.o out/test.o out/efctest.o out/libgtest.a
+out/efctest: out/scanner.o out/objtype.o out/ast.o out/env.o out/irbuilderast.o out/parser.o out/driver.o out/envtest.o out/asttest.o out/scannertest.o out/scannerandparsertest.o out/irbuilderasttest.o out/gtestprinter.o out/test.o out/efctest.o out/libgtest.a
 	$(CXX)  $(LDFLAGS) -pthread -o $@ $^ $(LIBS)
 
 

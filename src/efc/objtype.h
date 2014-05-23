@@ -15,12 +15,13 @@ public:
     // later: eVolatile
   };
 
-  ObjType(EQualifier qualifier = eConst);
+  ObjType(EQualifier qualifier = eConst) : m_qualifier(qualifier) {};
+  EQualifier qualifier() const { return m_qualifier; }
 
 private:
   // later: for compound types, reference to depended-on ObjType
   // later: store name of custom type
-  //EQualifier m_qualifier;
+  EQualifier m_qualifier;
 };
 
 #endif
