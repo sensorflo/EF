@@ -17,12 +17,13 @@ void IrBuilderAst::staticOneTimeInit() {
   InitializeNativeTarget();
 }
 
-IrBuilderAst::IrBuilderAst() :
+IrBuilderAst::IrBuilderAst(Env& env) :
   m_builder(getGlobalContext()),
   m_module(new Module("Main", getGlobalContext())),
   m_executionEngine(EngineBuilder(m_module).setErrorStr(&m_errStr).create()),
   m_mainFunction(NULL),
-  m_mainBasicBlock(NULL) {
+  m_mainBasicBlock(NULL),
+  m_env(env) {
 
   assert(m_module);
   assert(m_executionEngine);
@@ -202,24 +203,23 @@ void IrBuilderAst::visit(const AstNumber& number) {
 }
 
 void IrBuilderAst::visit(const AstSymbol& symbol) {
-  SymbolTableIter stentryi = m_symbolTable.find(symbol.name());
-  if (stentryi==m_symbolTable.end()) {
+  SymbolTableEntry* stentry = m_env.find(symbol.name());
+  if (NULL==stentry) {
     throw runtime_error::runtime_error("Symbol '" + symbol.name() +
       "' not declared");
   }
-  const SymbolTableEntry& stentry = stentryi->second;
-  assert( stentry.m_value );
+  assert( stentry->m_valueIr );
   m_values.push_back(
-    symbol.valueCategory()==AstSymbol::eLValue || stentry.m_qualifier==ObjType::eConst ?
-    stentry.m_value :
-    m_builder.CreateLoad(stentry.m_value, symbol.name().c_str()));
+    symbol.valueCategory()==AstSymbol::eLValue || stentry->m_objType.qualifier()==ObjType::eConst ?
+    stentry->m_valueIr :
+    m_builder.CreateLoad(stentry->m_valueIr, symbol.name().c_str()));
 }
 
 void IrBuilderAst::visit(const AstFunDef& funDef) {
   Function* functionIr = NULL;
   visit(funDef.decl(), functionIr);
 
-  m_symbolTable.clear();
+  m_env.pushScope(); 
   m_builder.SetInsertPoint(
     BasicBlock::Create(getGlobalContext(), "entry", functionIr));
 
@@ -229,7 +229,9 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
   for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
     AllocaInst *alloca = createEntryBlockAlloca(functionIr, *iterAst);
     m_builder.CreateStore(iterIr, alloca);
-    m_symbolTable[*iterAst] = SymbolTableEntry( alloca, ObjType::eMutable);
+    SymbolTableEntry* stentry = new SymbolTableEntry( alloca, ObjType::eMutable);
+    Env::InsertRet insertRet = m_env.insert(*iterAst, stentry);
+    assert( insertRet.second );
   }
 
   funDef.body().accept(*this);
@@ -240,6 +242,7 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
   // Previous building block is again the insert point
   m_builder.SetInsertPoint(m_mainBasicBlock);
 
+  m_env.popScope(); 
   // Don't push onto the m_values stack, since the Function* we would push
   // is already on the stack due to funDef.decl()
 }
@@ -310,14 +313,13 @@ void IrBuilderAst::visit(const AstDataDecl& dataDecl) {
 void IrBuilderAst::visit(const AstDataDecl& dataDecl,
   SymbolTableEntry*& stentry) {
 
-  SymbolTableEntry newStEnry(NULL, dataDecl.qualifier());
-  SymbolTableInsertResult stir = m_symbolTable.insert(
-    make_pair(dataDecl.name(), newStEnry));
-  bool wasAlreadyInMap = !stir.second;
-  SymbolTableIter sti = stir.first;
-  stentry = &sti->second;
+  SymbolTableEntry* newstentry = new SymbolTableEntry(NULL, dataDecl.qualifier());
+  Env::InsertRet insertRet = m_env.insert( dataDecl.name(), newstentry);
+  stentry = insertRet.first->second;
+  bool wasAlreadyInMap = !insertRet.second;
   if (wasAlreadyInMap) {
-    if ( stentry->m_qualifier != dataDecl.qualifier() ) {
+    delete newstentry;
+    if ( stentry->m_objType.qualifier() != dataDecl.qualifier() ) {
       throw runtime_error::runtime_error("Idenifier '" + dataDecl.name() +
         "' declared or defined again with a different type.");
     }
@@ -345,17 +347,17 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
 
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.
-  if ( stentry->m_qualifier==ObjType::eConst ) {
-    stentry->m_value = initValue;
+  if ( stentry->m_objType.qualifier()==ObjType::eConst ) {
+    stentry->m_valueIr = initValue;
   }
-  else if ( stentry->m_qualifier==ObjType::eMutable ) {
+  else if ( stentry->m_objType.qualifier()==ObjType::eMutable ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
     assert(functionIr);
     AllocaInst* alloca =
       createEntryBlockAlloca(functionIr, dataDef.decl().name());
     assert(alloca);
     m_builder.CreateStore(initValue, alloca);
-    stentry->m_value = alloca;
+    stentry->m_valueIr = alloca;
   }
   else { assert(false); }
 

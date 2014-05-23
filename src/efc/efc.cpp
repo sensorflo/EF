@@ -1,6 +1,7 @@
 #include "irbuilderast.h"
 #include "driver.h"
 #include "ast.h"
+#include "env.h"
 #include <iostream>
 #include <stdexcept>
 using namespace std;
@@ -17,7 +18,8 @@ int main(int argc, char** argv) {
     if (driver.parse(ast)) {
       exit(1);
     }
-    IrBuilderAst irBuilderAst;
+    Env env;
+    IrBuilderAst irBuilderAst(env);
     cout << irBuilderAst.buildAndRunModule(*ast) << "\n";
   }
   catch (const exception& e) {

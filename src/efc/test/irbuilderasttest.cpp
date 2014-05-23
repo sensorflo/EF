@@ -12,10 +12,13 @@ enum ECmpOp {
 
 class TestingIrBuilderAst : public IrBuilderAst {
 public:
+  TestingIrBuilderAst() : IrBuilderAst( *(m_env = new Env()) ) {};
+  ~TestingIrBuilderAst() { delete m_env; };
   using IrBuilderAst::jitExecFunction;
   using IrBuilderAst::jitExecFunction1Arg;
   using IrBuilderAst::jitExecFunction2Arg;
   using IrBuilderAst::m_module;
+  Env* m_env;
 };
 
 string amendAst(const AstNode* ast) {
@@ -33,7 +36,7 @@ void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
   // setup
   ENV_ASSERT_TRUE( astSeq!=NULL );
   auto_ptr<AstSeq> astSeqAp(astSeq);
-  IrBuilderAst UUT;
+  TestingIrBuilderAst UUT;
 
   // execute
   int result = UUT.buildAndRunModule(*astSeq);
@@ -221,7 +224,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     throws)) {
   auto_ptr<AstSeq> astSeq(new AstSeq());
-  IrBuilderAst UUT;
+  TestingIrBuilderAst UUT;
   EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
 }
 
@@ -477,7 +480,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   string spec = "Example: at global scope";
   {
     auto_ptr<AstSeq> astSeq(new AstSeq(new AstSymbol(new string("x"))));
-    IrBuilderAst UUT;
+    TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
       << amendAst(astSeq) << amendSpec(spec);
   }
@@ -490,7 +493,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           new AstFunDecl("foo"),
           new AstSeq(new AstSymbol(new string("x")))),
         new AstNumber(42)));
-    IrBuilderAst UUT;
+    TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
       << amendAst(astSeq) << amendSpec(spec);
   }
@@ -549,7 +552,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     throws)) {
   auto_ptr<AstSeq> astSeq(new AstSeq(new AstFunCall("foo")));
-  IrBuilderAst UUT;
+  TestingIrBuilderAst UUT;
   EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
 }
 
@@ -565,7 +568,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           new AstFunDecl("foo","x"),
           new AstSeq(new AstNumber(42))),
         new AstFunCall("foo")));
-    IrBuilderAst UUT;
+    TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendSpec(spec) << amendAst(astSeq);
   }
 
@@ -576,7 +579,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           new AstFunDecl("foo"),
           new AstSeq(new AstNumber(42))),
         new AstFunCall("foo", new AstCtList(new AstNumber(0)))));
-    IrBuilderAst UUT;
+    TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendSpec(spec) << amendAst(astSeq);
   }
 }
@@ -697,10 +700,45 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstDataDecl("x", ObjType::eConst),
         new AstDataDecl("x", ObjType::eMutable),
         new AstNumber(42)));
-    IrBuilderAst UUT;
+    TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) <<
       amendSpec(spec) << amendAst(astSeq);
   }
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
+    GIVEN_a_pseudo_global_variable_named_x_AND_a_function_definition_also_defining_a_variable_x,
+    THEN_the_inner_defintion_of_variable_x_shadows_the_outer_variable_x)) {
+
+  // 'global' in quotes because there not really global variables
+  // yet. Variables defined in 'global' scope really are local variables in
+  // the implicit main method. 
+
+  string spec = "function argument named 'x' shadows 'global' variable also named 'x'";
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstDataDef(new AstDataDecl("x"), new AstNumber(42)),
+      new AstFunDef(
+        new AstFunDecl("foo", "x"),
+        new AstSeq(
+          new AstOperator('=',
+            new AstSymbol(new string("x"), AstSymbol::eLValue),
+            new AstNumber(77)))),
+      new AstSymbol(new string("x"))),
+    42, spec);
+
+  spec = "variable 'x' local to a function shadows 'global' variable also named 'x'";
+  testbuilAndRunModule(
+    new AstSeq(
+      new AstDataDef(new AstDataDecl("x"), new AstNumber(42)),
+      new AstFunDef(
+        new AstFunDecl("foo"),
+        new AstSeq(
+          new AstDataDef(
+            new AstDataDecl("x"),
+            new AstSeq(new AstNumber(77))))),
+      new AstSymbol(new string("x"))),
+    42, spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
