@@ -9,12 +9,15 @@ namespace llvm {
 }
 
 struct SymbolTableEntry {
-  SymbolTableEntry() : m_valueIr(NULL), m_objType(ObjType::eConst) {}
-  SymbolTableEntry(llvm::Value* valueIr, ObjType objType) :
-    m_valueIr(valueIr), m_objType(objType) {}
+  SymbolTableEntry() : m_valueIr(NULL), m_objType(ObjType::eConst),
+                       m_isDefined(false) {}
+  SymbolTableEntry(llvm::Value* valueIr, ObjType objType, bool isDefined = false) :
+    m_valueIr(valueIr), m_objType(objType), m_isDefined(isDefined) {}
 
   llvm::Value* m_valueIr;
   ObjType m_objType;
+  /** Opposed to only declared */
+  bool m_isDefined;
 };
 
 class SymbolTable : public std::map<std::string,SymbolTableEntry*> {

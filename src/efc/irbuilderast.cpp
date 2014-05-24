@@ -229,9 +229,17 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
   for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
     AllocaInst *alloca = createEntryBlockAlloca(functionIr, *iterAst);
     m_builder.CreateStore(iterIr, alloca);
-    SymbolTableEntry* stentry = new SymbolTableEntry( alloca, ObjType::eMutable);
+    SymbolTableEntry* stentry = new SymbolTableEntry( alloca,
+      ObjType::eMutable, true);
     Env::InsertRet insertRet = m_env.insert(*iterAst, stentry);
-    assert( insertRet.second );
+
+    // if name is already in environment, then it must be another argument
+    // since we just pushed a new scope. 
+    if ( !insertRet.second ) {
+      delete stentry;
+      throw runtime_error::runtime_error("Argument '" + *iterAst +
+        "' already defined");
+    }
   }
 
   funDef.body().accept(*this);
@@ -331,6 +339,12 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
   SymbolTableEntry* stentry = NULL;
   visit(dataDef.decl(), stentry);
   assert(stentry);
+
+  if (stentry->m_isDefined) {
+    throw runtime_error::runtime_error("Identifier '" +
+      dataDef.decl().name() + "' is already defined.");
+  }
+  stentry->m_isDefined = true;
 
   // Calculate value to initialzie new data object with. Also already push
   // that value on the values stack, since that is the result of the data

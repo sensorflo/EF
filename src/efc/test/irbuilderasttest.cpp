@@ -742,6 +742,49 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    double_definition_of_a_variable,
+    buildAndRunModule,
+    throws)) {
+
+  string spec = "Example: two 'x' in 'global' scope";
+  {
+    auto_ptr<AstSeq> astSeq(
+      new AstSeq(
+        new AstDataDef(new AstDataDecl("x")),
+        new AstDataDef(new AstDataDecl("x"))));
+    TestingIrBuilderAst UUT;
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
+      << amendAst(astSeq) << amendSpec(spec);
+  }
+
+  spec = "Example: two 'x' in argument list of a function";
+  {
+    auto_ptr<AstSeq> astSeq(
+      new AstSeq(
+        new AstFunDef(
+          new AstFunDecl("foo", "x", "x"),
+          new AstSeq(new AstNumber(42))),
+        new AstNumber(42)));
+    TestingIrBuilderAst UUT;
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
+      << amendAst(astSeq) << amendSpec(spec);
+  }
+
+  spec = "Example: 'x' as argument to a function and as local variable within";
+  {
+    auto_ptr<AstSeq> astSeq(
+      new AstSeq(
+        new AstFunDef(
+          new AstFunDecl("foo", "x"),
+          new AstSeq(new AstDataDef(new AstDataDecl("x")))),
+        new AstNumber(42)));
+    TestingIrBuilderAst UUT;
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
+      << amendAst(astSeq) << amendSpec(spec);
+  }
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_if_else_expression_WITH_a_condition_evaluating_to_true,
     buildAndRunModule,
     returns_the_value_of_the_then_clause)) {
