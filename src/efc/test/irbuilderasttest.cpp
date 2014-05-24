@@ -512,6 +512,18 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    a_function_declaration_and_a_matching_function_definition,
+    buildAndRunModule,
+    succeeds)) {
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstFunDecl("foo"),
+      new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(42))),
+      new AstFunCall("foo")),
+    42, "");
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_call_to_an_defined_function,
     buildAndRunModule,
     returns_result_of_that_function_call)) {
