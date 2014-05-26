@@ -11,13 +11,13 @@ namespace llvm {
 class SymbolTableEntry {
 public:
   SymbolTableEntry() :
-    m_valueIr(NULL), m_objType(new ObjType), m_isDefined(false) {}
+    m_valueIr(NULL), m_objType(new ObjTypeFunda), m_isDefined(false) {}
   SymbolTableEntry(llvm::Value* valueIr, ObjType* objType, bool isDefined = false) :
     m_valueIr(valueIr),
-    m_objType(objType ? objType : new ObjType),
+    m_objType(objType ? objType : new ObjTypeFunda),
     m_isDefined(isDefined) {}
   ~SymbolTableEntry();
-  
+
   llvm::Value*& valueIr() { return m_valueIr; }
   ObjType& objType() { return *m_objType; }
   bool& isDefined() { return m_isDefined; }

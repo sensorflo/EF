@@ -230,7 +230,7 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
     AllocaInst *alloca = createEntryBlockAlloca(functionIr, *iterAst);
     m_builder.CreateStore(iterIr, alloca);
     SymbolTableEntry* stentry = new SymbolTableEntry( alloca,
-      new ObjType(ObjType::eMutable), true);
+      new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), true);
     Env::InsertRet insertRet = m_env.insert(*iterAst, stentry);
 
     // if name is already in environment, then it must be another argument
@@ -322,7 +322,7 @@ void IrBuilderAst::visit(const AstDataDecl& dataDecl,
   SymbolTableEntry*& stentry) {
 
   SymbolTableEntry* newstentry = new SymbolTableEntry(NULL,
-    new ObjType(dataDecl.qualifier()));
+    new ObjTypeFunda(ObjTypeFunda::eInt, dataDecl.qualifier()));
   Env::InsertRet insertRet = m_env.insert( dataDecl.name(), newstentry);
   stentry = insertRet.first->second;
   bool wasAlreadyInMap = !insertRet.second;
