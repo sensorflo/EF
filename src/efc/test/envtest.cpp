@@ -5,7 +5,7 @@ using namespace testing;
 using namespace std;
 
 SymbolTableEntry* createASymbolTableEntry() {
-  return new SymbolTableEntry(NULL, ObjType());
+  return new SymbolTableEntry(NULL, new ObjType);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME2(

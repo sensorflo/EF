@@ -10,18 +10,22 @@ namespace llvm {
 
 class SymbolTableEntry {
 public:
-  SymbolTableEntry() : m_valueIr(NULL), m_objType(ObjType::eConst),
-                       m_isDefined(false) {}
-  SymbolTableEntry(llvm::Value* valueIr, ObjType objType, bool isDefined = false) :
-    m_valueIr(valueIr), m_objType(objType), m_isDefined(isDefined) {}
-
+  SymbolTableEntry() :
+    m_valueIr(NULL), m_objType(new ObjType), m_isDefined(false) {}
+  SymbolTableEntry(llvm::Value* valueIr, ObjType* objType, bool isDefined = false) :
+    m_valueIr(valueIr),
+    m_objType(objType ? objType : new ObjType),
+    m_isDefined(isDefined) {}
+  ~SymbolTableEntry();
+  
   llvm::Value*& valueIr() { return m_valueIr; }
-  ObjType& objType() { return m_objType; }
+  ObjType& objType() { return *m_objType; }
   bool& isDefined() { return m_isDefined; }
 
 private:
   llvm::Value* m_valueIr;
-  ObjType m_objType;
+  /** We're the owner. Is garanteed to be non-null */
+  ObjType* m_objType;
   /** Opposed to only declared */
   bool m_isDefined;
 };

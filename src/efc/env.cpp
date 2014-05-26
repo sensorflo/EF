@@ -4,6 +4,10 @@
 using namespace std;
 using namespace llvm;
 
+SymbolTableEntry::~SymbolTableEntry() {
+  delete m_objType;
+}
+
 SymbolTable::~SymbolTable() {
   map<string,SymbolTableEntry*>::iterator i = begin();
   for ( ; i!=end(); ++i ) {
