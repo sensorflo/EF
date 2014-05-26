@@ -8,12 +8,18 @@ namespace llvm {
   class Value;
 }
 
-struct SymbolTableEntry {
+class SymbolTableEntry {
+public:
   SymbolTableEntry() : m_valueIr(NULL), m_objType(ObjType::eConst),
                        m_isDefined(false) {}
   SymbolTableEntry(llvm::Value* valueIr, ObjType objType, bool isDefined = false) :
     m_valueIr(valueIr), m_objType(objType), m_isDefined(isDefined) {}
 
+  llvm::Value*& valueIr() { return m_valueIr; }
+  ObjType& objType() { return m_objType; }
+  bool& isDefined() { return m_isDefined; }
+
+private:
   llvm::Value* m_valueIr;
   ObjType m_objType;
   /** Opposed to only declared */
