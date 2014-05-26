@@ -57,8 +57,6 @@ public:
 
   ObjTypeFunda(EType type, Qualifier qualifier = eConst) :
     ObjType(qualifier), m_type(type) {};
-  ObjTypeFunda(Qualifier qualifier = eConst) :
-    ObjType(qualifier), m_type(eInt) {};
 
   virtual MatchType match(const ObjType& other) const { return other.match2(*this); }
   virtual MatchType match2(const ObjTypeFunda& other) const;

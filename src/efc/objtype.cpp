@@ -35,7 +35,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
 ObjTypeFun::ObjTypeFun(list<ObjType*>* args, ObjType* ret) :
   ObjType(eConst),
   m_args( args ? args : new list<ObjType*>),
-  m_ret( ret ? ret : new ObjTypeFunda ){
+  m_ret( ret ? ret : new ObjTypeFunda(ObjTypeFunda::eInt) ){
   assert(m_args);
   assert(m_ret);
   for (list<ObjType*>::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
