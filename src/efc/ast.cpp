@@ -86,7 +86,7 @@ list<string>* AstFunDecl::createArgs(const string& arg1, const string& arg2,
   return args;
 }
 
-AstDataDecl::AstDataDecl(const string& name, ObjType::EQualifier qualifier) :
+AstDataDecl::AstDataDecl(const string& name, ObjType::Qualifier qualifier) :
   m_name(name),
   m_qualifier(qualifier){
 }

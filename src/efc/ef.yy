@@ -99,7 +99,7 @@
 %type <AstValue*> expr expr_leaf naked_if
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <std::string> param_decl
-%type <ObjType::EQualifier> valvar
+%type <ObjType::Qualifier> valvar
 %type <RawAstDataDecl*> naked_data_decl
 %type <RawAstDataDef*> naked_data_def
 %type <AstFunDecl*> naked_fun_decl
