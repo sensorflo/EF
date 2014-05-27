@@ -88,16 +88,25 @@ list<string>* AstFunDecl::createArgs(const string& arg1, const string& arg2,
 
 AstDataDecl::AstDataDecl(const string& name, ObjType* objType) :
   m_name(name),
-  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
+  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
+  m_ownerOfObjType(true) {
 }
 
 AstDataDecl::~AstDataDecl() {
-  delete m_objType;
+  if (m_ownerOfObjType) { delete m_objType; }
 }
 
 basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
   os << "decldata(" << m_name << (m_objType->qualifier()==ObjType::eMutable ? " mut" : "") << ")";
   return os;
+}
+
+ObjType& AstDataDecl::objType(bool stealOwnership) const {
+  if (stealOwnership) {
+    assert(m_ownerOfObjType);
+    m_ownerOfObjType = false;
+  }
+  return *m_objType;
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :

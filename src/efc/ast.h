@@ -88,10 +88,14 @@ public:
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
-  virtual ObjType& objType() const { return *m_objType; }
+  virtual ObjType& objType(bool stealOwnership = false) const;
 private:
   const std::string m_name;
+  /** If m_ownerOfObjType is true, we're the owner. Is garanteed to be
+  non-null. */
   ObjType* m_objType;
+  /** See m_objType */
+  mutable bool m_ownerOfObjType;
 };
 
 class AstDataDef : public AstValue {
