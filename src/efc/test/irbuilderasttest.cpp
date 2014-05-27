@@ -566,6 +566,19 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    double_definition_of_a_function,
+    buildAndRunModule,
+    throws)) {
+  auto_ptr<AstSeq> astSeq(
+    new AstSeq(
+      new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(77))),
+      new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(77))),
+      new AstFunCall("foo")));
+  TestingIrBuilderAst UUT;
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_call_to_an_defined_function,
     buildAndRunModule,
     returns_result_of_that_function_call)) {

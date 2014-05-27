@@ -217,7 +217,15 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
 
 void IrBuilderAst::visit(const AstFunDef& funDef) {
   Function* functionIr = NULL;
-  visit(funDef.decl(), functionIr);
+  SymbolTableEntry* stentry = NULL;
+    visit(funDef.decl(), functionIr, stentry);
+  assert(stentry);
+
+  if (stentry->isDefined()) {
+    throw runtime_error::runtime_error("Function '" +
+      funDef.decl().name() + "' is already defined.");
+  }
+  stentry->isDefined() = true;
 
   m_env.pushScope(); 
   m_builder.SetInsertPoint(
@@ -257,10 +265,12 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
 
 void IrBuilderAst::visit(const AstFunDecl& funDecl) {
   Function* dummy;
-  visit(funDecl, dummy);
+  SymbolTableEntry* dummy2;
+  visit(funDecl, dummy, dummy2);
 }
 
-void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr) {
+void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr,
+  SymbolTableEntry*& stentry) {
   // currently rettype and type of args is always int
 
   // create ObjTypeFun object out of funDecl
@@ -287,6 +297,7 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr) {
     }
     delete objTypeFun;
   }
+  stentry = stIterStEntry;
 
   // actually create IR
   vector<Type*> argsIr(funDecl.args().size(),
@@ -372,7 +383,7 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
   assert(stentry);
 
   if (stentry->isDefined()) {
-    throw runtime_error::runtime_error("Identifier '" +
+    throw runtime_error::runtime_error("Data object '" +
       dataDef.decl().name() + "' is already defined.");
   }
   stentry->isDefined() = true;
