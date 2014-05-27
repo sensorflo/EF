@@ -37,13 +37,13 @@ TEST(AstTest, MAKE_TEST_NAME2(
       new AstSeq(new AstNumber(0))).toStr() ) << amendSpec(spec);
 
   spec = "AstDataDecl";
-  EXPECT_EQ( "decldata(foo)", AstDataDecl("foo").toStr() ) << amendSpec(spec);
-  EXPECT_EQ( "decldata(foo mut)", AstDataDecl("foo",ObjType::eMutable).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "decldata(foo)", AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "decldata(foo mut)", AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)).toStr() ) << amendSpec(spec);
   
   spec = "AstDataDef";
-  EXPECT_EQ( "data(decldata(foo))", AstDataDef(new AstDataDecl("foo")).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "data(decldata(foo))", AstDataDef(new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))).toStr() ) << amendSpec(spec);
   EXPECT_EQ( "data(decldata(foo mut) seq(42))", AstDataDef(
-      new AstDataDecl("foo",ObjType::eMutable),
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       new AstSeq(new AstNumber(42))).toStr() ) << amendSpec(spec);
   
   spec = "AstCtList";

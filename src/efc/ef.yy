@@ -14,10 +14,12 @@
 {
   class Driver;
   #include "../ast.h"
+  #include "../objtype.h"
 
   struct RawAstDataDecl {
-    RawAstDataDecl(const std::string& name) : m_name(name) {};
+    RawAstDataDecl(const std::string& name, ObjType* objType) : m_name(name), m_objType(objType) {};
     std::string m_name;
+    ObjType* m_objType;
   };  
 
   struct RawAstDataDef {
@@ -104,6 +106,7 @@
 %type <RawAstDataDef*> naked_data_def
 %type <AstFunDecl*> naked_fun_decl
 %type <AstFunDef*> naked_fun_def
+%type <ObjType*> type opt_colon_type opt_arrow_type
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -183,7 +186,7 @@ param_decl
   ;
   
 type
-  : ID
+  : ID                                              { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
   ;
 
 opt_colon
@@ -192,18 +195,18 @@ opt_colon
   ;
 
 opt_colon_type
-  : opt_colon
-  | COLON type
+  : opt_colon                                       { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
+  | COLON type                                      { std::swap($$, $2); }
   ;
 
 /* Most probably the grammar will not have the '->' since the closing ')' of
 the parameter list is already the delimiter. But for now I want to have the
 option of being able to allow the '->'.*/
 opt_arrow_type
-  : %empty
-  | ARROW 
-  | ARROW type
-  | type
+  : %empty                                          { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
+  | ARROW                                           { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
+  | ARROW type                                      { std::swap($$, $2); }
+  | type                                            { std::swap($$, $1); } 
   ;
 
 opt_comma
@@ -226,7 +229,7 @@ expr
 
   /* binary operators */
   | ID   EQUAL       expr         %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eLValue), $3); }
-  | ID   COLON_EQUAL expr         %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1), $3); }
+  | ID   COLON_EQUAL expr         %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt)), $3); }
   | expr OR          expr                           { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | expr PIPE_PIPE   expr                           { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | expr AND         expr                           { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
@@ -245,8 +248,8 @@ expr_leaf
 
 
   /* definitions of data object. Declarations make no sense for local variables, and globals are not yet available. */
-  | valvar        naked_data_def SEMICOLON                           { $$ = new AstDataDef( new AstDataDecl($2->m_decl->m_name, $1), $2->m_initValue); delete $2->m_decl; delete $2; }
-  | valvar LPAREN naked_data_def RPAREN                              { $$ = new AstDataDef( new AstDataDecl($3->m_decl->m_name, $1), $3->m_initValue); delete $3->m_decl; delete $3; }
+  | valvar        naked_data_def SEMICOLON                           { $2->m_decl->m_objType->addQualifier($1); $$ = new AstDataDef( new AstDataDecl($2->m_decl->m_name, $2->m_decl->m_objType), $2->m_initValue); delete $2->m_decl; delete $2; }
+  | valvar LPAREN naked_data_def RPAREN                              { $3->m_decl->m_objType->addQualifier($1); $$ = new AstDataDef( new AstDataDecl($3->m_decl->m_name, $3->m_decl->m_objType), $3->m_initValue); delete $3->m_decl; delete $3; }
 
 
   /* declarations of code object */
@@ -264,14 +267,14 @@ expr_leaf
   ;
 
 naked_data_decl
-  : ID COLON type                                                    { $$ = new RawAstDataDecl($1); }
-  | ID COLON                                                         { $$ = new RawAstDataDecl($1); }
+  : ID COLON type                                                    { $$ = new RawAstDataDecl($1, $3); }
+  | ID COLON                                                         { $$ = new RawAstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt)); }
   ;
 
 naked_data_def
   : naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
   | naked_data_decl EQUAL expr                                       { $$ = new RawAstDataDef($1, $3); }
-  | ID EQUAL expr opt_colon_type                                     { $$ = new RawAstDataDef(new RawAstDataDecl($1), $3); }
+  | ID EQUAL expr opt_colon_type                                     { $$ = new RawAstDataDef(new RawAstDataDecl($1, $4), $3); }
   ;
 
 naked_fun_def

@@ -86,18 +86,22 @@ list<string>* AstFunDecl::createArgs(const string& arg1, const string& arg2,
   return args;
 }
 
-AstDataDecl::AstDataDecl(const string& name, ObjType::Qualifier qualifier) :
+AstDataDecl::AstDataDecl(const string& name, ObjType* objType) :
   m_name(name),
-  m_qualifier(qualifier){
+  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
+}
+
+AstDataDecl::~AstDataDecl() {
+  delete m_objType;
 }
 
 basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
-  os << "decldata(" << m_name << (m_qualifier==ObjType::eMutable ? " mut" : "") << ")";
+  os << "decldata(" << m_name << (m_objType->qualifier()==ObjType::eMutable ? " mut" : "") << ")";
   return os;
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
-  m_decl(decl ? decl : new AstDataDecl("<unknown_name>")),
+  m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_initValue(initValue) {
   assert(m_decl);
 }

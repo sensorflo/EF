@@ -322,13 +322,13 @@ void IrBuilderAst::visit(const AstDataDecl& dataDecl,
   SymbolTableEntry*& stentry) {
 
   SymbolTableEntry* newstentry = new SymbolTableEntry(NULL,
-    new ObjTypeFunda(ObjTypeFunda::eInt, dataDecl.qualifier()));
+    new ObjTypeFunda(ObjTypeFunda::eInt, dataDecl.objType().qualifier()));
   Env::InsertRet insertRet = m_env.insert( dataDecl.name(), newstentry);
   stentry = insertRet.first->second;
   bool wasAlreadyInMap = !insertRet.second;
   if (wasAlreadyInMap) {
     delete newstentry;
-    if ( stentry->objType().qualifier() != dataDecl.qualifier() ) {
+    if ( stentry->objType().qualifier() != dataDecl.objType().qualifier() ) {
       throw runtime_error::runtime_error("Idenifier '" + dataDecl.name() +
         "' declared or defined again with a different type.");
     }
