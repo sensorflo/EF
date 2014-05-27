@@ -20,6 +20,7 @@ public:
 
   llvm::Value*& valueIr() { return m_valueIr; }
   ObjType& objType() { return *m_objType; }
+  void setObjType(ObjType* objType);
   bool& isDefined() { return m_isDefined; }
 
 private:
@@ -34,6 +35,7 @@ class SymbolTable : public std::map<std::string,SymbolTableEntry*> {
 public:
   typedef value_type KeyValue;
   virtual ~SymbolTable();
+  // we're the owner of the SymbolTableEntry objects pointet to
 };
 
 class Env {

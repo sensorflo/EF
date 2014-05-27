@@ -8,6 +8,12 @@ SymbolTableEntry::~SymbolTableEntry() {
   delete m_objType;
 }
 
+void SymbolTableEntry::setObjType(ObjType* objType) {
+  delete m_objType;
+  assert(objType);
+  m_objType = objType;
+}
+
 SymbolTable::~SymbolTable() {
   map<string,SymbolTableEntry*>::iterator i = begin();
   for ( ; i!=end(); ++i ) {
@@ -28,7 +34,6 @@ Env::InsertRet Env::insert(const string& name, SymbolTableEntry* stentry) {
 
 /** \overload */
 Env::InsertRet Env::insert(const SymbolTable::KeyValue& keyValue) {
-  assert(keyValue.second);
   return m_ststack.front().insert(keyValue);
 }
 
