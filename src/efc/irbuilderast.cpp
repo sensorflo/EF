@@ -273,7 +273,10 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr) {
   if ( functionIr->getName() != funDecl.name() ) {
     functionIr->eraseFromParent();
     functionIr = m_module->getFunction(funDecl.name());
-    assert(functionIr->arg_size() == funDecl.args().size());
+    if (functionIr->arg_size() != funDecl.args().size()) {
+      throw runtime_error::runtime_error("Multiple declarations of function '" +
+        funDecl.name() + "' with different signatur");
+   } 
   }
   else {
     list<string>::const_iterator iterAst = funDecl.args().begin();

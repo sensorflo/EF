@@ -512,6 +512,19 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    multiple_function_declarations_with_same_name_BUT_different_signature,
+    buildAndRunModule,
+    throws)) {
+  auto_ptr<AstSeq> astSeq(
+    new AstSeq(
+      new AstFunDecl("foo"),
+      new AstFunDecl("foo", "x"),
+      new AstNumber(42)));
+  TestingIrBuilderAst UUT;
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_declaration_and_a_matching_function_definition,
     buildAndRunModule,
     succeeds)) {
