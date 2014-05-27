@@ -54,13 +54,13 @@ void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
 
 #define TEST_BUILD_AND_RUN_MODULE(astSeq, expectedResult, spec) \
   {\
-    SCOPED_TRACE("");\
+    SCOPED_TRACE("Test helper 'testbuilAndRunModule' called from here"); \
     testbuilAndRunModule(astSeq, expectedResult, spec);\
   }
 
 #define TEST_BUILD_AND_RUN_MODULE_CMPOP(astSeq, expectedResult, spec, cmpop) \
   {\
-    SCOPED_TRACE("");\
+    SCOPED_TRACE("Test helper 'testbuilAndRunModule' called from here"); \
     testbuilAndRunModule(astSeq, expectedResult, spec, cmpop);  \
   }
 

@@ -57,7 +57,7 @@ void testParse(const string& efProgram, const string& expectedAst,
 
 #define TEST_PARSE( efProgram, expectedAst, spec ) \
   { \
-    SCOPED_TRACE(""); \
+    SCOPED_TRACE("Test helper 'testParse' called from here"); \
     testParse(efProgram, expectedAst, spec);    \
   }
 
