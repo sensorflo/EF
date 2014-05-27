@@ -330,7 +330,7 @@ void IrBuilderAst::visit(const AstDataDecl& dataDecl,
     stIterStEntry = new SymbolTableEntry(NULL, &dataDecl.objType(true));
   } else {
     assert(stIterStEntry);
-    if ( stIterStEntry->objType().qualifier() != dataDecl.objType().qualifier() ) {
+    if ( ObjType::eFullMatch != stIterStEntry->objType().match(dataDecl.objType()) ) {
       throw runtime_error::runtime_error("Idenifier '" + dataDecl.name() +
         "' declared or defined again with a different type.");
     }
