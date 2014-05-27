@@ -537,6 +537,35 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    re_declaration_of_an_identifier_with_different_type,
+    buildAndRunModule,
+    throws)) {
+  string spec = "First function type, then fundamental type";
+  {
+    auto_ptr<AstSeq> astSeq(
+      new AstSeq(
+        new AstFunDecl("foo"),
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstNumber(42)));
+    TestingIrBuilderAst UUT;
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) <<
+      amendSpec(spec) << amendAst(astSeq);
+  }
+
+  spec = "First fundamental type, then function type";
+  {
+    auto_ptr<AstSeq> astSeq(
+      new AstSeq(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstFunDecl("foo"),
+        new AstNumber(42)));
+    TestingIrBuilderAst UUT;
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) <<
+      amendSpec(spec) << amendAst(astSeq);
+  }
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_call_to_an_defined_function,
     buildAndRunModule,
     returns_result_of_that_function_call)) {

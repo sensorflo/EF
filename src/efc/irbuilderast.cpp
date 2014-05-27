@@ -262,6 +262,33 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl) {
 
 void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr) {
   // currently rettype and type of args is always int
+
+  // create ObjTypeFun object out of funDecl
+  list<string>::const_iterator iterArgsAst = funDecl.args().begin();
+  list<ObjType*>* argsObjType = new list<ObjType*>;
+  for (/*nop*/; iterArgsAst!=funDecl.args().end(); ++iterArgsAst) {
+    argsObjType->push_back(new ObjTypeFunda(ObjTypeFunda::eInt));
+  }
+  ObjTypeFun* objTypeFun = new ObjTypeFun(
+    argsObjType, new ObjTypeFunda(ObjTypeFunda::eInt));
+
+  // ensure function is in environment
+  Env::InsertRet insertRet = m_env.insert( funDecl.name(), NULL);
+  SymbolTable::iterator& stIter = insertRet.first;
+  SymbolTableEntry*& stIterStEntry = stIter->second;
+  bool wasAlreadyInMap = !insertRet.second;
+  if (!wasAlreadyInMap) {
+    stIterStEntry = new SymbolTableEntry(NULL, objTypeFun);
+  } else {
+    assert(stIterStEntry);
+    if ( ObjType::eFullMatch != stIterStEntry->objType().match(*objTypeFun) ) {
+      throw runtime_error::runtime_error("Idenifier '" + funDecl.name() +
+        "' declared or defined again with a different type.");
+    }
+    delete objTypeFun;
+  }
+
+  // actually create IR
   vector<Type*> argsIr(funDecl.args().size(),
     Type::getInt32Ty(getGlobalContext()));
   Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
@@ -273,16 +300,12 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr) {
   if ( functionIr->getName() != funDecl.name() ) {
     functionIr->eraseFromParent();
     functionIr = m_module->getFunction(funDecl.name());
-    if (functionIr->arg_size() != funDecl.args().size()) {
-      throw runtime_error::runtime_error("Multiple declarations of function '" +
-        funDecl.name() + "' with different signatur");
-   } 
   }
   else {
-    list<string>::const_iterator iterAst = funDecl.args().begin();
-    Function::arg_iterator iterIr = functionIr->arg_begin();
-    for (/*nop*/; iterAst!=funDecl.args().end(); ++iterAst, ++iterIr) {
-      iterIr->setName(*iterAst);
+    list<string>::const_iterator iterArgsAst = funDecl.args().begin();
+    Function::arg_iterator iterArgsIr = functionIr->arg_begin();
+    for (/*nop*/; iterArgsAst!=funDecl.args().end(); ++iterArgsAst, ++iterArgsIr) {
+      iterArgsIr->setName(*iterArgsAst);
     }
   }
 
