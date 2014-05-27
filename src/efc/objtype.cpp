@@ -33,7 +33,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
 }
 
 ObjTypeFun::ObjTypeFun(list<ObjType*>* args, ObjType* ret) :
-  ObjType(eConst),
+  ObjType(eNoQualifier),
   m_args( args ? args : new list<ObjType*>),
   m_ret( ret ? ret : new ObjTypeFunda(ObjTypeFunda::eInt) ){
   assert(m_args);

@@ -210,7 +210,7 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
   }
   assert( stentry->valueIr() );
   m_values.push_back(
-    symbol.valueCategory()==AstSymbol::eLValue || stentry->objType().qualifier()==ObjType::eConst ?
+    symbol.valueCategory()==AstSymbol::eLValue || stentry->objType().qualifier()==ObjType::eNoQualifier ?
     stentry->valueIr() :
     m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str()));
 }
@@ -362,7 +362,7 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
 
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.
-  if ( stentry->objType().qualifier()==ObjType::eConst ) {
+  if ( stentry->objType().qualifier()==ObjType::eNoQualifier ) {
     stentry->valueIr() = initValue;
   }
   else if ( stentry->objType().qualifier()==ObjType::eMutable ) {

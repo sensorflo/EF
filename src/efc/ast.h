@@ -83,7 +83,7 @@ private:
 
 class AstDataDecl : public AstValue {
 public:
-  AstDataDecl(const std::string& name, ObjType::Qualifier qualifier = ObjType::eConst);
+  AstDataDecl(const std::string& name, ObjType::Qualifier qualifier = ObjType::eNoQualifier);
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }

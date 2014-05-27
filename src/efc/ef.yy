@@ -288,7 +288,7 @@ naked_if
   ;
 
 valvar
-  : VAL                                                              { $$ = ObjType::eConst; }
+  : VAL                                                              { $$ = ObjType::eNoQualifier; }
   | VAR	                                                             { $$ = ObjType::eMutable; }
   ;
 

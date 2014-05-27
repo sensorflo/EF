@@ -12,9 +12,9 @@ class ObjType {
 public:
   // works as bit flags
   enum Qualifier {
-    eConst   = 0,
+    eNoQualifier = 0,
     eMutable = 1 
-    // later: eVolatile = 1<<1, eNonVolatile = 0
+    // later: eVolatile = 1<<1
   };
   enum MatchType {
     eNoMatch,
@@ -55,7 +55,7 @@ public:
     // later: bool, double etc
   };
 
-  ObjTypeFunda(EType type, Qualifier qualifier = eConst) :
+  ObjTypeFunda(EType type, Qualifier qualifier = eNoQualifier) :
     ObjType(qualifier), m_type(type) {};
 
   virtual MatchType match(const ObjType& other) const { return other.match2(*this); }

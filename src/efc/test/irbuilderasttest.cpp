@@ -709,7 +709,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   {
     auto_ptr<AstSeq> astSeq(
       new AstSeq(
-        new AstDataDecl("x", ObjType::eConst),
+        new AstDataDecl("x", ObjType::eNoQualifier),
         new AstDataDecl("x", ObjType::eMutable),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
