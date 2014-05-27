@@ -3,10 +3,24 @@
 #include <sstream>
 using namespace std;
 
+ObjType& ObjType::addQualifier(Qualifier qualifier) {
+  m_qualifier = static_cast<Qualifier>(m_qualifier | qualifier);
+  return *this;
+}
+
 string ObjType::toStr() const {
   ostringstream ss;
   ss << *this;
   return ss.str();
+}
+
+basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::Qualifier qualifier) {
+  if (ObjType::eNoQualifier==qualifier) {
+    return os << "no-qualifier";
+  }
+
+  if (qualifier & ObjType::eMutable) { os << "mut"; }
+  return os;
 }
 
 basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::MatchType mt) {

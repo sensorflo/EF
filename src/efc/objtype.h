@@ -24,6 +24,8 @@ public:
   };
   virtual ~ObjType() {};
 
+  ObjType& addQualifier(Qualifier qualifier);
+
   virtual MatchType match(const ObjType& other) const = 0;
   virtual MatchType match2(const ObjTypeFunda& other) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypeFun& other) const { return eNoMatch; }
@@ -42,6 +44,9 @@ inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   const ObjType& ot) {
   return ot.printTo(os);
 }
+
+std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
+  ObjType::Qualifier qualifier);
 
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   ObjType::MatchType mt);

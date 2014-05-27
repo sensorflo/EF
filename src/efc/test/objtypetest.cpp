@@ -44,6 +44,17 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
+    addQualifier)) {
+  EXPECT_EQ(
+    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifier(),
+    ObjTypeFunda(ObjTypeFunda::eInt).addQualifier(ObjType::eMutable).qualifier());
+
+  EXPECT_EQ(
+    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifier(),
+    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).addQualifier(ObjType::eMutable).qualifier());
+}
+
+TEST(ObjTypeTest, MAKE_TEST_NAME1(
     match)) {
 
   TEST_MATCH( "", ObjType::eFullMatch,
