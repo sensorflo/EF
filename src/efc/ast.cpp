@@ -97,7 +97,7 @@ AstDataDecl::~AstDataDecl() {
 }
 
 basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
-  os << "decldata(" << m_name << (m_objType->qualifier()==ObjType::eMutable ? " mut" : "") << ")";
+  os << "decldata(" << m_name << " " << *m_objType << ")";
   return os;
 }
 

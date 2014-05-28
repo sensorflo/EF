@@ -320,58 +320,58 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   //Toggling 2) 'keyword...;' vs 'keyword(...)' syntax
   //Toggling 3) initializer behind id vs initializer behind type
   //Toggling 4) val vs var
-  TEST_PARSE( "val foo: int = 42;", "seq(data(decldata(foo) 42))", spec);
-  TEST_PARSE( "val foo:     = 42;", "seq(data(decldata(foo) 42))", spec);
-  TEST_PARSE( "val foo      = 42;", "seq(data(decldata(foo) 42))", spec);
-  TEST_PARSE( "val(foo: int = 42)", "seq(data(decldata(foo) 42))", spec);
-  TEST_PARSE( "val(foo:     = 42)", "seq(data(decldata(foo) 42))", spec);
-  TEST_PARSE( "val(foo      = 42)", "seq(data(decldata(foo) 42))", spec);
+  TEST_PARSE( "val foo: int = 42;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val foo:     = 42;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val foo      = 42;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo: int = 42)", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo:     = 42)", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo      = 42)", "seq(data(decldata(foo int) 42))", spec);
 
-  TEST_PARSE( "val foo = 42: int;", "seq(data(decldata(foo) 42))", spec);
-  TEST_PARSE( "val foo = 42:    ;", "seq(data(decldata(foo) 42))", spec);
-  TEST_PARSE( "val foo = 42     ;", "seq(data(decldata(foo) 42))", spec);
-  TEST_PARSE( "val(foo = 42: int)", "seq(data(decldata(foo) 42))", spec);
-  TEST_PARSE( "val(foo = 42:    )", "seq(data(decldata(foo) 42))", spec);
-  TEST_PARSE( "val(foo = 42     )", "seq(data(decldata(foo) 42))", spec);
+  TEST_PARSE( "val foo = 42: int;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val foo = 42:    ;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val foo = 42     ;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo = 42: int)", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo = 42:    )", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo = 42     )", "seq(data(decldata(foo int) 42))", spec);
 
-  TEST_PARSE( "var foo: int = 42;", "seq(data(decldata(foo mut) 42))", spec);
-  TEST_PARSE( "var foo:     = 42;", "seq(data(decldata(foo mut) 42))", spec);
-  TEST_PARSE( "var foo      = 42;", "seq(data(decldata(foo mut) 42))", spec);
-  TEST_PARSE( "var(foo: int = 42)", "seq(data(decldata(foo mut) 42))", spec);
-  TEST_PARSE( "var(foo:     = 42)", "seq(data(decldata(foo mut) 42))", spec);
-  TEST_PARSE( "var(foo      = 42)", "seq(data(decldata(foo mut) 42))", spec);
+  TEST_PARSE( "var foo: int = 42;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var foo:     = 42;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var foo      = 42;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo: int = 42)", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo:     = 42)", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo      = 42)", "seq(data(decldata(foo int-mut) 42))", spec);
 
-  TEST_PARSE( "var foo = 42: int;", "seq(data(decldata(foo mut) 42))", spec);
-  TEST_PARSE( "var foo = 42:    ;", "seq(data(decldata(foo mut) 42))", spec);
-  TEST_PARSE( "var foo = 42     ;", "seq(data(decldata(foo mut) 42))", spec);
-  TEST_PARSE( "var(foo = 42: int)", "seq(data(decldata(foo mut) 42))", spec);
-  TEST_PARSE( "var(foo = 42:    )", "seq(data(decldata(foo mut) 42))", spec);
-  TEST_PARSE( "var(foo = 42     )", "seq(data(decldata(foo mut) 42))", spec);
+  TEST_PARSE( "var foo = 42: int;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var foo = 42:    ;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var foo = 42     ;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo = 42: int)", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo = 42:    )", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo = 42     )", "seq(data(decldata(foo int-mut) 42))", spec);
 
   spec = "trivial example with implicit init value";
   //Toggling 1) 'keyword...;' vs 'keyword(...)' syntax
   //Toggling 2) val vs var
-  TEST_PARSE( "val foo:int;", "seq(data(decldata(foo)))", spec);
-  TEST_PARSE( "val(foo:int)", "seq(data(decldata(foo)))", spec);
-  TEST_PARSE( "var foo:int;", "seq(data(decldata(foo mut)))", spec);
-  TEST_PARSE( "var(foo:int)", "seq(data(decldata(foo mut)))", spec);
+  TEST_PARSE( "val foo:int;", "seq(data(decldata(foo int)))", spec);
+  TEST_PARSE( "val(foo:int)", "seq(data(decldata(foo int)))", spec);
+  TEST_PARSE( "var foo:int;", "seq(data(decldata(foo int-mut)))", spec);
+  TEST_PARSE( "var(foo:int)", "seq(data(decldata(foo int-mut)))", spec);
 
   spec = "short version with implicit type";
-  TEST_PARSE( "foo:=42", "seq(data(decldata(foo) 42))", spec);
+  TEST_PARSE( "foo:=42", "seq(data(decldata(foo int) 42))", spec);
 
   spec = ":= has lower precedence than * +";
   TEST_PARSE( "foo:=1+2*3",
-    "seq(data(decldata(foo) +(1 *(2 3))))", spec);
+    "seq(data(decldata(foo int) +(1 *(2 3))))", spec);
 
   spec = ":= is right associative";
   TEST_PARSE( "bar:=foo:=42",
-    "seq(data(decldata(bar) data(decldata(foo) 42)))", spec);
+    "seq(data(decldata(bar int) data(decldata(foo int) 42)))", spec);
 
   spec = ":= and = have same precedence";
   TEST_PARSE( "bar=foo:=42",
-    "seq(=(bar data(decldata(foo) 42)))", spec);
+    "seq(=(bar data(decldata(foo int) 42)))", spec);
   TEST_PARSE( "bar:=foo=42",
-    "seq(data(decldata(bar) =(foo 42)))", spec);
+    "seq(data(decldata(bar int) =(foo 42)))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
