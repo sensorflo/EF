@@ -47,49 +47,61 @@ basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-AstFunDecl::AstFunDecl(const string& name, list<string>* args) :
+AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args) :
   m_name(name),
-  m_args(args ? args : new list<string>()) {
+  m_args(args ? args : new list<AstArgDecl*>()) {
   assert(m_args);
 }
 
 /** Same as overloaded ctor for convenience; it's easier to pass short
 argument lists. An empty string means 'no argument'. */
-AstFunDecl::AstFunDecl(const string& name, const string& arg1,
-  const string& arg2, const string& arg3) :
+AstFunDecl::AstFunDecl(const string& name, AstArgDecl* arg1,
+  AstArgDecl* arg2, AstArgDecl* arg3) :
   m_name(name),
   m_args(createArgs(arg1, arg2, arg3)) {
   assert(m_args);
 }
 
 AstFunDecl::~AstFunDecl() {
+  for (list<AstArgDecl*>::const_iterator i=m_args->begin();
+       i!=m_args->end(); ++i) {
+    delete *i;
+  }
   delete m_args;
 }
 
 basic_ostream<char>& AstFunDecl::printTo(basic_ostream<char>& os) const {
   os << "declfun(" << m_name << " (";
-  for (list<string>::const_iterator i=m_args->begin();
+  for (list<AstArgDecl*>::const_iterator i=m_args->begin();
        i!=m_args->end(); ++i) {
     if (i!=m_args->begin()) { os << " "; }
-    os << *i;
+    os << (*i)->name();
   }
   os << "))";
   return os;
 }
 
-list<string>* AstFunDecl::createArgs(const string& arg1, const string& arg2,
-  const string& arg3) {
-  list<string>* args = new list<string>;
-  if (!arg1.empty()) { args->push_back(arg1); }
-  if (!arg2.empty()) { args->push_back(arg2); }
-  if (!arg3.empty()) { args->push_back(arg3); }
+list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
+  AstArgDecl* arg2, AstArgDecl* arg3) {
+  list<AstArgDecl*>* args = new list<AstArgDecl*>;
+  if (arg1) { args->push_back(arg1); }
+  if (arg2) { args->push_back(arg2); }
+  if (arg3) { args->push_back(arg3); }
   return args;
 }
 
 AstDataDecl::AstDataDecl(const string& name, ObjType* objType) :
   m_name(name),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
-  m_ownerOfObjType(true) {
+  m_ownerOfObjType(true),
+  m_type(eNormal) {
+}
+
+AstDataDecl::AstDataDecl(const string& name, ObjType* objType, Type type) :
+  m_name(name),
+  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
+  m_ownerOfObjType(true),
+  m_type(type) {
 }
 
 AstDataDecl::~AstDataDecl() {
@@ -97,7 +109,9 @@ AstDataDecl::~AstDataDecl() {
 }
 
 basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
-  os << "decldata(" << m_name << " " << *m_objType << ")";
+  if (eNormal==m_type) { os << "decldata("; }
+  os << m_name << " " << *m_objType;
+  if (eNormal==m_type) { os  << ")"; }
   return os;
 }
 

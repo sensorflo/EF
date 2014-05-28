@@ -233,19 +233,20 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
 
   // Add all arguments to the symbol table and create their allocas.
   Function::arg_iterator iterIr = functionIr->arg_begin();
-  list<string>::const_iterator iterAst = funDef.decl().args().begin();
+  list<AstArgDecl*>::const_iterator iterAst = funDef.decl().args().begin();
   for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
-    AllocaInst *alloca = createEntryBlockAlloca(functionIr, *iterAst);
+    const string& argName = (*iterAst)->name();
+    AllocaInst *alloca = createEntryBlockAlloca(functionIr, argName);
     m_builder.CreateStore(iterIr, alloca);
     SymbolTableEntry* stentry = new SymbolTableEntry( alloca,
       new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), true);
-    Env::InsertRet insertRet = m_env.insert(*iterAst, stentry);
+    Env::InsertRet insertRet = m_env.insert(argName, stentry);
 
     // if name is already in environment, then it must be another argument
     // since we just pushed a new scope. 
     if ( !insertRet.second ) {
       delete stentry;
-      throw runtime_error::runtime_error("Argument '" + *iterAst +
+      throw runtime_error::runtime_error("Argument '" + argName +
         "' already defined");
     }
   }
@@ -274,10 +275,10 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr,
   // currently rettype and type of args is always int
 
   // create ObjTypeFun object out of funDecl
-  list<string>::const_iterator iterArgsAst = funDecl.args().begin();
+  list<AstArgDecl*>::const_iterator iterArgsAst = funDecl.args().begin();
   list<ObjType*>* argsObjType = new list<ObjType*>;
   for (/*nop*/; iterArgsAst!=funDecl.args().end(); ++iterArgsAst) {
-    argsObjType->push_back(new ObjTypeFunda(ObjTypeFunda::eInt));
+    argsObjType->push_back( &((*iterArgsAst)->objType(true)) );
   }
   ObjTypeFun* objTypeFun = new ObjTypeFun(
     argsObjType, new ObjTypeFunda(ObjTypeFunda::eInt));
@@ -313,10 +314,10 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr,
     functionIr = m_module->getFunction(funDecl.name());
   }
   else {
-    list<string>::const_iterator iterArgsAst = funDecl.args().begin();
+    list<AstArgDecl*>::const_iterator iterArgsAst = funDecl.args().begin();
     Function::arg_iterator iterArgsIr = functionIr->arg_begin();
     for (/*nop*/; iterArgsAst!=funDecl.args().end(); ++iterArgsAst, ++iterArgsIr) {
-      iterArgsIr->setName(*iterArgsAst);
+      iterArgsIr->setName((*iterArgsAst)->name());
     }
   }
 

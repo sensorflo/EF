@@ -96,11 +96,11 @@
 %precedence EXCL NOT
 
 %type <AstCtList*> ct_list pure_ct_list
-%type <std::list<std::string>*> param_ct_list pure_naked_param_ct_list
+%type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
 %type <AstSeq*> maybe_empty_seq seq pure_seq seq_without_comma opt_else
 %type <AstValue*> expr expr_leaf naked_if
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
-%type <std::string> param_decl
+%type <AstArgDecl*> param_decl
 %type <ObjType::Qualifier> valvar
 %type <RawAstDataDecl*> naked_data_decl
 %type <RawAstDataDef*> naked_data_def
@@ -172,17 +172,17 @@ pure_ct_list
   ;
 
 param_ct_list
-  : LPAREN RPAREN                                   { $$ = new std::list<std::string>(); }
+  : LPAREN RPAREN                                   { $$ = new std::list<AstArgDecl*>(); }
   | LPAREN pure_naked_param_ct_list opt_comma RPAREN{ std::swap($$,$2); }
   ;
 
 pure_naked_param_ct_list
-  : param_decl                                      { $$ = new std::list<std::string>(); ($$)->push_back($1); }
+  : param_decl                                      { $$ = new std::list<AstArgDecl*>(); ($$)->push_back($1); }
   | pure_naked_param_ct_list COMMA param_decl       { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 param_decl
-  : ID COLON type                                   { swap($$,$1); /* currently ignores type */ }
+  : ID COLON type                                   { $$ = new AstArgDecl($1, &(($3)->addQualifier(ObjType::eMutable))); }
   ;
   
 type
@@ -283,7 +283,7 @@ naked_fun_def
   
 naked_fun_decl
   : ID opt_colon param_ct_list opt_arrow_type                        { $$ = new AstFunDecl($1, $3); }
-  | ID opt_colon                                                     { $$ = new AstFunDecl($1, new std::list<std::string>()); }
+  | ID opt_colon                                                     { $$ = new AstFunDecl($1, new std::list<AstArgDecl*>()); }
   ;
 
 naked_if

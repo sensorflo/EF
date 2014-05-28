@@ -53,9 +53,9 @@ TEST(AstTest, MAKE_TEST_NAME2(
 
   spec = "AstFunDecl";
   EXPECT_EQ( "declfun(foo ())", AstFunDecl("foo").toStr()) << amendSpec(spec);
-  EXPECT_EQ( "declfun(foo ())", AstFunDecl("foo", new list<string>()).toStr()) << amendSpec(spec);
-  EXPECT_EQ( "declfun(foo (arg1))", AstFunDecl("foo", "arg1").toStr()) << amendSpec(spec);
-  EXPECT_EQ( "declfun(foo (arg1 arg2))", AstFunDecl("foo", "arg1", "arg2").toStr()) << amendSpec(spec);
+  EXPECT_EQ( "declfun(foo ())", AstFunDecl("foo", new list<AstArgDecl*>()).toStr()) << amendSpec(spec);
+  EXPECT_EQ( "declfun(foo (arg1))", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))).toStr()) << amendSpec(spec);
+  EXPECT_EQ( "declfun(foo (arg1 arg2))", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))).toStr()) << amendSpec(spec);
 
   spec = "AstFunDef";
   EXPECT_EQ( "fun(declfun(foo ()) seq())", AstFunDef(new AstFunDecl("foo"),new AstSeq()).toStr() ) << amendSpec(spec);

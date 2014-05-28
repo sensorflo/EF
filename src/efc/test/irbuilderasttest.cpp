@@ -268,11 +268,13 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
-    list<string>* args = new list<string>();
-    args->push_back("arg1");
-    args->push_back("arg2");
     auto_ptr<AstSeq> astSeq(
-      new AstSeq( new AstFunDecl("foo", args), new AstNumber(42)));
+      new AstSeq(
+        new AstFunDecl(
+          "foo",
+          new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstNumber(42)));
     TestingIrBuilderAst UUT;
 
     // execute
@@ -282,7 +284,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     Function* functionIr = UUT.m_module->getFunction("foo");
     EXPECT_TRUE(functionIr!=NULL);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
-    EXPECT_EQ(functionIr->arg_size(), args->size());
+    EXPECT_EQ(functionIr->arg_size(), 2);
   }
 }
 
@@ -320,7 +322,10 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     args->push_back("arg2");
     auto_ptr<AstSeq> astSeq( new AstSeq(
         new AstFunDef(
-          new AstFunDecl("foo", args),
+          new AstFunDecl(
+            "foo",
+            new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
+            new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
           new AstSeq(new AstNumber(77))),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
@@ -362,12 +367,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
-    list<string>* args = new list<string>();
-    args->push_back("arg1");
     auto_ptr<AstSeq> astSeq(
       new AstSeq(
         new AstFunDef(
-          new AstFunDecl("foo", args),
+          new AstFunDecl(
+            "foo",
+            new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
           new AstSeq(new AstNumber(42))),
         new AstNumber(77)));
     TestingIrBuilderAst UUT;
@@ -387,12 +392,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // setup
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
-  list<string>* args = new list<string>();
-  args->push_back("x");
   auto_ptr<AstSeq> astSeq(
     new AstSeq(
       new AstFunDef(
-        new AstFunDecl("foo", args),
+        new AstFunDecl(
+          "foo",
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstSeq(new AstSymbol(new string("x")))),
       new AstNumber(77)));
   TestingIrBuilderAst UUT;
@@ -415,13 +420,13 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // setup
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
-  list<string>* args = new list<string>();
-  args->push_back("x");
-  args->push_back("y");
   auto_ptr<AstSeq> astSeq(
     new AstSeq(
       new AstFunDef(
-        new AstFunDecl("foo", args),
+        new AstFunDecl(
+          "foo",
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstSeq(
           new AstOperator('*',
             new AstSymbol(new string("x")),
@@ -448,12 +453,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // setup
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
-  list<string>* args = new list<string>();
-  args->push_back("x");
   auto_ptr<AstSeq> astSeq(
     new AstSeq(
       new AstFunDef(
-        new AstFunDecl("foo", args),
+        new AstFunDecl(
+          "foo",
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstSeq(
           new AstOperator('=',
             new AstSymbol(new string("x"), AstSymbol::eLValue),
@@ -518,7 +523,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   auto_ptr<AstSeq> astSeq(
     new AstSeq(
       new AstFunDecl("foo"),
-      new AstFunDecl("foo", "x"),
+      new AstFunDecl(
+        "foo",
+        new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstNumber(42)));
   TestingIrBuilderAst UUT;
   EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
@@ -596,7 +603,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstFunDef(
-        new AstFunDecl("foo", "x"),
+        new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstSeq(new AstNumber(42))),
       new AstFunCall("foo", new AstCtList(new AstNumber(0)))),
     42, spec);
@@ -605,7 +612,10 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstFunDef(
-        new AstFunDecl("add", "x", "y"),
+        new AstFunDecl(
+          "add",
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstSeq(
           new AstOperator('+',
             new AstSymbol(new string("x")),
@@ -632,7 +642,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   {
     auto_ptr<AstSeq> astSeq( new AstSeq(
         new AstFunDef(
-          new AstFunDecl("foo","x"),
+          new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
           new AstSeq(new AstNumber(42))),
         new AstFunCall("foo")));
     TestingIrBuilderAst UUT;
@@ -786,7 +796,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
     new AstSeq(
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       new AstFunDef(
-        new AstFunDecl("foo", "x"),
+        new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstSeq(
           new AstOperator('=',
             new AstSymbol(new string("x"), AstSymbol::eLValue),
@@ -829,7 +839,10 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     auto_ptr<AstSeq> astSeq(
       new AstSeq(
         new AstFunDef(
-          new AstFunDecl("foo", "x", "x"),
+          new AstFunDecl(
+            "foo",
+            new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+            new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
           new AstSeq(new AstNumber(42))),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
@@ -842,7 +855,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     auto_ptr<AstSeq> astSeq(
       new AstSeq(
         new AstFunDef(
-          new AstFunDecl("foo", "x"),
+          new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
           new AstSeq(new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))))),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;

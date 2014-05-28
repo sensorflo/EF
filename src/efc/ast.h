@@ -16,6 +16,7 @@ class AstCtList;
 class AstFunDef;
 class AstFunDecl;
 class AstDataDecl;
+class AstArgDecl;
 class AstDataDef;
 class AstIf;
 
@@ -65,20 +66,20 @@ private:
 
 class AstFunDecl : public AstValue {
 public:
-  AstFunDecl(const std::string& name, std::list<std::string>* args = NULL);
-  AstFunDecl(const std::string& name, const std::string& arg1,
-    const std::string& arg2 = "", const std::string& arg3 = "");
+  AstFunDecl(const std::string& name, std::list<AstArgDecl*>* args = NULL);
+  AstFunDecl(const std::string& name, AstArgDecl* arg1,
+    AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   ~AstFunDecl();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
-  virtual const std::list<std::string>& args() const { return *m_args; }
+  virtual const std::list<AstArgDecl*>& args() const { return *m_args; }
 private:
-  static std::list<std::string>* createArgs(const std::string& arg1 = "",
-    const std::string& arg2 = "", const std::string& arg3 = "");
+  static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
+    AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   const std::string m_name;
   /** We're the owner. Is garanteed to be non-null */
-  const std::list<std::string>* const m_args;
+  const std::list<AstArgDecl*>* const m_args;
 };
 
 class AstDataDecl : public AstValue {
@@ -89,6 +90,10 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
   virtual ObjType& objType(bool stealOwnership = false) const;
+protected:
+  enum Type { eNormal, eFunArg };
+  AstDataDecl(const std::string& name, ObjType* objType, Type type);
+  
 private:
   const std::string m_name;
   /** If m_ownerOfObjType is true, we're the owner. Is garanteed to be
@@ -96,6 +101,13 @@ private:
   ObjType* m_objType;
   /** See m_objType */
   mutable bool m_ownerOfObjType;
+  const Type m_type;
+};
+
+class AstArgDecl : public AstDataDecl {
+public:
+  AstArgDecl(const std::string& name, ObjType* objType) :
+    AstDataDecl(name, objType, eFunArg) {};
 };
 
 class AstDataDef : public AstValue {
