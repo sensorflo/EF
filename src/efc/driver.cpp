@@ -1,4 +1,5 @@
 #include "driver.h"
+#include "env.h"
 #include "gensrc/parser.hpp"
 #include <stdio.h>
 #include <errno.h>
@@ -10,11 +11,12 @@ extern FILE* yyin;
 extern void yyrestart(FILE*);
 extern void yyinitializeParserLoc(string* filename);
 
-Driver::Driver(const std::string& fileName) :
+Driver::Driver(Env& env, const std::string& fileName) :
   m_gotError(false),
   m_gotWarning(false),
   m_astRoot(NULL),
-  m_parser(new Parser(*this, m_astRoot)) {
+  m_parserExt(env),
+  m_parser(new Parser(*this, m_parserExt, m_astRoot)) {
   // Ctor/Dtor must RAII yyin and m_parser
 
   if (!m_parser) { cerr << "Out of memory"; exit(1); }

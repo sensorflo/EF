@@ -15,23 +15,11 @@
   class Driver;
   #include "../ast.h"
   #include "../objtype.h"
-
-  struct RawAstDataDecl {
-    RawAstDataDecl(const std::string& name, ObjType* objType) : m_name(name), m_objType(objType) {};
-    std::string m_name;
-    ObjType* m_objType;
-  };  
-
-  struct RawAstDataDef {
-    RawAstDataDef(RawAstDataDecl* decl, AstValue* initValue = NULL) :
-      m_decl(decl), m_initValue(initValue) {};
-    RawAstDataDecl* m_decl;
-    AstValue* m_initValue;
-  };  
+  #include "../parserext.h"                        
 }
 
 %param { Driver& driver }
-%parse-param { AstSeq*& astRoot }
+%parse-param { ParserExt& parserExt } { AstSeq*& astRoot } 
 
 %locations
 %initial-action
@@ -248,8 +236,8 @@ expr_leaf
 
 
   /* definitions of data object. Declarations make no sense for local variables, and globals are not yet available. */
-  | valvar        naked_data_def SEMICOLON                           { $2->m_decl->m_objType->addQualifier($1); $$ = new AstDataDef( new AstDataDecl($2->m_decl->m_name, $2->m_decl->m_objType), $2->m_initValue); delete $2->m_decl; delete $2; }
-  | valvar LPAREN naked_data_def RPAREN                              { $3->m_decl->m_objType->addQualifier($1); $$ = new AstDataDef( new AstDataDecl($3->m_decl->m_name, $3->m_decl->m_objType), $3->m_initValue); delete $3->m_decl; delete $3; }
+  | valvar        naked_data_def SEMICOLON                           { $$ = parserExt.createAstDataDef($1, $2); }
+  | valvar LPAREN naked_data_def RPAREN                              { $$ = parserExt.createAstDataDef($1, $3); }
 
 
   /* declarations of code object */

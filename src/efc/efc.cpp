@@ -13,12 +13,12 @@ int main(int argc, char** argv) {
   }
   try {
     IrBuilderAst::staticOneTimeInit();
-    Driver driver(argv[1]);
+    Env env;
+    Driver driver(env, argv[1]);
     AstSeq* ast = NULL;
     if (driver.parse(ast)) {
       exit(1);
     }
-    Env env;
     IrBuilderAst irBuilderAst(env);
     cout << irBuilderAst.buildAndRunModule(*ast) << "\n";
   }
