@@ -75,9 +75,11 @@ basic_ostream<char>& AstFunDecl::printTo(basic_ostream<char>& os) const {
   for (list<AstArgDecl*>::const_iterator i=m_args->begin();
        i!=m_args->end(); ++i) {
     if (i!=m_args->begin()) { os << " "; }
-    os << (*i)->name();
+    (*i)->printTo(os);
   }
-  os << "))";
+  os << ") ";
+  os << ObjTypeFunda(ObjTypeFunda::eInt);
+  os << ")";
   return os;
 }
 
@@ -109,10 +111,8 @@ AstDataDecl::~AstDataDecl() {
 }
 
 basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
-  if (eNormal==m_type) { os << "decldata("; }
-  os << m_name << " " << *m_objType;
-  if (eNormal==m_type) { os  << ")"; }
-  return os;
+  if (eNormal==m_type) { os << "decldata"; }
+  return os << "(" << m_name << " " << *m_objType << ")";
 }
 
 ObjType& AstDataDecl::objType(bool stealOwnership) const {
