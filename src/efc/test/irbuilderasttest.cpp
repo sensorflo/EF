@@ -246,7 +246,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildModule,
     adds_the_function_declaration_to_the_module_with_the_correct_signature)) {
 
-  // zero arguments
+  string spec = "Example: zero arguments";
   {
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
@@ -259,12 +259,15 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
-    EXPECT_TRUE(functionIr!=NULL);
-    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
-    EXPECT_EQ(functionIr->arg_size(), 0);
+    EXPECT_TRUE(functionIr!=NULL)
+      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
+      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_EQ(functionIr->arg_size(), 0)
+      << amendAst(astSeq) << amendSpec(spec);
   }
 
-  // two arguments
+  spec = "Example: two arguments";
   {
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
@@ -283,9 +286,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
-    EXPECT_TRUE(functionIr!=NULL);
-    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
-    EXPECT_EQ(functionIr->arg_size(), 2);
+    EXPECT_TRUE(functionIr!=NULL)
+      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
+      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_EQ(functionIr->arg_size(), 2)
+      << amendAst(astSeq) << amendSpec(spec);
   }
 }
 
@@ -293,7 +299,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_definition,
     buildModule,
     adds_the_definition_to_the_module_with_the_correct_signature)) {
-  // zero arguments
+
+  string spec = "Example: zero arguments";
   {
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
@@ -308,12 +315,15 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
-    EXPECT_TRUE(functionIr!=NULL);
-    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
-    EXPECT_EQ(functionIr->arg_size(), 0);
+    EXPECT_TRUE(functionIr!=NULL)
+      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
+      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_EQ(functionIr->arg_size(), 0)
+      << amendAst(astSeq) << amendSpec(spec);
   }
 
-  // two arguments
+  spec = "Example: two arguments";
   {
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
@@ -336,9 +346,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
-    EXPECT_TRUE(functionIr!=NULL);
-    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType());
-    EXPECT_EQ(functionIr->arg_size(), args->size());
+    EXPECT_TRUE(functionIr!=NULL)
+      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
+      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_EQ(functionIr->arg_size(), args->size())
+      << amendAst(astSeq) << amendSpec(spec);
   }
 }
 
@@ -346,7 +359,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_definition_foo_with_body_returning_a_value_x,
     buildModule,
     JIT_executing_foo_returns_x)) {
-  // zero arguments
+
+  string spec = "Example: zero arguments";
   {
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
@@ -360,10 +374,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     UUT.buildModule(*astSeq);
 
     // verify
-    EXPECT_EQ( 77, UUT.jitExecFunction("foo") );
+    EXPECT_EQ( 77, UUT.jitExecFunction("foo") )
+      << amendAst(astSeq) << amendSpec(spec);
   }
 
-  // one argument, which however is ignored
+  spec = "Example: one argument, which however is ignored";
   {
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
@@ -382,7 +397,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     UUT.buildModule(*astSeq);
 
     // verify
-    EXPECT_EQ( 42, UUT.jitExecFunction1Arg("foo", 256) );
+    EXPECT_EQ( 42, UUT.jitExecFunction1Arg("foo", 256) )
+      << amendAst(astSeq) << amendSpec(spec);
   }
 }
 
@@ -408,7 +424,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   // verify
   int x = 256;
-  EXPECT_EQ( x, UUT.jitExecFunction1Arg("foo", x) );
+  EXPECT_EQ( x, UUT.jitExecFunction1Arg("foo", x) )
+    << amendAst(astSeq);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -441,7 +458,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // verify
   int x = 2;
   int y = 3;
-  EXPECT_EQ( x*y, UUT.jitExecFunction2Arg("foo", x, y) );
+  EXPECT_EQ( x*y, UUT.jitExecFunction2Arg("foo", x, y) ) << amendAst(astSeq);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -475,7 +492,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   // verify
   int x = 2;
-  EXPECT_EQ( x+1, UUT.jitExecFunction1Arg("foo", x) );
+  EXPECT_EQ( x+1, UUT.jitExecFunction1Arg("foo", x)) << amendAst(astSeq);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -767,7 +784,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
   // the implicit main method. 
 
   string spec = "function argument named 'x' shadows 'global' variable also named 'x'";
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       new AstFunDef(
@@ -780,7 +797,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
     42, spec);
 
   spec = "variable 'x' local to a function shadows 'global' variable also named 'x'";
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       new AstFunDef(
@@ -843,36 +860,36 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_if_else_expression_WITH_a_condition_evaluating_to_true,
     buildAndRunModule,
     returns_the_value_of_the_then_clause)) {
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstIf(
         new AstSeq(new AstNumber(1)), // condition
         new AstSeq(new AstNumber(2)), // then clause
         new AstSeq(new AstNumber(3)))), // else clause
-    2);
+    2, "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_if_else_expression_WITH_a_condition_evaluating_to_false,
     buildAndRunModule,
     returns_the_value_of_the_else_clause)) {
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstIf(
         new AstSeq(new AstNumber(0)), // condition
         new AstSeq(new AstNumber(2)), // then clause
         new AstSeq(new AstNumber(3)))), // else clause
-    3);
+    3, "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_if_expression_without_else_WITH_a_condition_evaluating_to_false,
     buildAndRunModule,
     returns_default_value_of_expressions_type)) {
-  testbuilAndRunModule(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstIf(
         new AstSeq(new AstNumber(0)), // condition
         new AstSeq(new AstNumber(2)))), // then clause
-    0); // default for int
+    0, ""); // default for int
 }
