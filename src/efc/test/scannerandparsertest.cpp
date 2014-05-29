@@ -316,37 +316,46 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   string spec = "trivial example with explicit init value";
   //Toggling 1) type defined in 3 variants: a) explictit with ':int'
-  //            b) implicit with ':' or ''  
+  //            b) explictit with ':bool' c) implicit with ':'
+  //            d) implicit with ''  
   //Toggling 2) 'keyword...;' vs 'keyword(...)' syntax
   //Toggling 3) initializer behind id vs initializer behind type
   //Toggling 4) val vs var
-  TEST_PARSE( "val foo: int = 42;", "seq(data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "val foo:     = 42;", "seq(data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "val foo      = 42;", "seq(data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "val(foo: int = 42)", "seq(data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "val(foo:     = 42)", "seq(data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "val(foo      = 42)", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val foo: int  = 42;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val foo: bool = 42;", "seq(data(decldata(foo bool) 42))", spec);
+  TEST_PARSE( "val foo:      = 42;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val foo       = 42;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo: int  = 42)", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo: bool = 42)", "seq(data(decldata(foo bool) 42))", spec);
+  TEST_PARSE( "val(foo:      = 42)", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo       = 42)", "seq(data(decldata(foo int) 42))", spec);
 
-  TEST_PARSE( "val foo = 42: int;", "seq(data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "val foo = 42:    ;", "seq(data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "val foo = 42     ;", "seq(data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "val(foo = 42: int)", "seq(data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "val(foo = 42:    )", "seq(data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "val(foo = 42     )", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val foo = 42: int ;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val foo = 42: bool;", "seq(data(decldata(foo bool) 42))", spec);
+  TEST_PARSE( "val foo = 42:     ;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val foo = 42      ;", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo = 42: int )", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo = 42: bool)", "seq(data(decldata(foo bool) 42))", spec);
+  TEST_PARSE( "val(foo = 42:     )", "seq(data(decldata(foo int) 42))", spec);
+  TEST_PARSE( "val(foo = 42      )", "seq(data(decldata(foo int) 42))", spec);
 
-  TEST_PARSE( "var foo: int = 42;", "seq(data(decldata(foo int-mut) 42))", spec);
-  TEST_PARSE( "var foo:     = 42;", "seq(data(decldata(foo int-mut) 42))", spec);
-  TEST_PARSE( "var foo      = 42;", "seq(data(decldata(foo int-mut) 42))", spec);
-  TEST_PARSE( "var(foo: int = 42)", "seq(data(decldata(foo int-mut) 42))", spec);
-  TEST_PARSE( "var(foo:     = 42)", "seq(data(decldata(foo int-mut) 42))", spec);
-  TEST_PARSE( "var(foo      = 42)", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var foo: int  = 42;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var foo: bool = 42;", "seq(data(decldata(foo bool-mut) 42))", spec);
+  TEST_PARSE( "var foo:      = 42;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var foo       = 42;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo: int  = 42)", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo: bool = 42)", "seq(data(decldata(foo bool-mut) 42))", spec);
+  TEST_PARSE( "var(foo:      = 42)", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo       = 42)", "seq(data(decldata(foo int-mut) 42))", spec);
 
-  TEST_PARSE( "var foo = 42: int;", "seq(data(decldata(foo int-mut) 42))", spec);
-  TEST_PARSE( "var foo = 42:    ;", "seq(data(decldata(foo int-mut) 42))", spec);
-  TEST_PARSE( "var foo = 42     ;", "seq(data(decldata(foo int-mut) 42))", spec);
-  TEST_PARSE( "var(foo = 42: int)", "seq(data(decldata(foo int-mut) 42))", spec);
-  TEST_PARSE( "var(foo = 42:    )", "seq(data(decldata(foo int-mut) 42))", spec);
-  TEST_PARSE( "var(foo = 42     )", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var foo = 42: int ;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var foo = 42: bool;", "seq(data(decldata(foo bool-mut) 42))", spec);
+  TEST_PARSE( "var foo = 42:     ;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var foo = 42      ;", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo = 42: int )", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo = 42: bool)", "seq(data(decldata(foo bool-mut) 42))", spec);
+  TEST_PARSE( "var(foo = 42:     )", "seq(data(decldata(foo int-mut) 42))", spec);
+  TEST_PARSE( "var(foo = 42      )", "seq(data(decldata(foo int-mut) 42))", spec);
 
   spec = "trivial example with implicit init value";
   //Toggling 1) 'keyword...;' vs 'keyword(...)' syntax

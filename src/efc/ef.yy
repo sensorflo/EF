@@ -47,8 +47,6 @@
   FUN "fun"
   VAL "val"
   VAR "var"
-  INT "int"
-  BOOL "bool"
   EQUAL "="
   COLON_EQUAL ":="
   COMMA ","
@@ -71,6 +69,7 @@
   ARROW "->"
 ;
 
+%token <ObjTypeFunda::EType> FUNDAMENTAL_TYPE
 %token <std::string> OP_LPAREN 
 %token <std::string> ID "identifier"
 %token <int> NUMBER "number"
@@ -174,7 +173,8 @@ param_decl
   ;
   
 type
-  : ID                                              { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
+  : FUNDAMENTAL_TYPE                                { $$ = new ObjTypeFunda($1); }
+  | ID                                              { assert(false); /* user defined names not yet supported; but I wanted to have ID already in grammar*/ }
   ;
 
 opt_colon

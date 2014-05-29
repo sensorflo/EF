@@ -59,9 +59,9 @@ not                 return yy::Parser::make_NOT(loc);
 and                 return yy::Parser::make_AND(loc);
 or                  return yy::Parser::make_OR(loc);
 
-  /* type keywords. They are technically just IDs */
-int                 return yy::Parser::make_ID(yytext, loc);
-bool                return yy::Parser::make_ID(yytext, loc);
+  /* type keywords */
+int                 return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eInt, loc);
+bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool, loc);
 
 
   /* literal number */
