@@ -74,6 +74,7 @@ ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& other) const {
        ++i, ++iother) {
     if (eFullMatch!=(*i)->match(**iother)) return eNoMatch;
   }
+  if (eFullMatch!=m_ret->match(*other.m_ret)) return eNoMatch;
   return eFullMatch;
 }
 

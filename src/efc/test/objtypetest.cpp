@@ -103,4 +103,14 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       new ObjTypeFunda(ObjTypeFunda::eInt)));
+
+  TEST_MATCH( "Only return type differs", ObjType::eNoMatch,
+    ObjTypeFun(
+      ObjTypeFun::createArgs(
+        new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new ObjTypeFunda(ObjTypeFunda::eBool)),
+    ObjTypeFun(
+      ObjTypeFun::createArgs(
+        new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new ObjTypeFunda(ObjTypeFunda::eInt)));
 }
