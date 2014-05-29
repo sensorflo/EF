@@ -56,8 +56,9 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
 class ObjTypeFunda : public ObjType {
 public:
   enum EType {
-    eInt
-    // later: bool, double etc
+    eInt,
+    eBool
+    // later: double etc
   };
 
   ObjTypeFunda(EType type, Qualifier qualifier = eNoQualifier) :

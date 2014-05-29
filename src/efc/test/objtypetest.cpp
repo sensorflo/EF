@@ -30,6 +30,8 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   // fundamental types
   EXPECT_EQ("int", ObjTypeFunda(ObjTypeFunda::eInt).toStr());
   EXPECT_EQ("int-mut", ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).toStr());
+  EXPECT_EQ("bool", ObjTypeFunda(ObjTypeFunda::eBool).toStr());
+  EXPECT_EQ("bool-mut", ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable).toStr());
 
   // function type
   EXPECT_EQ("fun((), int)",
@@ -41,6 +43,13 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       new ObjTypeFunda(ObjTypeFunda::eInt)
       ).toStr());
+  EXPECT_EQ("fun((bool, int), bool)",
+    ObjTypeFun(
+      ObjTypeFun::createArgs(
+        new ObjTypeFunda(ObjTypeFunda::eBool),
+        new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new ObjTypeFunda(ObjTypeFunda::eBool)
+      ).toStr());
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
@@ -48,6 +57,10 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   EXPECT_EQ(
     ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifier(),
     ObjTypeFunda(ObjTypeFunda::eInt).addQualifier(ObjType::eMutable).qualifier());
+
+  EXPECT_EQ(
+    ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable).qualifier(),
+    ObjTypeFunda(ObjTypeFunda::eBool).addQualifier(ObjType::eMutable).qualifier());
 
   EXPECT_EQ(
     ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifier(),
@@ -59,6 +72,12 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 
   TEST_MATCH( "", ObjType::eFullMatch,
     ObjTypeFunda(ObjTypeFunda::eInt), ObjTypeFunda(ObjTypeFunda::eInt) );
+
+  TEST_MATCH( "", ObjType::eFullMatch,
+    ObjTypeFunda(ObjTypeFunda::eBool), ObjTypeFunda(ObjTypeFunda::eBool) );
+
+  TEST_MATCH( "", ObjType::eNoMatch,
+    ObjTypeFunda(ObjTypeFunda::eBool), ObjTypeFunda(ObjTypeFunda::eInt) );
 
   TEST_MATCH( "", ObjType::eOnlyQualifierMismatches,
     ObjTypeFunda(ObjTypeFunda::eInt), ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable));
@@ -74,4 +93,14 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   TEST_MATCH( "", ObjType::eNoMatch,
     ObjTypeFun(ObjTypeFun::createArgs(new ObjTypeFunda(ObjTypeFunda::eInt)), new ObjTypeFunda(ObjTypeFunda::eInt)),
     ObjTypeFun(ObjTypeFun::createArgs(), new ObjTypeFunda(ObjTypeFunda::eInt)));
+
+  TEST_MATCH( "Only one argument differs in type", ObjType::eNoMatch,
+    ObjTypeFun(
+      ObjTypeFun::createArgs(
+        new ObjTypeFunda(ObjTypeFunda::eBool)),
+      new ObjTypeFunda(ObjTypeFunda::eInt)),
+    ObjTypeFun(
+      ObjTypeFun::createArgs(
+        new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new ObjTypeFunda(ObjTypeFunda::eInt)));
 }
