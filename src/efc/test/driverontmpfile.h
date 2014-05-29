@@ -2,6 +2,7 @@
 #define DRIVERONTMPFILE_H
 
 #include "../driver.h"
+#include "../env.h"
 #include <string>
 #include <fstream>
 #include <errno.h>

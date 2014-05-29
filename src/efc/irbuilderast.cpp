@@ -217,15 +217,7 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
 
 void IrBuilderAst::visit(const AstFunDef& funDef) {
   Function* functionIr = NULL;
-  SymbolTableEntry* stentry = NULL;
-    visit(funDef.decl(), functionIr, stentry);
-  assert(stentry);
-
-  if (stentry->isDefined()) {
-    throw runtime_error::runtime_error("Function '" +
-      funDef.decl().name() + "' is already defined.");
-  }
-  stentry->isDefined() = true;
+  visit(funDef.decl(), functionIr);
 
   m_env.pushScope(); 
   m_builder.SetInsertPoint(
@@ -266,41 +258,13 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
 
 void IrBuilderAst::visit(const AstFunDecl& funDecl) {
   Function* dummy;
-  SymbolTableEntry* dummy2;
-  visit(funDecl, dummy, dummy2);
+  visit(funDecl, dummy);
 }
 
-void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr,
-  SymbolTableEntry*& stentry) {
+void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr) {
   // currently rettype and type of args is always int
 
-  // create ObjTypeFun object out of funDecl
-  list<AstArgDecl*>::const_iterator iterArgsAst = funDecl.args().begin();
-  list<ObjType*>* argsObjType = new list<ObjType*>;
-  for (/*nop*/; iterArgsAst!=funDecl.args().end(); ++iterArgsAst) {
-    argsObjType->push_back( &((*iterArgsAst)->objType(true)) );
-  }
-  ObjTypeFun* objTypeFun = new ObjTypeFun(
-    argsObjType, new ObjTypeFunda(ObjTypeFunda::eInt));
-
-  // ensure function is in environment
-  Env::InsertRet insertRet = m_env.insert( funDecl.name(), NULL);
-  SymbolTable::iterator& stIter = insertRet.first;
-  SymbolTableEntry*& stIterStEntry = stIter->second;
-  bool wasAlreadyInMap = !insertRet.second;
-  if (!wasAlreadyInMap) {
-    stIterStEntry = new SymbolTableEntry(NULL, objTypeFun);
-  } else {
-    assert(stIterStEntry);
-    if ( ObjType::eFullMatch != stIterStEntry->objType().match(*objTypeFun) ) {
-      throw runtime_error::runtime_error("Idenifier '" + funDecl.name() +
-        "' declared or defined again with a different type.");
-    }
-    delete objTypeFun;
-  }
-  stentry = stIterStEntry;
-
-  // actually create IR
+  // create IR function with given name and signature
   vector<Type*> argsIr(funDecl.args().size(),
     Type::getInt32Ty(getGlobalContext()));
   Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
@@ -309,10 +273,19 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr,
   functionIr = Function::Create( functionTypeIr,
     Function::ExternalLinkage, funDecl.name(), m_module );
   assert(functionIr);
-  if ( functionIr->getName() != funDecl.name() ) {
+
+  // If the names differ (see condition of if statement below) that means a
+  // function with that name already existed, so LLVM automaticaly chose a new
+  // name. If the function already existed, blindly assume that this
+  // declaration's signature matches the signature of the previous declaration
+  // (to ensure that was the semantic analyzer's job) and just 'undo' creating
+  // a new function by erasing the new wrongly created function.
+  if (functionIr->getName() != funDecl.name()) {
     functionIr->eraseFromParent();
     functionIr = m_module->getFunction(funDecl.name());
   }
+
+  // set names of arguments of IR function
   else {
     list<AstArgDecl*>::const_iterator iterArgsAst = funDecl.args().begin();
     Function::arg_iterator iterArgsIr = functionIr->arg_begin();

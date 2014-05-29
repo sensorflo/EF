@@ -36,8 +36,7 @@ private:
   void visit(const AstFunCall& funCall);
   void visit(const AstFunDef& funDef);
   void visit(const AstFunDecl& funDecl);
-  void visit(const AstFunDecl& funDecl, llvm::Function*& functionIr,
-    SymbolTableEntry*& stentry);
+  void visit(const AstFunDecl& funDecl, llvm::Function*& functionIr);
   void visit(const AstDataDecl& dataDecl);
   void visit(const AstDataDecl& dataDecl, SymbolTableEntry*& stentry);
   void visit(const AstDataDef& dataDef);

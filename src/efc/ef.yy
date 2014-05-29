@@ -92,7 +92,7 @@
 %type <ObjType::Qualifier> valvar
 %type <RawAstDataDecl*> naked_data_decl
 %type <RawAstDataDef*> naked_data_def
-%type <AstFunDecl*> naked_fun_decl
+%type <std::pair<AstFunDecl*,SymbolTableEntry*>> naked_fun_decl
 %type <AstFunDef*> naked_fun_def
 %type <ObjType*> type opt_colon_type opt_arrow_type
 
@@ -241,8 +241,8 @@ expr_leaf
 
 
   /* declarations of code object */
-  | DECL        FUN naked_fun_decl SEMICOLON                         { $$ = $3; }
-  | DECL LPAREN FUN naked_fun_decl RPAREN                            { $$ = $4; }
+  | DECL        FUN naked_fun_decl SEMICOLON                         { $$ = ($3).first; }
+  | DECL LPAREN FUN naked_fun_decl RPAREN                            { $$ = ($4).first; }
 
   /* definitions of code object */
   | FUN        naked_fun_def SEMICOLON                               { $$ = $2; }
@@ -266,12 +266,12 @@ naked_data_def
   ;
 
 naked_fun_def
-  : naked_fun_decl EQUAL maybe_empty_seq                             { $$ = new AstFunDef($1, $3); }
+  : naked_fun_decl EQUAL maybe_empty_seq                             { $$ = parserExt.createAstFunDef(($1).first, $3, *(($1).second)); }
   ;
   
 naked_fun_decl
-  : ID opt_colon param_ct_list opt_arrow_type                        { $$ = new AstFunDecl($1, $3); }
-  | ID opt_colon                                                     { $$ = new AstFunDecl($1, new std::list<AstArgDecl*>()); }
+  : ID opt_colon param_ct_list opt_arrow_type                        { $$ = parserExt.createAstFunDecl($1, $3); }
+  | ID opt_colon                                                     { $$ = parserExt.createAstFunDecl($1); }
   ;
 
 naked_if

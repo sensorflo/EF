@@ -74,9 +74,9 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
   virtual const std::list<AstArgDecl*>& args() const { return *m_args; }
-private:
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
+private:
   const std::string m_name;
   /** We're the owner. Is garanteed to be non-null */
   const std::list<AstArgDecl*>* const m_args;

@@ -1,5 +1,6 @@
 #include "test.h"
 #include "../irbuilderast.h"
+#include "../parserext.h"
 #include "llvm/IR/Module.h"
 #include <memory>
 using namespace testing;
@@ -517,21 +518,6 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    multiple_function_declarations_with_same_name_BUT_different_signature,
-    buildAndRunModule,
-    throws)) {
-  auto_ptr<AstSeq> astSeq(
-    new AstSeq(
-      new AstFunDecl("foo"),
-      new AstFunDecl(
-        "foo",
-        new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
-      new AstNumber(42)));
-  TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
-}
-
-TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_declaration_and_a_matching_function_definition,
     buildAndRunModule,
     succeeds)) {
@@ -549,40 +535,29 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     throws)) {
   string spec = "First function type, then fundamental type";
   {
+    TestingIrBuilderAst UUT;
+    ParserExt parserExt(*UUT.m_env);
     auto_ptr<AstSeq> astSeq(
       new AstSeq(
-        new AstFunDecl("foo"),
+        parserExt.createAstFunDecl("foo").first,
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)));
-    TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) <<
       amendSpec(spec) << amendAst(astSeq);
   }
 
   spec = "First fundamental type, then function type";
   {
+    TestingIrBuilderAst UUT;
+    ParserExt parserExt(*UUT.m_env);
     auto_ptr<AstSeq> astSeq(
       new AstSeq(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstFunDecl("foo"),
+        parserExt.createAstFunDecl("foo").first,
         new AstNumber(42)));
-    TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) <<
       amendSpec(spec) << amendAst(astSeq);
   }
-}
-
-TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    double_definition_of_a_function,
-    buildAndRunModule,
-    throws)) {
-  auto_ptr<AstSeq> astSeq(
-    new AstSeq(
-      new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(77))),
-      new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(77))),
-      new AstFunCall("foo")));
-  TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
