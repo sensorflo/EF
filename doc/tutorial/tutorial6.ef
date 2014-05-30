@@ -45,8 +45,8 @@ foo1 := if x: y else z;
 # 
 # the following three lines are equivalent
 val foo2 =  if x: y else z; + 3 ;
-val foo2 =  if(x: y else z) + 3 ;
-val foo3 = {if(x: y else z) + 3};
+val foo3 =  if(x: y else z) + 3 ;
+val foo4 = {if(x: y else z) + 3};
 
 # Also operators can be written in the call syntax.
 # operator syntax       call syntax
