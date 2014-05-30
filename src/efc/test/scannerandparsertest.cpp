@@ -185,16 +185,16 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_operator_in_call_syntax,
     parse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "!(x)", "seq(not(seq(x)))", "");
-  TEST_PARSE( "not(x)", "seq(not(seq(x)))", "");
-  TEST_PARSE( "and(x,y,z)", "seq(and(seq(x) seq(y) seq(z)))", "");
-  TEST_PARSE( "&&(x,y,z)", "seq(and(seq(x) seq(y) seq(z)))", "");
-  TEST_PARSE( "or(x,y,z)", "seq(or(seq(x) seq(y) seq(z)))", "");
-  TEST_PARSE( "||(x,y,z)", "seq(or(seq(x) seq(y) seq(z)))", "");
+  TEST_PARSE( "!(x)", "seq(not(x))", "");
+  TEST_PARSE( "not(x)", "seq(not(x))", "");
+  TEST_PARSE( "and(x,y,z)", "seq(and(x y z))", "");
+  TEST_PARSE( "&&(x,y,z)", "seq(and(x y z))", "");
+  TEST_PARSE( "or(x,y,z)", "seq(or(x y z))", "");
+  TEST_PARSE( "||(x,y,z)", "seq(or(x y z))", "");
   TEST_PARSE( "+()", "seq(+())", "");
-  TEST_PARSE( "-(1)", "seq(-(seq(1)))", "");
-  TEST_PARSE( "*(1,2)", "seq(*(seq(1) seq(2)))", "");
-  TEST_PARSE( "/(1,2,3)", "seq(/(seq(1) seq(2) seq(3)))", "");
+  TEST_PARSE( "-(1)", "seq(-(1))", "");
+  TEST_PARSE( "*(1,2)", "seq(*(1 2))", "");
+  TEST_PARSE( "/(1,2,3)", "seq(/(1 2 3))", "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -305,8 +305,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     parse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "foo()", "seq(foo())", "");
-  TEST_PARSE( "foo(42)", "seq(foo(seq(42)))", "");
-  TEST_PARSE( "foo(42,77)", "seq(foo(seq(42) seq(77)))", "");
+  TEST_PARSE( "foo(42)", "seq(foo(42))", "");
+  TEST_PARSE( "foo(42,77)", "seq(foo(42 77))", "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

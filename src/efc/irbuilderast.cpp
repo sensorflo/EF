@@ -123,9 +123,9 @@ void IrBuilderAst::visit(const AstSeq& seq) {
 }
 
 void IrBuilderAst::visit(const AstOperator& op) {
-  const list<AstNode*>& argschilds = op.argschilds();
-  list<AstNode*>::const_iterator iter = argschilds.begin();
-  Value* result = NULL;
+  const list<AstValue*>& argschilds = op.argschilds();
+  list<AstValue*>::const_iterator iter = argschilds.begin();
+  Value* resultIr = NULL;
   AstOperator::EOperation op_ = op.op();
 
   // Determine initial value of chain. Some operators start with constants,
@@ -136,32 +136,32 @@ void IrBuilderAst::visit(const AstOperator& op) {
     break;
   case AstOperator::eSub:
     if (argschilds.size()<=1) {
-      result = ConstantInt::get( getGlobalContext(), APInt(32, 0));
+      resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 0));
     } else {
-      const AstNode& lhsNode = **(iter++);
-      lhsNode.accept(*this);
-      result /*aka lhs*/ = valuesBackAndPop();
+      const AstValue& lhsAst = **(iter++);
+      lhsAst.accept(*this);
+      resultIr /*aka lhs*/ = valuesBackAndPop();
     }
     break;
   case AstOperator::eOr:
-    result = ConstantInt::get( getGlobalContext(), APInt(1, 0));
+    resultIr = ConstantInt::get( getGlobalContext(), APInt(1, 0));
     break;
   case AstOperator::eAnd:
-    result = ConstantInt::get( getGlobalContext(), APInt(1, 1));
+    resultIr = ConstantInt::get( getGlobalContext(), APInt(1, 1));
     break;
   case AstOperator::eAdd:
-    result = ConstantInt::get( getGlobalContext(), APInt(32, 0));
+    resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 0));
     break;
   case AstOperator::eMul:
-    result = ConstantInt::get( getGlobalContext(), APInt(32, 1));
+    resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 1));
     break;
   case AstOperator::eAssign: // fallthrough
   case AstOperator::eDiv: {
     if ( op_==AstOperator::eAssign ) { assert(argschilds.size()==2); }
     if ( op_==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
-    const AstNode& lhsNode = **(iter++);
-    lhsNode.accept(*this);
-    result /*aka lhs*/ = valuesBackAndPop();
+    const AstValue& lhsAst = **(iter++);
+    lhsAst.accept(*this);
+    resultIr /*aka lhs*/ = valuesBackAndPop();
     break;
   }
   default:
@@ -170,30 +170,30 @@ void IrBuilderAst::visit(const AstOperator& op) {
 
   // Iterate trough all operands
   for (; iter!=argschilds.end(); ++iter) {
-    const AstNode& operandNode = **iter;
-    operandNode.accept(*this);
-    Value* operand = valuesBackAndPop();
-    Value* operandBool = m_builder.CreateICmpNE(operand,
+    const AstValue& operandAst = **iter;
+    operandAst.accept(*this);
+    Value* operandIr = valuesBackAndPop();
+    Value* operandIrBool = m_builder.CreateICmpNE(operandIr,
       ConstantInt::get( getGlobalContext(), APInt(32, 0)));
     switch (op_) {
-    case AstOperator::eAssign   : m_builder.CreateStore(operand, result);
-                                  result = operand; break;
-    case AstOperator::eNot      : result = m_builder.CreateNot(operandBool, "nottmp"); break;
-    case AstOperator::eAnd      : result = m_builder.CreateAnd(result, operandBool, "andtmp"); break;
-    case AstOperator::eOr       : result = m_builder.CreateOr(result, operandBool, "ortmp"); break;
-    case AstOperator::eSub      : result = m_builder.CreateSub(result, operand, "subtmp"); break;
-    case AstOperator::eAdd      : result = m_builder.CreateAdd(result, operand, "addtmp"); break;
-    case AstOperator::eMul      : result = m_builder.CreateMul(result, operand, "multmp"); break;
-    case AstOperator::eDiv      : result = m_builder.CreateSDiv(result, operand, "divtmp"); break;
+    case AstOperator::eAssign   :            m_builder.CreateStore (operandIr,      resultIr                );
+                                  resultIr = operandIr; break;
+    case AstOperator::eNot      : resultIr = m_builder.CreateNot   (operandIrBool,                 "nottmp" ); break;
+    case AstOperator::eAnd      : resultIr = m_builder.CreateAnd   (resultIr,       operandIrBool, "andtmp" ); break;
+    case AstOperator::eOr       : resultIr = m_builder.CreateOr    (resultIr,       operandIrBool, "ortmp"  ); break;
+    case AstOperator::eSub      : resultIr = m_builder.CreateSub   (resultIr,       operandIr,     "subtmp" ); break;
+    case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (resultIr,       operandIr,     "addtmp" ); break;
+    case AstOperator::eMul      : resultIr = m_builder.CreateMul   (resultIr,       operandIr,     "multmp" ); break;
+    case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (resultIr,       operandIr,     "divtmp" ); break;
     default: assert(false); break;
     }
   }
 
-  assert(result);
+  assert(resultIr);
   if (op_==AstOperator::eNot || op_==AstOperator::eAnd || op_==AstOperator::eOr) {
-    result = m_builder.CreateZExt(result, Type::getInt32Ty(getGlobalContext()));
+    resultIr = m_builder.CreateZExt(resultIr, Type::getInt32Ty(getGlobalContext()));
   }
-  m_values.push_back(result);
+  m_values.push_back(resultIr);
 }
 
 void IrBuilderAst::visit(const AstNumber& number) {
@@ -303,14 +303,14 @@ void IrBuilderAst::visit(const AstFunCall& funCall) {
     throw runtime_error::runtime_error("Function not defined");
   }
 
-  const list<AstNode*>& argsAst = funCall.args().childs();
+  const list<AstValue*>& argsAst = funCall.args().childs();
 
   if (callee->arg_size() != argsAst.size()) {
     throw runtime_error::runtime_error("Number of arguments do not match");
   }
 
   vector<Value*> argsIr;
-  for ( list<AstNode*>::const_iterator i = argsAst.begin();
+  for ( list<AstValue*>::const_iterator i = argsAst.begin();
         i != argsAst.end(); ++i ) {
     (*i)->accept(*this);
     argsIr.push_back(valuesBackAndPop());

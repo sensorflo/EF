@@ -84,7 +84,7 @@
 
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> maybe_empty_seq seq pure_seq seq_without_comma opt_else
+%type <AstSeq*> maybe_empty_seq seq pure_seq opt_else
 %type <AstValue*> expr expr_leaf naked_if
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
@@ -131,9 +131,6 @@ maybe_empty_seq
   | seq                                             { std::swap($$,$1); }
   ;
 
-/* the _only_ difference between seq and seq_without_comma is that in the
-former commas as separator are optionally allowed, while in the later they are
-disallowed */
 seq
   : pure_seq opt_comma                              { std::swap($$,$1); }
   ;
@@ -143,19 +140,14 @@ pure_seq
   | pure_seq opt_comma expr                         { $$ = ($1)->Add($3); }
   ;
 
-seq_without_comma
-  : expr                                            { $$ = new AstSeq($1); }
-  | seq_without_comma expr                          { $$ = ($1)->Add($2); } 
-  ;
-
 ct_list
   : %empty                                          { $$ = new AstCtList(); }
   | pure_ct_list opt_comma                          { std::swap($$,$1); }
   ;
 
 pure_ct_list
-  : seq_without_comma                               { $$ = new AstCtList($1); }
-  | pure_ct_list COMMA seq_without_comma            { $$ = ($1)->Add($3); }
+  : expr                                            { $$ = new AstCtList($1); }
+  | pure_ct_list COMMA expr                         { $$ = ($1)->Add($3); }
   ;
 
 param_ct_list

@@ -165,22 +165,22 @@ AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   assert(m_args);
 }
 
-AstOperator::AstOperator(char op, AstNode* operand1, AstNode* operand2,
-  AstNode* operand3) :
+AstOperator::AstOperator(char op, AstValue* operand1, AstValue* operand2,
+  AstValue* operand3) :
   m_op(static_cast<EOperation>(op)),
   m_args(new AstCtList(operand1, operand2, operand3)) {
   assert(m_args);
 }
 
-AstOperator::AstOperator(const string& op, AstNode* operand1, AstNode* operand2,
-  AstNode* operand3) :
+AstOperator::AstOperator(const string& op, AstValue* operand1, AstValue* operand2,
+  AstValue* operand3) :
   m_op(toEOperation(op)),
   m_args(new AstCtList(operand1, operand2, operand3)) {
   assert(m_args);
 }
 
-AstOperator::AstOperator(AstOperator::EOperation op, AstNode* operand1, AstNode* operand2,
-  AstNode* operand3) :
+AstOperator::AstOperator(AstOperator::EOperation op, AstValue* operand1, AstValue* operand2,
+  AstValue* operand3) :
   m_op(op),
   m_args(new AstCtList(operand1, operand2, operand3)) {
   assert(m_args);
@@ -197,7 +197,7 @@ basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-const list<AstNode*>& AstOperator::argschilds() const {
+const list<AstValue*>& AstOperator::argschilds() const {
   return m_args->childs();
 }
 
@@ -345,31 +345,31 @@ basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) const {
 }
 
 /** When child is NULL it is ignored */
-AstCtList::AstCtList(AstNode* child) {
+AstCtList::AstCtList(AstValue* child) {
   if (child) { m_childs.push_back(child); }
 }
 
 /** NULL childs are ignored.*/
-AstCtList::AstCtList(AstNode* child1, AstNode* child2, AstNode* child3) {
+AstCtList::AstCtList(AstValue* child1, AstValue* child2, AstValue* child3) {
   if (child1) { m_childs.push_back(child1); }
   if (child2) { m_childs.push_back(child2); }
   if (child3) { m_childs.push_back(child3); }
 }
 
 AstCtList::~AstCtList() {
-  for (list<AstNode*>::iterator i=m_childs.begin(); i!=m_childs.end(); ++i) {
+  for (list<AstValue*>::iterator i=m_childs.begin(); i!=m_childs.end(); ++i) {
     delete (*i);
   }
 }
 
 /** When child is NULL it is ignored */
-AstCtList* AstCtList::Add(AstNode* child) {
+AstCtList* AstCtList::Add(AstValue* child) {
   if (child) { m_childs.push_back(child); }
   return this;
 }
 
 /** NULL childs are ignored. */
-AstCtList* AstCtList::Add(AstNode* child1, AstNode* child2, AstNode* child3) {
+AstCtList* AstCtList::Add(AstValue* child1, AstValue* child2, AstValue* child3) {
   Add(child1);
   Add(child2);
   Add(child3);
@@ -377,7 +377,7 @@ AstCtList* AstCtList::Add(AstNode* child1, AstNode* child2, AstNode* child3) {
 }
 
 basic_ostream<char>& AstCtList::printTo(basic_ostream<char>& os) const {
-  for (list<AstNode*>::const_iterator i=m_childs.begin();
+  for (list<AstValue*>::const_iterator i=m_childs.begin();
        i!=m_childs.end(); ++i) {
     if (i!=m_childs.begin()) { os << " "; }
     (*i)->printTo(os);

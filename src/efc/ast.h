@@ -180,17 +180,17 @@ public:
   AstOperator(char op, AstCtList* args);
   AstOperator(const std::string& op, AstCtList* args);
   AstOperator(EOperation op, AstCtList* args);
-  AstOperator(char op, AstNode* operand1 = NULL, AstNode* operand2 = NULL,
-    AstNode* operand3 = NULL);
-  AstOperator(const std::string& op, AstNode* operand1 = NULL, AstNode* operand2 = NULL,
-    AstNode* operand3 = NULL);
-  AstOperator(EOperation op, AstNode* operand1 = NULL, AstNode* operand2 = NULL,
-    AstNode* operand3 = NULL);
+  AstOperator(char op, AstValue* operand1 = NULL, AstValue* operand2 = NULL,
+    AstValue* operand3 = NULL);
+  AstOperator(const std::string& op, AstValue* operand1 = NULL, AstValue* operand2 = NULL,
+    AstValue* operand3 = NULL);
+  AstOperator(EOperation op, AstValue* operand1 = NULL, AstValue* operand2 = NULL,
+    AstValue* operand3 = NULL);
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   EOperation op() const { return m_op; }
-  const std::list<AstNode*>& argschilds() const;
+  const std::list<AstValue*>& argschilds() const;
 private:
   static EOperation toEOperation(const std::string& op);
   AstOperator(const AstOperator&);
@@ -251,20 +251,20 @@ private:
 
 class AstCtList : public AstNode {
 public:
-  AstCtList(AstNode* child1 = NULL);
-  AstCtList(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
+  AstCtList(AstValue* child1 = NULL);
+  AstCtList(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   ~AstCtList();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
-  AstCtList* Add(AstNode* child);
-  AstCtList* Add(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
-  const std::list<AstNode*>& childs() const { return m_childs; }
+  AstCtList* Add(AstValue* child);
+  AstCtList* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
+  const std::list<AstValue*>& childs() const { return m_childs; }
 private:
   AstCtList(const AstCtList&);
   AstCtList& operator=(const AstCtList&);
 
   /** We're the owner of the pointees. Pointers are garanteed to be non null*/
-  std::list<AstNode*> m_childs;
+  std::list<AstValue*> m_childs;
 };
 
 #endif
