@@ -68,6 +68,9 @@ runtest runefctest: out/efctest
 out/efctest.o: test/efctest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
+out/tutorialstest.o: test/tutorialstest.cpp $(GEN_HEADERS) *.h test/*.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 out/test.o: test/test.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
@@ -95,7 +98,7 @@ out/envtest.o: test/envtest.cpp $(GEN_HEADERS) *.h test/*.h
 out/objtypetest.o: test/objtypetest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efctest: out/scanner.o out/objtype.o out/ast.o out/env.o out/irbuilderast.o out/parser.o out/parserext.o out/driver.o out/objtypetest.o out/envtest.o out/asttest.o out/parserexttest.o out/scannertest.o out/scannerandparsertest.o out/irbuilderasttest.o out/gtestprinter.o out/test.o out/efctest.o out/libgtest.a
+out/efctest: out/scanner.o out/objtype.o out/ast.o out/env.o out/irbuilderast.o out/parser.o out/parserext.o out/driver.o out/objtypetest.o out/envtest.o out/asttest.o out/parserexttest.o out/scannertest.o out/scannerandparsertest.o out/irbuilderasttest.o out/gtestprinter.o out/test.o out/tutorialstest.o out/efctest.o out/libgtest.a
 	$(CXX)  $(LDFLAGS) -pthread -o $@ $^ $(LIBS)
 
 
