@@ -210,7 +210,7 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
   }
   assert( stentry->valueIr() );
   m_values.push_back(
-    symbol.valueCategory()==AstSymbol::eLValue || stentry->objType().qualifier()==ObjType::eNoQualifier ?
+    symbol.access()==AstSymbol::eWrite || stentry->objType().qualifier()==ObjType::eNoQualifier ?
     stentry->valueIr() :
     m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str()));
 }
@@ -474,5 +474,5 @@ AllocaInst* IrBuilderAst::createEntryBlockAlloca(Function *functionIr,
   IRBuilder<> irBuilder(&functionIr->getEntryBlock(),
     functionIr->getEntryBlock().begin());
   return m_builder.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0,
-    varName.c_str());
+    (varName + "__alloca").c_str());
 }

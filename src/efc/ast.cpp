@@ -13,9 +13,9 @@ basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {
   return os << m_value;
 }
 
-AstSymbol::AstSymbol(const string* name, ValueCategory valueCategory) :
+AstSymbol::AstSymbol(const string* name, Access access) :
   m_name(name ? name : new string("<unknown_name>")),
-  m_valueCategory(valueCategory) {
+  m_access(access) {
   assert(m_name);
 }
 

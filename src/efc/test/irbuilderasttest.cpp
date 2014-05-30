@@ -479,7 +479,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstSeq(
           new AstOperator('=',
-            new AstSymbol(new string("x"), AstSymbol::eLValue),
+            new AstSymbol(new string("x"), AstSymbol::eWrite),
             new AstOperator('+',
               new AstSymbol(new string("x")),
               new AstNumber(1))),
@@ -654,11 +654,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    a_data_definition_of_foo_being_initialized_with_x,
+    a_data_object_definition_of_foo_being_initialized_with_x,
     buildAndRunModule,
     returns_x)) {
 
-  string spec = "value/const/immutable data";
+  string spec = "value (aka immutable (aka const) data obj)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
@@ -666,7 +666,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstSeq(new AstNumber(42)))),
     42, spec);
 
-  spec = "variable/mutable data";
+  spec = "variable (aka mutable data obj)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
@@ -676,11 +676,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    foo_defined_as_data_followed_by_a_simple_expression_referencing_foo,
+    foo_defined_as_data_object_followed_by_a_simple_expression_referencing_foo,
     buildAndRunModule,
     returns_result_of_that_expression)) {
 
-  string spec = "value/const/immutable data";
+  string spec = "value (aka immutable (aka const) data obj)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
@@ -691,7 +691,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstNumber(77))),
     42+77, spec);
 
-  spec = "variable/mutable data";
+  spec = "variable (aka mutable data obj)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
@@ -715,7 +715,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstSeq(new AstNumber(42))),
       new AstOperator('=',
-        new AstSymbol(new string("foo"), AstSymbol::eLValue),
+        new AstSymbol(new string("foo"), AstSymbol::eWrite),
         new AstNumber(77))),
     77, spec);
 
@@ -726,7 +726,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstSeq(new AstNumber(42))),
       new AstOperator('=',
-        new AstSymbol(new string("foo"), AstSymbol::eLValue),
+        new AstSymbol(new string("foo"), AstSymbol::eWrite),
         new AstNumber(77)),
       new AstSymbol(new string("foo"))),
     77, spec);
@@ -791,7 +791,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
         new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstSeq(
           new AstOperator('=',
-            new AstSymbol(new string("x"), AstSymbol::eLValue),
+            new AstSymbol(new string("x"), AstSymbol::eWrite),
             new AstNumber(77)))),
       new AstSymbol(new string("x"))),
     42, spec);
