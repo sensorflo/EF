@@ -238,6 +238,8 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
   Function::arg_iterator iterIr = functionIr->arg_begin();
   list<AstArgDecl*>::const_iterator iterAst = funDef.decl().args().begin();
   for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
+    // blindly assumes that ObjType::Qualifier is eMutable since currently
+    // that is always the case
     const string& argName = (*iterAst)->name();
     AllocaInst *alloca = createEntryBlockAlloca(functionIr, argName);
     m_builder.CreateStore(iterIr, alloca);

@@ -107,7 +107,7 @@ private:
 class AstArgDecl : public AstDataDecl {
 public:
   AstArgDecl(const std::string& name, ObjType* objType) :
-    AstDataDecl(name, objType, eFunArg) {};
+    AstDataDecl(name, &objType->addQualifier(ObjType::eMutable), eFunArg) {};
 };
 
 class AstDataDef : public AstValue {
