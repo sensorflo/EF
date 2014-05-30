@@ -209,10 +209,21 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
       "' not declared");
   }
   assert( stentry->valueIr() );
-  m_values.push_back(
-    symbol.access()==AstSymbol::eWrite || stentry->objType().qualifier()==ObjType::eNoQualifier ?
-    stentry->valueIr() :
-    m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str()));
+
+  Value* value = NULL;
+  if (stentry->objType().qualifier()&ObjType::eMutable) {
+    // stentry->valueIr() is the pointer returned by alloca corresponding to
+    // the symbol
+    if (symbol.access()==AstSymbol::eWrite) {
+      value = stentry->valueIr(); 
+    } else {
+      value = m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str());
+    }
+  } else {
+    // stentry->valueIr() is directly the value of the symbol
+    value = stentry->valueIr();
+  }
+  m_values.push_back(value);
 }
 
 void IrBuilderAst::visit(const AstFunDef& funDef) {
