@@ -10,7 +10,7 @@ namespace llvm {
   class BasicBlock;
 }
 
-class IrBuilderAst : public AstVisitor {
+class IrBuilderAst {
 public:
   static void staticOneTimeInit();
   IrBuilderAst(Env& env);
@@ -18,6 +18,18 @@ public:
   void buildModule(const AstSeq& seq);
   int buildAndRunModule(const AstSeq& seq);
   
+  llvm::Value*    visit(const AstSeq& seq, Access access = eRead);
+  llvm::Value*    visit(const AstOperator& op, Access access = eRead);
+  llvm::Value*    visit(const AstNumber& number, Access access = eRead);
+  llvm::Value*    visit(const AstSymbol& symbol, Access access = eRead);
+  llvm::Value*    visit(const AstFunCall& funCall, Access access = eRead);
+  llvm::Function* visit(const AstFunDef& funDef);
+  llvm::Function* visit(const AstFunDecl& funDecl);
+  llvm::Value*    visit(const AstDataDecl& dataDecl, Access access = eRead);
+  llvm::Value*    visit(const AstDataDecl& dataDecl, SymbolTableEntry*& stentry);
+  llvm::Value*    visit(const AstDataDef& dataDef, Access access = eRead);
+  llvm::Value*    visit(const AstIf& if_, Access access = eRead);
+
 private:
   friend class TestingIrBuilderAst;
   
@@ -28,27 +40,9 @@ private:
   int jitExecFunction1Arg(const std::string& name, int arg1);
   int jitExecFunction2Arg(const std::string& name, int arg1, int arg2);
 
-  void visit(const AstSeq& seq);
-  void visit(const AstCtList& ctList) {};
-  void visit(const AstOperator& op);
-  void visit(const AstNumber& number);
-  void visit(const AstSymbol& symbol);
-  void visit(const AstFunCall& funCall);
-  void visit(const AstFunDef& funDef);
-  void visit(const AstFunDecl& funDecl);
-  void visit(const AstFunDecl& funDecl, llvm::Function*& functionIr);
-  void visit(const AstDataDecl& dataDecl);
-  void visit(const AstDataDecl& dataDecl, SymbolTableEntry*& stentry);
-  void visit(const AstDataDef& dataDef);
-  void visit(const AstIf& if_);
-
-  llvm::Value* valuesBackAndPop();
-  llvm::Value* valuesBack();
-  llvm::Function* valuesBackToFunction();
   llvm::AllocaInst* createEntryBlockAlloca(llvm::Function* functionIr,
     const std::string& varName);
 
-  std::list<llvm::Value*> m_values;
   llvm::IRBuilder<> m_builder;
   /** m_executionEngine is the owner */
   llvm::Module* m_module;
@@ -57,7 +51,6 @@ private:
   llvm::ExecutionEngine* m_executionEngine;
   llvm::Function* m_mainFunction;
   llvm::BasicBlock* m_mainBasicBlock;
-
   Env& m_env;
 };
 

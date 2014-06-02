@@ -208,7 +208,7 @@ expr
   | EXCL expr                                       { $$ = new AstOperator(AstOperator::eNot, $2); }
 
   /* binary operators */
-  | ID   EQUAL       expr         %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1), AstSymbol::eWrite), $3); }
+  | ID   EQUAL       expr         %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1)), $3); }
   | ID   COLON_EQUAL expr         %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt)), $3); }
   | expr OR          expr                           { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | expr PIPE_PIPE   expr                           { $$ = new AstOperator(AstOperator::eOr, $1, $3); }

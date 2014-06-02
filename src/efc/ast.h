@@ -1,6 +1,8 @@
 #ifndef AST_H
 #define AST_H
 #include "objtype.h"
+#include "llvm/IR/Value.h"
+#include "llvm/IR/Function.h"
 #include <string>
 #include <list>
 #include <iostream>
@@ -19,6 +21,10 @@ class AstDataDecl;
 class AstArgDecl;
 class AstDataDef;
 class AstIf;
+
+class IrBuilderAst;
+
+enum Access { eRead, eWrite };
 
 class AstVisitor {
 public:
@@ -40,6 +46,7 @@ class AstNode {
 public:
   virtual ~AstNode() {};
   virtual void accept(AstVisitor& visitor) const =0;
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const = 0;
   /** Similar to printTo; the resulting text is returned as string. */
   virtual std::string toStr() const;
   /** Print node recursively in its canonical form to given stream */
@@ -54,6 +61,7 @@ public:
   AstFunDef(AstFunDecl* decl, AstSeq* body);
   virtual ~AstFunDef();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); }
+  virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstFunDecl& decl() const { return *m_decl; }
   virtual const AstSeq& body() const { return *m_body; }
@@ -71,6 +79,7 @@ public:
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   ~AstFunDecl();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
   virtual const std::list<AstArgDecl*>& args() const { return *m_args; }
@@ -87,6 +96,7 @@ public:
   AstDataDecl(const std::string& name, ObjType* objType);
   ~AstDataDecl();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
   virtual ObjType& objType(bool stealOwnership = false) const;
@@ -115,6 +125,7 @@ public:
   AstDataDef(AstDataDecl* decl, AstValue* initValue = NULL);
   ~AstDataDef();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstDataDecl& decl() const { return *m_decl; }
   virtual const AstValue* initValue() const { return m_initValue; }
@@ -130,6 +141,7 @@ class AstNumber : public AstValue {
 public:
   AstNumber(int value) : m_value(value) {}
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   int value() const { return m_value; }
 private:
@@ -138,23 +150,22 @@ private:
 
 class AstSymbol : public AstValue {
 public:
-  enum Access { eRead, eWrite };
-  AstSymbol(const std::string* name, Access access = eRead );
+  AstSymbol(const std::string* name);
   virtual ~AstSymbol();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   const std::string& name() const { return *m_name; }
-  const Access access() const { return m_access; }
 private:
   /** We're the owner. Is garanteed to be non-null */
   const std::string* const m_name;
-  const Access m_access;
 };
 
 class AstFunCall : public AstValue {
 public:
   AstFunCall(const std::string& name, AstCtList* args = NULL);
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   virtual const std::string& name () const { return m_name; }
   virtual const AstCtList& args () const { return *m_args; }
@@ -188,6 +199,7 @@ public:
     AstValue* operand3 = NULL);
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   EOperation op() const { return m_op; }
   const std::list<AstValue*>& argschilds() const;
@@ -218,6 +230,7 @@ public:
   AstIf(AstValue* cond, AstSeq* action, AstSeq* elseAction = NULL);
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   const std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
   const AstSeq* elseAction() const { return m_elseAction; }
@@ -237,6 +250,7 @@ public:
   AstSeq(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
   ~AstSeq();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); }
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   AstSeq* Add(AstNode* child);
   AstSeq* Add(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
@@ -255,6 +269,7 @@ public:
   AstCtList(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   ~AstCtList();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   AstCtList* Add(AstValue* child);
   AstCtList* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);

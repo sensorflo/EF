@@ -479,7 +479,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstSeq(
           new AstOperator('=',
-            new AstSymbol(new string("x"), AstSymbol::eWrite),
+            new AstSymbol(new string("x")),
             new AstOperator('+',
               new AstSymbol(new string("x")),
               new AstNumber(1))),
@@ -715,7 +715,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstSeq(new AstNumber(42))),
       new AstOperator('=',
-        new AstSymbol(new string("foo"), AstSymbol::eWrite),
+        new AstSymbol(new string("foo")),
         new AstNumber(77))),
     77, spec);
 
@@ -726,7 +726,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstSeq(new AstNumber(42))),
       new AstOperator('=',
-        new AstSymbol(new string("foo"), AstSymbol::eWrite),
+        new AstSymbol(new string("foo")),
         new AstNumber(77)),
       new AstSymbol(new string("foo"))),
     77, spec);
@@ -791,7 +791,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
         new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstSeq(
           new AstOperator('=',
-            new AstSymbol(new string("x"), AstSymbol::eWrite),
+            new AstSymbol(new string("x")),
             new AstNumber(77)))),
       new AstSymbol(new string("x"))),
     42, spec);

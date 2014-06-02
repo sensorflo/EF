@@ -46,14 +46,7 @@ IrBuilderAst::~IrBuilderAst() {
 }
 
 void IrBuilderAst::buildModule(const AstSeq& seq) {
-  // this kicks off ast traversal
-  seq.accept(*this);
-
-  // The single last value remaining in m_values is the return value of the
-  // implicit main method.
-  m_builder.CreateRet(valuesBackAndPop());
-  assert(m_values.empty()); // Ensure that it was really the last value
-
+  m_builder.CreateRet(visit(seq));
   verifyFunction(*m_mainFunction);
 }
 
@@ -101,28 +94,22 @@ int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int ar
   return functionPtr(arg1, arg2);
 }
 
-void IrBuilderAst::visit(const AstSeq& seq) {
+Value* IrBuilderAst::visit(const AstSeq& seq, Access) {
   const list<AstNode*>& childs = seq.childs();
   if (childs.empty()) {
     throw runtime_error::runtime_error("Empty sequence not allowed (yet)");
   }
+  // Evalue all nodes of the sequence. The value of the sequence is the value
+  // of the last node.
+  Value* ret = NULL;
   for (list<AstNode*>::const_iterator i = childs.begin();
        i!=childs.end(); ++i) {
-    // Two consequtive childs are like the comma operator in C: the lhs is
-    // evaluated, but its value is droped, and the value of the binary comma
-    // operator expression is the evaluated rhs. lhs is the *i of the previous
-    // iteration, and rhs is the *i of the current iteration.
-    if (i!=childs.begin()) {
-      assert(!m_values.empty());
-      m_values.pop_back(); // drop lhs
-    }
-    // evaluate rhs (lhs in the first iteration). will internally push one
-    // single value on the values stack
-    (*i)->accept(*this);
+    ret = (*i)->accept(*this);
   }
+  return ret;
 }
 
-void IrBuilderAst::visit(const AstOperator& op) {
+Value* IrBuilderAst::visit(const AstOperator& op, Access) {
   const list<AstValue*>& argschilds = op.argschilds();
   list<AstValue*>::const_iterator iter = argschilds.begin();
   Value* resultIr = NULL;
@@ -139,8 +126,7 @@ void IrBuilderAst::visit(const AstOperator& op) {
       resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 0));
     } else {
       const AstValue& lhsAst = **(iter++);
-      lhsAst.accept(*this);
-      resultIr /*aka lhs*/ = valuesBackAndPop();
+      resultIr = lhsAst.accept(*this);
     }
     break;
   case AstOperator::eOr:
@@ -160,8 +146,7 @@ void IrBuilderAst::visit(const AstOperator& op) {
     if ( op_==AstOperator::eAssign ) { assert(argschilds.size()==2); }
     if ( op_==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
     const AstValue& lhsAst = **(iter++);
-    lhsAst.accept(*this);
-    resultIr /*aka lhs*/ = valuesBackAndPop();
+    resultIr = lhsAst.accept(*this, op_==AstOperator::eAssign ? eWrite : eRead);
     break;
   }
   default:
@@ -171,10 +156,10 @@ void IrBuilderAst::visit(const AstOperator& op) {
   // Iterate trough all operands
   for (; iter!=argschilds.end(); ++iter) {
     const AstValue& operandAst = **iter;
-    operandAst.accept(*this);
-    Value* operandIr = valuesBackAndPop();
+    Value* operandIr = operandAst.accept(*this, eRead);
     Value* operandIrBool = m_builder.CreateICmpNE(operandIr,
       ConstantInt::get( getGlobalContext(), APInt(32, 0)));
+
     switch (op_) {
     case AstOperator::eAssign   :            m_builder.CreateStore (operandIr,      resultIr                );
                                   resultIr = operandIr; break;
@@ -193,16 +178,14 @@ void IrBuilderAst::visit(const AstOperator& op) {
   if (op_==AstOperator::eNot || op_==AstOperator::eAnd || op_==AstOperator::eOr) {
     resultIr = m_builder.CreateZExt(resultIr, Type::getInt32Ty(getGlobalContext()));
   }
-  m_values.push_back(resultIr);
+  return resultIr;
 }
 
-void IrBuilderAst::visit(const AstNumber& number) {
-  Value* valueIr = ConstantInt::get( getGlobalContext(),
-    APInt(32, number.value()));
-  m_values.push_back(valueIr);
+Value* IrBuilderAst::visit(const AstNumber& number, Access) {
+  return ConstantInt::get( getGlobalContext(), APInt(32, number.value()));
 }
 
-void IrBuilderAst::visit(const AstSymbol& symbol) {
+Value* IrBuilderAst::visit(const AstSymbol& symbol, Access access) {
   SymbolTableEntry* stentry = m_env.find(symbol.name());
   if (NULL==stentry) {
     throw runtime_error::runtime_error("Symbol '" + symbol.name() +
@@ -214,7 +197,7 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
   if (stentry->objType().qualifier()&ObjType::eMutable) {
     // stentry->valueIr() is the pointer returned by alloca corresponding to
     // the symbol
-    if (symbol.access()==AstSymbol::eWrite) {
+    if (access==eWrite) {
       value = stentry->valueIr(); 
     } else {
       value = m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str());
@@ -223,12 +206,11 @@ void IrBuilderAst::visit(const AstSymbol& symbol) {
     // stentry->valueIr() is directly the value of the symbol
     value = stentry->valueIr();
   }
-  m_values.push_back(value);
+  return value;
 }
 
-void IrBuilderAst::visit(const AstFunDef& funDef) {
-  Function* functionIr = NULL;
-  visit(funDef.decl(), functionIr);
+Function* IrBuilderAst::visit(const AstFunDef& funDef) {
+  Function* functionIr = visit(funDef.decl());
 
   m_env.pushScope(); 
   m_builder.SetInsertPoint(
@@ -256,25 +238,19 @@ void IrBuilderAst::visit(const AstFunDef& funDef) {
     }
   }
 
-  funDef.body().accept(*this);
-  m_builder.CreateRet(valuesBackAndPop());
+  m_builder.CreateRet(funDef.body().accept(*this));
 
-  verifyFunction(*functionIr);
+  //verifyFunction(*functionIr);
 
   // Previous building block is again the insert point
   m_builder.SetInsertPoint(m_mainBasicBlock);
 
   m_env.popScope(); 
-  // Don't push onto the m_values stack, since the Function* we would push
-  // is already on the stack due to funDef.decl()
+
+  return functionIr;
 }
 
-void IrBuilderAst::visit(const AstFunDecl& funDecl) {
-  Function* dummy;
-  visit(funDecl, dummy);
-}
-
-void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr) {
+Function* IrBuilderAst::visit(const AstFunDecl& funDecl) {
   // currently rettype and type of args is always int
 
   // create IR function with given name and signature
@@ -283,7 +259,7 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr) {
   Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
   FunctionType* functionTypeIr = FunctionType::get(retTypeIr, argsIr, false);
   assert(functionTypeIr);
-  functionIr = Function::Create( functionTypeIr,
+  Function* functionIr = Function::Create( functionTypeIr,
     Function::ExternalLinkage, funDecl.name(), m_module );
   assert(functionIr);
 
@@ -307,10 +283,10 @@ void IrBuilderAst::visit(const AstFunDecl& funDecl, Function*& functionIr) {
     }
   }
 
-  m_values.push_back(functionIr);
+  return functionIr;
 }
 
-void IrBuilderAst::visit(const AstFunCall& funCall) {
+Value* IrBuilderAst::visit(const AstFunCall& funCall, Access access) {
   Function* callee = m_module->getFunction(funCall.name());
   if (!callee) {
     throw runtime_error::runtime_error("Function not defined");
@@ -325,24 +301,18 @@ void IrBuilderAst::visit(const AstFunCall& funCall) {
   vector<Value*> argsIr;
   for ( list<AstValue*>::const_iterator i = argsAst.begin();
         i != argsAst.end(); ++i ) {
-    (*i)->accept(*this);
-    argsIr.push_back(valuesBackAndPop());
+    argsIr.push_back((*i)->accept(*this));
   }
 
-  Value* callsValueIr = m_builder.CreateCall(callee, argsIr, "calltmp");
-  m_values.push_back( callsValueIr );
+  return m_builder.CreateCall(callee, argsIr, "calltmp");
 }
 
-void IrBuilderAst::visit(const AstDataDecl& dataDecl) {
+Value* IrBuilderAst::visit(const AstDataDecl& dataDecl, Access) {
   SymbolTableEntry* dummy;
-  visit(dataDecl, dummy);
-
-  // dummy, since each visit meth _must_ push _one_ element on the values
-  // stack
-  m_values.push_back( ConstantInt::get( getGlobalContext(), APInt(32, 0)) );
+  return visit(dataDecl, dummy);
 }
 
-void IrBuilderAst::visit(const AstDataDecl& dataDecl,
+Value* IrBuilderAst::visit(const AstDataDecl& dataDecl,
   SymbolTableEntry*& stentry) {
 
   Env::InsertRet insertRet = m_env.insert( dataDecl.name(), NULL);
@@ -361,9 +331,10 @@ void IrBuilderAst::visit(const AstDataDecl& dataDecl,
     stIterStEntry->setObjType(&dataDecl.objType(true));
   }
   stentry = stIterStEntry;
+  return ConstantInt::get( getGlobalContext(), APInt(32, 0));
 }
 
-void IrBuilderAst::visit(const AstDataDef& dataDef) {
+Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access) {
   // process data declaration. That ensures an entry in the symbol table
   SymbolTableEntry* stentry = NULL;
   visit(dataDef.decl(), stentry);
@@ -375,17 +346,10 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
   }
   stentry->isDefined() = true;
 
-  // Calculate value to initialzie new data object with. Also already push
-  // that value on the values stack, since that is the result of the data
-  // object declaration expression.
-  Value* initValue = NULL;
-  if (dataDef.initValue()) {
-    dataDef.initValue()->accept(*this);
-    initValue = valuesBack(); 
-  } else {
-    initValue = ConstantInt::get( getGlobalContext(), APInt(32, 0));
-    m_values.push_back( initValue );
-  }
+  // Calculate value to initialzie new data object with
+  Value* initValue = dataDef.initValue() ?
+    dataDef.initValue()->accept(*this) :
+    ConstantInt::get( getGlobalContext(), APInt(32, 0));
   assert(initValue);
 
   // define m_value (type Value*) of symbol table entry. For values that is
@@ -404,11 +368,10 @@ void IrBuilderAst::visit(const AstDataDef& dataDef) {
   }
   else { assert(false); }
 
-  // Nothing to push on the values stack, that was already done earlier in
-  // this method.
+  return initValue;
 }
 
-void IrBuilderAst::visit(const AstIf& if_) {
+Value* IrBuilderAst::visit(const AstIf& if_, Access access) {
   // misc setup
   const list<AstIf::ConditionActionPair>& capairs = if_.conditionActionPairs();
   assert(!capairs.empty());
@@ -421,8 +384,7 @@ void IrBuilderAst::visit(const AstIf& if_) {
   BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
 
   // IR for evaluate condition
-  capair.m_condition->accept(*this);
-  Value* condIr = valuesBackAndPop();
+  Value* condIr = capair.m_condition->accept(*this);
   Value* condCmpIr = m_builder.CreateICmpNE(condIr,
     ConstantInt::get(getGlobalContext(), APInt(32, 0)), "ifcond");
 
@@ -431,8 +393,7 @@ void IrBuilderAst::visit(const AstIf& if_) {
 
   // IR for then clause
   m_builder.SetInsertPoint(ThenBB);
-  capair.m_action->accept(*this);
-  Value* thenValue = valuesBackAndPop();
+  Value* thenValue = capair.m_action->accept(*this);
   m_builder.CreateBr(MergeBB);
   ThenBB = m_builder.GetInsertBlock();
 
@@ -441,8 +402,7 @@ void IrBuilderAst::visit(const AstIf& if_) {
   m_builder.SetInsertPoint(ElseBB);
   Value* elseValue = NULL;
   if ( if_.elseAction() ) {
-    if_.elseAction()->accept(*this);
-    elseValue = valuesBackAndPop();
+    elseValue = if_.elseAction()->accept(*this);
   } else {
     elseValue = ConstantInt::get( getGlobalContext(), APInt(32, 0));
   }
@@ -457,29 +417,7 @@ void IrBuilderAst::visit(const AstIf& if_) {
   assert(phi);
   phi->addIncoming(thenValue, ThenBB);
   phi->addIncoming(elseValue, ElseBB);
-  m_values.push_back(phi);
-}
-
-Value* IrBuilderAst::valuesBackAndPop() {
-  assert(!m_values.empty());
-  Value* value = m_values.back();
-  m_values.pop_back();
-  assert(value);
-  return value; 
-}
-
-Value* IrBuilderAst::valuesBack() {
-  assert(!m_values.empty());
-  Value* value = m_values.back();
-  assert(value);
-  return value; 
-}
-
-Function* IrBuilderAst::valuesBackToFunction() {
-  assert(!m_values.empty());
-  Function* function = dynamic_cast<Function*>(m_values.back());
-  assert(function);
-  return function;
+  return phi;
 }
 
 AllocaInst* IrBuilderAst::createEntryBlockAlloca(Function *functionIr,

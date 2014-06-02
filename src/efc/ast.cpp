@@ -1,4 +1,5 @@
 #include "ast.h"
+#include "irbuilderast.h"
 #include <sstream>
 #include <cassert>
 using namespace std;
@@ -13,14 +14,17 @@ basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {
   return os << m_value;
 }
 
-AstSymbol::AstSymbol(const string* name, Access access) :
-  m_name(name ? name : new string("<unknown_name>")),
-  m_access(access) {
+AstSymbol::AstSymbol(const string* name) :
+  m_name(name ? name : new string("<unknown_name>")) {
   assert(m_name);
 }
 
 AstSymbol::~AstSymbol() {
   delete m_name;
+}
+
+llvm::Value* AstSymbol::accept(IrBuilderAst& visitor, Access access) const {
+  return visitor.visit(*this, access);
 }
 
 basic_ostream<char>& AstSymbol::printTo(basic_ostream<char>& os) const {
@@ -36,6 +40,10 @@ AstFunDef::AstFunDef(AstFunDecl* decl, AstSeq* body) :
 
 AstFunDef::~AstFunDef() {
   delete m_body;
+}
+
+llvm::Function* AstFunDef::accept(IrBuilderAst& visitor, Access) const {
+  return visitor.visit(*this);
 }
 
 basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) const {
@@ -68,6 +76,10 @@ AstFunDecl::~AstFunDecl() {
     delete *i;
   }
   delete m_args;
+}
+
+llvm::Function* AstFunDecl::accept(IrBuilderAst& visitor, Access) const {
+  return visitor.visit(*this);
 }
 
 basic_ostream<char>& AstFunDecl::printTo(basic_ostream<char>& os) const {
@@ -110,6 +122,10 @@ AstDataDecl::~AstDataDecl() {
   if (m_ownerOfObjType) { delete m_objType; }
 }
 
+llvm::Value* AstDataDecl::accept(IrBuilderAst& visitor, Access access) const {
+  return visitor.visit(*this, access);
+}
+
 basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
   if (eNormal==m_type) { os << "decldata"; }
   return os << "(" << m_name << " " << *m_objType << ")";
@@ -134,6 +150,10 @@ AstDataDef::~AstDataDef() {
   if ( m_initValue ) { delete m_initValue; }
 }
 
+llvm::Value* AstDataDef::accept(IrBuilderAst& visitor, Access access) const {
+  return visitor.visit(*this, access);
+}
+
 basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
   os << "data(";
   m_decl->printTo(os);
@@ -143,6 +163,10 @@ basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
   }
   os << ")";
   return os;
+}
+
+llvm::Value* AstNumber::accept(IrBuilderAst& visitor, Access access) const {
+  return visitor.visit(*this, access);
 }
 
 map<string, AstOperator::EOperation> AstOperator::m_opMap;
@@ -188,6 +212,10 @@ AstOperator::AstOperator(AstOperator::EOperation op, AstValue* operand1, AstValu
 
 AstOperator::~AstOperator() {
   delete m_args;
+}
+
+llvm::Value* AstOperator::accept(IrBuilderAst& visitor, Access access) const {
+  return visitor.visit(*this, access);
 }
 
 basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
@@ -272,6 +300,10 @@ list<AstIf::ConditionActionPair>* AstIf::makeConditionActionPairs(
   return tmp;
 }
 
+llvm::Value* AstIf::accept(IrBuilderAst& visitor, Access access) const {
+  return visitor.visit(*this, access);
+}
+
 basic_ostream<char>& AstIf::printTo(basic_ostream<char>& os) const {
   os << "if(";
   list<ConditionActionPair>::const_iterator i = m_conditionActionPairs->begin();
@@ -292,6 +324,10 @@ AstFunCall::AstFunCall(const string& name, AstCtList* args) :
   m_name(name),
   m_args(args ? args : new AstCtList()) {
   assert(m_args);
+}
+
+llvm::Value* AstFunCall::accept(IrBuilderAst& visitor, Access access) const {
+  return visitor.visit(*this, access);
 }
 
 basic_ostream<char>& AstFunCall::printTo(basic_ostream<char>& os) const {
@@ -331,6 +367,10 @@ AstSeq* AstSeq::Add(AstNode* child1, AstNode* child2, AstNode* child3) {
   Add(child2);
   Add(child3);
   return this;
+}
+
+llvm::Value* AstSeq::accept(IrBuilderAst& visitor, Access access) const {
+  return visitor.visit(*this, access);
 }
 
 basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) const {
@@ -374,6 +414,10 @@ AstCtList* AstCtList::Add(AstValue* child1, AstValue* child2, AstValue* child3) 
   Add(child2);
   Add(child3);
   return this;
+}
+
+llvm::Value* AstCtList::accept(IrBuilderAst&, Access) const {
+  return NULL;
 }
 
 basic_ostream<char>& AstCtList::printTo(basic_ostream<char>& os) const {
