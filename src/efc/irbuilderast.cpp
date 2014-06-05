@@ -203,6 +203,10 @@ Value* IrBuilderAst::visit(const AstSymbol& symbol, Access access) {
       value = m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str());
     }
   } else {
+    if (access==eWrite) {
+      throw runtime_error::runtime_error("Can't write to value (inmutable data) '"
+        + symbol.name() + "'.");
+    }
     // stentry->valueIr() is directly the value of the symbol
     value = stentry->valueIr();
   }

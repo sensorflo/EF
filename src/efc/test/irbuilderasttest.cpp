@@ -732,6 +732,23 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     77, spec);
 }
 
+TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
+    foo_defined_as_value_followed_by_assigning_to_foo,
+    buildAndRunModule,
+    throws,
+    BECAUSE_values_are_immutable_data_objects)) {
+  auto_ptr<AstSeq> astSeq(
+    new AstSeq(
+      new AstDataDef(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstSeq(new AstNumber(42))),
+      new AstOperator('=',
+        new AstSymbol(new string("foo")),
+        new AstNumber(77))));
+  TestingIrBuilderAst UUT;
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
+}
+
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_value_definition_of_foo_with_no_explicit_initializer_followed_by_a_reference_to_foo,
     buildAndRunModule,
