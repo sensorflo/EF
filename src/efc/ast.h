@@ -58,18 +58,18 @@ class AstValue : public AstNode {
 
 class AstFunDef : public AstValue {
 public:
-  AstFunDef(AstFunDecl* decl, AstSeq* body);
+  AstFunDef(AstFunDecl* decl, AstValue* body);
   virtual ~AstFunDef();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); }
   virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstFunDecl& decl() const { return *m_decl; }
-  virtual const AstSeq& body() const { return *m_body; }
+  virtual const AstValue& body() const { return *m_body; }
 private:
   /** We're the owner. Is garanteed to be non-null */
   const AstFunDecl* const m_decl;
   /** We're the owner. Is garanteed to be non-null */
-  const AstSeq* const m_body;
+  const AstValue* const m_body;
 };
 
 class AstFunDecl : public AstValue {
@@ -219,29 +219,29 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
 class AstIf : public AstValue {
 public:
   struct ConditionActionPair {
-    ConditionActionPair(AstValue* condition, AstSeq* action) :
+    ConditionActionPair(AstValue* condition, AstValue* action) :
       m_condition(condition), m_action(action) {}
     /** We're the owner. Is garanteed to be non-null */
     AstValue* m_condition;
     /** We're the owner. Is garanteed to be non-null */
-    AstSeq* m_action;
+    AstValue* m_action;
   };
-  AstIf(std::list<ConditionActionPair>* conditionActionPairs, AstSeq* elseAction = NULL);
-  AstIf(AstValue* cond, AstSeq* action, AstSeq* elseAction = NULL);
+  AstIf(std::list<ConditionActionPair>* conditionActionPairs, AstValue* elseAction = NULL);
+  AstIf(AstValue* cond, AstValue* action, AstValue* elseAction = NULL);
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   const std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
-  const AstSeq* elseAction() const { return m_elseAction; }
+  const AstValue* elseAction() const { return m_elseAction; }
 private:
   static std::list<ConditionActionPair>* makeDefaultConditionActionPairs();
   static std::list<ConditionActionPair>* makeConditionActionPairs(
-    AstValue* cond, AstSeq* action);
+    AstValue* cond, AstValue* action);
   /** We're the owner. Is garanteed to be non-null and size>=1*/
   const std::list<ConditionActionPair>* const m_conditionActionPairs;
   /** We're the owner. Is NOT garanteed to be non-null */
-  const AstSeq* const m_elseAction;
+  const AstValue* const m_elseAction;
 };
 
 class AstSeq : public AstValue {

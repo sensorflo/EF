@@ -84,8 +84,8 @@
 
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> maybe_empty_seq seq pure_seq opt_else
-%type <AstValue*> expr expr_leaf naked_if
+%type <AstSeq*> maybe_empty_seq seq pure_seq 
+%type <AstValue*> expr expr_leaf naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifier> valvar
@@ -282,7 +282,7 @@ opt_elif_list
 
 opt_else
   : %empty                                                           { $$ = NULL; }
-  | ELSE seq                                                         { std::swap($$,$2); }
+  | ELSE seq                                                         { $$ = $2; }
   ;
 
 /* Epilogue section

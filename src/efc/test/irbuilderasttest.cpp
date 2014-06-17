@@ -306,7 +306,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     auto_ptr<AstSeq> astSeq(new AstSeq(
-        new AstFunDef(new AstFunDecl("foo"),new AstSeq(new AstNumber(77))),
+        new AstFunDef(new AstFunDecl("foo"), new AstNumber(77)),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
 
@@ -337,7 +337,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
             "foo",
             new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
             new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
-          new AstSeq(new AstNumber(77))),
+          new AstNumber(77)),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
 
@@ -366,7 +366,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     auto_ptr<AstSeq> astSeq(new AstSeq(
-        new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(77))),
+        new AstFunDef(new AstFunDecl("foo"), new AstNumber(77)),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
 
@@ -389,7 +389,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           new AstFunDecl(
             "foo",
             new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
-          new AstSeq(new AstNumber(42))),
+          new AstNumber(42)),
         new AstNumber(77)));
     TestingIrBuilderAst UUT;
 
@@ -415,7 +415,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstFunDecl(
           "foo",
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstSeq(new AstSymbol(new string("x")))),
+        new AstSymbol(new string("x"))),
       new AstNumber(77)));
   TestingIrBuilderAst UUT;
 
@@ -445,10 +445,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           "foo",
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstSeq(
-          new AstOperator('*',
-            new AstSymbol(new string("x")),
-            new AstSymbol(new string("y"))))),
+        new AstOperator('*',
+          new AstSymbol(new string("x")),
+          new AstSymbol(new string("y")))),
       new AstNumber(77)));
   TestingIrBuilderAst UUT;
 
@@ -514,7 +513,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstSeq(
         new AstFunDef(
           new AstFunDecl("foo"),
-          new AstSeq(new AstSymbol(new string("x")))),
+          new AstSymbol(new string("x"))),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
@@ -541,7 +540,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstFunDecl("foo"),
-      new AstFunDef(new AstFunDecl("foo"), new AstSeq(new AstNumber(42))),
+      new AstFunDef(new AstFunDecl("foo"), new AstNumber(42)),
       new AstFunCall("foo")),
     42, "");
 }
@@ -587,7 +586,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstFunDef(
         new AstFunDecl("foo"),
-        new AstSeq(new AstNumber(42))),
+        new AstNumber(42)),
       new AstFunCall("foo")),
     42, spec);
 
@@ -596,7 +595,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstFunDef(
         new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstSeq(new AstNumber(42))),
+        new AstNumber(42)),
       new AstFunCall("foo", new AstCtList(new AstNumber(0)))),
     42, spec);
 
@@ -608,10 +607,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           "add",
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstSeq(
-          new AstOperator('+',
-            new AstSymbol(new string("x")),
-            new AstSymbol(new string("y"))))),
+        new AstOperator('+',
+          new AstSymbol(new string("x")),
+          new AstSymbol(new string("y")))),
       new AstFunCall("add", new AstCtList(new AstNumber(1), new AstNumber(2)))),
     1+2, spec);
 }
@@ -635,7 +633,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     auto_ptr<AstSeq> astSeq( new AstSeq(
         new AstFunDef(
           new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-          new AstSeq(new AstNumber(42))),
+          new AstNumber(42)),
         new AstFunCall("foo")));
     TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendSpec(spec) << amendAst(astSeq);
@@ -646,7 +644,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     auto_ptr<AstSeq> astSeq( new AstSeq(
         new AstFunDef(
           new AstFunDecl("foo"),
-          new AstSeq(new AstNumber(42))),
+          new AstNumber(42)),
         new AstFunCall("foo", new AstCtList(new AstNumber(0)))));
     TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendSpec(spec) << amendAst(astSeq);
@@ -806,10 +804,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       new AstFunDef(
         new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstSeq(
-          new AstOperator('=',
-            new AstSymbol(new string("x")),
-            new AstNumber(77)))),
+        new AstOperator('=',
+          new AstSymbol(new string("x")),
+          new AstNumber(77))),
       new AstSymbol(new string("x"))),
     42, spec);
 
@@ -819,10 +816,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       new AstFunDef(
         new AstFunDecl("foo"),
-        new AstSeq(
-          new AstDataDef(
-            new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-            new AstSeq(new AstNumber(77))))),
+        new AstDataDef(
+          new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstNumber(77))),
       new AstSymbol(new string("x"))),
     42, spec);
 }
@@ -852,7 +848,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
             "foo",
             new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
             new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-          new AstSeq(new AstNumber(42))),
+          new AstNumber(42)),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
@@ -865,7 +861,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstSeq(
         new AstFunDef(
           new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-          new AstSeq(new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))))),
+          new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
@@ -881,8 +877,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstIf(
         new AstNumber(1), // condition
-        new AstSeq(new AstNumber(2)), // then clause
-        new AstSeq(new AstNumber(3)))), // else clause
+        new AstNumber(2), // then clause
+        new AstNumber(3))), // else clause
     2, "");
 }
 
@@ -894,8 +890,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstIf(
         new AstNumber(0), // condition
-        new AstSeq(new AstNumber(2)), // then clause
-        new AstSeq(new AstNumber(3)))), // else clause
+        new AstNumber(2), // then clause
+        new AstNumber(3))), // else clause
     3, "");
 }
 
@@ -907,6 +903,6 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstIf(
         new AstNumber(0), // condition
-        new AstSeq(new AstNumber(2)))), // then clause
+        new AstNumber(2))), // then clause
     0, ""); // default for int
 }

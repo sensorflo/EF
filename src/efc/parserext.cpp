@@ -68,7 +68,7 @@ pair<AstFunDecl*,SymbolTableEntry*> ParserExt::createAstFunDecl(
     AstFunDecl::createArgs(arg1, arg2, arg3));
 }
 
-AstFunDef* ParserExt::createAstFunDef(AstFunDecl* funDecl, AstSeq* seq,
+AstFunDef* ParserExt::createAstFunDef(AstFunDecl* funDecl, AstValue* body,
   SymbolTableEntry& stentry) {
   assert(funDecl);
   if (stentry.isDefined()) {
@@ -76,5 +76,5 @@ AstFunDef* ParserExt::createAstFunDef(AstFunDecl* funDecl, AstSeq* seq,
       "' is already defined.");
   }
   stentry.isDefined() = true;
-  return new AstFunDef(funDecl, seq);
+  return new AstFunDef(funDecl, body);
 }

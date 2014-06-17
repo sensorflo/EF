@@ -31,9 +31,9 @@ basic_ostream<char>& AstSymbol::printTo(basic_ostream<char>& os) const {
   return os << *m_name;
 }
 
-AstFunDef::AstFunDef(AstFunDecl* decl, AstSeq* body) :
+AstFunDef::AstFunDef(AstFunDecl* decl, AstValue* body) :
   m_decl(decl ? decl : new AstFunDecl("<unknown_name>")),
-  m_body(body ? body : new AstSeq()) {
+  m_body(body ? body : new AstNumber(0)) {
   assert(m_decl);
   assert(m_body);
 }
@@ -261,7 +261,7 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
   }
 }
 
-AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstSeq* elseAction) :
+AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstValue* elseAction) :
   m_conditionActionPairs(
     conditionActionPairs ? conditionActionPairs : makeDefaultConditionActionPairs()),
   m_elseAction(elseAction) {
@@ -271,7 +271,7 @@ AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstSeq* els
   assert(m_conditionActionPairs->front().m_action);
 }
 
-AstIf::AstIf(AstValue* cond, AstSeq* action, AstSeq* elseAction) :
+AstIf::AstIf(AstValue* cond, AstValue* action, AstValue* elseAction) :
   m_conditionActionPairs(makeConditionActionPairs(cond,action)),
   m_elseAction(elseAction) {
   assert(m_conditionActionPairs);
@@ -289,12 +289,12 @@ AstIf::~AstIf() {
 
 list<AstIf::ConditionActionPair>* AstIf::makeDefaultConditionActionPairs() {
   list<ConditionActionPair>* tmp = new list<AstIf::ConditionActionPair>();
-  tmp->push_back(ConditionActionPair(new AstNumber(0),new AstSeq()));
+  tmp->push_back(ConditionActionPair(new AstNumber(0),new AstNumber(0)));
   return tmp;
 }
 
 list<AstIf::ConditionActionPair>* AstIf::makeConditionActionPairs(
-  AstValue* cond, AstSeq* action) {
+  AstValue* cond, AstValue* action) {
   list<ConditionActionPair>* tmp = new list<AstIf::ConditionActionPair>();
   tmp->push_back(ConditionActionPair(cond, action));
   return tmp;
