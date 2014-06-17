@@ -28,11 +28,11 @@ TEST(AstTest, MAKE_TEST_NAME2(
   EXPECT_EQ( "or(42 77)" , AstOperator("or"      , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
 
   spec = "AstIf";
-  EXPECT_EQ( "if(seq(x) seq(1))", AstIf(
-      new AstSeq(new AstSymbol(new string("x"))),
+  EXPECT_EQ( "if(x seq(1))", AstIf(
+      new AstSymbol(new string("x")),
       new AstSeq(new AstNumber(1))).toStr() ) << amendSpec(spec);
-  EXPECT_EQ( "if(seq(x) seq(1) seq(0))", AstIf(
-      new AstSeq(new AstSymbol(new string("x"))),
+  EXPECT_EQ( "if(x seq(1) seq(0))", AstIf(
+      new AstSymbol(new string("x")),
       new AstSeq(new AstNumber(1)),
       new AstSeq(new AstNumber(0))).toStr() ) << amendSpec(spec);
 
@@ -42,9 +42,9 @@ TEST(AstTest, MAKE_TEST_NAME2(
   
   spec = "AstDataDef";
   EXPECT_EQ( "data(decldata(foo int))", AstDataDef(new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))).toStr() ) << amendSpec(spec);
-  EXPECT_EQ( "data(decldata(foo int-mut) seq(42))", AstDataDef(
+  EXPECT_EQ( "data(decldata(foo int-mut) 42)", AstDataDef(
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-      new AstSeq(new AstNumber(42))).toStr() ) << amendSpec(spec);
+      new AstNumber(42)).toStr() ) << amendSpec(spec);
   
   spec = "AstCtList";
   EXPECT_EQ( "", AstCtList().toStr() ) << amendSpec(spec);

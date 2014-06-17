@@ -157,31 +157,31 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
     new AstSeq(
       new AstOperator(AstOperator::eOr,
-        new AstSeq(new AstNumber(2)))),
+        new AstNumber(2))),
     0, spec, eNe);
   spec = "unary and: and(x) = bool(x)";
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
     new AstSeq(
       new AstOperator(AstOperator::eAnd,
-        new AstSeq(new AstNumber(2)))),
+        new AstNumber(2))),
     0, spec, eNe);
   spec = "unary minus: -(x)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstOperator('-',
-        new AstSeq(new AstNumber(1)))),
+        new AstNumber(1))),
     -1, spec);
   spec = "unary plus: +(x) = x";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstOperator('+',
-        new AstSeq(new AstNumber(1)))),
+        new AstNumber(1))),
     +1, spec);
   spec = "spec = unary mult: *(x) = x";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstOperator('*',
-        new AstSeq(new AstNumber(1)))),
+        new AstNumber(1))),
     1, spec);
   // unary div "/(x)" is invalid
 
@@ -190,33 +190,33 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstOperator('+',
-        new AstSeq(new AstNumber(1)),
-        new AstSeq(new AstNumber(2)),
-        new AstSeq(new AstNumber(3)))),
+        new AstNumber(1),
+        new AstNumber(2),
+        new AstNumber(3))),
     1+2+3, spec);
   spec = "n-ary minus: -(1,2,3)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstOperator('-',
-        new AstSeq(new AstNumber(1)),
-        new AstSeq(new AstNumber(2)),
-        new AstSeq(new AstNumber(3)))),
+        new AstNumber(1),
+        new AstNumber(2),
+        new AstNumber(3))),
     1-2-3, spec);
   spec = "n-ary mult: *(1,2,3)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstOperator('*',
-        new AstSeq(new AstNumber(1)),
-        new AstSeq(new AstNumber(2)),
-        new AstSeq(new AstNumber(3)))),
+        new AstNumber(1),
+        new AstNumber(2),
+        new AstNumber(3))),
     1*2*3, spec);
   spec = "n-ary div: /(24,4,3)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstOperator('/',
-        new AstSeq(new AstNumber(24)),
-        new AstSeq(new AstNumber(4)),
-        new AstSeq(new AstNumber(3)))),
+        new AstNumber(24),
+        new AstNumber(4),
+        new AstNumber(3))),
     24/4/3, spec);
 }
 
@@ -663,7 +663,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstSeq(new AstNumber(42)))),
+        new AstNumber(42))),
     42, spec);
 
   spec = "variable (aka mutable data obj)";
@@ -671,7 +671,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-        new AstSeq(new AstNumber(42)))),
+        new AstNumber(42))),
     42, spec);
 }
 
@@ -685,7 +685,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstSeq(new AstNumber(42))),
+        new AstNumber(42)),
       new AstOperator('+',
         new AstSymbol(new string("foo")),
         new AstNumber(77))),
@@ -696,7 +696,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-        new AstSeq(new AstNumber(42))),
+        new AstNumber(42)),
       new AstOperator('+',
         new AstSymbol(new string("foo")),
         new AstNumber(77))),
@@ -713,7 +713,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-        new AstSeq(new AstNumber(42))),
+        new AstNumber(42)),
       new AstOperator('=',
         new AstSymbol(new string("foo")),
         new AstNumber(77))),
@@ -724,7 +724,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-        new AstSeq(new AstNumber(42))),
+        new AstNumber(42)),
       new AstOperator('=',
         new AstSymbol(new string("foo")),
         new AstNumber(77)),
@@ -741,7 +741,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstSeq(new AstNumber(42))),
+        new AstNumber(42)),
       new AstOperator('=',
         new AstSymbol(new string("foo")),
         new AstNumber(77))));
@@ -880,7 +880,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstIf(
-        new AstSeq(new AstNumber(1)), // condition
+        new AstNumber(1), // condition
         new AstSeq(new AstNumber(2)), // then clause
         new AstSeq(new AstNumber(3)))), // else clause
     2, "");
@@ -893,7 +893,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstIf(
-        new AstSeq(new AstNumber(0)), // condition
+        new AstNumber(0), // condition
         new AstSeq(new AstNumber(2)), // then clause
         new AstSeq(new AstNumber(3)))), // else clause
     3, "");
@@ -906,7 +906,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstIf(
-        new AstSeq(new AstNumber(0)), // condition
+        new AstNumber(0), // condition
         new AstSeq(new AstNumber(2)))), // then clause
     0, ""); // default for int
 }
