@@ -652,11 +652,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    a_data_object_definition_of_foo_being_initialized_with_x,
+    a_inmutable_data_object_definition_of_foo_being_initialized_with_x,
     buildAndRunModule,
-    returns_x)) {
+    returns_x_rvalue)) {
 
-  string spec = "value (aka immutable (aka const) data obj)";
+  string spec = "Value of definition expression should equal initializer's value";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
@@ -664,13 +664,45 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstNumber(42))),
     42, spec);
 
-  spec = "variable (aka mutable data obj)";
+  spec = "Value of definition expression is an rvalue and thus _not_ "
+    "assignable to";
+  {
+    auto_ptr<AstSeq> astSeq(
+      new AstSeq(
+        new AstOperator('=',
+          new AstDataDef(
+            new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+            new AstNumber(42)),
+          new AstNumber(77)),
+        new AstSymbol(new string("foo"))));
+    TestingIrBuilderAst UUT;
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
+  }
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    a_mutable_data_object_definition_of_foo_being_initialized_with_x,
+    buildAndRunModule,
+    returns_x_lvalue)) {
+
+  string spec = "Value of definition expression should equal initializer's value";
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42))),
     42, spec);
+
+  spec = "Definition expresssion is an lvalue which concequently is assignable to";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstOperator('=',
+        new AstDataDef(
+          new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+          new AstNumber(42)),
+        new AstNumber(77)),
+      new AstSymbol(new string("foo"))),
+      77, spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(

@@ -338,7 +338,7 @@ Value* IrBuilderAst::visit(const AstDataDecl& dataDecl,
   return ConstantInt::get( getGlobalContext(), APInt(32, 0));
 }
 
-Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access) {
+Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access access) {
   // process data declaration. That ensures an entry in the symbol table
   SymbolTableEntry* stentry = NULL;
   visit(dataDef.decl(), stentry);
@@ -360,6 +360,10 @@ Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access) {
   // trivial. For variables aka allocas first an alloca has to be created.
   if ( stentry->objType().qualifier()==ObjType::eNoQualifier ) {
     stentry->valueIr() = initValue;
+    if ( eRead!=access ) {
+      throw runtime_error::runtime_error("Cannot write to an inmutable data object");
+    }
+    return initValue; 
   }
   else if ( stentry->objType().qualifier()==ObjType::eMutable ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
@@ -369,10 +373,9 @@ Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access) {
     assert(alloca);
     m_builder.CreateStore(initValue, alloca);
     stentry->valueIr() = alloca;
+    return eRead==access ? initValue : alloca;
   }
   else { assert(false); }
-
-  return initValue;
 }
 
 Value* IrBuilderAst::visit(const AstIf& if_, Access access) {
