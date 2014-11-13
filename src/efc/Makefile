@@ -1,6 +1,6 @@
-CXXFLAGS += `llvm-config --cxxflags | sed 's/-fno-exceptions\|-DNDEBUG//g'` -O0 -Wall -Werror -ggdb3 -std=c++98 #-pedantic
+CXXFLAGS += `llvm-config --cxxflags | sed 's/-fno-exceptions\|-DNDEBUG//g'` -O0 -Wall -Werror -ggdb3 -std=c++11 #-pedantic
 LDFLAGS += `llvm-config --ldflags`
-LIBS += `llvm-config --libs core jit native interpreter`
+LIBS += `llvm-config --libs core jit native interpreter --system-libs | sed 's/-ledit//g'`
 CXX = clang++
 LEX = flex
 YACC = bison
@@ -32,7 +32,7 @@ out/parser.o: gensrc/parser.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 out/scanner.o: gensrc/scanner.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated-register -c -o $@ $<
 
 out/parserext.o: parserext.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
@@ -87,7 +87,7 @@ out/scannerandparsertest.o: test/scannerandparsertest.cpp $(GEN_HEADERS) *.h tes
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 out/irbuilderasttest.o: test/irbuilderasttest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated-declarations -c -o $@ $<
 
 out/asttest.o: test/asttest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
