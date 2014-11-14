@@ -111,8 +111,8 @@ out/libgtest.a: ${GTEST_DIR}/src/gtest-all.cc
 doc: out/specs.html
 
 out/specs.html: test/*.cpp
-	-if type testdox ; then\
-		if type asciidoc ; then\
+	-if type testdox >/dev/null ; then\
+		if type asciidoc >/dev/null ; then\
 			testdox -f asciidoc $^ | asciidoc -a toc -o $@ -;\
 		else\
 			testdox $^ > $@;\
