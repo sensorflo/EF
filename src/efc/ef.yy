@@ -84,7 +84,7 @@
 
 %type <AstCtList*> ct_list pure_ct_list
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> maybe_empty_seq seq pure_seq 
+%type <AstSeq*> seq pure_seq 
 %type <AstValue*> expr expr_leaf naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
@@ -114,25 +114,18 @@ naked
 
 opt
   Optional
-
-maybe_empty
-  Contains an empty rule among other non-empty rules.
 */
 
 
 %start program;
 
 program
-  : maybe_empty_seq END_OF_FILE                     { driver.astRoot() = $1; }
-  ;
-
-maybe_empty_seq
-  : %empty                                          { $$ = new AstSeq(); }
-  | seq                                             { std::swap($$,$1); }
+  : seq END_OF_FILE                                 { driver.astRoot() = $1; }
   ;
 
 seq
-  : pure_seq opt_comma                              { std::swap($$,$1); }
+  : %empty                                          { $$ = new AstSeq(); }
+  | pure_seq opt_comma                              { std::swap($$,$1); }
   ;
   
 pure_seq
@@ -258,7 +251,7 @@ naked_data_def
   ;
 
 naked_fun_def
-  : naked_fun_decl EQUAL maybe_empty_seq                             { $$ = parserExt.createAstFunDef(($1).first, $3, *(($1).second)); }
+  : naked_fun_decl EQUAL seq                                         { $$ = parserExt.createAstFunDef(($1).first, $3, *(($1).second)); }
   ;
   
 naked_fun_decl
