@@ -82,9 +82,10 @@
       SLASH
 %precedence EXCL NOT
 
-%type <AstCtList*> ct_list pure_ct_list
+%type <AstCtList*> ct_list
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> seq pure_seq 
+%type <AstSeq*> seq
+%type <std::list<AstValue*>*> expr_list pure_expr_list
 %type <AstValue*> expr expr_leaf naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
@@ -123,24 +124,26 @@ program
   : seq END_OF_FILE                                 { driver.astRoot() = $1; }
   ;
 
+/** The elements of a sequence are sequentially executed at compile time */
 seq
-  : %empty                                          { $$ = new AstSeq(); }
-  | pure_seq opt_comma                              { std::swap($$,$1); }
+  : expr_list                                       { $$ = new AstSeq($1); }
   ;
   
-pure_seq
-  : expr                                            { $$ = new AstSeq($1); }
-  | pure_seq opt_comma expr                         { $$ = ($1)->Add($3); }
-  ;
-
+/** The elements of an compile-time list form a list in the sence of a data
+structure (it says nothing about wheter its implemented as array, linked-list
+or whatever) */
 ct_list
-  : %empty                                          { $$ = new AstCtList(); }
-  | pure_ct_list opt_comma                          { std::swap($$,$1); }
+  : expr_list                                       { $$ = new AstCtList($1); }
   ;
 
-pure_ct_list
-  : expr                                            { $$ = new AstCtList($1); }
-  | pure_ct_list COMMA expr                         { $$ = ($1)->Add($3); }
+expr_list
+  : %empty                                          { $$ = new std::list<AstValue*>(); }
+  | pure_expr_list opt_comma                        { std::swap($$,$1); }
+  ;
+
+pure_expr_list
+  : expr                                            { $$ = new std::list<AstValue*>(); ($$)->push_back($1); }
+  | pure_expr_list opt_comma expr                   { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 param_ct_list

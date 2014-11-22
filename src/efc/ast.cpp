@@ -337,27 +337,34 @@ basic_ostream<char>& AstFunCall::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
+AstSeq::AstSeq(std::list<AstValue*>* childs) :
+  m_childs(childs ? childs : new std::list<AstValue*>()) {
+}
+
 /** When child is NULL it is ignored */
-AstSeq::AstSeq(AstValue* child) {
-  if (child) { m_childs.push_back(child); }
+AstSeq::AstSeq(AstValue* child) :
+  m_childs(new std::list<AstValue*>()) {
+  if (child) { m_childs->push_back(child); }
 }
 
 /** NULL childs are ignored.*/
-AstSeq::AstSeq(AstValue* child1, AstValue* child2, AstValue* child3) {
-  if (child1) { m_childs.push_back(child1); }
-  if (child2) { m_childs.push_back(child2); }
-  if (child3) { m_childs.push_back(child3); }
+AstSeq::AstSeq(AstValue* child1, AstValue* child2, AstValue* child3) :
+  m_childs(new std::list<AstValue*>()) {
+  if (child1) { m_childs->push_back(child1); }
+  if (child2) { m_childs->push_back(child2); }
+  if (child3) { m_childs->push_back(child3); }
 }
 
 AstSeq::~AstSeq() {
-  for (list<AstValue*>::iterator i=m_childs.begin(); i!=m_childs.end(); ++i) {
+  for (list<AstValue*>::iterator i=m_childs->begin(); i!=m_childs->end(); ++i) {
     delete (*i);
   }
+  delete m_childs;
 }
 
 /** When child is NULL it is ignored */
 AstSeq* AstSeq::Add(AstValue* child) {
-  if (child) { m_childs.push_back(child); }
+  if (child) { m_childs->push_back(child); }
   return this;
 }
 
@@ -375,36 +382,43 @@ llvm::Value* AstSeq::accept(IrBuilderAst& visitor, Access access) const {
 
 basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) const {
   os << "seq(";
-  for (list<AstValue*>::const_iterator i=m_childs.begin();
-       i!=m_childs.end(); ++i) {
-    if (i!=m_childs.begin()) { os << " "; }
+  for (list<AstValue*>::const_iterator i=m_childs->begin();
+       i!=m_childs->end(); ++i) {
+    if (i!=m_childs->begin()) { os << " "; }
     (*i)->printTo(os);
   }
   os << ")";
   return os;
 }
 
+AstCtList::AstCtList(std::list<AstValue*>* childs) :
+  m_childs(childs ? childs : new std::list<AstValue*>() ) {
+}
+
 /** When child is NULL it is ignored */
-AstCtList::AstCtList(AstValue* child) {
-  if (child) { m_childs.push_back(child); }
+AstCtList::AstCtList(AstValue* child) :
+  m_childs(new std::list<AstValue*>()) {
+  if (child) { m_childs->push_back(child); }
 }
 
 /** NULL childs are ignored.*/
-AstCtList::AstCtList(AstValue* child1, AstValue* child2, AstValue* child3) {
-  if (child1) { m_childs.push_back(child1); }
-  if (child2) { m_childs.push_back(child2); }
-  if (child3) { m_childs.push_back(child3); }
+AstCtList::AstCtList(AstValue* child1, AstValue* child2, AstValue* child3) :
+  m_childs(new std::list<AstValue*>()) {
+  if (child1) { m_childs->push_back(child1); }
+  if (child2) { m_childs->push_back(child2); }
+  if (child3) { m_childs->push_back(child3); }
 }
 
 AstCtList::~AstCtList() {
-  for (list<AstValue*>::iterator i=m_childs.begin(); i!=m_childs.end(); ++i) {
+  for (list<AstValue*>::iterator i=m_childs->begin(); i!=m_childs->end(); ++i) {
     delete (*i);
   }
+  delete m_childs;
 }
 
 /** When child is NULL it is ignored */
 AstCtList* AstCtList::Add(AstValue* child) {
-  if (child) { m_childs.push_back(child); }
+  if (child) m_childs->push_back(child);
   return this;
 }
 
@@ -421,9 +435,9 @@ llvm::Value* AstCtList::accept(IrBuilderAst&, Access) const {
 }
 
 basic_ostream<char>& AstCtList::printTo(basic_ostream<char>& os) const {
-  for (list<AstValue*>::const_iterator i=m_childs.begin();
-       i!=m_childs.end(); ++i) {
-    if (i!=m_childs.begin()) { os << " "; }
+  for (list<AstValue*>::const_iterator i=m_childs->begin();
+       i!=m_childs->end(); ++i) {
+    if (i!=m_childs->begin()) { os << " "; }
     (*i)->printTo(os);
   }
   return os;

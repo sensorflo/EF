@@ -246,6 +246,7 @@ private:
 
 class AstSeq : public AstValue {
 public:
+  AstSeq(std::list<AstValue*>* childs);
   AstSeq(AstValue* child1 = NULL);
   AstSeq(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   ~AstSeq();
@@ -254,17 +255,19 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   AstSeq* Add(AstValue* child);
   AstSeq* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
-  const std::list<AstValue*>& childs() const { return m_childs; }
+  const std::list<AstValue*>& childs() const { return *m_childs; }
 private:
   AstSeq(const AstSeq&);
   AstSeq& operator=(const AstSeq&);
 
-  /** We're the owner of the pointees. Pointers are garanteed to be non null*/
-  std::list<AstValue*> m_childs;
+  /** We're the owner of the list and the pointees. Pointers are garanteed to
+  be non null*/
+  std::list<AstValue*>*const m_childs;
 };
 
 class AstCtList : public AstNode {
 public:
+  AstCtList(std::list<AstValue*>* childs);
   AstCtList(AstValue* child1 = NULL);
   AstCtList(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   ~AstCtList();
@@ -273,13 +276,14 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   AstCtList* Add(AstValue* child);
   AstCtList* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
-  const std::list<AstValue*>& childs() const { return m_childs; }
+  const std::list<AstValue*>& childs() const { return *m_childs; }
 private:
   AstCtList(const AstCtList&);
   AstCtList& operator=(const AstCtList&);
 
-  /** We're the owner of the pointees. Pointers are garanteed to be non null*/
-  std::list<AstValue*> m_childs;
+  /** We're the owner of the list and of the pointees. Pointers are garanteed
+  to be non null*/
+  std::list<AstValue*>*const m_childs;
 };
 
 #endif
