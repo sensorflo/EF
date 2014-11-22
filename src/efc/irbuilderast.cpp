@@ -95,14 +95,14 @@ int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int ar
 }
 
 Value* IrBuilderAst::visit(const AstSeq& seq, Access) {
-  const list<AstNode*>& childs = seq.childs();
+  const list<AstValue*>& childs = seq.childs();
   if (childs.empty()) {
     throw runtime_error::runtime_error("Empty sequence not allowed (yet)");
   }
   // Evalue all nodes of the sequence. The value of the sequence is the value
   // of the last node.
   Value* ret = NULL;
-  for (list<AstNode*>::const_iterator i = childs.begin();
+  for (list<AstValue*>::const_iterator i = childs.begin();
        i!=childs.end(); ++i) {
     ret = (*i)->accept(*this);
   }

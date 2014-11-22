@@ -246,21 +246,21 @@ private:
 
 class AstSeq : public AstValue {
 public:
-  AstSeq(AstNode* child1 = NULL);
-  AstSeq(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
+  AstSeq(AstValue* child1 = NULL);
+  AstSeq(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   ~AstSeq();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); }
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
-  AstSeq* Add(AstNode* child);
-  AstSeq* Add(AstNode* child1, AstNode* child2, AstNode* child3 = NULL);
-  const std::list<AstNode*>& childs() const { return m_childs; }
+  AstSeq* Add(AstValue* child);
+  AstSeq* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
+  const std::list<AstValue*>& childs() const { return m_childs; }
 private:
   AstSeq(const AstSeq&);
   AstSeq& operator=(const AstSeq&);
 
   /** We're the owner of the pointees. Pointers are garanteed to be non null*/
-  std::list<AstNode*> m_childs;
+  std::list<AstValue*> m_childs;
 };
 
 class AstCtList : public AstNode {
