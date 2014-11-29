@@ -36,18 +36,19 @@
 ;;; Code
 (defconst ef-font-lock-keywords
   (list
-   "\\b\\(fun\\|val\\|var\\|decl\\|nop\\|if\\|elif\\|else\\|unless\\|for\\|foreach\\|in\\|while\\|until\\|do\\|throws\\|ret\\|goto\\|break\\|continue\\|end\\)\\b"
+   "\\b\\(fun\\|val\\|var\\|decl\\|nop\\|if\\|elif\\|else\\|unless\\|for\\|foreach\\|in\\|while\\|until\\|do\\|throws\\|ret\\|goto\\|break\\|continue\\|noinit\\|end\\)\\b"
    (list (concat "\\bfun[ \t\r\n]+"
-                 "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*"
+                 "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)\\b[ \t\r\n]*"
                  "\\(?::[ \t\r\n]*\\)?"
                  "\\(?:([ \t\r\n]*"
-                 "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,]*\\),\\)?"
-                 "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,]*\\),\\)?"
-                 "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,]*\\),\\)?"
-                 "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,]*\\),\\)?"
-                 "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^)]*\\)\\)?"
+                   "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\),[ \t\r\n]*\\)?"
+                   "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\),[ \t\r\n]*\\)?"
+                   "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\),[ \t\r\n]*\\)?"
+                   "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\),[ \t\r\n]*\\)?"
+                   "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\)\\)?"
                  ")[ \t\r\n]*\\)?"
-                 "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)")
+                 "\\([^=$()]*?\\)[ \t\r\n]*"
+                 "[=$]")
          '(1 font-lock-function-name-face)
          '(2 font-lock-variable-name-face nil t) '(3 font-lock-type-face nil t)
          '(4 font-lock-variable-name-face nil t) '(5 font-lock-type-face nil t)
@@ -57,7 +58,7 @@
          '(12 font-lock-type-face))
    (list "->[ \t\r\n]*\\(.*?\\)\\(?:is\\|throws\\|=\\)"
          '(1 font-lock-type-face))
-   (list (concat "\\(?:val\\|var\\)[ \t\r\n]+"
+   (list (concat "\\_<\\(?:val\\|var\\)[ \t\r\n]+"
                  "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*"
                  "\\(?:=[^:$]*\\)?"
                  "\\(?:"
