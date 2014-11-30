@@ -75,7 +75,6 @@ pedantic and patronizing, it is not so much fun anymore using the language.
 === Competing programming languages
 
 ==== C
-
 Way too few safety nets.  Way too few of the conveniences other classic and
 modern programming languages provide.
 
@@ -151,6 +150,8 @@ collection.  Is thus not suitable for a hard real-time embedded system.
   helps the programmer, but the programmer benefits probably more if he spends
   less time searching bugs / compile/linker problems.
  ** No context sensitive operators/keywords.
+ ** With a compile switch disallow the potentially dangerous `from the world
+    C' constructs which the verifier can not verify to be correct.
 * Trade faster run-time for longer compile-time.  The program is more often
   run than compiled.  Even while developing - why compiling a translation unit
   if you don't let the code in it run?  (OK due to a changed import it might
@@ -286,8 +287,8 @@ collection.  Is thus not suitable for a hard real-time embedded system.
 
 == Meta syntax used in this document
 
-https://github.com/sensorflo/yasmala[Yasmala] is the meta syntax used in this
-document to describe the syntax of EF.
+https://github.com/sensorflo/yasmala[Yasmala] is the meta syntax (aka
+notation) used in this document to describe the syntax of EF.
 
 
 == Program structure
@@ -314,6 +315,16 @@ In EF everything is an expression.  As a rough analogy, what C calls
 statements EF calls stand alone expressions, what C calls expressions EF calls
 sub expressions.
 
+Every expression (i.e. including flow control constructs, declarations,
+definitions etc.) is in one of these two syntax forms:
+
+*  An unary/binary/n-ary operator as in ++a * b++.  See <<operator_expr>>.
+*  A list -- or `function call', whichever mental pattern you like more.  The
+   first element of the list is the function name, the rest of the elements
+   are the function's arguments.  E.g. +foo( arg1, arg2)+.  Note we're only
+   talking about syntax, for `functions' like +if+, +for+ etc. there is no
+   call at run-time.  See <<list_expr>>. 
+
 ----------------------------------------------------------------------
 ## stand alone (sa) expressions. sa_expr is like pedantic_sa_expr but with a
 ## bit more relaxed rules.
@@ -334,8 +345,6 @@ pedantic_sa_expr =
   ## effects only, i.e. throws away the result, then evaluates rhs and returns
   ## its result. I.e. it is analogous to C's comma operator
   pedantic_sa_expr pedantic_sa_expr;
-
-expr_list = (sa_expr \,{?})*; 
 
 sub_expr = proper_sub_expr | psa_sub_expr;
 
@@ -384,7 +393,114 @@ alone expression is the implicit binary sequence operator.
   only imported in the enclosing block.
 
 
-=== Sub expressions and classic operators
+[[list_expr]]
+=== List expression
+The following explains the syntax of list expressions (aka `function calls').
+Remember that it's only the syntax that resembles a function call, there is
+not necessarily a function call at run-time.  Conceptually that is a
+`function' name followed by an argument list.  EF provides additional syntaxes
+which can be used in general in EF programs.  `Syntax 1' is the one most
+commonly used.
+
+----------------------------------------------------------------------
+               | func  name/    arg1   arg    arg2  arg     arg3  list
+               | name  arglist         sepa-        sepa-         end
+               |       sepa-           rator        rator         deli-
+               |       rator                                      miter
+               |------------------------------------------------------
+classic syntax | foo    (        a       ,      b     ,       c      )
+EF syntax 1    | if              a      [:]     b    else     c      ;
+EF syntax 2    | if     (        a      [:]     b    else     c      )
+EF list literal| [               a       ,      b     ,       c      ]  
+----------------------------------------------------------------------
+
+`Syntax 1' explained, relative to the familiar classic syntax of an function
+call: The opening parenthesis separating the `function' name from the start of
+the argument list is not needed since for a keyword that is known to have
+`function call' syntax it is implicit that an argument list follows.
+Depending on the `function' the arguments are separated not by commas but by
+other separators like e.g. ++:++ or +else+.  To end the list, a semicolon is
+used.
+
+Note that in ++[a, b, c]++ the opening bracket ++[++ is considered the
+`function name'. The `function' ++[++ creates a literal list.  Similarly, the
+`function' ++{++ (e.g. ++{a, b, c}++) creates a so-called `block'.
+
+Optionally the close delimiter can be preceded by ++'end ( identifier| 'loop|
+'if| ...)++ to explicitly state what construct is being closed.  As in Ada.
+
+There are implicit lists without `function name'.  The open and the end
+delimiter of such an implicit list are the separators / delimiters of an outer
+list.  That outer context also defines the `function name' of the inner list.
+In the following example, ++=++ and ++;++ are delimiter separators in the
+outer +fun+ list, and are at the same time start / end delimiters of the inner
+list (constituting the body of the function), the inner list's element
+separators being ++,++.  In this example, the ++=++ of the outer list
+implicitly defines that the `function name' of the inner list is ++{}++.
+
+----------------------------------------------------------------------
+outer list         : fun ...  =                 ;
+implicit inner list:               a  , b , c
+equivalent to      :            {  a  , b , c }
+----------------------------------------------------------------------
+
+
+General syntax of a list:
+
+----------------------------------------------------------------------
+# list
+expr_list = (sa_expr \,{?})*; 
+# associative list
+expr_alist = (sa_expr#key `=> sa_expr#val  \,{?})* 
+----------------------------------------------------------------------
+
+**to-do:*
+
+- Depending on the context, the list is interpreted / evaluated-at-run-time
+  differently.  Define all possible variants more detailed.  This definition
+  must be easily rememberable by humans.
+  * Argument list when calling a function
+  * Parameter list when declaring a function
+  * The sequence of expressions constituting a block (aka body)
+  * Expressions involving expressions lists such as e.g. ++[a,b] = [c,d]++
+    which is another way of writing ++a=c b=d++. !!! Especially here, when
+    should comma be in the sense of a Python tuple and when in the sense of a
+    C++ comma!!! Possible answer: its always in the sense of a tuple (aka
+    compile time expression list), and the directly enclosing construct
+    defines what is done at compile-time and what at runt-time. 
+  * ...
+- Consider using ++$++ instead ++;++ to end lists, ++;++ for
+  lists in a `execute-sequentially-at-run-time' context, ++,++ for  `create
+  some form of list data structure'.  Would look more like C&plus;&plus; /
+  Java etc, would maybe be a bit less ambiguous, but also would hide a bit more
+  that it's all about lists (hmmm, that argument can be pro _and_ contra).
+- Define unambiguously (not only technically, but also in the sense of a
+  human's guts feeling) to which outer construct commas belong.  I would like
+  to make things possible as ++if cond : a , b;++, i.e. ++a, b++ would be the
+  2nd argument to the +if+ `function', i.e. there the comma `lives' only
+  within the 2nd argument, on the level of ++if++'s argument list.  I also
+  would like if separators with same meaning are exchangeable ++if(a,b,c)++ or
+  ++if(a : b else c)++ or ++if(a : b , c)++. Obviously the two goals are not
+  compatible.
+
+  !!!! if,(...,..) for the comma form if( .... ) and if .... ; for the
+  dedicated sep form.  Or inverse if(...) for the comma form and if:(...) for
+  the special sep form (exactly like that not possible because
+  indistinguishable form special sep form with empty condition. !!!!
+
+- Introduce a term like _form_ (from lisp) denoting the general concept
+  which's specialization are a) regular functions (term?) b) `compile time
+  functions' like +if+ (term? I think this is what lisp denotes `form').
+- Settle for a name.  Currently these are floating around:
+ * expression list +expr_list+
+ * compile time (expression) list +ct_list+
+ * sequence +seq+
+ * tuple
+ * runtime sequence
+ * data list
+        
+[[operator_expr]]
+=== operator expressions / operators
 
 These operators correspond to what is found in most programming languages.
 
@@ -395,16 +511,19 @@ proper_sub_expr = boolean_expr | bit_expr | comparison_expr |
 
 arithmetic_expr =
   ('root2 | 'log2 | 'loge | 'log10 | \+ | \-) sub_expr | 
-  sub_expr (`+ | `- | `* | `/ | \% | 'pow | 'root | 'logb) sub_expr;
+  sub_expr (`+ | `- | `* | `/ | `% | 'pow | 'root | 'logb) sub_expr;
 
 bit_expr = 'bit_not sub_expr |
-  sub_expr ('bit_or | 'bit_and | 'bit_xor | 'bit_nand |
-            'ror | 'rol | 'shr | 'shl | 'sar | 'sal) sub_expr;
+  sub_expr ('bit_or | `| | 'bit_nor | `~| | 'bit_and | `& | 'bit_nand | `~& |
+            'bit_xor | `^ | 'bit_nxor | `~^ |
+            'shr | `>> | 'shl | `<< | 'sar | 'sal | 'ror | 'rol ) sub_expr;
 
 ## all are short circuit operands, they don't evaluate second operand if
 ## outcome is determined after evaluation the first operand.  Thus they can
 ## also be used as flow control operands, e.g. as in Perl "foo() or die()".
-boolean_expr = 'not sub_expr | sub_expr ('or | 'and | 'xor | 'nand) sub_expr;
+boolean_expr = 'not sub_expr | sub_expr boolean_bin_op sub_expr;
+
+boolean_bin_op = 'or | `|| | 'and | `&& | `^^ | 'xor | 'nand | `!&& | 'nor | `!|| ;
 
 comparison_expr = sub_expr (`== | `!= | \< | \> | `<= | `>= ) sub_expr;
 
@@ -455,8 +574,18 @@ Similarly it must be ++while ((i=j)) ...++ opposed to ++while (i=j) ...++.
     at the end of the enclosing block, just as automatic variables.
 
 
+[[types]]
 == Types
 
+
+[[type_system]]
+=== Type system
+
+Roughly similar to C&plus;&plus;.  However more strongly typed, e.g. in order
+to facilitate pointer alias analysis (see <<tools>>).
+
+
+=== Declaring types / type expressions
 ----------------------------------------------------------------------
 type_def = class_type_def | interface_type_def | enum_type_def |
   union_type_def | alias_type_def;
@@ -670,6 +799,10 @@ terms used in code / in the syntax of the language.
 === (Named) Functions
 
 ----------------------------------------------------------------------
+##                sep                   sep       sep
+## general:  fun  :  args_tuple         ,  rettype = body ; 
+## usual:    fun  (  arg1, arg2         )  rettype = body ;
+
 ## At compile-time defines an function object.  At run-time does nothing.
 fun_obj_def = 'fun identifier#name fun_type_expr block_expr;
 fun_type_expr = fun_signature | identifier#*function type*#;
@@ -680,10 +813,16 @@ fun_signature =
   ['throws \( type_expr_list \)] 
   ['is funcqualifiers];
 
-## To-do: "[\= ctconst_expr]" is not really part of a general type list, it is
-## only available in a function signature.
 named_type_list = (named_type \,{?})*; 
-named_type = type_expr [\: identifier#name] [\= ctconst_expr];
+## To-do:
+## - "[\= ctconst_expr]" is not really part of a general type list, it is
+##   only available in a function signature.
+## - make it really analogous/'compatible' to how objects are defined in
+##   general.  What this makes special though is that were in a `(argument)
+##   object declaration context', i.e. declaration of objects is the only
+##   reasonable thing to do, thus we can omit things which are otherwise
+##   needed to declare an object.
+named_type = ('val | 'var) [identifier#name [\= ctconst_expr] \:] type_expr;
 
 ## To-do: What exactly is the returned type? Something like named_type_list
 fun_call_expr = fun_obj_expr \( expr_list \);
@@ -718,14 +857,48 @@ that case which also forces that global operator to be private.
 See also D: Auto deduction of all comparison operators after == and any of (<
 <= > >=) are given.
 
+See also ``Properties of some standard methods/operators''.
+
 
 === Function call
 
-As in Python, allow to call giving something like a map identifier->value.
-That way caller has not to remember the order.  Should I really do that? The
-principle should be to make use of the IDE more.  But unlike using comments in
-C/C&plus;&plus; at caller side, the python/EF approach is not redundant, so no
-downside from this point of view.
+==== Argument passing with key => value pairs
+The caller can pass the arguments as ordered list as in most languages.
+Additionally each element in such a list can also be a key => value pair, the
+key being the name of a parameter which's value is to be set to the value of
+the pair.
+
+Notes:
+
+- What is the type of such a key value pair?  How can we differentiate whether
+  the caller intends to pass a key value pair as discussed above, or whether
+  that pair as a whole is the value to be passed?
+- The benefit is that when reading code at caller side, it is more descriptive
+  / informative.  However shouldn't it be the task of the IDE to show the
+  reader information (type, name, doc) about each parameter of the function
+  at hand?
+- Parameter names would become half way part of the signature.  If the
+  implementation changes a parameter name, some client code might be broken.
+- The set of function declarations plus the function definition all had to use
+  the same names.  This can be seen as good and as bad.
+- What about function pointers?  Can the declaration / definition of a
+  function pointer use different parameter names?  After all, the parameter
+  names are not really part of the function's signature.
+- Also, at least with pedantic name comparison, each caller has to overtake
+  the naming style (prefixes, camel case vs underlines, ...) of the method
+  implementation.
+  * If the comparison rules would leave some controlled leeway, the callers
+    could be decoupled from the naming guidelines of the implementation.
+  * The caller could provide an internal name and an external name.  Maybe in
+    one go where encoded in the name is what is part of prefix/postfix, and
+    what is part of the base name
+  * But then still, if that base name consists of multiple words, there many
+    ways how to exactly `encode' them in an identifier: camel case,
+    underlines, ....
+  * EF tries anyway to soft enforce a style which is used by everyone.  Here
+    it would help again that the implementer side and the client side have the
+    same naming styles anyway.
+
 
 === Lambdas
 
@@ -780,6 +953,35 @@ Mainly to be compatible to C, to be able to build wrappers around C.  But
 shouldn't the wrapper then use a more EF like construct?
 
 
+=== Properties of some standard methods/operators 
+
+Not only is the code more maintainable since these common operators really do
+what humans expect, but also the compiler / analyzer / optimizer ... can
+deduce helpful things.
+
+Copy ctor, move ctor, assignment, move assignment have the properties
+generally assumed with them.  Const member methods, the copies are equal (see
+operator==), .... Thus e.g. a ctor with an initvalue followed by an assignment
+can be replaced by a ctor with rhs of assignment as initvalue.
+
+Relation between unary/binary plus/minus, between multiplication and division,
+binary operation and assignment and the `corresponding' x= assignment, binary
+operators with two distinct types as parameter have 3 methods in
+CC&plus;&plus; (member, two global), postfix/prefix increment leave the object
+in the same state (i.e. when the return value is not inspected, the compiler
+can choose the more efficient).  When a unity object is known, then
+&plus;&plus; is equivalent to &plus;&plus;=, same for minus.  That
+e.g. helps that ++result = a + b++ could be strength reduced to ++result = a;
+result += b++ (the later does not need to create & destroy a temporary).
+
+Can the compiler automatically verify that a user implemented method fulfills
+all requirements/rules?  How to explicitly break the rules, if a user really
+wants to implement some of these methods specially.  How to enforce standard
+types / type qualifiers.  E.g. assignment is a const member methods, expects
+an const X& arg, returns an X&.
+
+See also ``Overloaded Operators''.
+
 === Chaining functions
 
 As in #F with ++|>++ allow to stream output of one function into input of
@@ -789,12 +991,28 @@ includes pipes / redirection?  Learn how Windows PowerShell does it.
 
 === Optimizations
 
-...
+Does it really help if the user has to explicitly state properties such
+e.g. pure? After all the compiler can deduce it itself and attach e.g. the
+pure property to a function itself internally.  The explicit keyword is
+probably only good for humans a) to communicate to a reader that this function
+potentially can be used in an efficient manner b) to communicate to the
+compiler that it should print an error when the function is not pure
+after all.
 
 
 ==== Pure
 
 See D for pure functions.  In EF, pure can be a property of any code chunk.
+
+Do also a lesser form of `pure' for class member methods: they are as pure
+functions but are allowed to read access class members.  When an object is
+never modified between such method calls the 2nd call can be omitted by using
+the behind-the-scene stored return value of the 1st call.
+
+I think the general version of the above is: when the compiler can detect that
+a function call tree does only read from memory that is not modified between
+two such calls, then the 2nd call can be ommited by using the behind-the-scene
+stored return value of the 1st call.
 
 
 ==== Tail call optimization
@@ -856,24 +1074,74 @@ global scope with a non-nop run-time part are disallowed.  You can turn it on
 via compiler switch.
 
 
+[[objects]]
 == Objects
 
-An object, in EF, is a region of storage with the following properties:
+[[obj_properties]]
+=== Object properties
+
+An object, in EF, is a region of storage with the following compile time
+properties:
 
 * _type_
 * _value_:      
 * [_name_]: A name is optional
 * _size_: Is implicitly defined by object's type
 * _scope_: 
-* _storage_: As in C&plus;&plus;
- ** automatic:
- ** static:
- ** thread:
- ** dynamic:
-* _lifetime_: Is implicitly defined by storage & scope
-* _linkage_
-* _alignment_
+* _linkage_:
+* _alignment_:
+* _lock wrapper_ Just an first idea.  See also <<concurrency>>.
+* _storage duration_: Begins after storage allocation (which is before
+  constructor call) and ends just before storage deallocation (which is after
+  destructor call).  See also life time. 
+ ** _static_
+  *** _system static_: system global, implies shared ownership and implies
+      shared access
+  *** _process static_: process global, implies shared access
+  *** _thread static_: thread private global, implies exclusive access
+ ** _automatic_: Informally explained: objects on stack.  That includes
+    temporaries and parameters.
+ ** _dynamic_: Informally explained: objects on heap.
+* _ownership_:
+ ** _shared ownership_:
+ ** _exclusive ownership_:
+* _owner(s)_: The owner is responsible for freeing the underlying memory
+  resource.
+ ** System:
+ ** Process:
+ ** Thread:
+ ** Block/stack: Register is not an owner; its an transparent
+    optimization when the optimizer puts an object into an register instead on
+    the stack.
+  *** Enclosed block on stack:
+  *** Enclosed `mini' block on stack: E.g. for temporary objs not assigned to
+      observer_ptr.
+ ** Owning smart pointer:
+ ** Parent object: for member objects
+ ** Garbage collector:
+ ** User: 
+* _exclusive/shared access_: See also <<excl_shared_access>>.  The
+  participants are responsible for ensuring mutual exclusion.
+ ** exclusive access by one single thread
+ ** shared access
+  *** shared between threads but only within one single process
+  *** shared between processes (*to-do*: do we need to differentiate there
+    multiple threads can access it or not?)
 
+An object has additionally the following run time property:
+
+* _life time_: See also storage duration.  From the C&plus;&plus; standard:
+  3.8 Object Lifetime: 1/The lifetime of an object is a runtime property of
+  the object.  The lifetime of an object of type T begins when: — storage with
+  the proper alignment and size for type T is obtained, and — if T is a class
+  type with a non-trivial constructor (12.1), the constructor call has
+  completed.  The lifetime of an object of type T ends when: — if T is a class
+  type with a non-trivial destructor (12.4), the destructor call starts, or —
+  the storage which the object occupies is reused or released.
+
+
+[[obj_decl_def]]
+=== Declaration / definition
 Type, storage, linkage, alignment can be defined as following:
 ----------------------------------------------------------------------
 obj_def = local_obj_def | global_obj_def | classmember_obj_def | fun_obj_def;
@@ -889,9 +1157,19 @@ scope = 'block_scope | 'full_expr_scope;
 * Is alignment part of object definition or of type_expr?
 
 
+=== Layout
+
+- Don't have C&plus;&plus;'s restriction that each obj must have an unique
+  address.  Or just allow for zero sized objects, in particular zero sized
+  arrays.  
+- +alignof+
+- bit fields
+- pack as attribute to structs/classes
+
+
 === Local objects
 
-A bit simplified, the ++obj++ family of n-ary operators create a new object,
+A bit simplified, the ++obj++ family of `functions' create a new object,
 initialize it with the given initializer, bind the given identifier as name to
 it and finally return a reference to the new object.
 
@@ -900,20 +1178,33 @@ it and finally return a reference to the new object.
 ## if identifier is omitted, it's an unnamed object
 ## obj{}
 local_obj_def =
-  'obj [obj_prop_expr] [\: identifier#name] initializer |
-  'obj [obj_prop_expr] \{ ([identifier#name] initializer \,{?})+ \};
-  'obj [obj_prop_expr] \{ ([identifier#name] \,{?})+ \} initializer;
+  ## intended for simple small (chars for code) initializers; obj_prop_expr is
+  ## typically less important and thus at the end
+  ('val|'var|'obj)     [identifier#name] initializer                        [\: obj_prop_expr] \; |
+  ('val|'var|'obj) td ([identifier#name] initializer \,{?})+ td             [\: obj_prop_expr] \; |
+  ('val|'var|'obj) td ([identifier#name]             \,{?})+ td initializer [\: obj_prop_expr] \; |
 
+  ## intended for complex multi-line initializers
+  ('val|'var|'obj) [identifiers#name] [\: obj_prop_expr] initializers \; |
+
+  ## short form.  Is now an binary operator
+  identifier#name ( `:= | `:&= ) sub_expr#initvalue  |
+  td (identifier \,{?})* td ( `:= | `:&= ) td (sub_expr \,{?})* td ;
+
+identifiers =  (identifier \,{?})* ## a tuple, to be defined uniformly elsewhere
+
+initializers = (initializer \,{?})* ## a tuple, to be defined uniformly elsewhere
 initializer =
   ## constructor call syntax
-  \( expr_list \) |
-  ## leave objects value undetermined
-  \( 'noinit \) | 
-  ## an alternative syntax to the constructor call with one argument like so
+  \( (expr_list | 'noinit | 'laterctor ) \) |
+  ## an alternative syntax to the constructor call with one argument.  "obj
+  ## x = 3;" and "obj x(3);" are equivalent.  Also here noinit can be used.
   ## '(sub_expr)'
   \= sub_expr |
   ## omitting the initializer is an alias to the '()' initializer
   ;
+
+td = #* tuple delimiter *# ;
 ----------------------------------------------------------------------
 
 .Example
@@ -926,29 +1217,72 @@ get( 0, obj double f );
 obj string { a, b } = get2strings();
 ----------------------------------------------------------------------
 
-.Scope and lifetime
-The lifetime always ends at the end of the enclosing block.  In particular
-that includes object definitions inside the condition of flow control
-expressions.
 
-.Read out aloud
-Read the code from left to right and get English prose.
+==== Initialization
 
-* ++obj int : i = 3++: Define a new __obj__ect of type ++__int__++, name it
-  ++__i__++ and initialize it with +_3_+.
-* ++obj string static {town = "NY", name("Bob")}++: Define new __obj__ects of
-  type ++__string__++ with ++__static__++ storage: name one ++__town__++ and
-  initialized it with ++__"NY"__++, name another ++__name__++ and initialize
-  it with ++__"Bob"__++.
+===== Uninitialized / not-yet-constructed objects
+EF supports the ability to not initialize a variable with the +noinit+ keyword
+/ initializer, most probably for run-time efficiency, as it is possible in C.
+However in EF the programmer has to be explicit.  Such an object is considered
+to be constructed and usable. 
 
-.Uninitialized objects
-EF supports the ability to not initialize a variable, most probably for
-run-time efficiency, as it is possible in C.  However the programmer has to be
-quite explicit.  The keyword is ++(noinit)++.  Only ++noinit++ without
-parenthesis would have been probably possible too, but I feel with the
-parentheses it looks more familiar, it's more consistent.
+EF also supports saying (with the +laterctor+ keyword / initializer) that
+everything as normal is done, just the constructor is not yet called.  The
+object is not allowed to be accessed.  Provably, so rules need to be stated
+what the code up-to the actual ctor call is allowed to look like.
 
-.To-do
+
+**To-do:** Is +noinit+ really needed after there is +laterctor+?
+
+
+===== Guaranteeing initialization
+Sometimes one desires to initialize a variable with something other than the
+return value of an expression.  E.g. via an out parameter of a function
+(i.e. passing the new not yet initialized object and let it be initialized by
+the function).  Or each clause in a conditional flow control expression
+wants to define somewhere the initializer.
+
+Keywords that promise that a function will init an outparameter -- write to it
+at least once before reading from it.
+
+Keywords in a flow control expression that promise that a given object will be
+initialized -- written to it at least once before reading from it.  That also
+would be a use case for the the example that a flow control expression as a
+whole returns already the desired initializer, but the when its a long
+multiline flow control expression, then ++var i : int = if ....;;++ may look
+awkward (on the other side that's just a matter of taste, which is also a
+matter of being used to such constructs).
+
+**To-do:** In case of the +laterinit+ initializer.  The flow control
+expression's clauses can not call assignment but must call the ctor?  Not if
+the class promises that (ctor with laterinit/noinit followed by assignment)
+and (normal ctor with initvalue) are equivalent.  Or the rules of EF just say
+that the assignment really calls the ctor.  Or there is a syntax to just call
+the ctor for an object -- without allocating the storage, since that already
+has been done.
+
+**Mind:** Let the computer automatically deduce non-initialized variables where
+possible.  Do not force to user to state things the compiler can deduce
+itself -- except where it helps to communicate intend.
+
+
+==== Associated block
+Make it possible that all clauses of a flow control expression can introduce
+an object which is associated to an outer block.
+
+Give the user the possibility to choose the associated block also for
+variables defined in conditions of a flow control expressions.  For example
+a) only the condition b) additionally also one clause associated to the
+condition c) additionally all following condition-clause pairs of the same
+flow control expression d) the block associated to the object is the outer
+block of the flow control expression.
+
+
+==== Scope and lifetime
+The lifetime always at the end of the object's associated block.  
+
+
+==== To-do
 * Define where _exactly_ lifetime and scope begin.  In particular with
   collection initializers: Can one element refer to another one? Does that
   depend on whether the referee was already initialized itself or can you get
@@ -982,8 +1316,21 @@ parentheses it looks more familiar, it's more consistent.
   extend the concept to scope the variable to the enclosing full expression.
 
 
-== Non local objects
+[[variable_sized_obj]]
+=== Variable sized raw arrays / objects
+If variable sized raw arrays are allowed as members, then the whole object becomes
+variable sized.
 
+An raw array of such variable sized objects is not possible.  Thus probably
+the object size is like a template argument.  But its not really another type
+-- thus that apparently calls for a new type concept: each template argument
+has as attribute, whether it contributes to defining distinct type or not.
+See <<templates>>.
+
+Also allow size 0.
+
+
+=== Non local objects
 Actually don't differentiate, do it always the same way.  EF tries to have to
 have context free grammar (do i use the term correctly?).  So to define global
 static objects, we have to say storage type static.  C&plus;&plus; does it
@@ -1034,6 +1381,10 @@ is redundant.
 
 Allow to delete the auto generated ++(noinit)++ constructor:
 ++constructor(noinit) = delete++
+
+How to call the ctor explicitly?  E.g. for already allocated but not yet
+constructed objects.  E.g. due to use of some `non-standard' +new+ construct,
+or due to the +laterctor+ initializer.
 
 
 === Destructor
@@ -1114,7 +1465,7 @@ givenchain_expr =
 
 jumptable_expr =
   'jumptable \( sa_expr \) 
-  ('when \( ctexpr_list#*at least one*# \) block_expr_opt_falltrough)* 
+  ('when \( expr_list#*at least one*# \) block_expr_opt_falltrough)* 
   ['else block_expr]  
 
 loop_expr =
@@ -1123,7 +1474,9 @@ loop_expr =
   ## - like in ?? a nested loop in one written loop "multiforeach ( i,j in matrixindicies )"
   ##   However that gets difficult with jumps (break,continue,...). To which loop do they refer?
   ##   Probably a feature with dimishing returns.
-  'foreach \( (sa_expr 'in collection_expr )+ \) block_expr |
+  ## - See function definition for how to declare variables in a `object
+  ##   declaration context'
+  'foreach \( (sa_expr#obj_decl_context 'in collection_expr )+ \) block_expr |
   'for \(  expr_list#*<void,bool,void>*# \) block_expr |
   ##['begin sub_expr] 'while sa_expr 'inc sub_expr 'do sub_expr | what does ruby, python,
   ##scala, ... do?
@@ -1193,13 +1546,112 @@ normal objects, functions, modules, ...
 Does it help when there is a common base class as in Java?
 
 
+[[resource_management]]
+== Resource management: RAII & GC side by side
+
+Basic idea is to do resource management via RAII as in C&plus;&plus;.  EF
+tries to have cheap destructor `calls' by trying to avoid them all-together.
+Optionally, simultaneously, also garbage collection is provided for heap
+memory.
+
+
+*to-do*:
+
+* How to prevent that non-returning methods leave no resource leaks behind,
+  since destructors of locals are not called.
+
+
+=== Destructors & how to try to make them cheap
+
+- Lazy destructors (or resource freeing in general) for objects on heap by
+  default (that includes `dtors' of smart pointers).  Normal constructors only
+  for RAII classes where the resource really must be freed upon destruction of
+  the host object.  Customizeable by providing implementations of the
+  primitive functions which replace the default implementations
+  (++push(__ctor_addr__)++). As in a garbage collector there will be `cleanup'
+  rounds.  An _ordered_(!) set of `root' ctors has to be called, which then
+  potentially call a tree of further ctors.  A round's run-time can be reduced
+  e.g. by partial `collection': stop calling ctors somewhere in the middle.
+  * Besides ctor, also e.g. assignment (e.g. to unique ptr) frees the current
+    resource owned by the unique smart pointer.
+  * Give the user the control whether he wants to do the resource freeing lazy
+    or greedy.  The default is that the compiler is allowed to choose what it
+    sees fit.
+  * +delete+ (or +free+) operator (in lazy and greedy variant) as more
+    expressive variant to the equivalent ++= null++.
+
+- Nonexistent destructor: Classes not owning resources, and only having
+  objects of such classes as members, need no destructor at all.  The compiler
+  knows that and thus can omit arranging for it to be called.  *to-do:* How to
+  arrange that mostly non-owning smart pointers can be used, and only seldom
+  owning smart-pointers?  Probably it helps if variable sized objects
+  (i.e. most probably arrays) are allowed at least on stack, but also as
+  members.
+
+- Try to reduce each destructor to a list addresses of heap objects which need to
+  be freed (in any order, without any further ctor code) in one go.  I.e. try
+  that the only code the body of a destructor executes is adding a set of
+  addresses to the global to-be-freed list.  No dtors of member objects; that
+  already has been `inlined' in the list previously talked about.
+  * `lazy free' on most occasions, e.g. internally in owning smart pointers, an
+    object on the heap is `freed' by just pushing it's address on the
+    to-be-freed stack.  Also null can be pushed for simplicity at caller side
+    (there is a huge amount of call sides, but only one (or very few) sides
+    where the to-be-freed stack is walked through to actually free the
+    objects.  *to-do*: Apparently the kernel can automatically grow the stack.
+    Can I use a similar feature for the stack of to-be-freed addresses?
+  * is it possible to reduce a ctor call to simply pushing a list of heap
+    address also in the case of e.g. a linked list where the list objects has a
+    smart pointer owning the head node, and each node has a smart pointer
+    owning the next node?
+
+- Allocation on stack instead heap, the return type being an non-owning
+  pointer.  What can I do such that allocation is transparent, i.e. caller
+  does not know whether it allocates on stack or heap?  E.g. consider a
+  `normal' local object on the heap which is referenced only by that single
+  `normal' local identifier (possibly additionally read only references). When
+  it internally wants to allocate objects and wants to be the unique owner of
+  them, they can be created on the stack.  The parent object would then not be
+  really the owner, and it's dtor could be empty.
+  * Will result in a `new'(?) way of stack frames.  After a call, the stack
+    will still contain the newly allocated objects within the call.
+  * The corresponding free call to such an allocate call will not do anything,
+    since the owner is not the caller but the stack.
+
+- When considering costs: Also a `perfect' C program has to pay for things, it
+  also has to call malloc/free, do error checking by comparing return values
+  and depending on the result do a branch.  So a `perfect' EF program does not
+  pay for anything at run time that not absolutely has to be done in any case
+  anyway.
+
+
 == Memory management
+See also <<resource_management>>.
+Support custom memory management primitives.  EF's built-in smart-pointer
+implementation shall be decoupled from memory management primitives.
 
-Read http://en.wikipedia.org/wiki/Manual_memory_management and follow the
-links at the bottom.
+Make allocation on heap and stack such that optimizers have some leeway to
+choose whether in reality it is on stack or on heap.  Probably it'll be
+somewhat like: have one form to define allocation of a new object in a syntax
+similar to C.  To define an object to be allocated somewhere, create a
+(built-in) smart pointer with built-in keywords/syntax, e.g. similar to
+C&plus;&plus; ++make_unique++, just hopefully shorter.
+
+Mind concurrency.  Consider having malloc/free in two versions: once for heap
+objects owned by only one thread, and once for shared heap objects.  In
+anyway, the memory management primitives must be reentrant (also the one
+thread private heap malloc method might be called simultaneously from different
+threads).
+
+*to-do*:
+
+* Find out more about batch malloc & free.  Would it help if EF would try to
+  favor batch free over a loop with normal frees.
+* Read http://en.wikipedia.org/wiki/Manual_memory_management and follow the
+  links at the bottom.
 
 
-== Layout
+=== Layout
 
 - Don't have C&plus;&plus;'s restriction that each obj must have an unique
   address.  Or just allow for zero sized objects, in particular zero sized
@@ -1207,6 +1659,91 @@ links at the bottom.
 - +alignof+
 - bit fields
 - pack as attribute to structs/classes
+
+
+
+[[smart_pointers]]
+== Built-in (smart) pointers
+
+Classifications / abstract base types:
+
+owning pointer::  All of the owning pointers have two variants: 1) to single
+  object 2) to array of same size/type objects.  This is needed in order the
+  correct delete operator (delete vs delete[]) can be called.  An owning smart
+  pointer is responsible to call the destructor of the pointee and then to
+  free the underlying memory resource.
+
+non-owning pointer:: ...
+
+Concrete Types:
+
+unique_ptr:: Is the only owner, thus no reference counting needed.  Referred
+  obj is of dynamic (non-gc allocated) storage. 
+shared_ptr:: Shared ownership via reference counting.
+address / implicit `pointer':: Owning `constant pointer'.  Pointees are:
+  - Objects with storage class static.  Owner is one of system / process / thread.
+  - Objects with storage class automatic.  Owned by a block/stack.
+  - Member objects.  Owned by parent object.
+  - +this+, +super+:
+weak_ptr:: Non-owning, but can be promoted to a shared_ptr.
+observer_ptr:: Non-owning.  Compiler ensures at compile time that that the
+  owner(s) does not delete the object while the observer_ptr points to it.
+  Alternative names: leaser_ptr or renter_ptr.  I fear that the word
+  `observer' wrongly implies read only access to the pointee.
+raw_ptr:: Non-owning.  Disallowed by standard guidelines.  Can point anywhere
+  the other pointers can.  User is responsible for mutual exclusion and
+  ownership.  However there still is no pointer arithmetic.  That is in order
+  to make pointer alias analysis feasible.
+
+
+General pointer assigning rules:
+
+- If the lifetime of an object o is guaranteed to be longer than the lifetime
+  of a non-owning pointer object p, then p can point to o.
+
+Rules to assign an object/pointer to an observer_ptr:
+
+- The observer pointer is a global object, and the referred to object is a
+  static object (which will be deleted after to the observer pointer obj),
+  or sub-member only following direct or const owning smart pointers.
+- The observer pointer is an local object (that includes function
+  arguments), and the referred object is either a local object (which is
+  owned by stack) or a thread or process static object (owned by process
+  or thread respectively) object.  Again including sub-member only
+  following direct or const owning smart pointers.
+- The observer pointer is a member object and the referred to object is
+  another direct member of the same parent object, or it is a child of
+  another direct member only following direct member ships, or only
+  following const owning pointers.
+- The observer pointer is member of a parent object for which the above
+  rules (for observer pointer objs) are true.
+- in GC mode, observer_ptr can put to what ++gc_new++ returns
+
+
+How to avoid the expensive shared pointers:
+
+- also in a graph, the graph is the owner of the nodes, not the neighbor
+  nodes.  So e.g. there would be a singly linked list of nodes using
+  unique_ptr, representing the nodes owned by the graph. Each node has also a
+  list of non-owning pointers to it's neighboring nodes, which then represents
+  the actual graph. Costs space: the additional unique_ptr per node. Costs
+  run-time: unique_ptr ctor when inserting a node plus dtor when removing a
+  node minus the costs the shared_ptr solution would have had.
+
+
+*to-do*:
+
+* Which smart pointer a class (e.g. a class representing a collection)
+  internally uses is given as template argument.  E.g. it internally uses
+  unique pointers, and data accessor methods return observation pointers.  Or
+  it internally uses shared pointers, and data accessor methods return shared
+  pointers.  That however means EF needs to have same const_expr which returns
+  a type given an input type, and which, regarding the previous example,
+  internally has the relation unique pointer -> observer pointer and shared
+  pointer -> shared pointer.
+
+
+
 
 
 == Compilation
@@ -1254,6 +1791,38 @@ conditional expression we get conditional declarations.
   (,) but not semicolon (;), then e.g. the preprocessor uses semicolon to
   separate arguments.  In C&plus;&plus; its not easily possibly and sometimes
   not at all to pass an argument containing a comma.
+
+
+== Namespaces in general
+
+Classes/Modules are also namespaces.
+
+* Somehow make it hard to accidentally shadow a name and/or to accidentally
+  refer to another name as intended.  E.g. warnings if a newly introduced name
+  shadows another one.  To really to that the user needs to explicitly state
+  that.  I.e. an declaration in EF could have an +shadows+ attribute.  When
+  that attribute is used without really shadowing a name, that too results in
+  a warning.  As always, (specific) warnings can be turned off or turned into
+  errors.
+
+* When importing a namespace and a newly imported name shadows another one,
+  shall this result in a warning?  Must the user explicitly state which names
+  he approves/allows to shadow others. 
+
+* When calling a method, within the argument list the name space of the
+  method's class is the top namespace.  That way one is not forced to qualify
+  names defined in that class which one want's to pass as argument.  A typical
+  use case are enumerations.  What if the user does not want to import that
+  namespace within the argument list -- shall EF give him a choice?  What if
+  the act of importing the namespace would shadow names -- does that result in
+  a warning -- or only if the names used within the argument list are ones
+  that where auto-imported and now shadow others?
+
+* Have the same namespace for identifiers for objects (including code objects)
+  and for types and label and whatever.  This is simpler for the parser
+  (closer to being context free), and also simpler for most human brains: one
+  name meaning different things just is confusing.
+
 
 
 == Extendable language / what is part of language what of compiler?
@@ -1308,6 +1877,18 @@ if it fails, try to react in the catch handler.
   function signature
 
 
+[[templates]]
+== Templates / generic programming
+Each template argument has an attribute which defines whether that template
+argument contributes to define a distinct type or not.  That is probably
+needed for variable sized objects, see <<variable_sized_obj>>.
+
+Similarly but probably yet different: topic of efficient implementation of
+templates.  E.g. when imaging cpp unique_ptr: there only one implementation in
+the program text sequence is required; that single one can serve all concrete
+types since they only differ in the type pointed to.
+
+
 == Optimizations
 
 See book Writing Efficient Programs
@@ -1325,7 +1906,70 @@ the caller module and the module implementing the function must be compiled
 with the same compiler switch.
 
 
+== Concurrency
+
+
+[[excl_shared_access]]
+=== Object property `exclusive/shared access'
+
+See also <<obj_properties>>.  Member objects' exclusive/shared access property
+is also determined by parent object's exclusive/shared access property.  If
+parent allows shared access, then so must member.  If parent has exclusive
+access, then a member still can have shared access, e.g. because the user
+chooses an implementation based on multiple threads.
+
+
+=== Reentrancy
+
+.to-do:
+- Does it make sense to mark code chunks as reentrant / non-reentrant?
+- How to ensure a non-reentrant code chunk is not called by multiple threads?
+
+
+=== Threads (user-level & kernel-level) / processes
+
+...
+
+
+=== Atomic operations
+
+...
+
+=== Locks / Semaphores ...
+
+Provide automatic locks/... around shared resources if wished, e.g. with a
+keyword stating that this is a shared object and that it shall have an
+autolock.  see also <<obj_properties>>.  User may not wish that because he
+wants to bundle multiple accesses to shared resources in one critical section.
+
+=== Shared resources
+
+Potentially but not necessarily (i.e. parts of these resources can also be
+owned exclusively by one thread) shared by threads, common to one process:
+
+Memory:: See <<obj_properties>> and <<smart_pointers>> for properties of objects / smart
+pointers which aid in the topic of concurrency.
+File descriptors:: ...
+Signals:: ...
+
+Shared by processes:
+
+Memory:: ...
+...
+
+=== IPC (Inter process communication)
+
+...
+
 == Library
+
+=== Provided by library vs built-in
+- Optimizers & verifiers can take more advantages when things are built-in,
+  right? 
+- In most cases there are multiple ways to implement a given function
+  signature.  Which implementation is the best depends on the problem at
+  hand.  Only the user knows the problem, so he might want to choose the
+  library implementation that suits his problem best.
 
 === Iterators
 - Know their container, most of all know the bounds of the container
@@ -1334,16 +1978,6 @@ with the same compiler switch.
 - Primarily work with collections, not with iterator pairs
 
 === Localization / Internationalization / character encoding
-
-...
-
-
-=== Threads / processes
-
-...
-
-
-=== Atomic operations
 
 ...
 
@@ -1368,7 +2002,15 @@ with the same compiler switch.
 ...
 
 
+[[tools]]
 == Tools around
+
+EF tries to support tools as e.g. optimizers and verifiers by making pointer
+alias analysis feasible (at least more feasible than in C or C&plus;&plus;) by
+only providing constructs where analysis has a change to follow where pointers
+point to.  E.g. by 1) not providing pointer arithmetic (however there are
+iterators) and 2) not providing integer->pointer casts.  See also
+<<type_system>>.
 
 When D has guidelines/rules how to name unnamed/temporary objects / code
 chunks, then tools can profit.  The semantic intelligence of an IDE can show
@@ -1384,9 +2026,9 @@ functions or even every expression.
 - Be able to debug all constructs (macros, templates, closures, lambdas, ...)
 
 
-=== Static code analysis
+=== Optimizer / Verifier
 
-See what Clang Static Analyzer does
+See what Clang Static Analyzer does.
 
 
 === Valgrind / LLVM & Co
@@ -1432,12 +2074,7 @@ By default the warning level is maximum, and warnings are treated as
 
 * What profit does EF get when it tries to listen to findings, concepts from
   theory.  E.g. if it would have a truly context free grammar, what would be
-  the profit -- and the costs?
-* Have the same namespace for identifiers for objects (including code objects)
-  and for types and label and whatever.  This is simpler for the parser
-  (closer to being context free), and also simpler for most human brains: one
-  name meaning different things just is confusing.
-
+  the profit -- and the costs
 
 == Misc
 
@@ -1467,3 +2104,6 @@ As in Python, make it possible that a list of variables are initialized by a lis
 the explicit version would probably be
 std::tuple<const int&,const double&>(i,j) = gettwo();
 ----------------------------------------------------------------------
+
+//  LocalWords:  decl malloc IPC laterinit laterctor alist sa ary arg
+ 
