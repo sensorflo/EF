@@ -21,32 +21,40 @@ foo1 := if x: y else z;
 
 # Conceptually every construct is a call 
 # --------------------------------------
-# Conceptually, from syntax point of view, everything, also flow control
-# constructs, declarations, definitions etc., are function calls like
-# 'foo(arg1,arg2)'. Its only that EF provides another syntax which however is
-# actually pretty close to the well known function call syntax
-# 'foo(arg1,arg2)'. Its only that a) the opening parenthesis is not needed
-# since for a keyword that is implicit b) other argument separators instead
-# comma are used - eg ':' or 'else' or '->' c) semicolon is used instead of
-# the closing parenthesis as closing delimiter.
+# The following explains the syntax of list expressions (aka `function calls').
+# They resemble the syntax of a function call in C / Java etc.  However there is
+# not necessarily a function call at run-time.
 # 
-#                | func  open   arg1    arg    arg2  arg     arg3  close
-#                | name  deli-          sepa-        sepa-         deli-
-#                |       miter          rator        rator         miter
-#                |------------------------------------------------------
-# EF syntax 1    | if            a      [:]     b    else     c      ;
-# EF syntax 2    | if     (      a      [:]     b    else     c      )
-# classic syntax | if     (      a       ,      b     ,       c      )
-#
-# Alternatively EF also lets you write all expressions in the call syntax with
-# open/close parenthesis like 'if(a : b else c)'. Maybe a future version also
-# allows the 'pure' classic syntax with always commas as separators like this
-# 'if(a , b , c)'.
+# ------------------------------
+# func  arg      arg1   arg    arg2  arg     arg3  list
+# name  list            sepa-        sepa-         close
+#       open            rator        rator         deli-
+#                                                  miter
+# foo    (        a       ,     b     ,       c      )
+# if              a       :     b    else     c      ;
+# if     (        a       :     b    else     c      )
+# if              a       :     b    else     c   end if
+# [               a       ,     b     ,       c      ]  
+# ------------------------------
 # 
-# the following three lines are equivalent
-val foo2 =  if x: y else z; + 3 ;
-val foo3 =  if(x: y else z) + 3 ;
-val foo4 = {if(x: y else z) + 3};
+# The pattern is always: A leading `function name'. Followed by an optional
+# argument list open delimiter (left parenthesis).  Followed by an argument list
+# where the elements are separated by separators.  The valid separators are
+# specific to the specific `function name' (e.g. commas or colons or keywords
+# such as +elif+ or +else+).  The list expression is closed / delimited by an
+# delimiter (semicolon or right parenthesis).
+# 
+# ----------------------------------------------------------------------
+# call = fun_name args_open_del naked_arg_list args_close_del;
+# args_open_del  = [\(];
+# naked_arg_list = (arg1 separator{-})* 
+# args_close_del = ['end ...] ( \) | \; );
+# ----------------------------------------------------------------------
+# 
+# The following lines are equivalent
+if   x: y else z ;      
+if ( x: y else z )      
+if   x: y else z end if;
 
 # Also operators can be written in the call syntax.
 # operator syntax       call syntax

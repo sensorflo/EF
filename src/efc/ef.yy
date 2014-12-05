@@ -40,6 +40,7 @@
 %define api.token.prefix {TOK_}
 %token
   END_OF_FILE  0  "end of file"
+  END "end"
   DECL "decl"
   IF "if"
   ELIF "elif"
@@ -224,22 +225,39 @@ expr_leaf
 
 
   /* definitions of data object. Declarations make no sense for local variables, and globals are not yet available. */
-  | valvar        naked_data_def SEMICOLON                           { $$ = parserExt.createAstDataDef($1, $2); }
-  | valvar LPAREN naked_data_def RPAREN                              { $$ = parserExt.createAstDataDef($1, $3); }
+  | valvar kwao naked_data_def kwac                                  { $$ = parserExt.createAstDataDef($1, $3); }
 
 
   /* declarations of code object */
-  | DECL        FUN naked_fun_decl SEMICOLON                         { $$ = ($3).first; }
-  | DECL LPAREN FUN naked_fun_decl RPAREN                            { $$ = ($4).first; }
+  | DECL kwao FUN naked_fun_decl kwac                                { $$ = ($4).first; }
 
   /* definitions of code object */
-  | FUN        naked_fun_def SEMICOLON                               { $$ = $2; }
-  | FUN LPAREN naked_fun_def RPAREN                                  { $$ = $3; }
+  | FUN kwao naked_fun_def kwac                                      { $$ = $3; }
 
 
   /* flow control - conditionals */
-  | IF        naked_if SEMICOLON                                     { std::swap($$,$2); }
-  | IF LPAREN naked_if RPAREN                                        { std::swap($$,$3); }
+  | IF kwao naked_if kwac                                            { std::swap($$,$3); }
+  ;
+
+/* keyword argument list open delimiter */
+kwao
+  : %empty
+  | LPAREN
+  ;
+
+/* keyword argument list close delimiter */
+kwac
+  : kwac_raw
+  | END id_or_keyword kwac_raw
+  ;      
+
+kwac_raw
+  : RPAREN
+  | SEMICOLON
+  ;
+
+id_or_keyword
+  : ID | IF | ELIF | ELSE | FUN | VAL | VAR | DECL | END | NOT | AND | OR | FUNDAMENTAL_TYPE
   ;
 
 naked_data_decl

@@ -55,6 +55,7 @@ fun                 return yy::Parser::make_FUN(loc);
 val                 return yy::Parser::make_VAL(loc);
 var                 return yy::Parser::make_VAR(loc);
 decl                return yy::Parser::make_DECL(loc);
+end                 return yy::Parser::make_END(loc);
 not                 return yy::Parser::make_NOT(loc);
 and                 return yy::Parser::make_AND(loc);
 or                  return yy::Parser::make_OR(loc);

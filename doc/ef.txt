@@ -319,11 +319,12 @@ Every expression (i.e. including flow control constructs, declarations,
 definitions etc.) is in one of these two syntax forms:
 
 *  An unary/binary/n-ary operator as in ++a * b++.  See <<operator_expr>>.
-*  A list -- or `function call', whichever mental pattern you like more.  The
-   first element of the list is the function name, the rest of the elements
-   are the function's arguments.  E.g. +foo( arg1, arg2)+.  Note we're only
-   talking about syntax, for `functions' like +if+, +for+ etc. there is no
-   call at run-time.  See <<list_expr>>. 
+*  A list where the first element defines the `type' of the list.  You can
+   also look at that as a `function call'.  The first element of the list is
+   the function name, the rest of the elements are the function's arguments.
+   E.g. +foo( arg1, arg2)+.  Note we're only talking about syntax, for
+   `functions' like +if+, +for+ etc. there is no call at run-time.  See
+   <<list_expr>>.
 
 ----------------------------------------------------------------------
 ## stand alone (sa) expressions. sa_expr is like pedantic_sa_expr but with a
@@ -396,38 +397,53 @@ alone expression is the implicit binary sequence operator.
 [[list_expr]]
 === List expression
 The following explains the syntax of list expressions (aka `function calls').
-Remember that it's only the syntax that resembles a function call, there is
-not necessarily a function call at run-time.  Conceptually that is a
-`function' name followed by an argument list.  EF provides additional syntaxes
-which can be used in general in EF programs.  `Syntax 1' is the one most
-commonly used.
+They resemble the syntax of a function call in C / Java etc.  However there is
+not necessarily a function call at run-time.
+
+------------------------------
+func  arg      arg1   arg    arg2  arg     arg3  list
+name  list            sepa-        sepa-         close
+      open            rator        rator         deli-
+                                                 miter
+foo    (        a       ,     b     ,       c      )
+if              a       :     b    else     c      ;
+if     (        a       :     b    else     c      )
+if              a       :     b    else     c   end if
+[               a       ,     b     ,       c      ]  
+------------------------------
+
+The pattern is always: A leading `function name'. Followed by an optional
+argument list open delimiter (left parenthesis).  Followed by an argument list
+where the elements are separated by separators.  The valid separators are
+specific to the specific `function name' (e.g. commas or colons or keywords
+such as +elif+ or +else+).  The list expression is closed / delimited by an
+delimiter (semicolon or right parenthesis).
 
 ----------------------------------------------------------------------
-               | func  name/    arg1   arg    arg2  arg     arg3  list
-               | name  arglist         sepa-        sepa-         end
-               |       sepa-           rator        rator         deli-
-               |       rator                                      miter
-               |------------------------------------------------------
-classic syntax | foo    (        a       ,      b     ,       c      )
-EF syntax 1    | if              a      [:]     b    else     c      ;
-EF syntax 2    | if     (        a      [:]     b    else     c      )
-EF list literal| [               a       ,      b     ,       c      ]  
+call = fun_name args_open_del naked_arg_list args_close_del;
+args_open_del  = [\(];
+naked_arg_list = (arg1 separator{-})* 
+args_close_del = ['end ...] ( \) | \; );
 ----------------------------------------------------------------------
 
-`Syntax 1' explained, relative to the familiar classic syntax of an function
-call: The opening parenthesis separating the `function' name from the start of
-the argument list is not needed since for a keyword that is known to have
-`function call' syntax it is implicit that an argument list follows.
-Depending on the `function' the arguments are separated not by commas but by
-other separators like e.g. ++:++ or +else+.  To end the list, a semicolon is
-used.
+The argument list open delimiter and the argument list close delimiter can be
+freely mixed from a syntax point of view, also if that looks awkward for
+humans.  Both ++if ( a : b ;++ and ++if a : b)++ are syntactically valid.
+Such `mismatches' will be caught by built-in configurable style guidelines.
 
-Note that in ++[a, b, c]++ the opening bracket ++[++ is considered the
-`function name'. The `function' ++[++ creates a literal list.  Similarly, the
-`function' ++{++ (e.g. ++{a, b, c}++) creates a so-called `block'.
+The argument list close delimiter optionally starts with ++end ...++.  The
+full list expression looks then e.g. like ++if a : b end if;++ or ++def fun
+foo(): int = ... end foo;++. Note that at the very end of the argument list
+close delimiter there is still a semicolon or closing parenthesis.  The word
+after ++end++ is free from a syntax point of view.  Built-in configurable
+style guidelines will enforce that it `matches' the beginning of the list
+expression.  What exactly can / must come after the ++end++ keyword is not yet
+clear, Ada can deliver ideas.
 
-Optionally the close delimiter can be preceded by ++'end ( identifier| 'loop|
-'if| ...)++ to explicitly state what construct is being closed.  As in Ada.
+Note that in the following list expression ++[a, b, c]++, the opening bracket
+++[++ is considered the `function name'. The `function' ++[++ creates a
+literal list.  Similarly, the `function' ++{++ (e.g. ++{a, b, c}++) creates a
+so-called `block'.
 
 There are implicit lists without `function name'.  The open and the end
 delimiter of such an implicit list are the separators / delimiters of an outer
