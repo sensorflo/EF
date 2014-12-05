@@ -56,13 +56,4 @@ C&plus;&plus;, Ada, Real-Time Java.
   analysis, semantic aware IDEs etc are easy enough to write.  Only if good
   development tools are available for EF it will also be used in the industry.
 
-== Current state
-
-I just begun brainstorming beginning in April 2014, trying out a lot of
-things, writing the syntax, and so far I am more than pleased with the result.
-I really think it's more than just a crazy idea.  Until I wrote an first
-implementation of EF via an LLVM front end I decided to encrypt my current
-work.  I am happy to give you the key if you're honestly interested in helping
-evolving EF.
-
-// continuation in the currently encrypted file ef.txt
+// more details in ./doc/ef.txt

@@ -1093,7 +1093,8 @@ properties:
 * _lock wrapper_ Just an first idea.  See also <<concurrency>>.
 * _storage duration_: Begins after storage allocation (which is before
   constructor call) and ends just before storage deallocation (which is after
-  destructor call).  See also life time. 
+  destructor call).  See also life time.  Members inherit storage duration
+  from parent object.
  ** _static_
   *** _system static_: system global, implies shared ownership and implies
       shared access
@@ -1102,11 +1103,9 @@ properties:
  ** _automatic_: Informally explained: objects on stack.  That includes
     temporaries and parameters.
  ** _dynamic_: Informally explained: objects on heap.
-* _ownership_:
- ** _shared ownership_:
- ** _exclusive ownership_:
 * _owner(s)_: The owner is responsible for freeing the underlying memory
-  resource.
+  resource.  Implicitly that defines _ownership_: Two or more owners ->
+  _shared ownership_, one owner -> _exclusive ownership_.
  ** System:
  ** Process:
  ** Thread:
@@ -1345,7 +1344,7 @@ the class' object.
 Static class obj are virtually the same as global static obj.  It's just that
 the scope is different.
 
-== Struct
+== Structs
 
 Does it help if a struct is nearly the same thing as it is in C?  No methods
 no nothing?  Only public members.
@@ -1355,7 +1354,7 @@ something like a map identifier->value, this way he has not to remember the
 order.  And the names of the members he has to know anyway.
 
 
-== Classes / Interfaces
+== OO: Classes / Interfaces
 
 +class_def+ and +interface_def+ are both +type_expr+.
 ----------------------------------------------------------------------
@@ -1392,7 +1391,7 @@ or due to the +laterctor+ initializer.
 The name is ~this or dtor or destructor.  See also ctor
 
 
-=== Initval
+=== Initializer
 
 What is D's init?  Why not just use default ctor
 
@@ -1415,7 +1414,7 @@ See chapter <<code_chunks>>.
 
 - See D.  However EF lets you default implement properties.
 - In the declaration of a member, one can state whether and what
-  getters/setters are (auto) generated [mind the different access].  The
+  gutters/setters are (auto) generated [mind the different access].  The
   implementation is automatic or user given.
 
 
@@ -1438,6 +1437,14 @@ way
 === Packed
 
 ...
+
+
+=== Pure OO / OO pureness
+
+Also built-in types, but without sacrificing being as close to HW as C.
+normal objects, functions, modules, ...
+
+Does it help when there is a common base class as in Java?
 
 
 == Control flow
@@ -1535,17 +1542,6 @@ As in Python/Ruby, easily transform a collection to another collection, or
 interpret a collection as another collection.
 
 
-== Everything is an object
-
-Also built-in types, but without sacrificing being as close to HW as C.
-normal objects, functions, modules, ...
-
-
-=== Common base class
-
-Does it help when there is a common base class as in Java?
-
-
 [[resource_management]]
 == Resource management: RAII & GC side by side
 
@@ -1560,7 +1556,7 @@ memory.
 * How to prevent that non-returning methods leave no resource leaks behind,
   since destructors of locals are not called.
 
-
+[[cheap_destructors]]
 === Destructors & how to try to make them cheap
 
 - Lazy destructors (or resource freeing in general) for objects on heap by
@@ -1581,12 +1577,11 @@ memory.
     expressive variant to the equivalent ++= null++.
 
 - Nonexistent destructor: Classes not owning resources, and only having
-  objects of such classes as members, need no destructor at all.  The compiler
-  knows that and thus can omit arranging for it to be called.  *to-do:* How to
-  arrange that mostly non-owning smart pointers can be used, and only seldom
-  owning smart-pointers?  Probably it helps if variable sized objects
-  (i.e. most probably arrays) are allowed at least on stack, but also as
-  members.
+  objects of such classes as members, need no destructor at all.  Thus no
+  destructor needs to be called.  *to-do:* How to arrange that mostly
+  non-owning smart pointers can be used, and only seldom owning
+  smart-pointers?  Probably it helps if variable sized objects (i.e. most
+  probably arrays) are allowed at least on stack, but also as members.
 
 - Try to reduce each destructor to a list addresses of heap objects which need to
   be freed (in any order, without any further ctor code) in one go.  I.e. try
@@ -1673,13 +1668,19 @@ owning pointer::  All of the owning pointers have two variants: 1) to single
   pointer is responsible to call the destructor of the pointee and then to
   free the underlying memory resource.
 
+  Also each owning pointer has two variants in respect to collaboration with
+  garbage collector: _pure owning smart pointers_ are really the owner
+  independent of whether GC is turned off or on.  _Regular owning smart
+  pointers_ are the owner only if GC is turned off.  If GC is turned on, they
+  leave ownership to the GC.
+
 non-owning pointer:: ...
 
 Concrete Types:
 
-unique_ptr:: Is the only owner, thus no reference counting needed.  Referred
+(pure_)unique_ptr:: Is the only owner, thus no reference counting needed.  Referred
   obj is of dynamic (non-gc allocated) storage. 
-shared_ptr:: Shared ownership via reference counting.
+(pure_)shared_ptr:: Shared ownership via reference counting.
 address / implicit `pointer':: Owning `constant pointer'.  Pointees are:
   - Objects with storage class static.  Owner is one of system / process / thread.
   - Objects with storage class automatic.  Owned by a block/stack.
@@ -1700,6 +1701,7 @@ General pointer assigning rules:
 
 - If the lifetime of an object o is guaranteed to be longer than the lifetime
   of a non-owning pointer object p, then p can point to o.
+- Garbage collector can overtake ownership from owning smart pointers.
 
 Rules to assign an object/pointer to an observer_ptr:
 
@@ -1718,7 +1720,6 @@ Rules to assign an object/pointer to an observer_ptr:
 - The observer pointer is member of a parent object for which the above
   rules (for observer pointer objs) are true.
 - in GC mode, observer_ptr can put to what ++gc_new++ returns
-
 
 How to avoid the expensive shared pointers:
 
@@ -1825,8 +1826,33 @@ Classes/Modules are also namespaces.
 
 
 
-== Extendable language / what is part of language what of compiler?
+== Composeable / extendable language
 
+=== Composable language
+
+Each of these features the user can turn on/off.
+
+- Variable sized objects (in particular arrays)
+- Virtual methods
+- [constructors: user can already omit them by special initializers like `noinit']
+- RAII / destructors
+- Exceptions
+- Bounds checking
+- Restrictions on operations allowed on pointers which make pointer alias
+  analysis feasible
+- Owning smart pointers
+- Garbage collector
+
+That however makes designing the standard library difficult, if the library
+design does not know that the user allows and what not.  Features which have
+only local costs (within a method) should be allowed in the library, that is
+an implementation decision.  If the user doesn't like it, he can take another
+library implementation.  Also have two parts of the library, spoken in
+analogy: a C part and a C&plus&plus/STL part.  Methods which can return an
+error have two versions, one using exceptions and one using the C way.
+
+
+=== Extendable language
 Literals such as strings, arithmetic, collection are just very basic from a
 language point of view.  However the language allows to create aliases, and
 the EF standard then supplies a number of them.  List literals l[...], map
@@ -1891,7 +1917,7 @@ types since they only differ in the type pointed to.
 
 == Optimizations
 
-See book Writing Efficient Programs
+See book Writing Efficient Programs.  See also <<cheap_destructors>>.
 
 === Copy elision
 
