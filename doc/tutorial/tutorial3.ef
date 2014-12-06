@@ -3,25 +3,16 @@
 # The EF programming language tutorial part 3
 # ===========================================
 #
-# Expressions and (expression) sequences (aka blocks)
+# Expressions
 # ---------------------------------------------------
-# Demo part 2 and the following definition of function square_minus_four
-# demonstrate:
-# 
-# - The expressions of an expressions sequence are separated by
-#   nothing. Informally the parser knows that they are separate expressions
-#   because no binary operator is inbetween. However you can optionally
-#   separate expressions by commas. The guideline is to leave the comma away
-#   when code continues on the next line and to use the comma when code
-#   continues on the same line. Also a trailing comma is allowed but naturally
-#   not required.
-# - The value of an expression sequence (aka block) is the value of its last
-#   expression. In body of the square method of demo 2 the expression sequence
-#   consists of just one expression 'x * x'. In the example below, it consists
-#   of five expressions, in the example one per line.
-# - The return value of a function is the value of its top level expression
-#   sequence (aka block). 
-
+# - The body of a function or of an flow control element is an expression.  An
+#   expression in EF is comparable to what C or Java call a block.
+# - An expression is a comma separated list of so called stand alone
+#   expressions.  Actually the comma is optional.
+# - A stand alone expression is comparable to what C, Java etc. call a
+#   statement.
+# - The value of an expression is the value of its last stand alone
+#   expression.
 
 # Data object definitions
 # -----------------------

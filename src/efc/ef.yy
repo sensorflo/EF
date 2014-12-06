@@ -85,9 +85,9 @@
 
 %type <AstCtList*> ct_list
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> seq
-%type <std::list<AstValue*>*> expr_list pure_expr_list
-%type <AstValue*> expr expr_leaf naked_if opt_else
+%type <AstSeq*> expr pure_standalone_expr_list
+%type <std::list<AstValue*>*> ct_sa_expr_list pure_ct_sa_expr_list
+%type <AstValue*> standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifier> valvar
@@ -122,29 +122,35 @@ opt
 %start program;
 
 program
-  : seq END_OF_FILE                                 { driver.astRoot() = $1; }
+  : expr END_OF_FILE                                { driver.astRoot() = $1; }
   ;
 
-/** The elements of a sequence are sequentially executed at compile time */
-seq
-  : expr_list                                       { $$ = new AstSeq($1); }
+expr
+  : %empty                                          { $$ = new AstSeq(); }
+  | pure_standalone_expr_list opt_comma             { std::swap($$,$1); }
   ;
-  
-/** The elements of an compile-time list form a list in the sence of a data
-structure (it says nothing about wheter its implemented as array, linked-list
-or whatever) */
+
+pure_standalone_expr_list
+  : standalone_expr                                     { $$ = new AstSeq($1); };
+  | pure_standalone_expr_list opt_comma standalone_expr { ($1)->Add($3); std::swap($$,$1); }
+  ;
+
+standalone_expr
+  : sub_expr { std::swap($$,$1); }                        
+  ;
+
 ct_list
-  : expr_list                                       { $$ = new AstCtList($1); }
+  : ct_sa_expr_list                                 { $$ = new AstCtList($1); }
   ;
 
-expr_list
+ct_sa_expr_list
   : %empty                                          { $$ = new std::list<AstValue*>(); }
-  | pure_expr_list opt_comma                        { std::swap($$,$1); }
+  | pure_ct_sa_expr_list opt_comma                  { std::swap($$,$1); }
   ;
 
-pure_expr_list
-  : expr                                            { $$ = new std::list<AstValue*>(); ($$)->push_back($1); }
-  | pure_expr_list opt_comma expr                   { ($1)->push_back($3); std::swap($$,$1); }
+pure_ct_sa_expr_list
+  : standalone_expr                                 { $$ = new std::list<AstValue*>(); ($$)->push_back($1); }
+  | pure_ct_sa_expr_list opt_comma standalone_expr  { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 param_ct_list
@@ -191,52 +197,45 @@ opt_comma
   | COMMA
   ;
 
-expr
-  /* misc */
-  : expr_leaf                                       { std::swap($$,$1); }
-
-  /* calls */
-  | ID LPAREN ct_list RPAREN                        { $$ = new AstFunCall($1, $3); }
-  | OP_LPAREN ct_list RPAREN                        { $$ = new AstOperator($1, $2); }
-
-
-  /* unary prefix */
-  | NOT  expr                                       { $$ = new AstOperator(AstOperator::eNot, $2); }
-  | EXCL expr                                       { $$ = new AstOperator(AstOperator::eNot, $2); }
-
-  /* binary operators */
-  | ID   EQUAL       expr         %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1)), $3); }
-  | ID   COLON_EQUAL expr         %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt)), $3); }
-  | expr OR          expr                           { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
-  | expr PIPE_PIPE   expr                           { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
-  | expr AND         expr                           { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
-  | expr AMPER_AMPER expr                           { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
-  | expr PLUS        expr                           { $$ = new AstOperator('+', $1, $3); }
-  | expr MINUS       expr                           { $$ = new AstOperator('-', $1, $3); }
-  | expr STAR        expr                           { $$ = new AstOperator('*', $1, $3); }
-  | expr SLASH       expr                           { $$ = new AstOperator('/', $1, $3); }
+sub_expr
+  : primary_expr                                    { std::swap($$,$1); }
+  | operator_expr                                   { std::swap($$,$1); }
   ;
 
-expr_leaf
-  /* misc */
-  : NUMBER                                          { $$ = new AstNumber($1); }
-  | LBRACE seq RBRACE                               { $$ = $2; }
+operator_expr
+  /* function call */
+  : ID LPAREN ct_list RPAREN                        { $$ = new AstFunCall($1, $3); }
+
+  /* unary prefix */
+  | NOT  sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
+  | EXCL sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
+
+  /* binary operators */
+  | ID   EQUAL       sub_expr     %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1)), $3); }
+  | ID   COLON_EQUAL sub_expr     %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt)), $3); }
+  | sub_expr OR          sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
+  | sub_expr PIPE_PIPE   sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
+  | sub_expr AND         sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
+  | sub_expr AMPER_AMPER sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
+  | sub_expr PLUS        sub_expr                   { $$ = new AstOperator('+', $1, $3); }
+  | sub_expr MINUS       sub_expr                   { $$ = new AstOperator('-', $1, $3); }
+  | sub_expr STAR        sub_expr                   { $$ = new AstOperator('*', $1, $3); }
+  | sub_expr SLASH       sub_expr                   { $$ = new AstOperator('/', $1, $3); }
+  ;
+
+primary_expr
+  : list_expr                                       { std::swap($$,$1); }
+  | NUMBER                                          { $$ = new AstNumber($1); }
+  | LBRACE expr RBRACE                              { $$ = $2; }
   | ID                                              { $$ = new AstSymbol(new std::string($1)); }
-
-
-  /* definitions of data object. Declarations make no sense for local variables, and globals are not yet available. */
-  | valvar kwao naked_data_def kwac                                  { $$ = parserExt.createAstDataDef($1, $3); }
-
-
-  /* declarations of code object */
-  | DECL kwao FUN naked_fun_decl kwac                                { $$ = ($4).first; }
-
-  /* definitions of code object */
-  | FUN kwao naked_fun_def kwac                                      { $$ = $3; }
-
-
-  /* flow control - conditionals */
-  | IF kwao naked_if kwac                                            { std::swap($$,$3); }
+  ;
+  
+list_expr
+  : valvar kwao naked_data_def kwac                 { $$ = parserExt.createAstDataDef($1, $3); }
+  | DECL kwao FUN naked_fun_decl kwac               { $$ = ($4).first; }
+  | FUN kwao naked_fun_def kwac                     { $$ = $3; }
+  | IF kwao naked_if kwac                           { std::swap($$,$3); }
+  | OP_LPAREN ct_list RPAREN                        { $$ = new AstOperator($1, $2); }
   ;
 
 /* keyword argument list open delimiter */
@@ -267,12 +266,12 @@ naked_data_decl
 
 naked_data_def
   : naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
-  | naked_data_decl EQUAL expr                                       { $$ = new RawAstDataDef($1, $3); }
-  | ID EQUAL expr opt_colon_type                                     { $$ = new RawAstDataDef(new RawAstDataDecl($1, $4), $3); }
+  | naked_data_decl EQUAL sub_expr                                   { $$ = new RawAstDataDef($1, $3); }
+  | ID EQUAL sub_expr opt_colon_type                                 { $$ = new RawAstDataDef(new RawAstDataDecl($1, $4), $3); }
   ;
 
 naked_fun_def
-  : naked_fun_decl EQUAL seq                                         { $$ = parserExt.createAstFunDef(($1).first, $3, *(($1).second)); }
+  : naked_fun_decl EQUAL expr                                        { $$ = parserExt.createAstFunDef(($1).first, $3, *(($1).second)); }
   ;
   
 naked_fun_decl
@@ -281,7 +280,7 @@ naked_fun_decl
   ;
 
 naked_if
-  : expr opt_colon seq opt_elif_list opt_else                        { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
+  : sub_expr opt_colon expr opt_elif_list opt_else                   { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
   ;
 
 valvar
@@ -291,12 +290,12 @@ valvar
 
 opt_elif_list
   : %empty                                                           { $$ = new std::list<AstIf::ConditionActionPair>(); }  
-  | opt_elif_list ELIF expr opt_colon seq                            { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
+  | opt_elif_list ELIF sub_expr opt_colon expr                       { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
   ;  
 
 opt_else
   : %empty                                                           { $$ = NULL; }
-  | ELSE seq                                                         { $$ = $2; }
+  | ELSE expr                                                        { $$ = $2; }
   ;
 
 /* Epilogue section

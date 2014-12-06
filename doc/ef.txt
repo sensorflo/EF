@@ -311,77 +311,31 @@ identifier = '[a-zA-Z_]'[a-zA-Z_0-9]+;
 [[expressions]]
 == Expressions
 
-In EF everything is an expression.  As a rough analogy, what C calls
-statements EF calls stand alone expressions, what C calls expressions EF calls
-sub expressions.
+In EF everything is an expression.  There is no such thing as an `statement'
+as it is the case in e.g. C, C&plus;&plus; or Java .  Every expression is in
+one of these two syntax forms:
 
-Every expression (i.e. including flow control constructs, declarations,
-definitions etc.) is in one of these two syntax forms:
-
-*  An unary/binary/n-ary operator as in ++a * b++.  See <<operator_expr>>.
-*  A list where the first element defines the `type' of the list.  You can
-   also look at that as a `function call'.  The first element of the list is
-   the function name, the rest of the elements are the function's arguments.
-   E.g. +foo( arg1, arg2)+.  Note we're only talking about syntax, for
-   `functions' like +if+, +for+ etc. there is no call at run-time.  See
-   <<list_expr>>.
+* _operator expression_: An unary/binary/n-ary operator as in ++a * b++.  See
+  <<operator_expr>>.
+* _list expression_: See <<list_expr>>.
 
 ----------------------------------------------------------------------
-## stand alone (sa) expressions. sa_expr is like pedantic_sa_expr but with a
-## bit more relaxed rules.
-sa_expr = 
-  ## the last element is allowed to be a non semicolon (;) terminated
-  ## proper_sub_expr.  This is because within parentheses a trailing ';' feels
-  ## bad.  Also sa_expr is allowed to be empty.
-  [\;] [pedantic_sa_expr] [proper_sub_expr];
-pedantic_sa_expr = 
-  ## unary postfix operator ';' makes its operand a stand-alone expression. 
-  proper_sub_expr \; | 
-  ## Applying ; to an expression which already is an stand-alone expression
-  ## is allowed and consequently is a nop.
-  pedantic_sa_expr \;? | 
-  psa_sub_expr |
-  labelled_sa_expr |
-  ## implicit binary sequence operator: It evaluates lhs operand for side
-  ## effects only, i.e. throws away the result, then evaluates rhs and returns
-  ## its result. I.e. it is analogous to C's comma operator
-  pedantic_sa_expr pedantic_sa_expr;
-
-sub_expr = proper_sub_expr | psa_sub_expr;
-
-labelled_sa_expr = ['label identifier pedantic_sa_expr];
-
-## Possibly stand alone (psa) sub expression
-psa_sub_expr = block_expr | flow_control_expr | decl_expr | def_expr;
-
-## {} also introduces a lexical scope
-block_expr = \{ sa_expr \};
+program = expr;
+expr = (standalone_expr [\,]{?})+;
+standalone_expr = sub_expr;
+sub_expr = operator_expr | primary_expr;
+operator_expr = sub_expr ('and|'or|...) sub_expr | ...;
+primary_expr = list_expr | literal | ID | ...;
+list_expr = 
+  'while expr#cond \: expr#body \; |
+  'var ID \: type_expr \; |
+  ...;
 ----------------------------------------------------------------------
 
-Example:
-----------------------------------------------------------------------
-fun foo(int : i, int : j) -> void {
-  obj int : n,m;
-  n = i*2 + j*3; <1>
-  if ( ... ) { ... } <2>
-  m = if ( ... ) { ... } else { ... }; <3>
-  if ( n=0; m=i*j <4> ) { ... }
-}
-----------------------------------------------------------------------
-
-<1> Sub expressions need to be terminated with the operator `++;++' which
-    results in an stand alone expression.
-<2> Possibly stand alone sub expressions such as flow control expressions
-    need not to be terminated with `++;++' since they are already also stand
-    alone expressions.
-<3> Possibly stand alone sub expressions can appear as operands of sub
-    expressions, since they are also sub expressions.
-<4> The last sub expression in a block or parenthesis is allowed to omit the
-    terminating `++;++'.
-
-The whole function body is a single stand alone expression.  It is composed of
-stand alone expressions, in this example one per line.  Between each stand
-alone expression is the implicit binary sequence operator.
+- _stand alone expression_ (aka mini block expression): See <<mb_expr>>.
+- _sub expression_: Part of an enclosing expression, can be operand to an
+  operator.
+- _primary expression_: Leaf of an operator expression tree.
 
 .To-do
 - Read http://en.wikipedia.org/wiki/Monad_(functional_programming)
@@ -390,8 +344,6 @@ alone expression is the implicit binary sequence operator.
   arithmetic operator is meaningless.  Then again, maybe we can allow that.
   Such expressions, as initialization of static variables, are executed in
   undefined order at program start-up.  EF doesn't patronize the user.
-- However and import may also be done anywhere, in which case the symbols are
-  only imported in the enclosing block.
 
 
 [[list_expr]]
@@ -445,22 +397,6 @@ Note that in the following list expression ++[a, b, c]++, the opening bracket
 literal list.  Similarly, the `function' ++{++ (e.g. ++{a, b, c}++) creates a
 so-called `block'.
 
-There are implicit lists without `function name'.  The open and the end
-delimiter of such an implicit list are the separators / delimiters of an outer
-list.  That outer context also defines the `function name' of the inner list.
-In the following example, ++=++ and ++;++ are delimiter separators in the
-outer +fun+ list, and are at the same time start / end delimiters of the inner
-list (constituting the body of the function), the inner list's element
-separators being ++,++.  In this example, the ++=++ of the outer list
-implicitly defines that the `function name' of the inner list is ++{}++.
-
-----------------------------------------------------------------------
-outer list         : fun ...  =                 ;
-implicit inner list:               a  , b , c
-equivalent to      :            {  a  , b , c }
-----------------------------------------------------------------------
-
-
 General syntax of a list:
 
 ----------------------------------------------------------------------
@@ -469,6 +405,11 @@ expr_list = (sa_expr \,{?})*;
 # associative list
 expr_alist = (sa_expr#key `=> sa_expr#val  \,{?})* 
 ----------------------------------------------------------------------
+
+Note that a function call as a whole looks like an list expr, but actually is
+an <<operator_expr>>. Its rhs is an expression delivering an code object, and
+its lhs being an argument list.
+
 
 **to-do:*
 
@@ -514,16 +455,16 @@ expr_alist = (sa_expr#key `=> sa_expr#val  \,{?})*
  * tuple
  * runtime sequence
  * data list
-        
+
+
 [[operator_expr]]
-=== operator expressions / operators
+=== Operator expressions / operators
 
 These operators correspond to what is found in most programming languages.
 
 ----------------------------------------------------------------------
-proper_sub_expr = boolean_expr | bit_expr | comparison_expr |
-  arithmetic_expr | assignment_expr | other_sub_expr | fun_call_expr | 
-  obj_def;
+operator_expr = boolean_expr | bit_expr | comparison_expr |
+  arithmetic_expr | assignment_expr | other_operator_expr;
 
 arithmetic_expr =
   ('root2 | 'log2 | 'loge | 'log10 | \+ | \-) sub_expr | 
@@ -545,10 +486,14 @@ comparison_expr = sub_expr (`== | `!= | \< | \> | `<= | `>= ) sub_expr;
 
 assignment_expr = sub_expr (`\= | `+= | `-= | `*= | `/= | `%= | ... ) sub_expr;
 
-other_sub_expr =
+other_operator_expr =
   sub_expr `?: sub_expr | ## null coalescing operator
   \( sa_expr \);
 ----------------------------------------------------------------------
+
+Note that a function call as a whole looks like an <<list_expr>>, but actually
+is an operator expr.  Its rhs is an expression delivering an code object, and
+its lhs being an argument list.
 
 
 === Forced parentheses
