@@ -573,21 +573,34 @@ obj string : s("hello") + "world"
 Similarly it must be ++while ((i=j)) ...++ opposed to ++while (i=j) ...++.
 
 
-=== Expressions vs Statements
+[[temporaries]]
+[[mb_expr]]
+=== Mini block expression / stand alone expression / temporaries
+A _stand alone expression_ (aka _mini block expression_) is comparable with a
+statement in C or Java.  The storage duration of temporaries is given by the
+enclosing `mini block expression'.  Otherwise there is nothing special about
+an stand alone expression.
 
-- nearly everything is an expression; no?  difference between expressions ans
-  statements
-- no distinction necessarily between , and ; ?
-- would mean there are only operators (and words acting as operators), no
-  `traditional' keywords.
-- Where does lifetime of automatic storage end when there are no longer any
-  blocks?  Where does lifetime of temporaries end when there no statements
-  anymore?  Where are sequence points?
- ** Use parenthesis just as in C++ to overwrite precedence.  Use curly [b]{}
-    for the same thing but additionally with the old block semantics.
- ** ; opposed to , could be use as the point where temporaries are deleted.
-    But that is a small advantage for a token.  Thus let temporaries die also
-    at the end of the enclosing block, just as automatic variables.
+
+=== Order of evaluation / side effects
+The operands of operators, and the operands (i.e. elements) of list
+expressions, appear to be evaluated from left to right.  It is also guaranteed
+that every operand of an operator (except the conditional operators &&, ||,
+and ? :) or list expression appears to be fully evaluated before any part of
+the operation or list expression itself is performed.
+
+
+=== Run-time and compile-time effects of expressions
+Each expression has as part of its properties a compile-time component and a
+run-time component.
+
+Declaration expressions have only a compile-time component and no run-time component.
+
+Definition expressions (a definition being a super set of a declaration) has
+additionally also a run-time component: initializing the object.
+
+Most other expressions only have a run-time component and no compile-time
+component.
 
 
 [[types]]
@@ -792,6 +805,18 @@ curly braces around the identifier.  Look up the ways Perl and Python offer.
 like things.  What is a better term?  Maybe `general function'?
 
 A procedure does not return any value, while a function does.
+
+=== Properties
+
+Some ideas: 
+
+- <<pure>>
+- `const' in the sense of a C&plus;&plus; const method
+- constexpr as in C&plus;&plus;11
+- final in the sense of a Java final method
+- re-entrant
+- thread safe
+- (pure) virtual
 
 
 === (Named) Methods
@@ -1016,6 +1041,7 @@ compiler that it should print an error when the function is not pure
 after all.
 
 
+[[pure]]
 ==== Pure
 
 See D for pure functions.  In EF, pure can be a property of any code chunk.
@@ -1075,20 +1101,25 @@ be included in the comment: `#** in EF the *# ends an comment **#`.
 
 
 == Modules
+Do it as in D / Java / Python, have modules, opposed to the concept of C /
+C&plus;&plus; with header / source files.  Currently this document uses the
+terms `library' and `module' interchangeably.
 
-Do it as in D, have modules, as opposed to header(.h) and source(.cpp/.cc/...)
-files.
 
-Most expressions at global scope are things which are evaluated at
-compile-time and do nothing at run-time.  E.g. definitions of types and of
-function objects.
+[[exchanging_module_impl]]
+=== Exchanging module implementation
+Given a library L1 used by another library L2, and a user module MU using at
+least L2, and the user wants to provide his own implementation of L1.
 
-Nonetheless, the code in a module is just one expression.  As any expression
-it has a compile-time component and a run-time component.  The run-time
-component is executed at program start up.  However by default expressions at
-global scope with a non-nop run-time part are disallowed.  You can turn it on
-via compiler switch.
+First concrete use case: user can provide an implementation of the memory
+management sub-module (malloc, free etc) of the EF standard module.  See
+<<memory_management>>.
 
+Note: When compiling module A which imports module B, the resulting object
+file for module A can be more efficient if the compiler can look at the
+implementation of B.  If A was compiled that way, and thus potentially inlined
+some methods of B, and module C uses A (and only has A's object file) and B,
+then B can't be exchanged.
 
 [[objects]]
 == Objects
@@ -1107,6 +1138,7 @@ properties:
 * _linkage_:
 * _alignment_:
 * _lock wrapper_ Just an first idea.  See also <<concurrency>>.
+
 * _storage duration_: Begins after storage allocation (which is before
   constructor call) and ends just before storage deallocation (which is after
   destructor call).  See also life time.  Members inherit storage duration
@@ -1117,13 +1149,16 @@ properties:
   *** _process static_: process global, implies shared access
   *** _thread static_: thread private global, implies exclusive access
  ** _automatic_: Informally explained: objects on stack.  That includes
-    temporaries and parameters.
+    <<temporaries>> and parameters.
  ** _dynamic_: Informally explained: objects on heap.
-* _owner(s)_: The owner is responsible for freeing the underlying memory
-  resource.  Implicitly that defines _ownership_: Two or more owners ->
-  _shared ownership_, one owner -> _exclusive ownership_.
- ** System:
- ** Process:
+
+* _owner(s)_ / _exclusive/shared ownership_: The owner is responsible for
+  freeing the underlying memory resource.  Knowing the owner(s) implicitly
+  that defines exclusive / shared ownership: one owner -> exclusive ownership
+  / two or more owners -> shared ownership, .
+ ** System: 
+ ** Process: Implies `shared access by multiple execution threads' (if not,
+    why not making it thread local?) 
  ** Thread:
  ** Block/stack: Register is not an owner; its an transparent
     optimization when the optimizer puts an object into an register instead on
@@ -1131,17 +1166,33 @@ properties:
   *** Enclosed block on stack:
   *** Enclosed `mini' block on stack: E.g. for temporary objs not assigned to
       observer_ptr.
- ** Owning smart pointer:
+ ** Owning smart pointer & heap: Only objects on the heap can be owned by
+    smart pointers.  Freeing the heap object means passing back ownership of
+    the underlying memory region to the memory manager.  So in a way both the
+    owning smart pointers and the heap are owner the object.  If the object is
+    from a shared heap, then it implies `shared access by multiple execution
+    threads'.
  ** Parent object: for member objects
  ** Garbage collector:
- ** User: 
-* _exclusive/shared access_: See also <<excl_shared_access>>.  The
-  participants are responsible for ensuring mutual exclusion.
- ** exclusive access by one single thread
- ** shared access
-  *** shared between threads but only within one single process
-  *** shared between processes (*to-do*: do we need to differentiate there
-    multiple threads can access it or not?)
+ ** User & heap: Only for objects on the heap.  The user must do what normally is the
+    job of an owning smart pointer.  See also owner type `owning smart
+    pointer'.
+
+* _allowed observer_: Describes the allowed observers of the object.  Each
+  owner is also an observer, but there are potentially additionally also
+  non-owning observers (being only(?) non-owning pointers).
+ ** _exclusive/shared observability_: exclusive observability -> at most one
+    observer allowed.  shared observability -> two or more observer allowed.
+    The compiler must ensure that the (last remaining) owner does not free an
+    object which still has other observers.  See also `current observers'.
+ ** __``execution thread(s) having observers''__ / _mutual exclusion required_
+    / _time shared_ / _exclusive / shared access_ (accessors being different ``threads of
+    execution''): If all the observers are in one execution thread, or if none
+    of the observers makes write access, then no mutual exclusion is needed.
+    Otherwise the object needs some form of mutual exclusion.  ``execution
+    thread'' is meant to be an umbrella term for thread, process,
+    ISRs, .... *To-do:* 1) What exactly does `to be in' mean when saying 'an
+    observer is in execution thread ...'
 
 An object has additionally the following run time property:
 
@@ -1153,6 +1204,11 @@ An object has additionally the following run time property:
   completed.  The lifetime of an object of type T ends when: — if T is a class
   type with a non-trivial destructor (12.4), the destructor call starts, or —
   the storage which the object occupies is reused or released.
+
+* _current observers_: Determined by compiler at compile time.  The owner can
+  (checked by compiler) only free an object if no observer beside the owner
+  remains.  (or more specifically, if no observer actually observes / accesses
+  the object after the deletion). See also `allowed observers'.
 
 
 [[obj_decl_def]]
@@ -1635,11 +1691,17 @@ memory.
   pay for anything at run time that not absolutely has to be done in any case
   anyway.
 
-
+[[memory_management]]
 == Memory management
 See also <<resource_management>>.
-Support custom memory management primitives.  EF's built-in smart-pointer
-implementation shall be decoupled from memory management primitives.
+
+Support custom memory management primitives, i.e. user shall be able to
+provide its own version of new (aka malloc), delete etc.  The current idea is
+that the memory management sub-module of the EF standard module can be
+implemented by the user.  See <<exchanging_module_impl>>
+
+Built-in smart-pointer implementation shall be decoupled from memory
+management primitives (new (aka malloc), delete, ...).
 
 Make allocation on heap and stack such that optimizers have some leeway to
 choose whether in reality it is on stack or on heap.  Probably it'll be
@@ -1654,13 +1716,27 @@ anyway, the memory management primitives must be reentrant (also the one
 thread private heap malloc method might be called simultaneously from different
 threads).
 
+Allow that each thread has it's own private heap.  Memory allocation
+primitives on the thread private heap don't need mutual exclusion protection.
+Naturally there is also the `traditional' heap which is shared among threads.
+Modifying the shared heap requires mutual exclusion which naturally has some
+non-zero costs.  The intention is to use the shared heap only for objects
+which need shared ownership.  If you only need shared access to an object (but
+have an exclusive ownership), a thread private heap also works. 
+
+
 *to-do*:
 
 * Find out more about batch malloc & free.  Would it help if EF would try to
   favor batch free over a loop with normal frees.
 * Read http://en.wikipedia.org/wiki/Manual_memory_management and follow the
   links at the bottom.
-
+* Since EF can somewhat control where pointers point to, it might sometimes be
+  possible to move an object in memory.  That can e.g. help within the heap,
+  e.g. to release (to the OS, on linux via (s)brk or (anonymous) mmap) `large'
+  amounts of free memory which only can be released thanks to moving `a few'
+  objects within it.  In a more general sense: the heap manager can fight
+  defragmentation better if it can move objects.
 
 === Layout
 
