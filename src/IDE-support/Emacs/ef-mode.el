@@ -100,6 +100,7 @@ Turning on EF mode runs the normal hook `ef-mode-hook'."
   (modify-syntax-entry ?# "<")
   (modify-syntax-entry ?\n ">")
   (modify-syntax-entry ?\r ">")
+  (modify-syntax-entry ?_ "_")
   
   ;; comments
   (set (make-local-variable 'comment-column) 0)
