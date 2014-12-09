@@ -1201,7 +1201,7 @@ local_obj_def =
   ('val|'var|'obj) td ([identifier#name]             \,{?})+ td initializer [\: obj_prop_expr] \; |
 
   ## intended for complex multi-line initializers
-  ('val|'var|'obj) [identifiers#name] [\: obj_prop_expr] initializers \; |
+  ('vals|'vars|'objs) [identifiers#name] [\: obj_prop_expr] initializers \; |
 
   ## short form.  Is now an binary operator
   identifier#name ( `:= | `:&= ) sub_expr#initvalue  |
