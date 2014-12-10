@@ -571,15 +571,15 @@ as `built-in' type, see also <<builtin_types>>.
 
 - _Compound types_
  * Raw general pointer
-  ** Raw pointer
+  ** <<raw_pointer>>
   ** Raw pointer to member
- * Raw array
+ * <<raw_array>>
  * Function
- * Enumeration
+ * <<enumeration>>
  * Class
 
 
-[[raw_ptr]]
+[[raw_pointer]]
 ==== Raw pointer
 Comparable to C's pointers.  It's intended that the user nearly always uses
 smart pointers and nearly never raw pointers directly.  See also raw_ptr in
@@ -616,11 +616,32 @@ types.  Collections, iterators,
 ==== Smart pointers
 Are described in <<smart_pointers>>.
 
-==== Enumerations
+==== Enumerations / compile-time sets
+Enumerations are an list of named constants.  Each is initialized at compile
+time with a constexpr.  That list is then an distinct type.  Somewhat similar
+to a class.  User chooses underlying type, e.g. for integral members user can
+choose byte, short, int etc.  Objects of an enumeration type can only assume
+values being members of the enumeration type's list.
+
+Thus an enumeration in EF is more like a set, possibly ordered, which is
+completely defined at compile time.  Maybe reflect that in the type name,
+i.e. use another name than ``enum''.
+
+An enumeration type is a collection and consequently there is an iterator
+for it.  And/or there is a class static method like e.g. +ToCollection+.  You
+could thus write ++for var e; in EMyEnumaration.ToCollection() : ...;++ or
+even ++for var e; in EMyEnumaration : ...;++
+
+If the elements in the enumeration type are comparable, then the enumeration
+is an ordered list.  Make it an compile warning if the source code lists them
+in the `wrong' order.
+   
 * User chooses whether enclosing namespace gets the names and/or if they are
   contained in the enumeration namespace
 * Each enum is, as everything, an object which name as a string can be
-  retrieved.
+  retrieved.  Probably that's something EF should provide in a more general
+  sense: for each identifier provide a ctconst #name method e.g. foo.#name()
+  delivers "foo".
 
 
 ==== Strings & Characters
