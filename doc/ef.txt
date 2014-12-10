@@ -302,9 +302,11 @@ program = sa_expr;
 
 == Identifiers
 
-As in C&plus;&plus;:
+Similar as in C&plus;&plus;.  Regarding the optional leading sharp sign, see
+<<sharp_prefix>>.
+
 ----------------------------------------------------------------------
-identifier = '[a-zA-Z_]'[a-zA-Z_0-9]+;
+identifier = [\#]'[a-zA-Z_]'[a-zA-Z_0-9]+;
 ----------------------------------------------------------------------
 
 
@@ -1073,6 +1075,11 @@ Either completely orthogonal or simple aliases.
 
 == Comments / Documentation / EFDoc
 
+I plan to change the comment style using # to the style used by
+C&plus;&plus;. Then # is free as prefix for names, see <<sharp_prefix>>.  As a
+special exception #! at the beginning of a file is (still) treated as a
+comment to support the shebang.  The following is the old idea based on #:
+
 ----------------------------------------------------------------------
 comment = 
   \#(\*+) ...\1\# | ## multi-line
@@ -1838,14 +1845,16 @@ How to avoid the expensive shared pointers:
 
 == Compilation
 
-=== Compile time execution
+[[ctconst]]
+[[ct_execution]]
+=== Compile time execution / ctconst (aka constexpr)
 
 Extend Cpp11 (I don't know what Cpp14 offers) concept of constexpr, but
 probably name it ++ctconst++.  The code the compiler generates can also be
-executed right away.  Why restrict that in any way? Maybe it gets too
+executed right away.  Why restrict that in any way?  Maybe it gets too
 difficult to write good tools (analysis, semantic aware tools for IDEs, etc).
 
-Difficult for cross compilers? The code really being generated cannot be
+Difficult for cross compilers?  The code really being generated cannot be
 executed.  The code executed while compiling is either in the host machine
 code or in some byte code the compiler can execute.
 
@@ -1856,15 +1865,24 @@ object in EF), and the calls are evaluated at compile time.
 The `normal' compiler receives built-in literals from the execution of the
 code the meta compiler produced.
 
+[[sharp_prefix]]
+==== # prefix guideline
 
-=== Conditional compiling
+Consider having the guideline to use # as first char for each name (keyword or
+identifier) which is ctconst.  Not only would that mean that only by looking
+at a name one would know that there are no run time costs, but also that it
+looks quite familiar to people with a C background: e.g.  ++#include++ (or
+++#import++), ++#if++ (conditional compilation), ...
+
+
+==== Conditional compiling
 
 constexpr are evaluated at compile time.  Using that with const conditional
 expression and put declaration statements into the clauses controlled by the
 conditional expression we get conditional declarations.
 
 
-=== Preprocessor / Macros
+==== Preprocessor / Macros
 
 * EF shall provide macros, but discourage their use.  They only can be enabled
   by a style guide compile switch.
