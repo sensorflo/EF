@@ -611,8 +611,36 @@ clearly visible.
 [[builtin_types]]
 === Built-in types
 Built-in types can be seen as built-in classes; wrappers around primitive
-types.  Collections, iterators, <<smart_pointers>>, ...
+types.  Collections, iterators, 
 
+==== Smart pointers
+Are described in <<smart_pointers>>.
+
+==== Enumerations
+* User chooses whether enclosing namespace gets the names and/or if they are
+  contained in the enumeration namespace
+* Each enum is, as everything, an object which name as a string can be
+  retrieved.
+
+
+==== Strings & Characters
+...
+
+
+===== Character encoding
+
+Differentiate between 1) the type, e.g. unicode_char, which is capable of
+holding any code point and 2) the character encoding into a stream of another
+type, typically 8bit bytes, e.g. utf-8 or utf-16.
+
+
+===== Internationalization
+...
+
+
+==== Collections & iterators
+
+...
 
 === Declaring types / type expressions
 ----------------------------------------------------------------------
@@ -764,32 +792,6 @@ on (and then there is also no reason against using EF).
 === Explicit Conversions
 
 ...
-
-
-=== Enumerations
-
-* User chooses whether enclosing namespace gets the names and/or if they are
-  contained in the enumeration namespace
-* Each enum is, as everything, an object which name as a string can be
-  retrieved.
-
-
-=== Strings & Characters
-
-...
-
-
-==== Character encoding
-
-Differentiate between 1) the type, e.g. unicode_char, which is capable of
-holding any code point and 2) the character encoding into a stream of another
-type, typically 8bit bytes, e.g. utf-8 or utf-16.
-
-
-==== Internationalization
-
-...
-
 
 === Misc
 
