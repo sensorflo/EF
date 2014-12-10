@@ -1333,17 +1333,15 @@ The lifetime always at the end of the object's associated block.
 
 
 [[variable_sized_obj]]
-=== Variable sized raw arrays / objects
-If variable sized raw arrays are allowed as members, then the whole object becomes
-variable sized.
+=== Variable sized object
+If variable sized raw arrays are allowed as members, then the whole object
+becomes variable sized.
 
-An raw array of such variable sized objects is not possible.  Thus probably
-the object size is like a template argument.  But its not really another type
+An raw array of variable sized objects is not possible.  Thus probably the
+object size is like a template argument.  But its not really another type
 -- thus that apparently calls for a new type concept: each template argument
 has as attribute, whether it contributes to defining distinct type or not.
 See <<templates>>.
-
-Also allow size 0.
 
 
 === Non local objects
@@ -1863,18 +1861,27 @@ Classes/Modules are also namespaces.
 
 
 
-== Composeable / extendable language
+== Composable / extendable language
 
 === Composable language
 
-Each of these features the user can turn on/off.
+Each of these features the user can turn on/off by options:
 
-- Variable sized objects (in particular arrays)
+- Variable sized objects, in particular arrays.  Because that introduces a
+  `hidden' indirection.  So a variant would be to still allow the variable
+  sized objects (C, being _the_ system language, also allows them), but one
+  would be required to use a syntax where the indirection is clearly visible.
+- Member method with implicit this argument, i.e. e.g. the this keyword must be
+  given explicitly as first argument.  How about calling a member method?
+- That yet unnamed default ``implementation hiding'' of smart pointers (which
+  at the side of referencing the pointer hides the cost of dereferencing).
 - Virtual methods
-- [constructors: user can already omit them by special initializers like `noinit']
+- [constructors: user can already omit calling a constructor by special
+  initializers like e.g. `noinit']
 - RAII / destructors
 - Exceptions
-- Bounds checking
+- Bounds checking which cannot be done at compile time, i.e. which must be
+  done at run time.
 - Restrictions on operations allowed on pointers which make pointer alias
   analysis feasible
 - Owning smart pointers
@@ -1887,6 +1894,12 @@ an implementation decision.  If the user doesn't like it, he can take another
 library implementation.  Also have two parts of the library, spoken in
 analogy: a C part and a C&plus&plus/STL part.  Methods which can return an
 error have two versions, one using exceptions and one using the C way.
+
+One of the goals of this ``composable language'' topic is to make it feasible
+that EF can be used, if used with the required (command line) options, as a
+system language with all run time costs directly visible, i.e. without any
+`hidden' run time costs.  EF would then be like a ``better assembler'', or
+even hopefully ``a better C''.
 
 
 === Extendable language
