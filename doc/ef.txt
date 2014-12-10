@@ -559,6 +559,59 @@ Roughly similar to C&plus;&plus;.  However more strongly typed, e.g. in order
 to facilitate pointer alias analysis (see <<tools>>).
 
 
+=== Primitive types / Type classification
+
+Roughly similar to C&plus;&plus;. Note that `primitive' type is not the same
+as `built-in' type, see also <<builtin_types>>.
+
+- _Fundamental types_
+ * More or less those of C&plus;&plus;
+
+- _Compound types_
+ * Raw general pointer
+  ** Raw pointer
+  ** Raw pointer to member
+ * Raw array
+ * Function
+ * Enumeration
+ * Class
+
+
+[[raw_ptr]]
+==== Raw pointer
+Comparable to C's pointers.  It's intended that the user nearly always uses
+smart pointers and nearly never raw pointers directly.  See also raw_ptr in
+<<smart_pointers>>.
+
+
+[[raw_array]]
+==== Raw array
+Comparable to C's arrays.  Size must be known at compile time.  It's intended
+that the user nearly always uses collections and nearly never raw arrays
+directly.  Also allow size 0.
+
+
+[[variable_sized_raw_array]]
+==== Variable sized raw arrays
+Variable sized raw arrays are arrays which size is determined at runt time at
+construction time, but cannot be changed afterwards.  That is unlike dynamic
+arrays (vectors in C&plus;&plus), where the size can be changed anytime during
+run-time.
+
+Probably a variable sized raw array is not really distinct primitive type of
+its own, but is a composition of other primitive types: E.g. a local variable
+sized raw array really is a named local const non-owning raw pointer to an
+unnamed raw array owned by the stack.  That view might be important for the
+case where we want to make any indirection, i.e. pointer dereferencing,
+clearly visible.
+
+
+[[builtin_types]]
+=== Built-in types
+Built-in types can be seen as built-in classes; wrappers around primitive
+types.  Collections, iterators, <<smart_pointers>>, ...
+
+
 === Declaring types / type expressions
 ----------------------------------------------------------------------
 type_def = class_type_def | interface_type_def | enum_type_def |
@@ -1726,10 +1779,11 @@ observer_ptr:: Non-owning.  Compiler ensures at compile time that that the
   owner(s) does not delete the object while the observer_ptr points to it.
   Alternative names: leaser_ptr or renter_ptr.  I fear that the word
   `observer' wrongly implies read only access to the pointee.
-raw_ptr:: Non-owning.  Disallowed by standard guidelines.  Can point anywhere
-  the other pointers can.  User is responsible for mutual exclusion and
-  ownership.  However there still is no pointer arithmetic.  That is in order
-  to make pointer alias analysis feasible.
+raw_ptr:: Non-owning.  Primitive type, see <<raw_ptr>>.  Disallowed by
+  standard guidelines.  Can point anywhere the other pointers can.  User is
+  responsible for mutual exclusion and ownership.  However there still is no
+  pointer arithmetic.  That is in order to make pointer alias analysis
+  feasible.
 
 
 General pointer assigning rules:
