@@ -122,20 +122,56 @@ collection.  Is thus not suitable for a hard real-time embedded system.
 
 === Guidelines in designing EF
 
-* I like the http://en.wikipedia.org/wiki/Unix_philosophy[Unix philosophy].
-  When can these guidelines in designing EF learn from them?
-* Prefer mnemonic (even when only one letter) letters/words over punctuation.
-* Provide the programmer with tools to directly express what he wants to
-  accomplish.
-* Easy grammar.  Most of all easy for humans to understand details
-  ('complicated' grammars might often be intuitive for humans in most cases
-  but not in a few corner cases or where the author of code ``abused' the
-  rules).  That also makes it easier to write tools/IDEs.  Common scanner and
-  parser generator tools such as lex and yacc should be able to handle the
-  grammar of EF.
-* No redundancy.  I don't want to be forced to write things twice.  Work with
-  identifiers to refer to already said things.
-* As in C&plus;&plus;, don't pay what you don't need.
+* Easy grammar / KISS / feasible to write tools for EF:
+ ** Most of all easy for humans to understand the _complete_ EF programming
+    language, down to every corner case.  Some languages are intuitive for
+    humans in most cases, but their chosen ``easynesss'' results in very hard
+    to understand special cases.
+ ** KISS.  Only few people are interested in delving into complicated daunting
+    language details.  Most just want to use the language.  That is especially
+    true in the industry, and I want EF to be applicable for embedded systems.
+ ** I believe that an easy grammar for humans results in most cases also in an
+    grammar that is easy to understand for machines, i.e. its easy to write
+    tools for EF.  If it's easy to write tools for EF, that helps that EF is
+    actually being used.
+ ** Clean code can be reads as English prose.  You read the code from left to
+    right and directly get English prose describing what happens in the order
+    you read it.
+  
+* No redundancy (``redundancy is the primary enemy of a well designed
+  system'').  User shall not be forced to anything twice.  With identifiers of
+  various (meta-) types the user can define various things exactly once.
+
+* Each thing / feature of EF has only exactly one responsibility
+ ** Applies also to keywords / operators in EF
+  *** Avoid the case that one keyword affects multiple different things at the
+      same time, especially regarding storage, lifetime, scope, linkage.
+  *** Context insensitive, a keyword/operator has always the same meaning in
+      any context
+  *** Choose linkage, lifetime, storage, scope, alignment etc with dedicated
+      keywords.
+ ** EF shall help that the constructs the programmer creates adhere to this
+    principle
+ ** Const local objects -- apart from loop variables, collecting/summing up
+    variables, it's hard that one object with given name really can reasonably
+    contain different values at different times.
+
+* How EF shall name the features it provides: In general any builtin feature
+  can be accessible by either 1) punctuation (e.g. + for arithmetic plus) 2)
+  something _very_ short (a few characters) consisting of punctuation and
+  letters (say ++s*++ for a shared pointer), at least parts of it not being
+  complete English words, the abbreviations ``only'' being memonic 3)
+  consisting only of complete English keyword (say ++dynamic_cast++).  EF does
+  no patronize and leaves the decision whether readable / maintainable code
+  means being short or using complete English words up to the user.  With EF's
+  builtin guidelines each of the three variants can be enforced / prohibited.
+
+* Don't degrade a good design to also cover weird special cases -- put the
+  burden of having to use workarounds on the people with the strange
+  requirements.
+
+* Don't pay what you don't need (from C&plus;&plus;'s guidelines)
+
 * As in many modern languages, abstractions and checks at compile time and
   run-time shall make programmer's life easier with no or very little overhead
   compared to C.  That is, the default way and the most convenient way to
@@ -145,6 +181,7 @@ collection.  Is thus not suitable for a hard real-time embedded system.
      embedded system.  As in C&plus;&plus;, allow to turn it off - but then we
      also loose exceptions?  See
      http://stackoverflow.com/questions/5257190/are-exceptions-still-undesirable-in-realtime-environment.
+
 * Trade safety (likeliness to write correct programs) for compile time.  The
   machine has to think, not the human programmer.  Compile time (almost) only
   helps the programmer, but the programmer benefits probably more if he spends
@@ -152,10 +189,12 @@ collection.  Is thus not suitable for a hard real-time embedded system.
  ** No context sensitive operators/keywords.
  ** With a compile switch disallow the potentially dangerous `from the world
     C' constructs which the verifier can not verify to be correct.
+
 * Trade faster run-time for longer compile-time.  The program is more often
   run than compiled.  Even while developing - why compiling a translation unit
   if you don't let the code in it run?  (OK due to a changed import it might
   has to get recompiled).
+
 * Make it easy to write correct and run-time efficient code, make it and hard
   to write incorrect code, make it obvious when run-time efficiency has more
   than a near zero overhead compared to the C equivalent construct.
@@ -170,29 +209,7 @@ collection.  Is thus not suitable for a hard real-time embedded system.
     mean that every construct shall have those three in parallel, it only
     means it should easily be recognizable / memorable into which level a
     construct falls.
-* However, the more easy a language / library it makes that it is hard to make
-  errors, the more likely it is that this is at the cost of run-time
-  efficiency.  I'm thinking about the right (smart) pointer / reference /
-  collection to use.  What can EF do that it is easy to do the correct _and_
-  run-time efficient thing?
-* KISS.  Only few people are interested in delving into language details.
-  Most just want to use the language.  That is especially true in the
-  industry, and I want EF to be applicable for embedded systems.
-* To be successful on embedded, the produced binary must not contain much
-  overhead (size)
-* One thing has only one responsibility
- ** Applies also to keywords / operators in EF
-  *** Avoid the case that one keyword affects multiple different things at the
-      same time, especially regarding storage, lifetime, scope, linkage.
-  *** Context insensitive, a keyword/operator has always the same meaning in
-      any context
-  *** Choose linkage, lifetime, storage, scope, alignment etc with dedicated
-      keywords.
- ** EF shall help that the constructs the programmer creates adhere to this
-    principle
- ** Const local objects -- apart from loop variables, collecting/summing up
-    variables, it's hard that one object with given name really can reasonably
-    contain different values at different times.
+
 * For the cases where there exists facts and data that a given abstraction
   (say e.g.  smart pointers) helps the programmer to write less bugs at little
   near zero or even zero run-time costs, people still might object using these
@@ -204,18 +221,26 @@ collection.  Is thus not suitable for a hard real-time embedded system.
  ** provide compile switches for style guides.  Then project's guidelines can
     choose whether they want to allow C features for ultimate control or
     disallow them for more safety at nearly zero run-time costs.
-* inspiring:
-  ** Targeted toward embedded system.  C / C&plus;&plus; / Lua / Tcl / Ada /
+
+* It shall be possible for the programmer to directly express what he wants to
+  accomplish.  However that is only possible if (the designers of) EF can
+  anticipate what the user want's to accomplish.  The more EF anticipates, the
+  more ``overloaded'' EF becomes.  Probably restrict that anticipation to
+  (currently) well known patterns in procedural, OO, functional, generic
+  programming.
+
+
+Inspiration: don't re-invent the wheel -- look at how lisp and other language
+solve problems:
+
+- I like the http://en.wikipedia.org/wiki/Unix_philosophy[Unix philosophy].
+  When can these guidelines in designing EF learn from them?
+- Targeted toward embedded system.  C / C&plus;&plus; / Lua / Tcl / Ada /
      Ravenscar profile / Hume / embedded C&plus;&plus; / Java Real-Time
-  ** OO: C&plus;&plus; / D / Java / C# / Ruby / Python / Eiffel
-  ** Functional programming: Lisp, Smalltalk, Scheme, Ruby, Python
-  ** Generic programming: C&plus;&plus; / D
-  ** F#, OCaml (boasts to be nearly as fast as C)
-* Clean code can be reads as English prose.  You read the code from left to
-  right and directly get English prose.
-* Regarding the field difference run-time evaluation and compile-time
-  evaluation, type_expr, type_def, ctconst etc. don't re-invent the wheel.
-  Look at how lisp and other language do that.
+- OO: C&plus;&plus; / D / Java / C# / Ruby / Python / Eiffel
+- Functional programming: Lisp, Smalltalk, Scheme, Ruby, Python
+- Generic programming: C&plus;&plus; / D
+- F#, OCaml (boasts to be nearly as fast as C)
 
 
 === Embedded system constraints
@@ -228,7 +253,7 @@ collection.  Is thus not suitable for a hard real-time embedded system.
 * http://forum.dlang.org/thread/unreajijtwafywprqaag@forum.dlang.org?page=2#post-op.wmhetvpwsqugbd:40fbsdx64.lan
 * http://programmers.stackexchange.com/questions/84514/why-does-c-dominate-in-the-embedded-software-market
 * Book: Real-Time Systems.  Design Principles for Distributed Embedded
-  Applications.  Kopetz, Hermann.
+  Applications.  Kopetz,  Hermann.
 * From http://stackoverflow.com/questions/1601893/why-are-c-c-and-lisp-so-prevalent-in-embedded-devices-and-robots
   2/3:
  ** deterministic memory management
@@ -2058,6 +2083,10 @@ Similarly but probably yet different: topic of efficient implementation of
 templates.  E.g. when imaging cpp unique_ptr: there only one implementation in
 the program text sequence is required; that single one can serve all concrete
 types since they only differ in the type pointed to.
+
+Template static objects.  There is only one object in the whole program (in
+C&plus;&plus;, given a class static member in a templatized class, there is
+one object per template instance).
 
 
 == Optimizations
