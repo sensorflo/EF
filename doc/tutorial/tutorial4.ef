@@ -14,7 +14,7 @@
 //   action2_seq
 // else
 //   action3_seq
-// ;
+// $
 //
 // The colon after a condition is optional. The guideline is leave it away when
 // code continues on the next line and to use it when code continues on the
@@ -24,8 +24,8 @@ fun factorial(x:int) int =
     x * factorial(x-1)
   else
     1
-  ;  
-;
+  $  
+$
 
 // braces '{}' to group expressions
 // --------------------------------

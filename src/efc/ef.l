@@ -99,6 +99,7 @@ bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool
 }
 
 ";"                 return yy::Parser::make_SEMICOLON(loc);
+"$"                 return yy::Parser::make_DOLLAR(loc);
 ":"                 return yy::Parser::make_COLON(loc);
 ","                 return yy::Parser::make_COMMA(loc);
 "+"                 return yy::Parser::make_PLUS(loc);

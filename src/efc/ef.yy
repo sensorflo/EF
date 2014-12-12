@@ -52,6 +52,7 @@
   COLON_EQUAL ":="
   COMMA ","
   SEMICOLON ";"
+  DOLLAR "$"
   COLON ":"
   PLUS "+"
   MINUS "-"
@@ -252,7 +253,7 @@ kwac
 
 kwac_raw
   : RPAREN
-  | SEMICOLON
+  | DOLLAR
   ;
 
 id_or_keyword

@@ -354,8 +354,8 @@ sub_expr = operator_expr | primary_expr;
 operator_expr = sub_expr ('and|'or|...) sub_expr | ...;
 primary_expr = list_expr | literal | ID | ...;
 list_expr = 
-  'while expr#cond \: expr#body \; |
-  'var ID \: type_expr \; |
+  'while expr#cond \: expr#body \$ |
+  'var ID \: type_expr \$ |
   ...;
 ----------------------------------------------------------------------
 
@@ -385,7 +385,7 @@ name  list            sepa-        sepa-         close
       open            rator        rator         deli-
                                                  miter
 foo    (        a       ,     b     ,       c      )
-if              a       :     b    else     c      ;
+if              a       :     b    else     c      $
 if     (        a       :     b    else     c      )
 if              a       :     b    else     c   end if
 [               a       ,     b     ,       c      ]  
@@ -396,24 +396,24 @@ argument list open delimiter (left parenthesis).  Followed by an argument list
 where the elements are separated by separators.  The valid separators are
 specific to the specific `function name' (e.g. commas or colons or keywords
 such as +elif+ or +else+).  The list expression is closed / delimited by an
-delimiter (semicolon or right parenthesis).
+delimiter (dollar or right parenthesis).
 
 ----------------------------------------------------------------------
 call = fun_name args_open_del naked_arg_list args_close_del;
 args_open_del  = [\(];
 naked_arg_list = (arg1 separator{-})* 
-args_close_del = ['end ...] ( \) | \; );
+args_close_del = ['end ...] ( \) | \$ );
 ----------------------------------------------------------------------
 
 The argument list open delimiter and the argument list close delimiter can be
 freely mixed from a syntax point of view, also if that looks awkward for
-humans.  Both ++if ( a : b ;++ and ++if a : b)++ are syntactically valid.
+humans.  Both ++if ( a : b $++ and ++if a : b)++ are syntactically valid.
 Such `mismatches' will be caught by built-in configurable style guidelines.
 
 The argument list close delimiter optionally starts with ++end ...++.  The
-full list expression looks then e.g. like ++if a : b end if;++ or ++def fun
-foo(): int = ... end foo;++. Note that at the very end of the argument list
-close delimiter there is still a semicolon or closing parenthesis.  The word
+full list expression looks then e.g. like ++if a : b end if$++ or ++def fun
+foo(): int = ... end foo$++. Note that at the very end of the argument list
+close delimiter there is still a dollar or closing parenthesis.  The word
 after ++end++ is free from a syntax point of view.  Built-in configurable
 style guidelines will enforce that it `matches' the beginning of the list
 expression.  What exactly can / must come after the ++end++ keyword is not yet
@@ -453,21 +453,21 @@ its lhs being an argument list.
     compile time expression list), and the directly enclosing construct
     defines what is done at compile-time and what at runt-time. 
   * ...
-- Consider using ++$++ instead ++;++ to end lists, ++;++ for
+- Consider using ++;++ for
   lists in a `execute-sequentially-at-run-time' context, ++,++ for  `create
   some form of list data structure'.  Would look more like C&plus;&plus; /
   Java etc, would maybe be a bit less ambiguous, but also would hide a bit more
   that it's all about lists (hmmm, that argument can be pro _and_ contra).
 - Define unambiguously (not only technically, but also in the sense of a
   human's guts feeling) to which outer construct commas belong.  I would like
-  to make things possible as ++if cond : a , b;++, i.e. ++a, b++ would be the
+  to make things possible as ++if cond : a , b$++, i.e. ++a, b++ would be the
   2nd argument to the +if+ `function', i.e. there the comma `lives' only
   within the 2nd argument, on the level of ++if++'s argument list.  I also
   would like if separators with same meaning are exchangeable ++if(a,b,c)++ or
   ++if(a : b else c)++ or ++if(a : b , c)++. Obviously the two goals are not
   compatible.
 
-  !!!! if,(...,..) for the comma form if( .... ) and if .... ; for the
+  !!!! if,(...,..) for the comma form if( .... ) and if .... $ for the
   dedicated sep form.  Or inverse if(...) for the comma form and if:(...) for
   the special sep form (exactly like that not possible because
   indistinguishable form special sep form with empty condition. !!!!
@@ -654,8 +654,8 @@ i.e. use another name than ``enum''.
 
 An enumeration type is a collection and consequently there is an iterator
 for it.  And/or there is a class static method like e.g. +ToCollection+.  You
-could thus write ++for var e; in EMyEnumaration.ToCollection() : ...;++ or
-even ++for var e; in EMyEnumaration : ...;++
+could thus write ++for var e$ in EMyEnumaration.ToCollection() : ...$++ or
+even ++for var e$ in EMyEnumaration : ...$++
 
 If the elements in the enumeration type are comparable, then the enumeration
 is an ordered list.  Make it an compile warning if the source code lists them
@@ -889,8 +889,8 @@ terms used in code / in the syntax of the language.
 
 ----------------------------------------------------------------------
 ##                sep                   sep       sep
-## general:  fun  :  args_tuple         ,  rettype = body ; 
-## usual:    fun  (  arg1, arg2         )  rettype = body ;
+## general:  fun  :  args_tuple         ,  rettype = body $ 
+## usual:    fun  (  arg1, arg2         )  rettype = body $
 
 ## At compile-time defines an function object.  At run-time does nothing.
 fun_obj_def = 'fun identifier#name fun_type_expr block_expr;
@@ -1060,7 +1060,7 @@ CC&plus;&plus; (member, two global), postfix/prefix increment leave the object
 in the same state (i.e. when the return value is not inspected, the compiler
 can choose the more efficient).  When a unity object is known, then
 &plus;&plus; is equivalent to &plus;&plus;=, same for minus.  That
-e.g. helps that ++result = a + b++ could be strength reduced to ++result = a;
+e.g. helps that ++result = a + b++ could be strength reduced to ++result = a$
 result += b++ (the later does not need to create & destroy a temporary).
 
 Can the compiler automatically verify that a user implemented method fulfills
@@ -1303,12 +1303,12 @@ it and finally return a reference to the new object.
 local_obj_def =
   ## intended for simple small (chars for code) initializers; obj_prop_expr is
   ## typically less important and thus at the end
-  ('val|'var|'obj)     [identifier#name] initializer                        [\: obj_prop_expr] \; |
-  ('val|'var|'obj) td ([identifier#name] initializer \,{?})+ td             [\: obj_prop_expr] \; |
-  ('val|'var|'obj) td ([identifier#name]             \,{?})+ td initializer [\: obj_prop_expr] \; |
+  ('val|'var|'obj)     [identifier#name] initializer                        [\: obj_prop_expr] \$ |
+  ('val|'var|'obj) td ([identifier#name] initializer \,{?})+ td             [\: obj_prop_expr] \$ |
+  ('val|'var|'obj) td ([identifier#name]             \,{?})+ td initializer [\: obj_prop_expr] \$ |
 
   ## intended for complex multi-line initializers
-  ('vals|'vars|'objs) [identifiers#name] [\: obj_prop_expr] initializers \; |
+  ('vals|'vars|'objs) [identifiers#name] [\: obj_prop_expr] initializers \$ |
 
   ## short form.  Is now an binary operator
   identifier#name ( `:= | `:&= ) sub_expr#initvalue  |
@@ -1321,7 +1321,7 @@ initializer =
   ## constructor call syntax
   \( (expr_list | 'noinit | 'laterctor ) \) |
   ## an alternative syntax to the constructor call with one argument.  "obj
-  ## x = 3;" and "obj x(3);" are equivalent.  Also here noinit can be used.
+  ## x = 3$" and "obj x(3)$" are equivalent.  Also here noinit can be used.
   ## '(sub_expr)'
   \= sub_expr |
   ## omitting the initializer is an alias to the '()' initializer
@@ -1332,12 +1332,12 @@ td = #* tuple delimiter *# ;
 
 .Example
 ----------------------------------------------------------------------
-obj a = 3, b(3), c;
+obj a = 3, b(3), c$
 
-fun get(int, &double);
-get( 0, obj double f ); 
+fun get(int, &double)$
+get( 0, obj double f )$ 
 
-obj string { a, b } = get2strings();
+obj string { a, b } = get2strings()$
 ----------------------------------------------------------------------
 
 
@@ -1372,7 +1372,7 @@ Keywords in a flow control expression that promise that a given object will be
 initialized -- written to it at least once before reading from it.  That also
 would be a use case for the the example that a flow control expression as a
 whole returns already the desired initializer, but the when its a long
-multiline flow control expression, then ++var i : int = if ....;;++ may look
+multiline flow control expression, then ++var i : int = if ....$$++ may look
 awkward (on the other side that's just a matter of taste, which is also a
 matter of being used to such constructs).
 
@@ -1581,7 +1581,7 @@ conditional_expr = ifchain_expr | givenchain_expr | jumptable_expr |
 ifchain_expr = '
   'if [\(] sa_expr (\,|'then) sa_expr
   ((\,|'elif) sa_expr (\,|'then) sa_expr)*
-  ## if ommited defaults to "else {nop;}", i.e. type void 
+  ## if ommited defaults to "else {nop}", i.e. type void 
   ['else sa_expr]
   (\)|'end);
 

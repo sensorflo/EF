@@ -21,16 +21,16 @@
 // variable and value. The initializer can be after the identifier or after the
 // type.
 fun square_minus_four(x:int) int =
-   val square: int = x * x;
-   var tmp = square - 1 :int;
+   val square: int = x * x$
+   var tmp = square - 1 :int$
    tmp = tmp - 1
    tmp = tmp - 1,
    tmp = tmp - 1,
-;
+$
 
 // The type in a val/var definition can be omitted if the type can be inferred
 // (similar to the auto keyword in C++) from the initializer. The syntax 'a :=
-// b' is short for 'val a: = b;'. Using val(ue) is preferred over using
+// b' is short for 'val a: = b$'. Using val(ue) is preferred over using
 // var(iable), hence the short form is for val(ue) instead (var)iable.
 //
 // The current version of EF cannot really do type inference, but since the
@@ -38,8 +38,8 @@ fun square_minus_four(x:int) int =
 // always int.
 fun square_minus_four_v2(x:int) int =
    square := x * x
-   var tmp: = square - 1;
+   var tmp: = square - 1$
    tmp - 3
-;
+$
 
 square_minus_four(3)

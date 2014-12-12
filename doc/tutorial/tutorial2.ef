@@ -11,7 +11,7 @@
 // square of its argument. 
 fun square(x:int) int =
     x * x
-;
+$
 
 // Types
 // -----
