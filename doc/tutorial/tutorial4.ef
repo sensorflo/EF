@@ -1,24 +1,24 @@
 #!/usr/bin/env efc
-# 
-# The EF programming language tutorial part 4
-# ===========================================
-# 
-# Control flow expressions
-# -------------------------
+// 
+// The EF programming language tutorial part 4
+// ===========================================
+// 
+// Control flow expressions
+// -------------------------
 
-# An 'if' expression for conditional control flow is in the form:
-#
-# if cond1_expr:
-#   action1_seq
-# elif cond2_expr:
-#   action2_seq
-# else
-#   action3_seq
-# ;
-#
-# The colon after a condition is optional. The guideline is leave it away when
-# code continues on the next line and to use it when code continues on the
-# same line. There can be zero or more elif parts. The else part is optional.
+// An 'if' expression for conditional control flow is in the form:
+//
+// if cond1_expr:
+//   action1_seq
+// elif cond2_expr:
+//   action2_seq
+// else
+//   action3_seq
+// ;
+//
+// The colon after a condition is optional. The guideline is leave it away when
+// code continues on the next line and to use it when code continues on the
+// same line. There can be zero or more elif parts. The else part is optional.
 fun factorial(x:int) int =
   if x
     x * factorial(x-1)
@@ -27,10 +27,10 @@ fun factorial(x:int) int =
   ;  
 ;
 
-# braces '{}' to group expressions
-# --------------------------------
-# 
-# Unlike most other languages, curly braces are used to group expressions /
-# overwrite precedence.
-{1 + 2} * 3 # evaluates to 9, equivalent to '(1 + 2) * 3' in most languages
+// braces '{}' to group expressions
+// --------------------------------
+// 
+// Unlike most other languages, curly braces are used to group expressions /
+// overwrite precedence.
+{1 + 2} * 3 // evaluates to 9, equivalent to '(1 + 2) * 3' in most languages
 

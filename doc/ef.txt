@@ -1121,26 +1121,25 @@ Much easier than in C&plus;&plus;.  Only one / a few simple principles.
 Either completely orthogonal or simple aliases.
 
 
+[[comments]]
 == Comments / Documentation / EFDoc
-
-I plan to change the comment style using # to the style used by
-C&plus;&plus;. Then # is free as prefix for names, see <<sharp_prefix>>.  As a
-special exception #! at the beginning of a file is (still) treated as a
-comment to support the shebang.  The following is the old idea based on #:
 
 ----------------------------------------------------------------------
 comment = 
-  \#(\*+) ...\1\# | ## multi-line
-  \# ... \n ;  ## single-line
+  \/(\*+) ... \1\/ | ## multi-line
+  ("//"|"#!") ... \n ;  ## single-line
 ----------------------------------------------------------------------
 
-The multi-line variant can be nested.  E.g given ++a #* b #* c *# d *# e++,
+The multiline variant can be nested.  E.g given ++a /* b /* c */ d */ e++,
 from b to d inclusive is within the outer comment.  The closing delimiter
-needs as many stars as the opening delimiter.  That way sequences like *# can
-be included in the comment: `#** in EF the *# ends an comment **#`.
+needs as many stars as the opening delimiter.  That way sequences like */ can
+be included in the comment: `/** in EF the */ ends an comment **/`.
 
-.Notes
-- Having # as delimiter allows to use the shebang mechanism.
+Allowing "#!" as single line comment allows for the ``shebang'' mechanism.
+Control with style guidelines that it is only used as first two characters in
+the file.  Note that the hash has another meaning when not followed by an
+exclamation mark, see <<sharp_prefix>>.
+
 
 .To-do
 - Institutionalize using Doxygen or Doxygen like markup language.
@@ -1920,7 +1919,8 @@ Consider having the guideline to use # as first char for each name (keyword or
 identifier) which is ctconst.  Not only would that mean that only by looking
 at a name one would know that there are no run time costs, but also that it
 looks quite familiar to people with a C background: e.g.  ++#include++ (or
-++#import++), ++#if++ (conditional compilation), ...
+++#import++), ++#if++ (conditional compilation), .... Note that a hash
+followed by an exclamation mark is a comment, see <<comments>>.
 
 
 ==== Conditional compiling

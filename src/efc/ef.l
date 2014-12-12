@@ -41,9 +41,9 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 %}
 
   /* comments and blanks. They are all skiped and thus produce no token. */
-#[^*\n][^\n]*       loc.step();
-#$                  loc.step();
-#\*[^*]*(\*+[^#*]+)*\*+#   loc.step();
+\/\/[^\n]*          loc.step();
+#![^\n]*            loc.step();
+\/\*[^*]*(\*+[^#*]+)*\*+\/   loc.step();
 [ \t]+              loc.step();
 [\n]+               loc.lines(yyleng); loc.step();
 

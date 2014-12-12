@@ -85,6 +85,10 @@
    (cons "[;:]\\|->" font-lock-semi-unimportant)
    (cons "[0-9]+\\(\\.[0-9]*\\)?" font-lock-constant-face)))
 
+(defconst ef-font-lock-syntactic-keywords
+  (list
+   (list "\\(#\\)!" '(1 "<"))))
+
 (defconst ef-open-keywords
   '("fun" "decl" "if" "while"))
 
@@ -97,17 +101,21 @@ Turning on EF mode runs the normal hook `ef-mode-hook'."
   ;; syntax table
   (modify-syntax-entry ?\" "'")
   (modify-syntax-entry ?\" "\"")
-  (modify-syntax-entry ?# "<")
+  (modify-syntax-entry ?/ ". 124")
+  (modify-syntax-entry ?* ". 23b")
   (modify-syntax-entry ?\n ">")
   (modify-syntax-entry ?\r ">")
   (modify-syntax-entry ?_ "_")
+  (set (make-local-variable 'parse-sexp-lookup-properties) t)
+  (set (make-local-variable 'syntax-propertize-function)
+       (syntax-propertize-via-font-lock ef-font-lock-syntactic-keywords))
   
   ;; comments
   (set (make-local-variable 'comment-column) 0)
-  (set (make-local-variable 'comment-start) "# ")
+  (set (make-local-variable 'comment-start) "// ")
   (set (make-local-variable 'comment-end) "")
-  (set (make-local-variable 'comment-start-skip) "#\\*+\\s-*")
-  (set (make-local-variable 'comment-end-skip) "\\s-*\\(?:\n\\|\\*+#\\)")
+  (set (make-local-variable 'comment-start-skip) "\\(?:/\\*+\\|//\\|#!\\)\\s-*")
+  (set (make-local-variable 'comment-end-skip) "\\s-*\\(?:[\n\r]\\|\\*+/\\)")
   
   ;; font lock
   (set (make-local-variable 'font-lock-defaults) '(ef-font-lock-keywords))

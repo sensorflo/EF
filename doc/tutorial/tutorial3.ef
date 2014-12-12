@@ -1,25 +1,25 @@
 #!/usr/bin/env efc
-# 
-# The EF programming language tutorial part 3
-# ===========================================
-#
-# Expressions
-# ---------------------------------------------------
-# - The body of a function or of an flow control element is an expression.  An
-#   expression in EF is comparable to what C or Java call a block.
-# - An expression is a comma separated list of so called stand alone
-#   expressions.  Actually the comma is optional.
-# - A stand alone expression is comparable to what C, Java etc. call a
-#   statement.
-# - The value of an expression is the value of its last stand alone
-#   expression.
+// 
+// The EF programming language tutorial part 3
+// ===========================================
+//
+// Expressions
+// ---------------------------------------------------
+// - The body of a function or of an flow control element is an expression.  An
+//   expression in EF is comparable to what C or Java call a block.
+// - An expression is a comma separated list of so called stand alone
+//   expressions.  Actually the comma is optional.
+// - A stand alone expression is comparable to what C, Java etc. call a
+//   statement.
+// - The value of an expression is the value of its last stand alone
+//   expression.
 
-# Data object definitions
-# -----------------------
-# The example below shows how values and variables are defined. A value is an
-# immutable (aka const) variable. 'Data object' is the generic term for
-# variable and value. The initializer can be after the identifier or after the
-# type.
+// Data object definitions
+// -----------------------
+// The example below shows how values and variables are defined. A value is an
+// immutable (aka const) variable. 'Data object' is the generic term for
+// variable and value. The initializer can be after the identifier or after the
+// type.
 fun square_minus_four(x:int) int =
    val square: int = x * x;
    var tmp = square - 1 :int;
@@ -28,14 +28,14 @@ fun square_minus_four(x:int) int =
    tmp = tmp - 1,
 ;
 
-# The type in a val/var definition can be omitted if the type can be inferred
-# (similar to the auto keyword in C++) from the initializer. The syntax 'a :=
-# b' is short for 'val a: = b;'. Using val(ue) is preferred over using
-# var(iable), hence the short form is for val(ue) instead (var)iable.
-#
-# The current version of EF cannot really do type inference, but since the
-# only type currently is int, deducing the correct type is trivial since its
-# always int.
+// The type in a val/var definition can be omitted if the type can be inferred
+// (similar to the auto keyword in C++) from the initializer. The syntax 'a :=
+// b' is short for 'val a: = b;'. Using val(ue) is preferred over using
+// var(iable), hence the short form is for val(ue) instead (var)iable.
+//
+// The current version of EF cannot really do type inference, but since the
+// only type currently is int, deducing the correct type is trivial since its
+// always int.
 fun square_minus_four_v2(x:int) int =
    square := x * x
    var tmp: = square - 1;

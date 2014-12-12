@@ -146,29 +146,29 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    a_program_containing_a_single_line_comment_which_is_defined_by_a_sharp_sign_upto_and_inclusive_next_newline_or_end_of_file,
+    a_program_containing_a_single_line_comment_which_is_defined_by_two_slashes_upto_and_inclusive_next_newline_or_end_of_file,
     yylex_is_called_repeatedly,
     returns_a_token_sequence_which_ignores_the_comment)) {
 
   string spec = "Trivial example";
   {
-    DriverOnTmpFile driver( "#foo\n" );
+    DriverOnTmpFile driver( "//foo\n" );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
 
   spec = "Simple example";
   {
-    DriverOnTmpFile driver( "if #foo\n if" );
+    DriverOnTmpFile driver( "if //foo\n if" );
     EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
 
-  spec = "Border case example: the # is the last char before the newline";
+  spec = "Border case example: // are the last two chars before the newline";
   {
-    DriverOnTmpFile driver( "if #\n if" );
+    DriverOnTmpFile driver( "if //\n if" );
     EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
@@ -178,21 +178,67 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   spec = "Border case example: the single line comment is on the last line"
     "of the file which is not delimited by newline";
   {
-    DriverOnTmpFile driver( "if #foo" );
+    DriverOnTmpFile driver( "if //foo" );
     EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
 
-  /* Sadly I can't get this to work
-  spec = "Border case example: the # is the last char in the file";
+  spec = "Border case example: // are the last two chars in the file";
   {
-    DriverOnTmpFile driver( "if #" );
+    DriverOnTmpFile driver( "if //" );
     EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
-  */
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
+    a_program_containing_a_single_line_comment_which_is_defined_by_a_hash_followed_by_exlamation_mark_upto_and_inclusive_next_newline_or_end_of_file,
+    yylex_is_called_repeatedly,
+    returns_a_token_sequence_which_ignores_the_comment)) {
+
+  string spec = "Trivial example";
+  {
+    DriverOnTmpFile driver( "#!foo\n" );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+
+  spec = "Simple example";
+  {
+    DriverOnTmpFile driver( "if #!foo\n if" );
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+
+  spec = "Border case example: #! are the last two chars before the newline";
+  {
+    DriverOnTmpFile driver( "if #!\n if" );
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+
+  spec = "Border case example: the single line comment is on the last line"
+    "of the file which is not delimited by newline";
+  {
+    DriverOnTmpFile driver( "if #!foo" );
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
+
+  spec = "Border case example: #! are the last two chars in the file";
+  {
+    DriverOnTmpFile driver( "if #!" );
+    EXPECT_EQ(Parser::token::TOK_IF, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
+    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
+  }
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -202,14 +248,14 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
   string spec = "trivial example";
   {
-    DriverOnTmpFile driver( "#*foo*#" );
+    DriverOnTmpFile driver( "/*foo*/" );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
     EXPECT_FALSE( driver.d().gotError() );
   }
 
   spec = "simple example";
   {
-    DriverOnTmpFile driver( "x #*foo*# y" );
+    DriverOnTmpFile driver( "x /*foo*/ y" );
     EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
@@ -218,7 +264,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
   spec = "example: comment contains newlines";
   {
-    DriverOnTmpFile driver( "x #*foo\nbar*# y" );
+    DriverOnTmpFile driver( "x /*foo\nbar*/ y" );
     EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
@@ -227,7 +273,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
   spec = "example: comment contains *";
   {
-    DriverOnTmpFile driver( "x #* foo*bar *# y" );
+    DriverOnTmpFile driver( "x /* foo*bar */ y" );
     EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_ID, yylex(driver).token() );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
@@ -236,21 +282,21 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
   spec = "border case example: empty comment";
   {
-    DriverOnTmpFile driver( "#**#" );
+    DriverOnTmpFile driver( "/**/" );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
     EXPECT_FALSE( driver.d().gotError() );
   }
 
   spec = "border case example: only stars inside comment";
   {
-    DriverOnTmpFile driver( "#***#" );
+    DriverOnTmpFile driver( "/***/" );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
     EXPECT_FALSE( driver.d().gotError() );
   }
 
   spec = "border case example: stars inside comment";
   {
-    DriverOnTmpFile driver( "#* foo**bar *#" );
+    DriverOnTmpFile driver( "/* foo**bar */" );
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
     EXPECT_FALSE( driver.d().gotError() );
   }
