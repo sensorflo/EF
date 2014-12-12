@@ -70,10 +70,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "42", "42", "trivial example with only one element" );
   TEST_PARSE( "42 64 77", "42 64 77", "trivial example, blanks as separator" );
-  TEST_PARSE( "42, 64, 77", "42 64 77", "trivial example, commas as separator" );
-  TEST_PARSE( "42, 64 77", "42 64 77",
+  TEST_PARSE( "42; 64; 77", "42 64 77", "trivial example, commas as separator" );
+  TEST_PARSE( "42; 64 77", "42 64 77",
     "trivial example, blanks and commas mixed as seperator" );
-  TEST_PARSE( "42,", "42", "trailing comma is allowed" );
+  TEST_PARSE( "42;", "42", "trailing comma is allowed" );
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

@@ -82,7 +82,7 @@
                  ":[ \t\r\n]*"
                  "fun\\b")
          '(1 font-lock-function-name-face))
-   (cons "[$:]\\|->" font-lock-semi-unimportant)
+   (cons "[$:;]\\|->" font-lock-semi-unimportant)
    (cons "[0-9]+\\(\\.[0-9]*\\)?" font-lock-constant-face)))
 
 (defconst ef-font-lock-syntactic-keywords

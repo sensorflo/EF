@@ -7,8 +7,8 @@
 // ---------------------------------------------------
 // - The body of a function or of an flow control element is an expression.  An
 //   expression in EF is comparable to what C or Java call a block.
-// - An expression is a comma separated list of so called stand alone
-//   expressions.  Actually the comma is optional.
+// - An expression is a semicolon separated list of so called stand alone
+//   expressions.  Actually the semicolon is optional.
 // - A stand alone expression is comparable to what C, Java etc. call a
 //   statement.
 // - The value of an expression is the value of its last stand alone
@@ -24,8 +24,8 @@ fun square_minus_four(x:int) int =
    val square: int = x * x$
    var tmp = square - 1 :int$
    tmp = tmp - 1
-   tmp = tmp - 1,
-   tmp = tmp - 1,
+   tmp = tmp - 1;
+   tmp = tmp - 1;
 $
 
 // The type in a val/var definition can be omitted if the type can be inferred

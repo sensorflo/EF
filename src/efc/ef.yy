@@ -128,12 +128,12 @@ program
 
 expr
   : %empty                                          { $$ = new AstSeq(); }
-  | pure_standalone_expr_list opt_comma             { std::swap($$,$1); }
+  | pure_standalone_expr_list opt_semicolon         { std::swap($$,$1); }
   ;
 
 pure_standalone_expr_list
   : standalone_expr                                     { $$ = new AstSeq($1); };
-  | pure_standalone_expr_list opt_comma standalone_expr { ($1)->Add($3); std::swap($$,$1); }
+  | pure_standalone_expr_list opt_semicolon standalone_expr { ($1)->Add($3); std::swap($$,$1); }
   ;
 
 standalone_expr
@@ -196,6 +196,11 @@ opt_arrow_type
 opt_comma
   : %empty
   | COMMA
+  ;
+
+opt_semicolon
+  : %empty
+  | SEMICOLON
   ;
 
 sub_expr

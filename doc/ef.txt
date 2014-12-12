@@ -348,7 +348,7 @@ one of these two syntax forms:
 
 ----------------------------------------------------------------------
 program = expr;
-expr = (standalone_expr [\,]{?})+;
+expr = (standalone_expr [\;]{?})+;
 standalone_expr = sub_expr;
 sub_expr = operator_expr | primary_expr;
 operator_expr = sub_expr ('and|'or|...) sub_expr | ...;
@@ -453,25 +453,6 @@ its lhs being an argument list.
     compile time expression list), and the directly enclosing construct
     defines what is done at compile-time and what at runt-time. 
   * ...
-- Consider using ++;++ for
-  lists in a `execute-sequentially-at-run-time' context, ++,++ for  `create
-  some form of list data structure'.  Would look more like C&plus;&plus; /
-  Java etc, would maybe be a bit less ambiguous, but also would hide a bit more
-  that it's all about lists (hmmm, that argument can be pro _and_ contra).
-- Define unambiguously (not only technically, but also in the sense of a
-  human's guts feeling) to which outer construct commas belong.  I would like
-  to make things possible as ++if cond : a , b$++, i.e. ++a, b++ would be the
-  2nd argument to the +if+ `function', i.e. there the comma `lives' only
-  within the 2nd argument, on the level of ++if++'s argument list.  I also
-  would like if separators with same meaning are exchangeable ++if(a,b,c)++ or
-  ++if(a : b else c)++ or ++if(a : b , c)++. Obviously the two goals are not
-  compatible.
-
-  !!!! if,(...,..) for the comma form if( .... ) and if .... $ for the
-  dedicated sep form.  Or inverse if(...) for the comma form and if:(...) for
-  the special sep form (exactly like that not possible because
-  indistinguishable form special sep form with empty condition. !!!!
-
 - Introduce a term like _form_ (from lisp) denoting the general concept
   which's specialization are a) regular functions (term?) b) `compile time
   functions' like +if+ (term? I think this is what lisp denotes `form').
