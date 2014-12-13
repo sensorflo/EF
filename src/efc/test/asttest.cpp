@@ -61,7 +61,7 @@ TEST(AstTest, MAKE_TEST_NAME2(
   EXPECT_EQ( "fun(declfun(foo () int) seq())", AstFunDef(new AstFunDecl("foo"),new AstSeq()).toStr() ) << amendSpec(spec);
 
   spec = "AstFunCall";
-  EXPECT_EQ( "foo()", AstFunCall("foo", new AstCtList()).toStr() ) << amendSpec(spec);
-  EXPECT_EQ( "foo(42 77)", AstFunCall("foo",
+  EXPECT_EQ( "foo()", AstFunCall(new AstSymbol(new string("foo")), new AstCtList()).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "foo(42 77)", AstFunCall(new AstSymbol(new string("foo")),
       new AstCtList(new AstNumber(42), new AstNumber(77))).toStr() ) << amendSpec(spec);
 }

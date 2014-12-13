@@ -208,7 +208,7 @@ sub_expr
 
 operator_expr
   /* function call */
-  : ID LPAREN ct_list RPAREN                        { $$ = new AstFunCall($1, $3); }
+  : ID LPAREN ct_list RPAREN                        { $$ = new AstFunCall(new AstSymbol(new std::string($1)), $3); }
 
   /* unary prefix */
   | NOT  sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }

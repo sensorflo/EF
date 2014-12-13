@@ -325,14 +325,15 @@ basic_ostream<char>& AstIf::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-AstFunCall::AstFunCall(const string& name, AstCtList* args) :
-  m_name(name),
+AstFunCall::AstFunCall(const AstValue* address, AstCtList* args) :
+  m_address(address ? address : new AstSymbol(NULL)),
   m_args(args ? args : new AstCtList()) {
   assert(m_args);
 }
 
 AstFunCall::~AstFunCall() {
   delete m_args;
+  delete m_address;
 }
 
 llvm::Value* AstFunCall::accept(IrBuilderAst& visitor, Access access) const {
@@ -340,7 +341,8 @@ llvm::Value* AstFunCall::accept(IrBuilderAst& visitor, Access access) const {
 }
 
 basic_ostream<char>& AstFunCall::printTo(basic_ostream<char>& os) const {
-  os << m_name << "(";
+  m_address->printTo(os);
+  os << "(";
   m_args->printTo(os);
   os << ")";
   return os;

@@ -168,15 +168,16 @@ private:
 
 class AstFunCall : public AstValue {
 public:
-  AstFunCall(const std::string& name, AstCtList* args = NULL);
+  AstFunCall(const AstValue* address, AstCtList* args = NULL);
   virtual ~AstFunCall();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
-  virtual const std::string& name () const { return m_name; }
+  virtual const AstValue& address () const { return *m_address; }
   virtual const AstCtList& args () const { return *m_args; }
 private:
-  const std::string m_name;
+  /** We're the owner. Is garanteed to be non-null */
+  const AstValue*const m_address;
   /** We're the owner. Is garanteed to be non-null */
   const AstCtList* const m_args;
 };

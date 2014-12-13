@@ -291,7 +291,7 @@ Function* IrBuilderAst::visit(const AstFunDecl& funDecl) {
 }
 
 Value* IrBuilderAst::visit(const AstFunCall& funCall, Access access) {
-  Function* callee = m_module->getFunction(funCall.name());
+  Function* callee = m_module->getFunction(funCall.address().address_as_id_hack());
   if (!callee) {
     throw runtime_error::runtime_error("Function not defined");
   }

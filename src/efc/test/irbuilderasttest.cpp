@@ -541,7 +541,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstFunDecl("foo"),
       new AstFunDef(new AstFunDecl("foo"), new AstNumber(42)),
-      new AstFunCall("foo")),
+      new AstFunCall(new AstSymbol(new string("foo")))),
     42, "");
 }
 
@@ -587,7 +587,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstFunDef(
         new AstFunDecl("foo"),
         new AstNumber(42)),
-      new AstFunCall("foo")),
+      new AstFunCall(new AstSymbol(new string("foo")))),
     42, spec);
 
   spec = "Simple function with one argument which is ignored and a constant is returned";
@@ -596,7 +596,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstFunDef(
         new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstNumber(42)),
-      new AstFunCall("foo", new AstCtList(new AstNumber(0)))),
+      new AstFunCall(new AstSymbol(new string("foo")), new AstCtList(new AstNumber(0)))),
     42, spec);
 
   spec = "Simple function with two arguments whichs sum is returned";
@@ -610,7 +610,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstOperator('+',
           new AstSymbol(new string("x")),
           new AstSymbol(new string("y")))),
-      new AstFunCall("add", new AstCtList(new AstNumber(1), new AstNumber(2)))),
+      new AstFunCall(new AstSymbol(new string("add")),
+        new AstCtList(new AstNumber(1), new AstNumber(2)))),
     1+2, spec);
 }
 
@@ -618,7 +619,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_call_to_an_undefined_function,
     buildAndRunModule,
     throws)) {
-  auto_ptr<AstSeq> astSeq(new AstSeq(new AstFunCall("foo")));
+  auto_ptr<AstSeq> astSeq(new AstSeq(new AstFunCall(new AstSymbol(new string("foo")))));
   TestingIrBuilderAst UUT;
   EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
 }
@@ -634,7 +635,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstFunDef(
           new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
           new AstNumber(42)),
-        new AstFunCall("foo")));
+        new AstFunCall(new AstSymbol(new string("foo")))));
     TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendSpec(spec) << amendAst(astSeq);
   }
@@ -645,7 +646,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstFunDef(
           new AstFunDecl("foo"),
           new AstNumber(42)),
-        new AstFunCall("foo", new AstCtList(new AstNumber(0)))));
+        new AstFunCall(new AstSymbol(new string("foo")), new AstCtList(new AstNumber(0)))));
     TestingIrBuilderAst UUT;
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendSpec(spec) << amendAst(astSeq);
   }
