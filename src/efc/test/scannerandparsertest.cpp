@@ -104,12 +104,19 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   // precedence is ordered from high to low
 
 
+  // precedence level group: function call
+  string spec = "function call () is right associative";
+  TEST_PARSE( "foo(a)(b)", "foo(a)(b)", spec);
+
   // precedence level group: unary prefix not
-  string spec = "! aka 'not' is right associative. ! and 'not' are synonyms";
+  spec = "! aka 'not' is right associative. ! and 'not' are synonyms";
   TEST_PARSE( "not not a", "not(not(a))", spec);
   TEST_PARSE( "not !   a", "not(not(a))", spec);
   TEST_PARSE( "!   not a", "not(not(a))", spec);
   TEST_PARSE( "!   !   a", "not(not(a))", spec);
+
+  spec = "! has lower precedence than function call ()";
+  TEST_PARSE( "!foo()", "not(foo())", spec);
 
   // precedence level group: binary * /
   spec = "* is left associative";
@@ -310,9 +317,14 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_function_call,
     parse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "foo()", "foo()", "");
-  TEST_PARSE( "foo(42)", "foo(42)", "");
-  TEST_PARSE( "foo(42,77)", "foo(42 77)", "");
+
+  string spec = "trivial example";
+  TEST_PARSE( "foo()", "foo()", spec);
+  TEST_PARSE( "foo(42)", "foo(42)", spec);
+  TEST_PARSE( "foo(42,77)", "foo(42 77)", spec);
+
+  spec = "Function address can be given by an expression";
+  TEST_PARSE( "{foo+bar}(42,77)", "+(foo bar)(42 77)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

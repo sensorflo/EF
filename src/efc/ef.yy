@@ -83,6 +83,7 @@
 %left STAR
       SLASH
 %precedence EXCL NOT
+%precedence LPAREN
 
 %type <AstCtList*> ct_list
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
@@ -208,7 +209,7 @@ sub_expr
 
 operator_expr
   /* function call */
-  : ID LPAREN ct_list RPAREN                        { $$ = new AstFunCall(new AstSymbol(new std::string($1)), $3); }
+  : sub_expr LPAREN ct_list RPAREN                  { $$ = new AstFunCall($1, $3); }
 
   /* unary prefix */
   | NOT  sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
