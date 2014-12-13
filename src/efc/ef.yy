@@ -87,7 +87,7 @@
 %type <AstCtList*> ct_list
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
 %type <AstSeq*> expr pure_standalone_expr_list
-%type <std::list<AstValue*>*> ct_sa_expr_list pure_ct_sa_expr_list
+%type <std::list<AstValue*>*> pure_ct_list
 %type <AstValue*> standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
@@ -141,17 +141,13 @@ standalone_expr
   ;
 
 ct_list
-  : ct_sa_expr_list                                 { $$ = new AstCtList($1); }
+  : %empty                                          { $$ = new AstCtList(); }
+  | pure_ct_list opt_comma                          { $$ = new AstCtList($1); }
   ;
 
-ct_sa_expr_list
-  : %empty                                          { $$ = new std::list<AstValue*>(); }
-  | pure_ct_sa_expr_list opt_comma                  { std::swap($$,$1); }
-  ;
-
-pure_ct_sa_expr_list
+pure_ct_list
   : standalone_expr                                 { $$ = new std::list<AstValue*>(); ($$)->push_back($1); }
-  | pure_ct_sa_expr_list opt_comma standalone_expr  { ($1)->push_back($3); std::swap($$,$1); }
+  | pure_ct_list opt_comma standalone_expr          { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 param_ct_list
