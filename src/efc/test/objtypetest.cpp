@@ -16,7 +16,7 @@ string amend2ObjTypes(const string& objType1name, const ObjType& objType1,
 }
 
 #define TEST_MATCH(spec, expectedMatchType, objType1, objType2)         \
-  { SCOPED_TRACE("Test helper 'testMatch' called from here");           \
+  { SCOPED_TRACE("testMatch called from here (via TEST_MATCH)");       \
     testMatch(spec, expectedMatchType, objType1, objType2);             \
   }
 

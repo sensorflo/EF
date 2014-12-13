@@ -7,7 +7,7 @@ string amendSpec(const string& spec) {
   if (spec.empty()) {
     /*nop*/
   } else {
-    amendedSpec += "\nsub-specification or example description:\n";
+    amendedSpec += "\nAdditional sub specification or additional description of the example:\n";
     amendedSpec += spec;
     if ( spec[spec.length()-1]!='\n' ) {
       amendedSpec += '\n';

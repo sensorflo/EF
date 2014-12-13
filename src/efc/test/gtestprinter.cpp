@@ -53,11 +53,11 @@ namespace testing {
 
     case TestPartResult::kNonFatalFailure:
     case TestPartResult::kFatalFailure:
-      #ifdef _MSC_VER
-      return "error: ";
-      #else
-      return "Failure\n";
-      #endif
+      return
+        #ifdef _MSC_VER
+          "error: "
+        #endif
+        "Failed to meet the following specification:\n";
     default:
       return "Unknown result type";
     }
@@ -141,12 +141,14 @@ namespace testing {
       pclose(stream);
 
       return (Message()
+        << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
         << internal::FormatFileLocation(test_part_result.file_name(),
           test_part_result.line_number())
         << " " << TestPartResultTypeToString(test_part_result.type())
-        << "Specification was not met:\n"
         << prettyTestName << "\n"
-        << test_part_result.message()).GetString();
+        << test_part_result.message()
+        << "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+        ).GetString();
     }
 
     // Prints a TestPartResult.

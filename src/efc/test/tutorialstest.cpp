@@ -5,7 +5,7 @@ using namespace std;
 
 #define TEST_TUTORIAL( expectedOutput, executable )            \
   {                                                           \
-    SCOPED_TRACE("Test helper 'testTutorial' called from here"); \
+    SCOPED_TRACE("testTutorial called from here (via TEST_TUTORIAL)");  \
     testTutorial(expectedOutput, executable);                  \
   }
 
