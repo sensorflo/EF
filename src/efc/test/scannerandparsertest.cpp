@@ -175,9 +175,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   spec = "= has lower precedence than || aka 'or'";
   TEST_PARSE( "a =  b or c", "=(a or(b c))", spec);
-  // "a or b = c" is not valid since the lhs of = can't be "a or b", it only
-  // can be an ID
-  
+  TEST_PARSE( "a or b =  c", "=(or(a b) c)", spec);
+
   spec = ":= has same precedence as =";
   TEST_PARSE( "a := b =  c", "data(decldata(a int) =(b c))", spec);
   TEST_PARSE( "a =  b := c", "=(a data(decldata(b int) c))", spec);

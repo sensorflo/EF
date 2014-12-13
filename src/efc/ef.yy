@@ -76,6 +76,7 @@
 %token <std::string> ID "identifier"
 %token <int> NUMBER "number"
 %precedence ASSIGNEMENT
+%right EQUAL
 %left PIPE_PIPE OR
 %left AMPER_AMPER AND
 %left PLUS
@@ -216,8 +217,8 @@ operator_expr
   | EXCL sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
 
   /* binary operators */
-  | ID   EQUAL       sub_expr     %prec ASSIGNEMENT { $$ = new AstOperator('=', new AstSymbol(new std::string($1)), $3); }
-  | ID   COLON_EQUAL sub_expr     %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt)), $3); }
+  | sub_expr EQUAL       sub_expr                   { $$ = new AstOperator('=', $1, $3); }
+  | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt)), $3); }
   | sub_expr OR          sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr PIPE_PIPE   sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr AND         sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
