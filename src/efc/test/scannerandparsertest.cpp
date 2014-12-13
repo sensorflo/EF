@@ -65,18 +65,6 @@ void testParse(const string& efProgram, const string& expectedAst,
   }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    a_literal_number_sequence,
-    parse,
-    succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "42", "42", "trivial example with only one element" );
-  TEST_PARSE( "42 64 77", "seq(42 64 77)", "trivial example, blanks as separator" );
-  TEST_PARSE( "42; 64; 77", "seq(42 64 77)", "trivial example, commas as separator" );
-  TEST_PARSE( "42; 64 77", "seq(42 64 77)",
-    "trivial example, blanks and commas mixed as seperator" );
-  TEST_PARSE( "42;", "42", "trailing comma is allowed" );
-}
-
-TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_math_expression,
     parse,
     succeeds_AND_returns_correct_AST) ) {
@@ -177,6 +165,35 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "a &&  b or  c", "or(and(a b) c)", spec);
   TEST_PARSE( "a and b ||  c", "or(and(a b) c)", spec);
   TEST_PARSE( "a and b or  c", "or(and(a b) c)", spec);
+
+  // precedence level group: binrary = :=
+  spec = "= is right associative";
+  TEST_PARSE( "a = b = c", "=(a =(b c))", spec);
+
+  spec = ":= is right associative";
+  TEST_PARSE( "a := b := c", "data(decldata(a int) data(decldata(b int) c))", spec);
+
+  spec = "= has lower precedence than || aka 'or'";
+  TEST_PARSE( "a =  b or c", "=(a or(b c))", spec);
+  // "a or b = c" is not valid since the lhs of = can't be "a or b", it only
+  // can be an ID
+  
+  spec = ":= has same precedence as =";
+  TEST_PARSE( "a := b =  c", "data(decldata(a int) =(b c))", spec);
+  TEST_PARSE( "a =  b := c", "=(a data(decldata(b int) c))", spec);
+
+  // precedence level group: binary sequence operator (; or adjancted standalone expression)
+  spec = "sequence operator (; or adjancted standalone expression) is left associative";
+  TEST_PARSE( "a;b;c", "seq(a b c)", spec);
+  TEST_PARSE( "a;b c", "seq(a b c)", spec);
+  TEST_PARSE( "a b;c", "seq(a b c)", spec);
+  TEST_PARSE( "a b c", "seq(a b c)", spec);
+
+  spec = "sequence operator (; or adjancted standalone expression) has lower precedence than =";
+  TEST_PARSE( "a ; b = c", "seq(a =(b c))", spec);
+  TEST_PARSE( "a   b = c", "seq(a =(b c))", spec);
+  TEST_PARSE( "a = b ; c", "seq(=(a b) c)", spec);
+  TEST_PARSE( "a = b   c", "seq(=(a b) c)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -403,20 +420,6 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   spec = "short version with implicit type";
   TEST_PARSE( "foo:=42", "data(decldata(foo int) 42)", spec);
-
-  spec = ":= has lower precedence than * +";
-  TEST_PARSE( "foo:=1+2*3",
-    "data(decldata(foo int) +(1 *(2 3)))", spec);
-
-  spec = ":= is right associative";
-  TEST_PARSE( "bar:=foo:=42",
-    "data(decldata(bar int) data(decldata(foo int) 42))", spec);
-
-  spec = ":= and = have same precedence";
-  TEST_PARSE( "bar=foo:=42",
-    "=(bar data(decldata(foo int) 42))", spec);
-  TEST_PARSE( "bar:=foo=42",
-    "data(decldata(bar int) =(foo 42))", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
