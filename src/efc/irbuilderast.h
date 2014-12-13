@@ -15,8 +15,8 @@ public:
   static void staticOneTimeInit();
   IrBuilderAst(Env& env);
   virtual ~IrBuilderAst();
-  void buildModule(const AstSeq& seq);
-  int buildAndRunModule(const AstSeq& seq);
+  void buildModule(const AstValue& value);
+  int buildAndRunModule(const AstValue& value);
   
   llvm::Value*    visit(const AstSeq& seq, Access access = eRead);
   llvm::Value*    visit(const AstOperator& op, Access access = eRead);

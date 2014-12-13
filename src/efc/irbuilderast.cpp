@@ -45,13 +45,13 @@ IrBuilderAst::~IrBuilderAst() {
   if (m_executionEngine) { delete m_executionEngine; }
 }
 
-void IrBuilderAst::buildModule(const AstSeq& seq) {
-  m_builder.CreateRet(visit(seq));
+void IrBuilderAst::buildModule(const AstValue& value) {
+  m_builder.CreateRet(value.accept(*this));
   verifyFunction(*m_mainFunction);
 }
 
-int IrBuilderAst::buildAndRunModule(const AstSeq& seq) {
-  buildModule(seq);
+int IrBuilderAst::buildAndRunModule(const AstValue& value) {
+  buildModule(value);
   return jitExecFunction(m_mainFunction);
 }
 

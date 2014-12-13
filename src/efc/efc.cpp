@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     IrBuilderAst::staticOneTimeInit();
     Env env;
     Driver driver(env, argv[1]);
-    AstSeq* ast = NULL;
+    AstValue* ast = NULL;
     if (driver.parse(ast)) {
       exit(1);
     }
