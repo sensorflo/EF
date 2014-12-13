@@ -2,12 +2,17 @@
 #include "irbuilderast.h"
 #include <sstream>
 #include <cassert>
+#include <stdexcept>
 using namespace std;
 
 string AstNode::toStr() const {
   ostringstream ss;
   printTo(ss);
   return ss.str();
+}
+
+const std::string& AstValue::address_as_id_hack() const {
+  throw runtime_error::runtime_error("not an id");
 }
 
 basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {

@@ -54,6 +54,10 @@ public:
 };
 
 class AstValue : public AstNode {
+public:
+  /** A workaround to have an early notion of an address of data objects or
+  code objects. */
+  virtual const std::string& address_as_id_hack() const; 
 };
 
 class AstFunDef : public AstValue {
@@ -156,6 +160,7 @@ public:
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   const std::string& name() const { return *m_name; }
+  virtual const std::string& address_as_id_hack() const { return *m_name; }
 private:
   /** We're the owner. Is garanteed to be non-null */
   const std::string* const m_name;
