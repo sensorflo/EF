@@ -86,7 +86,7 @@
 
 %type <AstCtList*> ct_list
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> expr pure_standalone_expr_list
+%type <AstSeq*> expr pure_standalone_expr_seq
 %type <std::list<AstValue*>*> pure_ct_list
 %type <AstValue*> standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
@@ -128,12 +128,12 @@ program
 
 expr
   : %empty                                          { $$ = new AstSeq(); }
-  | pure_standalone_expr_list opt_semicolon         { std::swap($$,$1); }
+  | pure_standalone_expr_seq opt_semicolon          { std::swap($$,$1); }
   ;
 
-pure_standalone_expr_list
-  : standalone_expr                                     { $$ = new AstSeq($1); };
-  | pure_standalone_expr_list opt_semicolon standalone_expr { ($1)->Add($3); std::swap($$,$1); }
+pure_standalone_expr_seq
+  : standalone_expr                                        { $$ = new AstSeq($1); };
+  | pure_standalone_expr_seq opt_semicolon standalone_expr { ($1)->Add($3); std::swap($$,$1); }
   ;
 
 standalone_expr
