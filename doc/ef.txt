@@ -1185,10 +1185,11 @@ properties:
 * _alignment_:
 * _lock wrapper_ Just an first idea.  See also <<concurrency>>.
 
-* _storage duration_: Begins after storage allocation (which is before
-  constructor call) and ends just before storage deallocation (which is after
-  destructor call).  See also life time.  Members inherit storage duration
-  from parent object.
+* _storage duration_: Begins after _storage allocation_ (which is before
+  constructor call, but not necessarily directly before) and ends just before
+  _storage deallocation_ (which is after destructor call, but not necessarily
+  directly after).  See also life time.  Members inherit storage duration from
+  parent object.
  ** _static_
   *** _system static_: system global, implies shared ownership and implies
       shared access
@@ -1250,6 +1251,22 @@ An object has additionally the following run time property:
   completed.  The lifetime of an object of type T ends when: — if T is a class
   type with a non-trivial destructor (12.4), the destructor call starts, or —
   the storage which the object occupies is reused or released.
+ ** _storage reuse_: As in C&plus;&plus, allow to end the life time explicitly
+    by calling the destructor explicitly, without ending the storage duration.
+    I.e. the storage can be reused with an appropriate constructor.
+ ** Construction of objects with static storage duration:
+  *** Initializer is a constexpr: no issues
+  *** Initializer is not a constexpr: *to-do*: how to ensure that there are no
+      circular dependencies which result in accessing not-yet-initialized
+      objects?  E.g. only using pure functions and/or statics earlier in the
+      file.  imports are sub-divided into proper imports and `weak' imports
+      which are used to break circular import dependencies.
+  *** Initializer is not a const expr and its about an object with static
+      storage duration in local scope: constructor is called the first time
+      the flow of execution reached the point of declaration.  *to-do* make
+      visible that at run time there is a check needed whether the init is
+      already done, which involves a hidden object.  *to-do* with self
+      modifying code that cost could be reduced to zero
 
 * _current observers_: Determined by compiler at compile time.  The owner can
   (checked by compiler) only free an object if no observer beside the owner
