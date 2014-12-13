@@ -495,35 +495,12 @@ comparison_expr = sub_expr (`== | `!= | \< | \> | `<= | `>= ) sub_expr;
 assignment_expr = sub_expr (`\= | `+= | `-= | `*= | `/= | `%= | ... ) sub_expr;
 
 other_operator_expr =
-  sub_expr `?: sub_expr | ## null coalescing operator
-  \( sa_expr \);
+  sub_expr `?: sub_expr; ## null coalescing operator
 ----------------------------------------------------------------------
 
 Note that a function call as a whole looks like an <<list_expr>>, but actually
 is an operator expr.  Its rhs is an expression delivering an code object, and
 its lhs being an argument list.
-
-
-=== Forced parentheses
-
-In case EF can't get the operator precedence intuitive, then force the usage
-of parentheses around certain sub-expressions if and only if the value of the
-sub-expression is used.  EF suffers more from this problem, since everything
-is an expression, i.e. everything is either an operator or operand.
-E.g. the following is understandable, although admittedly not really nice:
-
-----------------------------------------------------------------------
-(obj string : s("hello")) + "world"
-----------------------------------------------------------------------
-
-However the equivalent expression without parentheses, assuming +++++ has a
-higher precedence than ++obj:()++, is truly ugly and hard to understand:
-
-----------------------------------------------------------------------
-obj string : s("hello") + "world"
-----------------------------------------------------------------------
-
-Similarly it must be ++while ((i=j)) ...++ opposed to ++while (i=j) ...++.
 
 
 [[temporaries]]
