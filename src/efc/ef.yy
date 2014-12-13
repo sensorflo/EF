@@ -126,16 +126,16 @@ program
   : expr END_OF_FILE                                { driver.astRoot() = $1; }
   ;
 
-/* Note that the trailing semicolon is not interpreted as the binary sequence operator, i.e. no sequence is built */
+/* Note that the trailing 'seq_operator' is not really a sequence operator, i.e. it does not build a list */
 expr
-  : standalone_expr opt_semicolon                   { std::swap($$,$1); }
-  | pure2_standalone_expr_seq opt_semicolon         { $$ = $1; }
+  : standalone_expr seq_operator                    { std::swap($$,$1); }
+  | pure2_standalone_expr_seq seq_operator          { $$ = $1; }
   ;
 
-/* The optional semicolon builds the sequence consisting of two or more elements */
+/* The sequence operator builds the sequence consisting of two or more elements */
 pure2_standalone_expr_seq
-  : standalone_expr opt_semicolon standalone_expr           { $$ = new AstSeq($1,$3); }
-  | pure2_standalone_expr_seq opt_semicolon standalone_expr { ($1)->Add($3); std::swap($$,$1); }
+  : standalone_expr seq_operator standalone_expr           { $$ = new AstSeq($1,$3); }
+  | pure2_standalone_expr_seq seq_operator standalone_expr { ($1)->Add($3); std::swap($$,$1); }
   ;
 
 standalone_expr
@@ -196,7 +196,7 @@ opt_comma
   | COMMA
   ;
 
-opt_semicolon
+seq_operator
   : %empty
   | SEMICOLON
   ;

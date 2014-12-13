@@ -348,7 +348,7 @@ one of these two syntax forms:
 
 ----------------------------------------------------------------------
 program = expr;
-expr = (standalone_expr | (standalone_expr [\;]{-}){2,}) [\;]; 
+expr = (standalone_expr|standalone_expr_seq) [\;];
 standalone_expr = sub_expr;
 sub_expr = operator_expr | primary_expr;
 operator_expr = sub_expr ('and|'or|...) sub_expr | ...;
@@ -360,6 +360,7 @@ list_expr =
 ----------------------------------------------------------------------
 
 - _stand alone expression_ (aka mini block expression): See <<mb_expr>>.
+- _(stand alone) expression sequence_: See <<expr_seq>>. 
 - _sub expression_: Part of an enclosing expression, can be operand to an
   operator.
 - _primary expression_: Leaf of an operator expression tree.
@@ -502,14 +503,49 @@ Note that a function call as a whole looks like an <<list_expr>>, but actually
 is an operator expr.  Its rhs is an expression delivering an code object, and
 its lhs being an argument list.
 
+Note that the term `operator expression' is not entirely well defined.  Both
+grammar symbols +operator_expr+ and +standalone_expr_seq+ (see <<expr_seq>>)
+are `operator expressions', but only the former is named as such.  Also from a
+grammar point of view nothing indicates that +standalone_expr_seq+ is also an
+`operator expression'.
+
+
+[[expr_seq]]
+[[seq_operator]]
+==== Expression sequence / sequence operator ";"
+The previously introduced operators have sub expressions as operands.  The
+_sequence operator_ ";", being a binary left-associative operator, has
+standalone expressions as operands.  The value of the lhs operand (being a
+standalone expression) is thrown away.  That standalone expression is thus
+used for side-effects only.  The value of the sequence operator expression is
+the value of the rhs operand.  The sequence operator is thus comparable to
+C&plus;&plus;'s comma operator.  _(standalone) expression sequence_ is the
+term used for the expression resulting from using the sequence operator.
+
+----------------------------------------------------------------------
+standalone_expr_seq = (standalone_expr [\;]{-}){2,}
+----------------------------------------------------------------------
+
+Note that the semicolon is optional.  That means that the sequence operator is
+implicit when two standalone expressions are adjacent.  The semicolon is the
+explicit form of the sequence operator.
+
 
 [[temporaries]]
 [[mb_expr]]
 === Mini block expression / stand alone expression / temporaries
 A _stand alone expression_ (aka _mini block expression_) is comparable with a
-statement in C or Java.  The storage duration of temporaries is given by the
-enclosing `mini block expression'.  Otherwise there is nothing special about
-an stand alone expression.
+statement in C or Java.  It either is 1) the lhs operand of the expression
+sequence binary operator, or it is 2) the lhs operand of the sequence operator
+or the argument to an enclosing list expression.  In the former case its value
+is thrown away, see <<seq_operator>>.  That is unlike a sub expression, whose
+value is always used by the enclosing expression (although that one might
+throw it away without looking at it).  In the later case its value is used as
+argument to the enclosing expression.
+
+Probably EF will define the storage duration of temporary objects similar to
+C&plus;&plus;: The storage duration of temporaries is given by the enclosing
+`mini block expression' (aka standalone expression).
 
 
 === Order of evaluation / side effects
