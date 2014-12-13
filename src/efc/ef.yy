@@ -137,7 +137,7 @@ pure_standalone_expr_list
   ;
 
 standalone_expr
-  : sub_expr { std::swap($$,$1); }                        
+  : sub_expr                                        { std::swap($$,$1); }                        
   ;
 
 ct_list
@@ -272,8 +272,8 @@ naked_data_decl
 
 naked_data_def
   : naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
-  | naked_data_decl EQUAL sub_expr                                   { $$ = new RawAstDataDef($1, $3); }
-  | ID EQUAL sub_expr opt_colon_type                                 { $$ = new RawAstDataDef(new RawAstDataDecl($1, $4), $3); }
+  | naked_data_decl EQUAL standalone_expr                            { $$ = new RawAstDataDef($1, $3); }
+  | ID EQUAL standalone_expr opt_colon_type                          { $$ = new RawAstDataDef(new RawAstDataDecl($1, $4), $3); }
   ;
 
 naked_fun_def
@@ -286,7 +286,7 @@ naked_fun_decl
   ;
 
 naked_if
-  : sub_expr opt_colon expr opt_elif_list opt_else                   { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
+  : standalone_expr opt_colon expr opt_elif_list opt_else            { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
   ;
 
 valvar
@@ -296,7 +296,7 @@ valvar
 
 opt_elif_list
   : %empty                                                           { $$ = new std::list<AstIf::ConditionActionPair>(); }  
-  | opt_elif_list ELIF sub_expr opt_colon expr                       { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
+  | opt_elif_list ELIF standalone_expr opt_colon expr                { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
   ;  
 
 opt_else
