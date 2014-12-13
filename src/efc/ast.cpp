@@ -326,6 +326,10 @@ AstFunCall::AstFunCall(const string& name, AstCtList* args) :
   assert(m_args);
 }
 
+AstFunCall::~AstFunCall() {
+  delete m_args;
+}
+
 llvm::Value* AstFunCall::accept(IrBuilderAst& visitor, Access access) const {
   return visitor.visit(*this, access);
 }

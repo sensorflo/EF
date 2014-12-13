@@ -164,6 +164,7 @@ private:
 class AstFunCall : public AstValue {
 public:
   AstFunCall(const std::string& name, AstCtList* args = NULL);
+  virtual ~AstFunCall();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
@@ -208,6 +209,7 @@ private:
   AstOperator(const AstOperator&);
   AstOperator& operator=(const AstOperator&);
   const EOperation m_op;
+  /** We're the owner. Is garanteed to be non-null */
   const AstCtList* const m_args;
   static std::map<std::string, EOperation> m_opMap;
 };
