@@ -86,9 +86,9 @@
 
 %type <AstCtList*> ct_list
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
-%type <AstSeq*> expr pure_standalone_expr_seq
+%type <AstSeq*> pure2_standalone_expr_seq
 %type <std::list<AstValue*>*> pure_ct_list
-%type <AstValue*> standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
+%type <AstValue*> expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifier> valvar
@@ -104,10 +104,10 @@
 
 /* terminology
 
-pure
-  For list constructs: At least one element, all elements separated by a
-  separator token, no trailing separator token (since its a separator, not
-  delimiter).
+pure / pure2
+  For list constructs: At least one element (at least two for pure2), all
+  elements separated by a separator token, no trailing separator token (since
+  its a separator, not delimiter).
 
 (unqualified)
   For list constructs: Allows an optional trailing separator token.
@@ -126,14 +126,16 @@ program
   : expr END_OF_FILE                                { driver.astRoot() = $1; }
   ;
 
+/* Note that the trailing semicolon is not interpreted as the binary sequence operator, i.e. no sequence is built */
 expr
-  : %empty                                          { $$ = new AstSeq(); }
-  | pure_standalone_expr_seq opt_semicolon          { std::swap($$,$1); }
+  : standalone_expr opt_semicolon                   { std::swap($$,$1); }
+  | pure2_standalone_expr_seq opt_semicolon         { $$ = $1; }
   ;
 
-pure_standalone_expr_seq
-  : standalone_expr                                        { $$ = new AstSeq($1); };
-  | pure_standalone_expr_seq opt_semicolon standalone_expr { ($1)->Add($3); std::swap($$,$1); }
+/* The optional semicolon builds the sequence consisting of two or more elements */
+pure2_standalone_expr_seq
+  : standalone_expr opt_semicolon standalone_expr           { $$ = new AstSeq($1,$3); }
+  | pure2_standalone_expr_seq opt_semicolon standalone_expr { ($1)->Add($3); std::swap($$,$1); }
   ;
 
 standalone_expr

@@ -348,7 +348,7 @@ one of these two syntax forms:
 
 ----------------------------------------------------------------------
 program = expr;
-expr = (standalone_expr [\;]{?})+;
+expr = (standalone_expr | (standalone_expr [\;]{-}){2,}) [\;]; 
 standalone_expr = sub_expr;
 sub_expr = operator_expr | primary_expr;
 operator_expr = sub_expr ('and|'or|...) sub_expr | ...;
