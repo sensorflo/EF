@@ -199,12 +199,12 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_math_expression_containing_brace_grouping,
     parse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "{1+2}*{3-4}/5", "/(*(+(1 2) -(3 4)) 5)",
-    "{} group: 1) overwrites precedence and 2) turns sub_expr into exp");
-  TEST_PARSE( "{1 2}", "seq(1 2)",
-    "{} group can contain not only a sub_expr but also an expr");
-  TEST_PARSE( "{1 2}*3", "*(seq(1 2) 3)",
-    "{} group can contain not only a sub_expr but also an expr");
+  TEST_PARSE( "g(1+2)*g(3-4)/5", "/(*(+(1 2) -(3 4)) 5)",
+    "g(...) group: 1) overwrites precedence and 2) turns sub_expr into exp");
+  TEST_PARSE( "g(1 2)", "seq(1 2)",
+    "g(...) group can contain not only a sub_expr but also an expr");
+  TEST_PARSE( "g(1 2)*3", "*(seq(1 2) 3)",
+    "g(...) group can contain not only a sub_expr but also an expr");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -340,7 +340,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "foo(42,77)", "foo(42 77)", spec);
 
   spec = "Function address can be given by an expression";
-  TEST_PARSE( "{foo+bar}(42,77)", "+(foo bar)(42 77)", spec);
+  TEST_PARSE( "g(foo+bar)(42,77)", "+(foo bar)(42 77)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

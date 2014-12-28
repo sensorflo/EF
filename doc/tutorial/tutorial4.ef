@@ -27,10 +27,10 @@ fun factorial(x:int) int =
   $  
 $
 
-// braces '{}' to group expressions
+// g(...) to group expressions
 // --------------------------------
 // 
-// Unlike most other languages, curly braces are used to group expressions /
-// overwrite precedence.
-{1 + 2} * 3 // evaluates to 9, equivalent to '(1 + 2) * 3' in most languages
+// Unlike most other languages, parentheses with a leading g are used to group
+// expressions / overwrite precedence.
+g(1 + 2) * 3 // evaluates to 9, equivalent to '(1 + 2) * 3' in most languages
 

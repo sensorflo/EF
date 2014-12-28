@@ -64,6 +64,7 @@
   OR "or"
   PIPE_PIPE "||"
   SLASH "/"
+  G_LPAREN "g("
   LPAREN "("
   RPAREN ")"
   LBRACE "{"
@@ -232,7 +233,7 @@ operator_expr
 primary_expr
   : list_expr                                       { std::swap($$,$1); }
   | NUMBER                                          { $$ = new AstNumber($1); }
-  | LBRACE expr RBRACE                              { $$ = $2; }
+  | G_LPAREN expr RPAREN                            { $$ = $2; }
   | ID                                              { $$ = new AstSymbol(new std::string($1)); }
   ;
   

@@ -352,7 +352,7 @@ expr = (standalone_expr|standalone_expr_seq) [\;];
 standalone_expr = sub_expr;
 sub_expr = operator_expr | primary_expr;
 operator_expr = sub_expr ('and|'or|...) sub_expr | ...;
-primary_expr = list_expr | literal | ID | ...;
+primary_expr = list_expr | literal | ID | group_expr | ...;
 list_expr = 
   'while expr#cond \: expr#body \$ |
   'var ID \: type_expr \$ |
@@ -556,6 +556,21 @@ and ? :) or list expression appears to be fully evaluated before any part of
 the operation or list expression itself is performed.
 
 
+=== Grouping sub expressions / overriding precedence
+
+++g(...)++ groups expressions to override precedence.  Most other languages
+use just regular parentheses.  
+
+----------------------------------------------------------------------
+group_expr = "g(" expr \);
+----------------------------------------------------------------------
+
+Rational for not using normal parentheses: parentheses are already used for
+many things: as function call operator, as part of the +new+ operator
+expression and in list expressions as delimiters.  If parentheses are also
+used for grouping, there too many ambiguities. 
+
+
 === Run-time and compile-time effects of expressions
 Each expression has as part of its properties a compile-time component and a
 run-time component.
@@ -689,7 +704,8 @@ type_def = class_type_def | interface_type_def | enum_type_def |
 
 type_expr =
   [type_qualifier] (fundamental_type | compound_type_expr) |
-  \( type_expr \);  ## to change precedence of type expr operators
+  "g(" type_expr \);  ## to change precedence of type expr operators
+                      ## maybe not needed now, but maybe in future
 
 type_expr_list = (type_expr \,{?})*;
 
