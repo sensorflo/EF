@@ -556,10 +556,6 @@ other_operator_expr =
   sub_expr `?: sub_expr; ## null coalescing operator
 ----------------------------------------------------------------------
 
-Note that a function call as a whole looks like an <<list_expr>>, but actually
-is an operator expr.  Its rhs is an expression delivering an code object, and
-its lhs being an argument list.
-
 Note that the term `operator expression' is not entirely well defined.  Both
 grammar symbols +operator_expr+ and +standalone_expr_seq+ (see <<expr_seq>>)
 are `operator expressions', but only the former is named as such.  Also from a
@@ -978,33 +974,98 @@ class.  Maybe use keyword +meth+ instead of +fun+.  That also makes
 documentation more easy.  I.e. terms used in documentation correspond more to
 terms used in code / in the syntax of the language.
 
-- Virtual is default
-- Keyword for overwrite, so we have to be explicit in our intend to avoid the
-  case to accidentally introduce a new method.  Or the other way round, a
-  keyword for introducing a new method.
-- Keyword for non-virtual (since virtual is the default)
-- No final keyword to prevent overwriting methods or deriving classes.  Only?
-  usable in security related areas, and those should achieve their goals by
-  other means.  Final is bad for unit testing.  It's bad from the point of
-  view that the author of class A shall not dictate others how to use it.
+==== Virtual
+
+Keyword +virtual+ (or +new_virtual+?) to introduce a _new_ virtual method
+which does not yet exit in the base class / interfaces with that name and
+signature.  This is the default, i.e. +virtual+ can be omitted.
+
+Keyword +override+ to override a virtual method.  It is an error if there is
+no virtual method of the same name and signature in the hierarchy.
+
+Keyword +non_virtual+ to declare a method non virtual.  It is an error if a
+method of the same name exists in the hierarchy.
+
+Have a keyword (say +force_call_on_override+) for a method which forces
+methods overriding this method either need to call it or explicitly say that
+they know they don't need to call the super class.  E.g. Java's clone or
+finalize methods could need that, probably also methods doing assignments or
+testing for equivalence, or Dragon's calibrate method.
+
+
+==== Final
+
+A +final+ method cannot be overriden by a subclass.  Only applicable to
+virtual methods.  Can make the code more performant if the compiler can deduce
+the dynamic type and from that can deduce that it is a final method and thus
+the virtual table indirection can be omitted.
+
+.Discussion of whether or not final should be provided
+
+Only (?) usable in security related areas, and those should achieve their
+goals by other means.  Final is bad for unit testing.  It's bad from the point
+of view that the author of class A shall not dictate others how to use it.  On
+the other hand it
+
+EF shall not dictate what it is `good' and what is `bad', it only provides
+tools which can be good and its up to the user to decide when its appropriate
+to use them.
+
+==== FinalAndDelete
+
+For rare cases where you break the ``Liskov substitution principle'' and want
+it to make it an error when a virtual method is called.  If the compiler knows
+the dynamic type, then it can emit an error if an deleted method is called.
+The method should still be implemented, since through polymorphism it
+naturally still can be invoked.  If not explicitly implemented maybe the
+compiler can generate a default implementation, which e.g. throws.
+
+
+==== Overload
+
+Only with the +overload+ keyword overloaded methods can be created.  That
+shall help guarding against cases where new methods are accidentaly created.
+
+*to-do*: What if I want to overload a method which is not marked as overload
+and which I don't have access to?  That problem is probably void if namespaces
+can't be reopened as in C&plus;&plus;
+
+
+==== Force accessing all members
+
+Somehow let the compiler check / enforce that e.g. an assignment operator or
+an comparison operators or a toString method accesses all members.  E.g. the
+assignment operator needs to write to all members of this, and needs to read
+accesses all members of the rhs.  That helps guarding against the case that
+when new members are added, accidentaly not all dependent methods are updated.
+Provide special statements to acknowledge ``I don't write-to / read-from this
+member on purpose''.
 
 
 === (Named) Functions
 
 ----------------------------------------------------------------------
-##                sep                   sep       sep
-## general:  fun  :  args_tuple         ,  rettype = body $ 
-## usual:    fun  (  arg1, arg2         )  rettype = body $
-
 ## At compile-time defines an function object.  At run-time does nothing.
-fun_obj_def = 'fun identifier#name fun_type_expr block_expr;
+fun_obj_def =
+  'fun fun_name fun_type_expr \= fun_impl args_close_del;
+fun_name = identifier | fun_name_operator | fun_name_ctor | fun_name_dtor;
 fun_type_expr = fun_signature | identifier#*function type*#;
-fun_signature =
-  [\( named_type_list \)] ## defaults to ()
-  [`: named_type_list ] ## return type, defaults to auto_t, typically only one element in the list
-                        ## Only allowed to omit if guide compile switch is set
-  ['throws \( type_expr_list \)] 
-  ['is funcqualifiers];
+fun_signature = (
+  ## At most one parameter list
+  \( parameter_list \) 
+  ## Return type.  At most one.  -> can be omitted if preceded by parameter list
+  ["->"] type_expr]    
+  ## Multiple throws clause allowed which accumulate
+  'throws type_expr*
+  ## Multiple modifiers allowed which accumulate
+  'is fun_modifier*
+  )*;
+
+fun_modifiers = access_modifier | ...;
+
+fun_impl = expr | ctor_body | prevent_auto_gen;
+
+access_modifier = 'public | 'protected | 'private;
 
 named_type_list = (named_type \,{?})*; 
 ## To-do:
@@ -1016,9 +1077,6 @@ named_type_list = (named_type \,{?})*;
 ##   reasonable thing to do, thus we can omit things which are otherwise
 ##   needed to declare an object.
 named_type = ('val | 'var) [identifier#name [\= ctconst_expr] \:] type_expr;
-
-## To-do: What exactly is the returned type? Something like named_type_list
-fun_call_expr = fun_obj_expr \( expr_list \);
 ----------------------------------------------------------------------
 
 For example:
@@ -1043,9 +1101,32 @@ fun factorial(int:i) -> int {
 
 === Overloaded Operators
 
-Support the case that the class can also be the rhs of the other type is
-the lhs.  That avoids the need for being forced to define a global operator for
-that case which also forces that global operator to be private.
+A class A can define two methods for a given binary operator and a given
+other-operand-type: Where A is the lhs (and the other is the rhs), and vice
+versa.  Also, in case the operation is implemented in a commutative way, only
+one implementation can be given which is called in either case.
+
+A binary operator with class A and B as operands can thus be defined in three
+places: in A, in B, globally.  It really is the same method / operator, at
+least logically, so make it a compile (or linker?) error if it is defined in
+multiple places.
+
+----------------------------------------------------------------------
+fun_name_operator =
+  'operator (
+    'this binary_operator | ## on call site, this is lhs 
+    binary_operator 'this | ## on call site, this is rhs
+    'this binary_operator 'this | ## commutative implementation
+    unary_prefix_postfix_operator 'this | ## unary prefix operator
+    unary_prefix_operator 'this | 
+    'this unary_prefix_postfix_operator | ## unary postfix operator
+    'this unary_postfix_operator
+  );
+binary_operator = \+ | \* | 'and | ...;
+unary_prefix_operator = ...;
+unary_postfix_operator = ...;
+unary_prefix_postfix_operator = `++ | `-- ;
+----------------------------------------------------------------------
 
 See also D: Auto deduction of all comparison operators after == and any of (<
 <= > >=) are given.
@@ -1053,7 +1134,25 @@ See also D: Auto deduction of all comparison operators after == and any of (<
 See also ``Properties of some standard methods/operators''.
 
 
-=== Function call
+[[code_chunk_call]]
+=== Code chunk call
+
+----------------------------------------------------------------------
+fun_call_expr = sub_expr arg_list;
+arg_list = \( ct_list \);
+----------------------------------------------------------------------
+
+Note that a function call as a whole looks like an <<list_expr>>, but actually
+is an operator expr.  Its rhs is an expression delivering an code object, and
+its lhs is an argument list.
+
+Style guideline: before the opening parenthesis of a function call there might
+not be any white-spaces, at least no vertical white-spaces.  Motivations: 1)
+consistent `style' 2) make it unlikely that a programmer wrongly uses
+++(...)++ instead ++g(...)++, thus accidentaly programs a function call.  For
+consistency reasons, that guideline probably should also apply to the opening
+parenthesis of list expressions.
+
 
 ==== Argument passing with key => value pairs
 The caller can pass the arguments as ordered list as in most languages.
