@@ -697,24 +697,43 @@ smart pointers and nearly never raw pointers directly.  See also raw_ptr in
 
 [[raw_array]]
 ==== Raw array
-Comparable to C's arrays.  Size must be known at compile time.  It's intended
-that the user nearly always uses collections and nearly never raw arrays
-directly.  Also allow size 0.
+
+A _(fixed size) raw array_ is comparable to C's arrays.  Syntax: see
++array_type+.  The size is part of the type.  ++raw[sub_expr#size]type_expr++
+is from a logical point of view equivalent to
+++raw_array<sub_expr#size,type_expr>++.
+
+Size must be known at compile time.  Size 0 is allowed.  The size can be
+omitted if it can be deduced from the initializer list, e.g. in ++var a :
+raw[]int = {2,4,8}$++ the size 3 can be deduced.
+
+Standard style guidelines disallow its use.  It's intended that the user
+nearly always uses collections and nearly never raw arrays directly.
+
+Syntax to construct an array object is the same as constructing any other
+object.  Constructing an array naturally includes constructing its member
+elements.  The constructor expects one argument which is a collection or an
+iterator.
+
+----------------------------------------------------------------------
+var a({1,1,2,3,5}) : raw[5]int$
+var a : raw[5]int = {1,1,2,3,5}$
+var pa : raw*raw[5]int = new raw[5]int({1,1,2,3,5})$
+----------------------------------------------------------------------
 
 
 [[variable_sized_raw_array]]
-==== Variable sized raw arrays
-Variable sized raw arrays are arrays which size is determined at runt time at
-construction time, but cannot be changed afterwards.  That is unlike dynamic
-arrays (vectors in C&plus;&plus), where the size can be changed anytime during
-run-time.
+_Variable sized raw arrays_ are arrays which size is determined at run time
+at construction time, but cannot be changed afterwards.  That is unlike
+dynamic arrays (vectors in C&plus;&plus), where the size can be changed
+anytime during run-time.
 
 Probably a variable sized raw array is not really distinct primitive type of
-its own, but is a composition of other primitive types: E.g. a local variable
-sized raw array really is a named local const non-owning raw pointer to an
-unnamed raw array owned by the stack.  That view might be important for the
-case where we want to make any indirection, i.e. pointer dereferencing,
-clearly visible.
+its own, but is a composition of other primitive types: E.g. a local `variable
+sized raw array' really is a local `const non-owning raw pointer' to an
+unnamed `_proper variable sized raw array_' owned by the stack.  That view might
+be important for the case where we want to make any costs, e.g. pointer
+dereferencing, clearly visible.
 
 
 [[builtin_types]]
@@ -842,8 +861,8 @@ generic_pointer_type =
   ['[sub]]#ptrsubtype (\*|'ptrto) type_expr 'in class_type; 
 
 array_type = 
-  ## array type. a=std::array (default), b=built in
-  ['[ab]]#arraysubtype \(\[ctconst_expr#n\]|'arrayof ctconst_expr#n) type_expr; 
+  [array_sub_type] (\[ctconst_expr#n\]|'arrayof ctconst_expr#n) type_expr; 
+array_sub_type = 'raw | ...;
 ----------------------------------------------------------------------
 
 An EF type expression can be read from left to right and the spoken words
