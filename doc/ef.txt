@@ -111,7 +111,6 @@ is weak in directly accessing HW resources on a level as C can.
 Is apparently often used in robotics.  It is interpreted and has garbage
 collection.  Is thus not suitable for a hard real-time embedded system.
 
-
 .to-do:
 * Read Wikipedia's ``Comparison of Java and C&plus;&plus;''
 * http://www.embedded.com/design/prototyping-and-development/4024892/Ada-and-Java-real-time-advantages
@@ -119,6 +118,9 @@ collection.  Is thus not suitable for a hard real-time embedded system.
 * Book: Real-Time Systems and Programming Languages, look for newest edition
 * Google for ``Chris Lattner’s theory of compiler design''
 
+
+==== D
+...
 
 === Guidelines in designing EF
 
@@ -309,14 +311,22 @@ solve problems:
 * An embedded system often does have things a normal OS has: files,
   processes/threads?, ... What is the influence on EF's stdlib?
 
+=== Respect computer science theory
 
-== Meta syntax used in this document
+* What profit does EF get when it tries to listen to findings, concepts from
+  theory.  E.g. if it would have a truly context free grammar, what would be
+  the profit -- and the costs
+
+
+== Introduction
+
+=== Meta syntax used in this document
 
 https://github.com/sensorflo/yasmala[Yasmala] is the meta syntax (aka
 notation) used in this document to describe the syntax of EF.
 
 
-== Program structure
+=== Program structure
 
 In EF everything is composed of expressions, thus a program is just an
 expression.  See chapter <<expressions>>.
@@ -325,7 +335,17 @@ program = sa_expr;
 ----------------------------------------------------------------------
 
 
-== Identifiers
+== Lexical structure
+...
+
+=== Source file character encoding
+Source files optionally start with something that specifies the character
+encoding of the source file.  The compiler can be told what character encoding
+it should assume if its not explicitly defined at the beginning of the file.
+If nowhere defined explicitly, it defaults to UTF-8.
+
+
+=== Identifiers
 
 Similar as in C&plus;&plus;.  Regarding the optional leading sharp sign, see
 <<sharp_prefix>>.
@@ -333,6 +353,37 @@ Similar as in C&plus;&plus;.  Regarding the optional leading sharp sign, see
 ----------------------------------------------------------------------
 identifier = [\#]'[a-zA-Z_]'[a-zA-Z_0-9]+;
 ----------------------------------------------------------------------
+
+
+[[comments]]
+=== Comments / Documentation / EFDoc
+
+----------------------------------------------------------------------
+comment = 
+  \/(\*+) ... \1\/ | ## multi-line
+  ("//"|"#!") ... \n ;  ## single-line
+----------------------------------------------------------------------
+
+The multiline variant can be nested.  E.g given ++a /* b /* c */ d */ e++,
+from b to d inclusive is within the outer comment.  The closing delimiter
+needs as many stars as the opening delimiter.  That way sequences like */ can
+be included in the comment: `/** in EF the */ ends an comment **/`.
+
+Allowing "#!" as single line comment allows for the ``shebang'' mechanism.
+Control with style guidelines that it is only used as first two characters in
+the file.  Note that the hash has another meaning when not followed by an
+exclamation mark, see <<sharp_prefix>>.
+
+
+.To-do
+- Institutionalize using Doxygen or Doxygen like markup language.
+- See EFDoc why it makes sense to integrate the doc language into the
+  compiler.
+- Inherited classes, overloaded methods, overwritten methods,
+  member-getter-setter, delegate methods: Find a way that only a minimalistic
+  comment (one keyword) or none at all has to be written and still have 1)
+  good doc output 2) even in code the maintainer sees quickly that the
+  identifier is not documented here but at another place.
 
 
 [[expressions]]
@@ -1126,43 +1177,6 @@ stored return value of the 1st call.
 Probably part of the more general copy elision.
 
 
-== Initialization
-
-Much easier than in C&plus;&plus;.  Only one / a few simple principles.
-Either completely orthogonal or simple aliases.
-
-
-[[comments]]
-== Comments / Documentation / EFDoc
-
-----------------------------------------------------------------------
-comment = 
-  \/(\*+) ... \1\/ | ## multi-line
-  ("//"|"#!") ... \n ;  ## single-line
-----------------------------------------------------------------------
-
-The multiline variant can be nested.  E.g given ++a /* b /* c */ d */ e++,
-from b to d inclusive is within the outer comment.  The closing delimiter
-needs as many stars as the opening delimiter.  That way sequences like */ can
-be included in the comment: `/** in EF the */ ends an comment **/`.
-
-Allowing "#!" as single line comment allows for the ``shebang'' mechanism.
-Control with style guidelines that it is only used as first two characters in
-the file.  Note that the hash has another meaning when not followed by an
-exclamation mark, see <<sharp_prefix>>.
-
-
-.To-do
-- Institutionalize using Doxygen or Doxygen like markup language.
-- See EFDoc why it makes sense to integrate the doc language into the
-  compiler.
-- Inherited classes, overloaded methods, overwritten methods,
-  member-getter-setter, delegate methods: Find a way that only a minimalistic
-  comment (one keyword) or none at all has to be written and still have 1)
-  good doc output 2) even in code the maintainer sees quickly that the
-  identifier is not documented here but at another place.
-
-
 == Modules
 Do it as in D / Java / Python, have modules, opposed to the concept of C /
 C&plus;&plus; with header / source files.  Currently this document uses the
@@ -1318,6 +1332,13 @@ scope = 'block_scope | 'full_expr_scope;
 - pack as attribute to structs/classes
 
 
+=== Object class
+
+- +bytes+ or +storage_size+ member to access objects size in multiples of
+  +byte+.  Don't use +size+, since that is confusing with +size+ used by
+  collections.
+
+
 === Local objects
 
 A bit simplified, the ++obj++ family of `functions' create a new object,
@@ -1429,8 +1450,9 @@ flow control expression d) the block associated to the object is the outer
 block of the flow control expression.
 
 
-==== Scope and lifetime
-The lifetime always at the end of the object's associated block.  
+==== Scope
+Explicit scopes can be created using a list expression, say ++scope...$++.
+That would be roughly equivalent to C's ++{...}++.
 
 
 ==== To-do
@@ -1693,7 +1715,7 @@ interpret a collection as another collection.
 
 
 [[resource_management]]
-== Resource management: RAII & GC side by side
+== Resource management: RAII / GC
 
 Basic idea is to do resource management via RAII as in C&plus;&plus;.  EF
 tries to have cheap destructor `calls' by trying to avoid them all-together.
@@ -1888,19 +1910,29 @@ non-owning pointer:: ...
 
 Concrete Types:
 
+[[unique_ptr]]
 (pure_)unique_ptr:: Is the only owner, thus no reference counting needed.  Referred
   obj is of dynamic (non-gc allocated) storage. 
+
+[[shared_ptr]]
 (pure_)shared_ptr:: Shared ownership via reference counting.
+
 address / implicit `pointer':: Owning `constant pointer'.  Pointees are:
   - Objects with storage class static.  Owner is one of system / process / thread.
   - Objects with storage class automatic.  Owned by a block/stack.
   - Member objects.  Owned by parent object.
   - +this+, +super+:
+
+[[weak_ptr]]
 weak_ptr:: Non-owning, but can be promoted to a shared_ptr.
+
+[[observer_ptr]]
 observer_ptr:: Non-owning.  Compiler ensures at compile time that that the
   owner(s) does not delete the object while the observer_ptr points to it.
   Alternative names: leaser_ptr or renter_ptr.  I fear that the word
   `observer' wrongly implies read only access to the pointee.
+
+// anchor raw_ptr is defined at another place
 raw_ptr:: Non-owning.  Primitive type, see <<raw_ptr>>.  Disallowed by
   standard guidelines.  Can point anywhere the other pointers can.  User is
   responsible for mutual exclusion and ownership.  However there still is no
@@ -1953,9 +1985,6 @@ How to avoid the expensive shared pointers:
   a type given an input type, and which, regarding the previous example,
   internally has the relation unique pointer -> observer pointer and shared
   pointer -> shared pointer.
-
-
-
 
 
 == Compilation
@@ -2324,7 +2353,7 @@ embedded systems than Eclipse, thus first start with QTCreator.
 ...
 
 
-== Style
+== Style Guidelines
 
 By default enforce some white rules.  This enforcement can be turned off by
 compile switch.  Nearly all style guides agree that the actual style is not
@@ -2337,12 +2366,6 @@ or start with underscore....
 
 By default the warning level is maximum, and warnings are treated as 
 
-
-== Theory
-
-* What profit does EF get when it tries to listen to findings, concepts from
-  theory.  E.g. if it would have a truly context free grammar, what would be
-  the profit -- and the costs
 
 == Misc
 
@@ -2373,5 +2396,6 @@ the explicit version would probably be
 std::tuple<const int&,const double&>(i,j) = gettwo();
 ----------------------------------------------------------------------
 
-//  LocalWords:  decl malloc IPC laterinit laterctor alist sa ary arg
- 
+//  LocalWords:  decl malloc IPC laterinit laterctor alist sa ary arg args
+//  LocalWords:  del foreach OverrideAndDelete Inmutable endof Structs
+//  LocalWords:  allocator allocators
