@@ -580,7 +580,7 @@ C&plus;&plus;'s comma operator.  _(standalone) expression sequence_ is the
 term used for the expression resulting from using the sequence operator.
 
 ----------------------------------------------------------------------
-standalone_expr_seq = (standalone_expr [\;]{-}){2,}
+standalone_expr_seq = (standalone_expr [\;]{0}){2,}
 ----------------------------------------------------------------------
 
 Note that the semicolon is optional.  That means that the sequence operator is
