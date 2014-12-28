@@ -411,8 +411,8 @@ list_expr =
   ...;
 ----------------------------------------------------------------------
 
-- _stand alone expression_ (aka mini block expression): See <<mb_expr>>.
-- _(stand alone) expression sequence_: See <<expr_seq>>. 
+- _standalone expression_ (aka mini block expression): See <<standalone_expr>>.
+- _(standalone) expression sequence_: See <<expr_seq>>. 
 - _sub expression_: Part of an enclosing expression, can be operand to an
   operator.
 - _primary expression_: Leaf of an operator expression tree.
@@ -428,67 +428,60 @@ list_expr =
 
 [[list_expr]]
 === List expression
-The following explains the syntax of list expressions (aka `function calls').
-They resemble the syntax of a function call in C / Java etc.  However there is
-not necessarily a function call at run-time.
+
+A list expression resembles the syntax and the idea of a function call
+(++foo(arg1, arg2)++).  Logically a list expression is a `function name' and
+an argument list.
 
 ------------------------------
 func  arg      arg1   arg    arg2  arg     arg3  list
 name  list            sepa-        sepa-         close
       open            rator        rator         deli-
                                                  miter
-foo    (        a       ,     b     ,       c      )
 if              a       :     b    else     c      $
 if     (        a       :     b    else     c      )
 if              a       :     b    else     c   end if
 [               a       ,     b     ,       c      ]  
+{               a       ,     b     ,       c      }  
 ------------------------------
 
-The pattern is always: A leading `function name'. Followed by an optional
-argument list open delimiter (left parenthesis).  Followed by an argument list
-where the elements are separated by separators.  The valid separators are
-specific to the specific `function name' (e.g. commas or colons or keywords
-such as +elif+ or +else+).  The list expression is closed / delimited by an
-delimiter (dollar or right parenthesis).
+The pattern is always the same: A leading `function name' which is either a
+keyword or some punctuation.  Followed by an optional left-parenthesis being
+the argument list open delimiter.  Followed by an argument list where the
+arguments are separated by separators.  The valid separators are specific to
+the `function name'.  For example the +if+ `function' has ++:++ or +else+ as
+argument separators.  The list expression is closed / delimited by a dollar or
+right parenthesis.
 
 ----------------------------------------------------------------------
-call = fun_name args_open_del naked_arg_list args_close_del;
+list_expr = fun_name args_open_del naked_arg_list args_close_del;
 args_open_del  = [\(];
-naked_arg_list = (arg1 separator{-})* 
-args_close_del = ['end ...] ( \) | \$ );
+naked_arg_list = (argument argument_separator{?})*;
+argument_separator = ... ; ## depends on concrete list
+args_close_del = \) | \$ | 'end |
+  'endof (id | \( id* \) );
 ----------------------------------------------------------------------
+
+The spirit of the ++endof++ close delimiter variant is to provide a way to
+make clear which construct is being ended.  The id (or multiple ids within
+parentheses) after ++endof++ is free from a syntax point of view.  Built-in
+configurable style guidelines will enforce that it (they) `matches' the
+beginning of the list expression.  E.g. an +if+ must be closed with +endof if+,
+a ++fun foo ...++ must be closed with ++endof (fun foo)++.
 
 The argument list open delimiter and the argument list close delimiter can be
 freely mixed from a syntax point of view, also if that looks awkward for
 humans.  Both ++if ( a : b $++ and ++if a : b)++ are syntactically valid.
 Such `mismatches' will be caught by built-in configurable style guidelines.
 
-The argument list close delimiter optionally starts with ++end ...++.  The
-full list expression looks then e.g. like ++if a : b end if$++ or ++def fun
-foo(): int = ... end foo$++. Note that at the very end of the argument list
-close delimiter there is still a dollar or closing parenthesis.  The word
-after ++end++ is free from a syntax point of view.  Built-in configurable
-style guidelines will enforce that it `matches' the beginning of the list
-expression.  What exactly can / must come after the ++end++ keyword is not yet
-clear, Ada can deliver ideas.
-
-Note that in the following list expression ++[a, b, c]++, the opening bracket
-++[++ is considered the `function name'. The `function' ++[++ creates a
-literal list.  Similarly, the `function' ++{++ (e.g. ++{a, b, c}++) creates a
-so-called `block'.
-
-General syntax of a list:
-
-----------------------------------------------------------------------
-# list
-expr_list = (sa_expr \,{?})*; 
-# associative list
-expr_alist = (sa_expr#key `=> sa_expr#val  \,{?})* 
-----------------------------------------------------------------------
+Note that in ++{a, b, c}++, the opening brace ++{++ is considered the
+`function name'. The `function' ++{++ creates a literal list, see
+<<literal_list>>.
 
 Note that a function call as a whole looks like an list expr, but actually is
-an <<operator_expr>>. Its rhs is an expression delivering an code object, and
-its lhs being an argument list.
+an <<operator_expr>>, see <<code_chunk_call>>.  It's a binary operator with
+the rhs being an expression delivering an code object, and the lhs being an
+argument list.
 
 
 **to-do:*
@@ -504,7 +497,7 @@ its lhs being an argument list.
     should comma be in the sense of a Python tuple and when in the sense of a
     C++ comma!!! Possible answer: its always in the sense of a tuple (aka
     compile time expression list), and the directly enclosing construct
-    defines what is done at compile-time and what at runt-time. 
+    defines what is done at compile-time and what at run-time. 
   * ...
 - Introduce a term like _form_ (from lisp) denoting the general concept
   which's specialization are a) regular functions (term?) b) `compile time
@@ -516,6 +509,18 @@ its lhs being an argument list.
  * tuple
  * runtime sequence
  * data list
+
+
+[[literal_list]]
+==== Literal lists +{...}+
+
+----------------------------------------------------------------------
+literal_list = \{ (sub_expr \,{?})* \};
+----------------------------------------------------------------------
+
+to-do:
+- What is the difference to (...) or [...]? At least the content of all of ()
+  [] {} is always a `literal list'.
 
 
 [[operator_expr]]
@@ -567,7 +572,7 @@ grammar point of view nothing indicates that +standalone_expr_seq+ is also an
 ==== Expression sequence / sequence operator ";"
 The previously introduced operators have sub expressions as operands.  The
 _sequence operator_ ";", being a binary left-associative operator, has
-standalone expressions as operands.  The value of the lhs operand (being a
+<<standalone_expression>>s as operands.  The value of the lhs operand (being a
 standalone expression) is thrown away.  That standalone expression is thus
 used for side-effects only.  The value of the sequence operator expression is
 the value of the rhs operand.  The sequence operator is thus comparable to
@@ -582,11 +587,21 @@ Note that the semicolon is optional.  That means that the sequence operator is
 implicit when two standalone expressions are adjacent.  The semicolon is the
 explicit form of the sequence operator.
 
+Style guidelines:
 
+- Of a given expression sequence, all sequence operator tokens are semicolons,
+  or all sequence operator `tokens' are blanks.
+- The blank `token' cannot be used if its rhs and lhs are on the same line.
+  Note that this helps to prevent the accidental invocation of an operator
+  list (e.g. ++-(...)++) where the user wrongly used parentheses ++(...)++
+  instead ++g(...)++to group a sub expression.
+
+
+[[standalone_expression]]
 [[temporaries]]
 [[mb_expr]]
-=== Mini block expression / stand alone expression / temporaries
-A _stand alone expression_ (aka _mini block expression_) is comparable with a
+=== Mini block expression / standalone expression / temporaries
+A _standalone expression_ (aka _mini block expression_) is comparable with a
 statement in C or Java.  It either is 1) the lhs operand of the expression
 sequence binary operator, or it is 2) the lhs operand of the sequence operator
 or the argument to an enclosing list expression.  In the former case its value
@@ -598,6 +613,14 @@ argument to the enclosing expression.
 Probably EF will define the storage duration of temporary objects similar to
 C&plus;&plus;: The storage duration of temporaries is given by the enclosing
 `mini block expression' (aka standalone expression).
+
+Style guideline: If the standalone expression is an operator expression, it
+must be one with a side effect as primary responsibility (e.g. infix/postfix
+increment/decrement, one of the assignment operators, notably excluding
+function call operator invoking a non-void code block).  Have a keyword or
+annotation or something to mark an expression as `ok', e.g. explicitly type
+cast the whole expression to void.  *to-do*: How to handle overloaded
+operators which really are function calls?
 
 
 === Order of evaluation / side effects
