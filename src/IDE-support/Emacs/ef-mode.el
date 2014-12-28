@@ -36,7 +36,7 @@
 ;;; Code
 (defconst ef-font-lock-keywords
   (list
-   "\\b\\(fun\\|val\\|var\\|decl\\|nop\\|if\\|elif\\|else\\|unless\\|for\\|foreach\\|in\\|while\\|until\\|do\\|throws\\|ret\\|goto\\|break\\|continue\\|noinit\\|end\\)\\b"
+   "\\b\\(fun\\|val\\|var\\|decl\\|nop\\|if\\|elif\\|else\\|unless\\|for\\|foreach\\|in\\|while\\|until\\|do\\|throws\\|ret\\|goto\\|break\\|continue\\|noinit\\|end\\|raw_new\\|raw_delete\\)\\b"
    (list (concat "\\bfun[ \t\r\n]+"
                  "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)\\b[ \t\r\n]*"
                  "\\(?::[ \t\r\n]*\\)?"
@@ -67,6 +67,11 @@
                  "\\)?")               
          '(1 font-lock-variable-name-face)
          '(2 font-lock-type-face nil t))
+   (list (concat "\\_<raw_new\\_>[ \t\n]*"
+                 "\\(?:([ \t\n]*\\)?"
+                 "\\([^=(]*?\\)"
+                 "[=(]")
+         '(1 font-lock-type-face))
    (list "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*="
          '(1 font-lock-variable-name-face))
    ;; the ones above need to put protecting text properties over what they

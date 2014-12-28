@@ -48,6 +48,8 @@
   FUN "fun"
   VAL "val"
   VAR "var"
+  RAW_NEW "raw_new"
+  RAW_DELETE "raw_delete"
   EQUAL "="
   COLON_EQUAL ":="
   COMMA ","
@@ -86,6 +88,7 @@
       SLASH
 %precedence EXCL NOT
 %precedence LPAREN
+
 
 %type <AstCtList*> ct_list initializer
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
@@ -243,6 +246,8 @@ list_expr
   | FUN kwao naked_fun_def kwac                     { $$ = $3; }
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
   | OP_LPAREN ct_list RPAREN                        { $$ = new AstOperator($1, $2); }
+  | RAW_NEW kwao type initializer kwac              { $$ = NULL; }
+  | RAW_DELETE kwao sub_expr kwac                   { $$ = NULL; }
   ;
 
 /* keyword argument list open delimiter */

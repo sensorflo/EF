@@ -59,6 +59,8 @@ end                 return yy::Parser::make_END(loc);
 not                 return yy::Parser::make_NOT(loc);
 and                 return yy::Parser::make_AND(loc);
 or                  return yy::Parser::make_OR(loc);
+raw_new             return yy::Parser::make_RAW_NEW(loc);
+raw_delete          return yy::Parser::make_RAW_DELETE(loc);
 
   /* type keywords */
 int                 return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eInt, loc);
@@ -92,7 +94,7 @@ bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool
 "->"                return yy::Parser::make_ARROW(loc);
 "&&"                return yy::Parser::make_AMPER_AMPER(loc);
 "||"                return yy::Parser::make_PIPE_PIPE(loc);
-([-+*/!]|&&|"||"|"and"|"or"|"not")[ \t]*"("    {   /*todo: allow comments and newlines intbetween*/
+([-+*/!]|&&|"||"|"and"|"or"|"not"|"new"|"delete")[ \t]*"("    {   /*todo: allow comments and newlines intbetween*/
   char* p = yytext;
   for (/*nop*/; *p && *p!=' ' && *p!='\t' && *p!='('; ++p ) /*nop*/;
   return yy::Parser::make_OP_LPAREN(string(yytext,p), loc);

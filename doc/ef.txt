@@ -356,6 +356,7 @@ primary_expr = list_expr | literal | ID | group_expr | ...;
 list_expr = 
   'while expr#cond \: expr#body \$ |
   'var ID \: type_expr \$ |
+  memory_mgmt_expr |
   ...;
 ----------------------------------------------------------------------
 
@@ -1768,17 +1769,53 @@ memory.
   pay for anything at run time that not absolutely has to be done in any case
   anyway.
 
+
 [[memory_management]]
-== Memory management
-See also <<resource_management>>.
+=== Memory management
+
+* Since EF can somewhat control where pointers point to, it might sometimes be
+  possible to move an object in memory.  That can e.g. help within the heap,
+  e.g. to release (to the OS, on linux via (s)brk or (anonymous) mmap) `large'
+  amounts of free memory which only can be released thanks to moving `a few'
+  objects within it.  In a more general sense: the heap manager can fight
+  defragmentation better if it can move objects.
+
+
+[[memory_management_primitives]]
+==== Manual memory management primitives / storage allocators
+
+----------------------------------------------------------------------
+memory_mgmt_expr =
+  ('new | 'raw_new) [\(] type_expr initializer args_close_del |
+  'raw_delete [\(] sub_expr args_close_del;
+----------------------------------------------------------------------
+
++new+ creates a new data object, internally using +raw_new+, and returns an
+<<unique_ptr>> to it.  Meant to be equivalent to C&plus;&plus;'s
++make_unique+.
+
++raw_new+ creates a new data object and returns a <<raw_ptr>> to it.  Standard
+style guidelines disallow its use.  If an exception occurs, call destructor
+for all members which's constructor finished, and free the storage allocated
+in step 1:
+
+1. Allocate storage (*to-do*: using which storage allocator exactly?) to hold data
+   object
+2. Call constructor of data object, passing it the given arguments
+
++raw_delete+ deletes an data object created with +raw_new+.  Standard style
+guidelines disallow its use.
+
+1. call destructor of data object
+2. free storage (*to-do*: using which storage allocator exactly?)
+3. Set it's argument to null if its an lvalue (that means the're effectively
+   two delete versions).  If you don't want to pay the cost of nullyfing your
+   lvalue arg, cast it to a non-lvalue.
 
 Support custom memory management primitives, i.e. user shall be able to
 provide its own version of new (aka malloc), delete etc.  The current idea is
 that the memory management sub-module of the EF standard module can be
 implemented by the user.  See <<exchanging_module_impl>>
-
-Built-in smart-pointer implementation shall be decoupled from memory
-management primitives (new (aka malloc), delete, ...).
 
 Make allocation on heap and stack such that optimizers have some leeway to
 choose whether in reality it is on stack or on heap.  Probably it'll be
@@ -1801,29 +1838,33 @@ non-zero costs.  The intention is to use the shared heap only for objects
 which need shared ownership.  If you only need shared access to an object (but
 have an exclusive ownership), a thread private heap also works. 
 
+There is _no placement new_ as in C&plus;&plus; ... *to-do*: describe EF's way
+of separating allocating / freeing storage and of constructing/destructing
+objects within storage.
+
+There is _no array variant_ of +new+ and +delete+ (as there is e.g. in
+C&plus;&plus;), since the all array types handle construction and destruction
+of their members by themselves.
 
 *to-do*:
 
+* Provide allign argument to new?  In most cases alignment is a property of
+  the type, so it can be deduced from there. 
 * Find out more about batch malloc & free.  Would it help if EF would try to
   favor batch free over a loop with normal frees.
 * Read http://en.wikipedia.org/wiki/Manual_memory_management and follow the
   links at the bottom.
-* Since EF can somewhat control where pointers point to, it might sometimes be
-  possible to move an object in memory.  That can e.g. help within the heap,
-  e.g. to release (to the OS, on linux via (s)brk or (anonymous) mmap) `large'
-  amounts of free memory which only can be released thanks to moving `a few'
-  objects within it.  In a more general sense: the heap manager can fight
-  defragmentation better if it can move objects.
 
-=== Layout
 
-- Don't have C&plus;&plus;'s restriction that each obj must have an unique
-  address.  Or just allow for zero sized objects, in particular zero sized
-  arrays.  
+==== Memory model and object layout in memory
+
+- Allow zero sized objects (which then also makes zero sized arrays more
+  feasible).  Most probably that means that the `costs' of this decision are
+  that `multiple' such objects really are identical, i.e. there is really only
+  one object which has different names.  
 - +alignof+
 - bit fields
 - pack as attribute to structs/classes
-
 
 
 [[smart_pointers]]
