@@ -1678,16 +1678,6 @@ the class' object.
 Static class obj are virtually the same as global static obj.  It's just that
 the scope is different.
 
-== Structs
-
-Does it help if a struct is nearly the same thing as it is in C?  No methods
-no nothing?  Only public members.
-
-Easy initialization, readable.  E.g. similar to Python, caller can provide
-something like a map identifier->value, this way he has not to remember the
-order.  And the names of the members he has to know anyway.
-
-
 == Classes
 
 +class_def+ and +interface_def+ are both +type_expr+.
@@ -1714,11 +1704,9 @@ arbitrary amount of interfaces.
 ----------------------------------------------------------------------
 fun_name_ctor = 'this | 'ctor | 'constructor;
 ctor_body = [member_init_part] [classic_ctor_part];
-member_init_part =
-  ('mi| 'member_init| \:) expr args_close_del |
-  ## delegating member initialization part
-  this initializer;
-classic_ctor_part = 'mi_end; ## of type void
+member_init_part = expr | 'this initializer;
+classic_ctor_part = mi_end_expr expr;
+mi_end_expr = 'mi_end; ## of type void
 ----------------------------------------------------------------------
 
 The constructor body is composed of two parts: 1) the member initialization
@@ -1826,6 +1814,27 @@ copy ctor and assignment operator for classes not intended to be copied in any
 way
 
 
+=== Inmutable classes
+
+Classes can be `tagged' +inmutable+.  Apart from the constructor and the
+destructor, all members must be const.  Motivation: 1) Helps communicating
+intend 2) Helps that not accidentaly a member is ever non-const.
+
+
+=== Abstract classes
+
+A class can be `tagged' +abstract+.  It is a compile error if a class tagged
+abstract has no abstract methods, or if a class not tagged abstract has
+abstract methods.  Motivation: Helps communicating intend -- the user has not
+to lookout for any abstract method.
+
+=== Support composition and or / mixins
+
+Composition could e.g. by supported by enforcing that the `Decorator' class
+invokes all public methods of the `wrapped' class, i.e. that no public method
+of the `wrapper' class is not accidentaly not invoked.
+
+
 === Packed
 
 ...
@@ -1837,6 +1846,32 @@ Also built-in types, but without sacrificing being as close to HW as C.
 normal objects, functions, modules, ...
 
 Does it help when there is a common base class as in Java?
+
+
+=== Structs
+
+An EF struct is a class that is as slim as a struct in C.  No virtual methods
+since they require a virtual table pointer in the object.  No destructor since
+that requires invoking it at the right time which is a cost that is not
+directly explicitly visible.
+
+However allows for non-virtual methods, since they don't cost more than global
+functions, apart from passing the implicit +this+ argument.  Also allow for
+class static methods.
+
+Also allows inheritance, which in absence of any virtual method is technically
+the same as just have a normal member (++struct D extends B = $++ is
+technically nearly the same as ++struct D = var B foo$$++).
+
+As in C&plus;&plus; the default access modifier is +public+.
+
+*to-do*:
+
+* What about auto generated methods, such as default constructor or
+  assignment?  In any case prevent the case that a method is generated per
+  struct type.  If the compiler can be forced to use one single generic method
+  for all default struct assignment operators (probably memcopy based), it
+  could be allowed.
 
 
 == Control flow
