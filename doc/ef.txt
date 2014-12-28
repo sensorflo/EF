@@ -403,7 +403,7 @@ expr = (standalone_expr|standalone_expr_seq) [\;];
 standalone_expr = sub_expr;
 sub_expr = operator_expr | primary_expr;
 operator_expr = sub_expr ('and|'or|...) sub_expr | ...;
-primary_expr = list_expr | literal | ID | group_expr | ...;
+primary_expr = list_expr | literal | ID | group_expr | mi_end_expr | ...;
 list_expr = 
   'while expr#cond \: expr#body \$ |
   'var ID \: type_expr \$ |
@@ -1493,9 +1493,9 @@ it and finally return a reference to the new object.
 local_obj_def =
   ## intended for simple small (chars for code) initializers; obj_prop_expr is
   ## typically less important and thus at the end
-  ('val|'var|'obj)     [identifier#name] initializer                        [\: obj_prop_expr] \$ |
-  ('val|'var|'obj) td ([identifier#name] initializer \,{?})+ td             [\: obj_prop_expr] \$ |
-  ('val|'var|'obj) td ([identifier#name]             \,{?})+ td initializer [\: obj_prop_expr] \$ |
+  ('val|'var|'obj)     [identifier#name] initializer                        [\: obj_prop_expr] ['is data_obj_modifiers]\$ |
+  ('val|'var|'obj) td ([identifier#name] initializer \,{?})+ td             [\: obj_prop_expr] ['is data_obj_modifiers]\$ |
+  ('val|'var|'obj) td ([identifier#name]             \,{?})+ td initializer [\: obj_prop_expr] ['is data_obj_modifiers]\$ |
 
   ## intended for complex multi-line initializers
   ('vals|'vars|'objs) [identifiers#name] [\: obj_prop_expr] initializers \$ |
@@ -1507,15 +1507,6 @@ local_obj_def =
 identifiers =  (identifier \,{?})* ## a tuple, to be defined uniformly elsewhere
 
 initializers = (initializer \,{?})* ## a tuple, to be defined uniformly elsewhere
-initializer =
-  ## constructor call syntax
-  \( (expr_list | 'noinit | 'laterctor ) \) |
-  ## an alternative syntax to the constructor call with one argument.  "obj
-  ## x = 3$" and "obj x(3)$" are equivalent.  Also here noinit can be used.
-  ## '(sub_expr)'
-  \= sub_expr |
-  ## omitting the initializer is an alias to the '()' initializer
-  ;
 
 td = #* tuple delimiter *# ;
 ----------------------------------------------------------------------
@@ -1531,21 +1522,43 @@ obj string { a, b } = get2strings()$
 ----------------------------------------------------------------------
 
 
-==== Initialization
+[[initialization]]
+==== Initialization (aka construction)
 
-===== Uninitialized / not-yet-constructed objects
-EF supports the ability to not initialize a variable with the +noinit+ keyword
-/ initializer, most probably for run-time efficiency, as it is possible in C.
-However in EF the programmer has to be explicit.  Such an object is considered
-to be constructed and usable. 
+----------------------------------------------------------------------
+initializer =
+  arg_list |    ## constructor call
+  \= sub_expr | ## equivalent to "(sub_expr)"
+  'nop_init | 'laterctor;
+----------------------------------------------------------------------
+
+===== Uninitialized / not-yet-constructed data objects
+
+EF supports the ability to `initialize' a data object by doing nothing with
+the ++nop_init++ keyword initializer.  In contrast to C, in EF one has to be
+explicit about his intend to not properly initialize a data object.  Such an
+data object is considered to be initialized (aka constructed), thus its
+<<life_time>> has started.  ++nop_init++ is useful for cases where the
+compiler cannot detect whether the data object is initialized later (in which
+case +laterctor+ could be used), but the programmer is sure he does the right
+thing.  Also ++nop_init++ holds on to the premise of EF that you can do all
+the nasty things in EF that you can do in C provided you're explicit (and
+additionally provided you explicitly turned off guidelines which prohibit
+using `nasty' constructs).
 
 EF also supports saying (with the +laterctor+ keyword / initializer) that
-everything as normal is done, just the constructor is not yet called.  The
-object is not allowed to be accessed.  Provably, so rules need to be stated
-what the code up-to the actual ctor call is allowed to look like.
+everything as normal is done (most notably storage is acquired), just the
+constructor is not yet called.  The <<life_time>> does not begin until the
+data object is initialized (aka constructed) via an write access.  Some
+consequences: 1) the first assignment really is a constructor call with
+exactly one argument 2) the compiler must not call the destructor if the
+constructor has not been called 3) that leads to the want to be able to
+explicitly exclusively call the constructor, without the storage allocation
+part. 
 
-
-**To-do:** Is +noinit+ really needed after there is +laterctor+?
+**To-do:**
+- Is +laterctor+ really needed if there was a rule that data objects need to
+  be write accessed before one is allowed to read access them?
 
 
 ===== Guaranteeing initialization
@@ -1568,7 +1581,7 @@ matter of being used to such constructs).
 
 **To-do:** In case of the +laterinit+ initializer.  The flow control
 expression's clauses can not call assignment but must call the ctor?  Not if
-the class promises that (ctor with laterinit/noinit followed by assignment)
+the class promises that (ctor with laterinit/nop_init followed by assignment)
 and (normal ctor with initvalue) are equivalent.  Or the rules of EF just say
 that the assignment really calls the ctor.  Or there is a syntax to just call
 the ctor for an object -- without allocating the storage, since that already
@@ -1577,6 +1590,13 @@ has been done.
 **Mind:** Let the computer automatically deduce non-initialized variables where
 possible.  Do not force to user to state things the compiler can deduce
 itself -- except where it helps to communicate intend.
+
+
+==== (Explicit) destruction
+Allow to explicitly exclusively call the destructor.  That ends the life time
+of the data object, but does not yet free the storage behind the data object.
+That implies that the compiler 1) must check that the data object is not
+accessed anymore after its destruction 2) does not call the destructor again.
 
 
 ==== Associated block
@@ -1687,26 +1707,81 @@ arbitrary amount of interfaces.
 
 === Constructor
 
-The name is +this+ or +ctor+ (ctor and dtor would be very close) or
-+constructor+.  Don't use the class' name as C&plus;&plus; does because that
-is redundant.
+----------------------------------------------------------------------
+fun_name_ctor = 'this | 'ctor | 'constructor;
+ctor_body = [member_init_part] [classic_ctor_part];
+member_init_part =
+  ('mi| 'member_init| \:) expr args_close_del |
+  ## delegating member initialization part
+  this initializer;
+classic_ctor_part = 'mi_end; ## of type void
+----------------------------------------------------------------------
 
-Allow to delete the auto generated ++(noinit)++ constructor:
-++constructor(noinit) = delete++
+The constructor body is composed of two parts: 1) the member initialization
+part, which's responsibility is to construct all members 2) the classic
+constructor part, which does additional things.
 
-How to call the ctor explicitly?  E.g. for already allocated but not yet
-constructed objects.  E.g. due to use of some `non-standard' +new+ construct,
-or due to the +laterctor+ initializer.
+At the beginning of the _member initialization part_ all members are
++laterctor+ `initialized', see <<initialization>>.  A program that read
+accesses a member before it initializes that member is not well formed.  The
+implementation is not required to print a diagnostic message.  Probably that
+it is difficult for a compiler to do a correct verification for all possible
+cases, including any function call etc.  Define a set of cases which the
+compiler is required to detect (e.g. in case there no flow control constructs
+and no calls).  At the end of the member initialization part, any not yet
+constructed member is automatically constructed using the initializer of the
+declaration of that member; for the super class that's the default
+constructor.  A _delegating member initialization part_ does delegate the work
+of initializing the members to another constructor of the class.  That is done
+by initializing the `member' this with ++'this initializer++.  This expression
+may only appear in the member initialization part, and if it does, no other
+expressions might be in the member initialization part.
+
+When the _classic constructor part_ is entered, all members are initialized.
+The classic constructor part is preceded by the expression ++mi_end++, which
+initializes all members not yet initialized by the preceding member
+initialization part.  +mi_end+ is only allowed to appear in a constructor
+body, and at most one time.  Since normally the member initialization part is
+preferred over the classic construction part, it's the classic constructor
+part which has the burden of being a bit more cumbersome to define.
+
+If an exception occurs, all, and only those, constructed members are
+destructed.
+
+_Member alist constructor_: Provide a auto generated constructor, which
+optionally can be made member of a class, which allows to construct an object
+by giving an association list (member name -> (init value |
+constructor)). Member name can be also ++*++ (or ++rest++) to refer to all not
+explicitly stated members.  The member name ++super++ is used to construct the
+super object if any.  This is probably particularly useful for structs.  Style
+guideline prohibit to make use of that constructor when there are any
+non-public fields.
+
+
+*to-do:*
+
+- How to call the constructor explicitly?  E.g. for already allocated but not
+  yet constructed objects.  E.g. due to use of some `non-standard' +new+
+  construct, or due to the +laterctor+ initializer.
+- How to allow that when a member is never read accessed between construction
+  and one or more write access (which completely replace the object), that
+  only the last write access can be made the one single construction.  Maybe
+  that is a concept that should be applied anywhere, not just in constructor
+  bodies.
+- Decide on the constructor name.  Using something explicit like +constructor+
+  most probably will result in less ambiguities as when using e.g. +this+.
+  Mind also getting the address of a constructor or explicitly calling a
+  constructor.  
+- What is D's init?  Why not just use default ctor?
 
 
 === Destructor
+ 
+----------------------------------------------------------------------
+fun_name_dtor = `~this | 'dtor | 'destructor;
+----------------------------------------------------------------------
 
-The name is ~this or dtor or destructor.  See also ctor
-
-
-=== Initializer
-
-What is D's init?  Why not just use default ctor
+How to call the destructor explicitly? 
 
 
 === Friend
@@ -2235,7 +2310,7 @@ Each of these features the user can turn on/off by options:
   at the side of referencing the pointer hides the cost of dereferencing).
 - Virtual methods
 - [constructors: user can already omit calling a constructor by special
-  initializers like e.g. `noinit']
+  initializers like e.g. `nop_init']
 - RAII / destructors
 - Exceptions
 - Bounds checking which cannot be done at compile time, i.e. which must be
@@ -2525,8 +2600,8 @@ By default the warning level is maximum, and warnings are treated as
 * Read again (google) ``C and C&plus;&plus; are not context free'' --
   Trevor Jim.
 * Let me initially a local var by passing it as output param to a function
-  call fun void( int&, int&); fun bar() -> void { foo( int var flori noinit,
-  int var edi noinit ); cout << flori << edi; }
+  call fun void( int&, int&); fun bar() -> void { foo( int var flori nop_init,
+  int var edi nop_init ); cout << flori << edi; }
 
 As in Python, make it possible that a list of variables are initialized by a list
 ----------------------------------------------------------------------
