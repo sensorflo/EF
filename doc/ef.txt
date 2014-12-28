@@ -676,7 +676,7 @@ as `built-in' type, see also <<builtin_types>>.
 
 - _Compound types_
  * Raw general pointer
-  ** <<raw_pointer>>
+  ** <<raw_ptr>>
   ** Raw pointer to member
  * <<raw_array>>
  * Function
@@ -684,7 +684,7 @@ as `built-in' type, see also <<builtin_types>>.
  * Class
 
 
-[[raw_pointer]]
+[[raw_ptr]]
 ==== Raw pointer
 Comparable to C's pointers.  It's intended that the user nearly always uses
 smart pointers and nearly never raw pointers directly.  See also raw_ptr in
@@ -1415,6 +1415,7 @@ properties:
 
 An object has additionally the following run time property:
 
+[[life_time]]
 * _life time_: See also storage duration.  From the C&plus;&plus; standard:
   3.8 Object Lifetime: 1/The lifetime of an object is a runtime property of
   the object.  The lifetime of an object of type T begins when: — storage with
@@ -1687,22 +1688,25 @@ something like a map identifier->value, this way he has not to remember the
 order.  And the names of the members he has to know anyway.
 
 
-== OO: Classes / Interfaces
+== Classes
 
 +class_def+ and +interface_def+ are both +type_expr+.
 ----------------------------------------------------------------------
 ## At compile-time define a new class type. At run-time does nothing.
 class_type_def = 'class identifier#name [\: base_class_list] \{ classimpl \};
-inteface_type_def = 'interface identifier#name [\: interface_list] \{ classimpl \};
+interface_type_def = 'interface identifier#name [\: interface_list] \{ classimpl \};
 base_class_list = identifier#superclass [\, interface_list] | interface_list;
 interface_list = (identifier#interface \,{?})*;
 ----------------------------------------------------------------------
 
-
-=== Inheritance / Super class / Interfaces
-
 Only single inheritance, no multiple inheritance, but implementing of an
 arbitrary amount of interfaces.
+
+*to-do*:
+
+* Proper naming.  E.g. `generic class' for the generic class concept, and
+  `proper class' (or `strict class'), `interface' and `struct' for
+  specializations of that generic concept.
 
 
 === Constructor
