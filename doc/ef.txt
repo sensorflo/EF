@@ -885,7 +885,16 @@ Are described in <<smart_pointers>>.
 
 
 ==== Strings & Characters
-...
+
+Consider distinguishing between a ``raw string'', which really is a raw array
+of ++char++s with a terminating null character (i.e. not an own distinct
+type), and a +string+ which is comparable to a C&plus;&plus; +string+.  A
+notable difference is that +string+ additionally redundantly stores the
+string's length, which gives O(1) instead O(n) time complexity for getting the
+string length or the last character.  Depending on the suffix, a string
+literal is a const raw array of chars or a (const?) +string+, see
+<<literals>>.  In case of +string+, the string length shall be computed at
+compile time.
 
 
 ===== Character encoding
@@ -902,6 +911,69 @@ type, typically 8bit bytes, e.g. utf-8 or utf-16.
 ==== Collections & iterators
 
 ...
+
+
+[[literals]]
+=== Literals
+
+-------------------------------------------------------------------------------
+literals = literal_list | arithmetic_type_literal | bool_type_literal |
+  tnull_literal | string_literal;
+
+arithmetic_type_literal =
+  ## integral types
+    ## optional radix and value's first digit
+    ( ['0 ['b #*2*#| 'o #*8*#| 'x #*16*#| 'r'[0-9]+'r #*custom*#] '_?] '[0-9a-zA-Z_] |
+      '[1-9a-zA-Z_] )
+    ## value's 2nd+ digit
+    '[0-9a-zA-Z_]*
+    ## suffix determines exact type
+    ...
+
+  ## floating point types
+  ...
+
+  ## character types
+    ## prefix determines type of allowed escape sequences
+    ...
+    ## actual character
+    \'...\'
+    ## suffix determines exact type
+    ...
+  ;
+
+bool_type_literal = 'true | 'false;
+
+tnull_literal = 'null;
+
+string_literal =
+  ## prefix determines type of allowed escape sequences
+  ...
+  ## actual string
+  \" ... \"
+  ## suffix determines exact type
+  ['a]; ## raw array of chars instead string
+-------------------------------------------------------------------------------
+
+Integral types literal: Custom radix might be a number between 2 inclusive and
+36 inclusive.  The digits allowed in the literal start at 0 and end according
+to the radix.  The digits above 9 are represented by Latin letters, the case
+is ignored.  The underscore has no meaning and is meant to provide visual
+grouping of digits.
+
+Note: The co-existence of the above prefixes / suffixes and the implicit
+<<seq_operator>> means the following: if an identifier is the same as a
+prefix, say the letter r, then ++r"foo"++ is a string literal, but ++r "foo"+
+is the identifier +r+ and the string literal +"foo"+ with the implicit
+sequence operator in between (the distinction being made in the lexer).
+Likewise for suffixes.  It's a wart, but I don't think its a true problem: 1)
+style guidelines ensure that the implicit sequence operator is only used when
+its rhs and lhs are on separate lines 2) even if they are turned off, its
+unlikely that and identifier and a literal are back to back without any blanks
+in between 3) even if they are back to back and now truly the wrong thing
+happens, it's unlikely that as a indirect consequence another compiler error
+occurs.  Note that the same problem also exists with the prefixes being part
+of type expression primaries.
 
 
 [[type_qualifiers]]
@@ -3137,3 +3209,4 @@ std::tuple<const int&,const double&>(i,j) = gettwo();
 //  LocalWords:  del foreach OverrideAndDelete Inmutable endof Structs vals
 //  LocalWords:  allocator allocators addr TCppStd IEC params param jumptable
 //  LocalWords:  funt tfun prvalue unstored xvalue glvalue autoimpl nothrow
+//  LocalWords:  tnull
