@@ -1259,9 +1259,6 @@ unary_postfix_operator = ...;
 unary_prefix_postfix_operator = `++ | `-- ;
 ----------------------------------------------------------------------
 
-See also D: Auto deduction of all comparison operators after == and any of (<
-<= > >=) are given.
-
 See also ``Properties of some standard methods/operators''.
 
 
@@ -1960,8 +1957,10 @@ class_type_expr = identifier#*class' name*# [type_args];
 --------------------------------------------------
 
 
+=== Special methods
+
 [[constructor]]
-=== Constructor
+==== Constructor
 
 ----------------------------------------------------------------------
 fun_name_ctor = 'this | 'ctor | 'constructor;
@@ -2036,7 +2035,7 @@ non-public fields.
   constructor, you have to explicitly declare it as such.
 
 
-=== Destructor
+==== Destructor
  
 ----------------------------------------------------------------------
 fun_name_dtor = `~this | 'dtor | 'destructor;
@@ -2046,7 +2045,7 @@ How to call the destructor explicitly?
 
 
 [[assignment]]
-=== Assignment
+==== Assignment operator
 
 *to-do*:
 
@@ -2058,6 +2057,74 @@ How to call the destructor explicitly?
 - Make `cast assignments' explicit by default, i.e. they only can be called
   explicitly, not implicitely.  If you want an implicitly call-able `cast
   assignment', you have to explicitly declare it as such.
+
+
+[[swap]]
+==== Swap
+
+By style guideline, it must provide the strong exception guarantee.
+
+
+==== The big five
+By style guideline, either none or all of the big five have to be defined.
+They are copy constructor, move constructor, assignment, swap, destructor.
+
+
+=== Automatic generated methods
+Somehow differentiate between ``there is an automatic generated method
+available, but not yet declared as being member of the class'' and ``the
+actual default ctor / assignment operator / ... that really is defined as
+member method, and its implementation says that its implemented in terms of
+the automatically generated one''.  Probably the following is even more
+general: The automatically generated methods are private and have a special
+name, e.g. the regular name with a +auto_impl+ suffix or prefix.  They can
+then be used as normal methods.  That has e.g. the advantage, that say the
+equality operator can have a custom implementation, which somewhere in its
+body calls the automatic generated method.
+
+Probably only the default constructor and the destructor should automatically
+be implemented using the automatically generated implementation.  All others
+need to explicitly be declared if the user wants them as members of the class.
+
+- Default constructor
+- Copy constructor
+- Move constructor
+- Destructor
+- Assignment operator
+- Equality operator
+- All other comparisons operators, given an implementation of {++\<\=>++} or
+  {one of {++==++, ++!=++} and one of {++\<=++, ++<++, ++>++, ++>=++}}.  See
+  also the D programming language.
+- friend swap function
+
+
+[[prevent_auto_gen_of_method]]
+==== Prevent automatic generation of a method
+Depending on the names and the access specifier of the automatic generated
+methods, the need to prevent automatic generation might be small enough to not
+provide a `prevent automatic generation of a method' feature.  E.g. if they
+are all private and have a special name which is certainly not referred to by
+mistake.
+
+Variant 1) The `implementation' in a method definition is a keyword.  For
+convenience, also give a short whatever to delete a group for often occurring
+use-cases.
+
+----------------------------------------------------------------------
+prevent_auto_gen = 'delete;
+----------------------------------------------------------------------
+
+Variant 2) Have a new access specifier ++none++.  Put method `declarations'
+there.  To me that is closer to what actually happens as `defining' a method
+and in either of the public / protected / private access section and in the
+body say that the implementation is `++delete++d'.
+
+
+*to-do*
+
+- Actually each of the above methods comes in multiple variants.  The
+  arguments can be one of 1) T 2) & const T 3) & volatile T.  The user shall
+  have the authority to decide which ones are auto implemented.
 
 
 === Friend
@@ -2085,24 +2152,6 @@ See chapter <<code_chunks>>.
 === Invariants
 
 See D
-
-
-[[prevent_auto_gen_of_method]]
-=== Prevent automatic generation of methods
-
-Automatically generated methods can be for example the default constructor,
-destructor, maybe assignment -- however probably EF should not auto generate
-assignment, ...
-
-Instead of making those private, which has the disadvantage that for methods
-of the same class the compiler doesn't say anything, only the linker, tell the
-compiler to not generate them, e.g. by a ++no_generate++ or +delete+ keyword
-somewhere in the method `definition'.  For convenience, also give a short
-whatever to delete a group for often occurring use-cases.
-
-----------------------------------------------------------------------
-prevent_auto_gen = 'delete;
-----------------------------------------------------------------------
 
 
 === Const classes
@@ -3067,4 +3116,4 @@ std::tuple<const int&,const double&>(i,j) = gettwo();
 //  LocalWords:  decl malloc IPC laterinit laterctor alist sa ary arg args
 //  LocalWords:  del foreach OverrideAndDelete Inmutable endof Structs vals
 //  LocalWords:  allocator allocators addr TCppStd IEC params param jumptable
-//  LocalWords:  funt tfun prvalue unstored xvalue glvalue
+//  LocalWords:  funt tfun prvalue unstored xvalue glvalue autoimpl
