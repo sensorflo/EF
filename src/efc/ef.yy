@@ -91,7 +91,7 @@
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
 %type <AstSeq*> pure2_standalone_expr_seq
 %type <std::list<AstValue*>*> pure_ct_list
-%type <AstValue*> expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
+%type <AstValue*> expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else initializer
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifier> valvar
@@ -273,8 +273,8 @@ naked_data_decl
 
 naked_data_def
   : naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
-  | naked_data_decl EQUAL standalone_expr                            { $$ = new RawAstDataDef($1, $3); }
-  | ID EQUAL standalone_expr opt_colon_type                          { $$ = new RawAstDataDef(new RawAstDataDecl($1, $4), $3); }
+  | naked_data_decl initializer                                      { $$ = new RawAstDataDef($1, $2); }
+  | ID initializer opt_colon_type                                    { $$ = new RawAstDataDef(new RawAstDataDecl($1, $3), $2); }
   ;
 
 naked_fun_def
@@ -284,6 +284,10 @@ naked_fun_def
 naked_fun_decl
   : ID opt_colon param_ct_list opt_arrow_type                        { $$ = parserExt.createAstFunDecl($1, $3); }
   | ID opt_colon                                                     { $$ = parserExt.createAstFunDecl($1); }
+  ;
+
+initializer
+  : EQUAL standalone_expr                                            { swap($$,$2); }
   ;
 
 naked_if
