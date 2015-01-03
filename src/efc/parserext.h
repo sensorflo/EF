@@ -17,6 +17,7 @@ class AstDataDef;
 class AstArgDecl;
 class AstFunDecl;
 class AstFunDef;
+class AstCtList;
 
 struct RawAstDataDecl {
   RawAstDataDecl(const std::string& name, ObjType* objType) :
@@ -26,10 +27,10 @@ struct RawAstDataDecl {
 };  
 
 struct RawAstDataDef {
-  RawAstDataDef(RawAstDataDecl* decl, AstValue* initValue = NULL) :
-    m_decl(decl), m_initValue(initValue) {};
+  RawAstDataDef(RawAstDataDecl* decl, AstCtList* ctorArgs = NULL) :
+    m_decl(decl), m_ctorArgs(ctorArgs) {};
   RawAstDataDecl* m_decl;
-  AstValue* m_initValue;
+  AstCtList* m_ctorArgs;
 };  
 
 class ParserExt {

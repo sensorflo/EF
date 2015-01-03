@@ -126,18 +126,19 @@ public:
 
 class AstDataDef : public AstValue {
 public:
-  AstDataDef(AstDataDecl* decl, AstValue* initValue = NULL);
+  AstDataDef(AstDataDecl* decl, AstValue* initValue);
+  AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs = NULL);
   ~AstDataDef();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstDataDecl& decl() const { return *m_decl; }
-  virtual const AstValue* initValue() const { return m_initValue; }
+  virtual const AstValue* initValue() const;
 private:
   /** We're the owner. Is garanteed to be non-null */
   const AstDataDecl* const m_decl;
   /** We're the owner. Is _NOT_ garanteed to be non-null */
-  const AstValue* const m_initValue;
+  const AstCtList* const m_ctorArgs;
 };
 
 /** Literal number */

@@ -87,11 +87,11 @@
 %precedence EXCL NOT
 %precedence LPAREN
 
-%type <AstCtList*> ct_list
+%type <AstCtList*> ct_list initializer
 %type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
 %type <AstSeq*> pure2_standalone_expr_seq
 %type <std::list<AstValue*>*> pure_ct_list
-%type <AstValue*> expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else initializer
+%type <AstValue*> expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifier> valvar
@@ -287,7 +287,7 @@ naked_fun_decl
   ;
 
 initializer
-  : EQUAL standalone_expr                                            { swap($$,$2); }
+  : EQUAL standalone_expr                                            { $$ = new AstCtList($2); }
   ;
 
 naked_if

@@ -22,7 +22,7 @@ AstDataDef* ParserExt::createAstDataDef(ObjType::Qualifier qualifier,
   assert(rawAstDataDef);
   AstDataDef* astDataDef = new AstDataDef(
     createAstDataDecl(qualifier, rawAstDataDef->m_decl),
-    rawAstDataDef->m_initValue);
+    rawAstDataDef->m_ctorArgs);
   delete rawAstDataDef;
   rawAstDataDef = NULL;
   return astDataDef;
