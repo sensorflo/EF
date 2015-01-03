@@ -1191,12 +1191,12 @@ naked_fun_type_parameterized = [type_params] naked_fun_type;
 
 fun_signature = (
   ## At most one parameter list
-  \( (parameter_decl \,{l?})* \) 
+  \( (parameter_decl \,{l?})* \)
   ## Return type.  At most one.  -> can be omitted if preceded by parameter list
-  ["->"] (type_expr | 'noret) ]    
-  ## Multiple throws clause allowed which accumulate
-  'throws type_expr*
-  ## Multiple modifiers allowed which accumulate
+  ["->"] (type_expr | 'noret) ]
+  ## Multiple throws clauses are allowed, in which case they accumulate
+  throws_clause
+  ## Multiple modifiers allowed, in which case they accumulate
   'is fun_modifier*
   )*;
 
@@ -2847,6 +2847,26 @@ if it fails, try to react in the catch handler.
   function signature
 
 
+[[throws_clause]]
+=== Throws clause
+
+----------------------------------------------------------------------
+throws_clause = 'throws (type_expr* | 'none);
+----------------------------------------------------------------------
+
+++throws none++ means none what so ever.  *to-do:* How about introducing a new
+keyword +nothrow+ which can be used in lieu of ++throws none++.
+
+
+[[exception_safety_guarantees]]
+=== Exception safety guarantees
+
+It would be nice if methods could declare their intended exception safety
+guarantee, and the compiler could verify that it is true.  E.g. by adding new
+function modifiers +strong_es+, +basic_es+, +no_es+ (es = exception safety).
+The no-throw exception safety guarantee is specified in the <<throws_clause>>.
+
+
 [[templates]]
 == Templates / generic programming
 Each template argument has an attribute which defines whether that template
@@ -3116,4 +3136,4 @@ std::tuple<const int&,const double&>(i,j) = gettwo();
 //  LocalWords:  decl malloc IPC laterinit laterctor alist sa ary arg args
 //  LocalWords:  del foreach OverrideAndDelete Inmutable endof Structs vals
 //  LocalWords:  allocator allocators addr TCppStd IEC params param jumptable
-//  LocalWords:  funt tfun prvalue unstored xvalue glvalue autoimpl
+//  LocalWords:  funt tfun prvalue unstored xvalue glvalue autoimpl nothrow
