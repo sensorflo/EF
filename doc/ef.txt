@@ -1191,7 +1191,7 @@ naked_fun_type_parameterized = [type_params] naked_fun_type;
 
 fun_signature = (
   ## At most one parameter list
-  \( (parameter_def \,{l?})* \) 
+  \( (parameter_decl \,{l?})* \) 
   ## Return type.  At most one.  -> can be omitted if preceded by parameter list
   ["->"] (type_expr | 'noret) ]    
   ## Multiple throws clause allowed which accumulate
@@ -1205,8 +1205,6 @@ fun_modifiers = access_modifier | ...;
 fun_impl = expr | ctor_body | prevent_auto_gen;
 
 access_modifier = 'public | 'protected | 'private;
-
-parameter_def =  ['val|'var|'obj] naked_obj_def;
 ----------------------------------------------------------------------
 
 .To-do
@@ -1219,6 +1217,16 @@ parameter_def =  ['val|'var|'obj] naked_obj_def;
   the syntax.
 - What if i want an anonymous function and define signature via an function
   type name?
+
+
+==== Parameter declaration
+
+----------------------------------------------------------------------
+parameter_decl = ['val|'var|'obj] naked_obj_decl;
+----------------------------------------------------------------------
+
+If the +naked_obj_decl+ contains an +initializer+, that is the _default
+argument_.
 
 
 === Overloaded Operators
@@ -1690,7 +1698,7 @@ guidelines).
 ----------------------------------------------------------------------
 obj_def_list_expr =
   ('val|'var|'obj)
-  naked_obj_def
+  naked_obj_decl
   args_close_del |
 
   ('vals|'vars|'objs)
@@ -1701,7 +1709,7 @@ obj_def_list_expr =
   [\= expr]
   args_close_del; 
 
-naked_obj_def = 
+naked_obj_decl = 
   new_identifier#name
   ( initializer |
     \: type_expr |
