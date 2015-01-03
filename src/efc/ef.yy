@@ -288,6 +288,7 @@ naked_fun_decl
 
 initializer
   : EQUAL standalone_expr                                            { $$ = new AstCtList($2); }
+  | LPAREN ct_list RPAREN                                            { swap($$,$2); }
   ;
 
 naked_if

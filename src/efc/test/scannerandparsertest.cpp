@@ -417,6 +417,18 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "var(foo:int)"        , "data(decldata(foo int-mut))", spec);
   TEST_PARSE( "var foo:int end foo$", "data(decldata(foo int-mut))", spec);
 
+  spec = "trivial example with constructor call style initializer";
+  TEST_PARSE( "val foo(42) : int     $", "data(decldata(foo int) 42)", spec);
+  TEST_PARSE( "val foo(42) :         $", "data(decldata(foo int) 42)", spec);
+  TEST_PARSE( "val foo(42)           $", "data(decldata(foo int) 42)", spec);
+  TEST_PARSE( "val foo     : int (42)$", "data(decldata(foo int) 42)", spec);
+  TEST_PARSE( "val foo     :     (42)$", "data(decldata(foo int) 42)", spec);
+  TEST_PARSE( "val foo           (42)$", "data(decldata(foo int) 42)", spec);
+
+  spec = "initializer is the empty 'ctor call' argument list";
+  TEST_PARSE( "val foo() : int   $", "data(decldata(foo int))", spec);
+  TEST_PARSE( "val foo   : int ()$", "data(decldata(foo int))", spec);
+
   spec = "short version with implicit type";
   TEST_PARSE( "foo:=42", "data(decldata(foo int) 42)", spec);
 }
