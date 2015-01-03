@@ -5,8 +5,8 @@ out:
 
 doc: out/ef.html
 
-out/ef.html: ef.txt
-	asciidoc -a toc -a toclevels=3 -o $@ $^
+out/ef.html: ef.txt ../README
+	asciidoc -a toc -a toclevels=3 -o $@ $<
 
 clean:
 	rm -rf out/*
