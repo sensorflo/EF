@@ -494,7 +494,7 @@ parenthesis.
 ----------------------------------------------------------------------
 list_expr = fun_name args_open_del naked_arg_list args_close_del;
 args_open_del  = [\(];
-naked_arg_list = (argument argument_separator{?})*;
+naked_arg_list = (argument argument_separator{l?})*;
 argument_separator = ... ; ## depends on concrete list
 args_close_del = \) | \$ | 'end |
   'endof (id | \( id* \) );
@@ -552,7 +552,7 @@ argument list.
 ==== Literal lists +{...}+
 
 ----------------------------------------------------------------------
-literal_list = \{ (sub_expr \,{?})* \};
+literal_list = \{ (sub_expr \,{l?})* \};
 ----------------------------------------------------------------------
 
 to-do:
@@ -592,7 +592,7 @@ assignment_expr = sub_expr (`\= | `+= | `-= | `*= | `/= | `%= | ... ) sub_expr;
 
 regex_expr = sub_expr (`=~ | `!~ ) sub_expr;
 
-subscript_expr = sub_expr \[ (index_expr \,{?})* \];
+subscript_expr = sub_expr \[ (index_expr \,{l?})* \];
 index_expr = sub_expr | range_expr;  
 range_expr = sub_expr \: sub_expr;
 
@@ -623,7 +623,7 @@ C&plus;&plus;'s comma operator.  _standalone expression sequence_ is the term
 used for the expression resulting from using the sequence operator.
 
 ----------------------------------------------------------------------
-standalone_expr_seq = (standalone_expr [\;]{0}){2,}
+standalone_expr_seq = (standalone_expr [\;]{l0}){2,}
 ----------------------------------------------------------------------
 
 Note that the semicolon is optional.  That means that the sequence operator is
@@ -1191,7 +1191,7 @@ naked_fun_type_parameterized = [type_params] naked_fun_type;
 
 fun_signature = (
   ## At most one parameter list
-  \( (parameter_def \,{?})* \) 
+  \( (parameter_def \,{l?})* \) 
   ## Return type.  At most one.  -> can be omitted if preceded by parameter list
   ["->"] (type_expr | 'noret) ]    
   ## Multiple throws clause allowed which accumulate
@@ -1264,7 +1264,7 @@ See also ``Properties of some standard methods/operators''.
 fun_call_expr = fun_call_target arg_list;
 fun_call_target = sub_expr | identifier [type_args];
 arg_list = \( ct_list \);
-ct_list = (expr \,{?})*;
+ct_list = (expr \,{l?})*;
 ----------------------------------------------------------------------
 
 Note that a function call as a whole looks like an <<list_expr>>, but actually
@@ -1694,7 +1694,7 @@ obj_def_list_expr =
   args_close_del |
 
   ('vals|'vars|'objs)
-  (new_identifier [initializer] \,{0))*
+  (new_identifier [initializer] \,{l0})*
   ( \: type_expr
     'is data_obj_modifier*
   )*
@@ -1931,7 +1931,7 @@ See <<templates>>.
 ## At compile-time define a new class type. At run-time does nothing.
 class_type_def = ('class|'interface) identifier#name [type_params]
   [\: super_class_list] ['is class_modifier*] \= expr#body args_close_del;
-super_class_list = ( ['public|'protected|'private] class_type_expr \,{?} )*;
+super_class_list = ( ['public|'protected|'private] class_type_expr \,{l?} )*;
 class_modifier = ... ;
 ----------------------------------------------------------------------
 
@@ -2812,7 +2812,7 @@ non-paramterized type that the former contains a +type_params+ and the later
 does not.  Here only +type_params+ is described.
 
 ----------------------------------------------------------------------
-type_params = \< ( new_identifier [\: metatype_for_type_param] \,{?})* \>;
+type_params = \< ( new_identifier [\: metatype_for_type_param] \,{l?})* \>;
 metatype_for_type_param =
   type_bounds | <1>
   type_expr;    <2>
@@ -2826,7 +2826,7 @@ type_bounds = ... ;
 === Referring to a parameterized type / function
 
 ----------------------------------------------------------------------
-type_args = \< (type_arg \,{?})* \>;
+type_args = \< (type_arg \,{l?})* \>;
 type_arg = type_expr | ('ea|'expr_arg) expr;
 ----------------------------------------------------------------------
 
