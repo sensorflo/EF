@@ -439,7 +439,8 @@ expr = (standalone_expr|standalone_expr_seq) [\;];
 standalone_expr = sub_expr;
 sub_expr = operator_expr | primary_expr;
 operator_expr = sub_expr ('and|'or|...) sub_expr | ...;
-primary_expr = list_expr | literal | ID | group_expr | mi_end_expr | ...;
+primary_expr = list_expr | literal | ID | group_expr | mi_end_expr |
+  'this | 'super | ...;
 list_expr = 
   'while expr#cond \: expr#body \$ |
   'var ID \: type_expr \$ |
