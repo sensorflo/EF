@@ -439,14 +439,14 @@ expr = (standalone_expr|standalone_expr_seq) [\;];
 standalone_expr = sub_expr;
 sub_expr = operator_rt_expr | primary_expr;
 primary_expr = list_expr | literal | ID | group_expr | mi_end_expr |
-  'this | 'super | ...;
-list_expr = 
-  'while expr#cond \: expr#body \$ |
-  'var ID \: type_expr \$ |
-  memory_mgmt_expr |
+  'this | 'super;
+list_expr =
+  obj_def_list_expr |
+  type_def_list_expr |
+  flow_control_list_expr |
+  memory_mgmt_list_expr |
   explicit_rt_expr |
-  explicit_type_expr |
-  ...;
+  explicit_type_expr;
 ----------------------------------------------------------------------
 
 - _standalone expression_ (aka mini block expression): See <<standalone_expr>>.
@@ -570,7 +570,8 @@ These operators correspond to what is found in most programming languages.
 ----------------------------------------------------------------------
 operator_rt_expr = boolean_expr | bit_expr | comparison_expr |
   arithmetic_expr | assignment_expr | fun_call_expr | regex_expr |
-  subscript_expr | ct_list_expr | obj_def_op_expr | other_operator_rt_expr;
+  subscript_expr | ct_list_expr | obj_def_op_expr | flow_control_op_expr |
+  data_obj_def_op_expr | other_operator_rt_expr;
 
 arithmetic_expr =
   ('root2 | 'log2 | 'loge | 'log10 | \+ | \-) sub_expr | 
@@ -1060,7 +1061,7 @@ See <<TCppStd>> 3.10:
 
 === Declaring types / type expressions
 ----------------------------------------------------------------------
-type_def = class_type_def | enum_type_def | union_type_def | alias_type_def;
+type_def_list_expr = class_type_def_list_expr | enum_type_def | union_type_def | alias_type_def;
 
 generic_pointer_type_expr =
   ## 'normal' (name??? to distinguish from member pointer) pointer
@@ -1294,7 +1295,7 @@ The +fun+ list expression defines or declares a new code object of function
 type.
 
 ----------------------------------------------------------------------
-fun_obj_def = 'fun [\(] fun_name naked_fun_type_parameterized \= fun_impl args_close_del;
+fun_obj_def_expr = 'fun [\(] fun_name naked_fun_type_parameterized \= fun_impl args_close_del;
 
 fun_name = new_identifier | fun_name_operator | fun_name_ctor | fun_name_dtor;
 
@@ -1344,10 +1345,10 @@ or is ++(...)++ the parameter list to the new function named ++foo++.
 ==== Parameter declaration
 
 ----------------------------------------------------------------------
-parameter_decl = ['val|'var|'obj] naked_obj_decl;
+parameter_decl = ['val|'var|'obj] naked_data_obj_decl;
 ----------------------------------------------------------------------
 
-If the +naked_obj_decl+ contains an +initializer+, that is the _default
+If the +naked_data_obj_decl+ contains an +initializer+, that is the _default
 argument_.
 
 
@@ -1758,8 +1759,10 @@ An object has additionally the following run time property:
 [[obj_decl_def]]
 === Declaration / definition
 Type, storage, linkage, alignment can be defined as following:
+
 ----------------------------------------------------------------------
-obj_def = local_obj_def | global_obj_def | classmember_obj_def | fun_obj_def;
+obj_def_list_expr = data_obj_def_list_expr | fun_obj_def_expr;
+obj_def_op_expr = data_obj_def_op_expr;
 
 obj_prop_expr = type_expr [storage linkage alignment scope]#*any order*#;
 storage = 'static_storage | 'thread_storage | 'auto_storage;
@@ -1816,9 +1819,9 @@ convenient -- as so often, leave the decision to the user via style
 guidelines).
 
 ----------------------------------------------------------------------
-obj_def_list_expr =
+data_obj_def_list_expr =
   ('val|'var|'obj)
-  naked_obj_decl
+  naked_data_obj_decl
   args_close_del |
 
   ('vals|'vars|'objs)
@@ -1829,14 +1832,14 @@ obj_def_list_expr =
   [\= expr]
   args_close_del; 
 
-naked_obj_decl = 
+naked_data_obj_decl = 
   new_identifier#name
   ( initializer |
     \: type_expr |
     'is data_obj_modifier* 
   )*;
 
-obj_def_op_expr = 
+data_obj_def_op_expr =
   new_nonempty_identifier#name ( `:= | `:&= ) sub_expr#initializer;
 ----------------------------------------------------------------------
 
@@ -2064,7 +2067,7 @@ See <<templates>>.
 === Defining
 ----------------------------------------------------------------------
 ## At compile-time define a new class type. At run-time does nothing.
-class_type_def = ('class|'interface) identifier#name [type_params]
+class_type_def_list_expr = ('class|'interface) identifier#name [type_params]
   [\: super_class_list] ['is class_modifier*] \= expr#body args_close_del;
 super_class_list = ( ['public|'protected|'private] class_type_expr \,{l?} )*;
 class_modifier = ... ;
@@ -2354,8 +2357,8 @@ As in C&plus;&plus; the default access modifier is +public+.
 == Control flow
 
 ----------------------------------------------------------------------
-flow_control_expr = conditional_expr | loop_expr | jump_expr | 
-  other_control_flow_expr;
+flow_control_list_expr = conditional_expr | loop_expr;
+flow_control_op_expr = jump_expr | other_control_flow_expr;
 
 conditional_expr = if_expr | givenchain_expr | jumptable_expr |
   'unless [\(] sa_expr (\,|'do) block_expr (\)|'end);
@@ -2549,7 +2552,7 @@ memory.
 ==== Manual memory management primitives / storage allocators
 
 ----------------------------------------------------------------------
-memory_mgmt_expr =
+memory_mgmt_list_expr =
   ('new | 'raw_new) [\(] type_expr initializer args_close_del |
   'raw_delete [\(] expr args_close_del;
 ----------------------------------------------------------------------
