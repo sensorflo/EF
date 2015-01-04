@@ -159,14 +159,41 @@ collection.  Is thus not suitable for a hard real-time embedded system.
     contain different values at different times.
 
 * How EF shall name the features it provides: In general any builtin feature
-  can be accessible by either 1) punctuation (e.g. + for arithmetic plus) 2)
-  something _very_ short (a few characters) consisting of punctuation and
-  letters (say ++s*++ for a shared pointer), at least parts of it not being
-  complete English words, the abbreviations ``only'' being memonic 3)
-  consisting only of complete English keyword (say ++dynamic_cast++).  EF does
-  no patronize and leaves the decision whether readable / maintainable code
-  means being short or using complete English words up to the user.  With EF's
-  builtin guidelines each of the three variants can be enforced / prohibited.
+  is named via one to three of the following three variants:
+ 1. Punctuation (e.g. +++++ for arithmetic plus).
+ 2. Something _very_ short, a few characters, consisting of punctuation and /
+    or letters (e.g. ++s*++ for a shared pointer), the abbreviations only
+    being mnemonic.
+ 3. Complete English words (e.g. ++dynamic_cast++).
+
+* At its core, EF does not patronize the user.  It leaves the decision what is
+  `good' and what is `evil' up to the user.  People / projects have different
+  needs, and need different guidelines of what is good and what is evil.
+  However:
+ ** Trough builtin customizable style guidelines a soft attempt is made to
+    give project owners / architects, not the individual programmers, a tool
+    to soft enforce the project's guidelines.
+ ** Through the built-in default style guidelines a soft attempt is made that
+    most users / projects will keep these defaults and don't customize them,
+    so an average EF program has the same style guidelines and thus looks
+    familiar to everybody.
+  *** Most guidelines about technically unimportant things such as formatting,
+      which includes white spaces, agree that its mostly about consistency,
+      not about which formatting is better or worse.  But with most
+      programming languages, each project which wants any consistent
+      formatting is forced to make up a set of formatting guidelines which, if
+      at all, are only verified by a third party tool.  With EF's default
+      guidelines, a project wanting any consistent formatting can do nothing
+      and thus automatically will get EF's default style guidelines which are
+      enforced by the EF compiler.
+ ** What the designers of EF think is `good' is what is made convenient to use
+    by providing short constructs.  What the designers of EF think is `evil'
+    can be used, but longer constructs have to be used.  These longer `evil'
+    constructs stand out relative to the shorter `good' constructs, and are
+    thus more apparent to the reader / maintainer, catching the attention that
+    there is a potentially `evil' construct.  Additionally, some constructs
+    might also be prohibited by the default style guidelines, in which case
+    the user is also forced to customize the style guidelines.
 
 * Don't degrade a good design to also cover weird special cases -- put the
   burden of having to use workarounds on the people with the strange
