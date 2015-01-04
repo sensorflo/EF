@@ -1855,14 +1855,21 @@ expression of the enclosing standalone expression sequence.
 ==== Initialization (aka construction)
 
 The syntax to initialize a data object is always is composed of the following
-+initializer+ rule:
++initializer+ rule.  I.e. the equal sign is an argument separator of the
+enclosing expression list, and it introduces an argument being an initializer.
 
 ----------------------------------------------------------------------
-initializer =
-  arg_list |    ## constructor call
-  \= expr | ## equivalent to "(expr)"
-  'nop_init | 'laterctor;
+initializer = \= (
+  arg_list |
+  expr | ## short for "(expr)"
+  'nop_init | 'laterctor);
 ----------------------------------------------------------------------
+
+Note that the opening parenthesis can not be an alternate argument separator,
+beside the equal sign, also introducing an initializer argument, due to
+ambiguities.  In EF macro calls can occur nearly everywhere, so opening
+parenthesis are in most cases for `calls' of any sort.
+
 
 ===== Uninitialized / not-yet-constructed data objects
 

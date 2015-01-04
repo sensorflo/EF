@@ -285,7 +285,7 @@ opt_ret_type
 
 initializer
   : EQUAL standalone_expr                                            { $$ = new AstCtList($2); }
-  | LPAREN ct_list RPAREN                                            { swap($$,$2); }
+  | EQUAL LPAREN ct_list RPAREN                                      { swap($$,$3); }
   ;
 
 naked_if
