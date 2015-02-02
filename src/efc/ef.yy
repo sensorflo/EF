@@ -91,7 +91,7 @@
 
 
 %type <AstCtList*> ct_list initializer
-%type <std::list<AstArgDecl*>*> param_ct_list pure_naked_param_ct_list
+%type <std::list<AstArgDecl*>*> pure_naked_param_ct_list
 %type <AstSeq*> pure2_standalone_expr_seq
 %type <std::list<AstValue*>*> pure_ct_list
 %type <AstValue*> expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
@@ -102,7 +102,7 @@
 %type <RawAstDataDef*> naked_data_def
 %type <std::pair<AstFunDecl*,SymbolTableEntry*>> naked_fun_decl
 %type <AstFunDef*> naked_fun_def
-%type <ObjType*> type opt_colon_type opt_arrow_type
+%type <ObjType*> type opt_colon_type
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -158,11 +158,6 @@ pure_ct_list
   | pure_ct_list opt_comma standalone_expr          { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
-param_ct_list
-  : LPAREN RPAREN                                   { $$ = new std::list<AstArgDecl*>(); }
-  | LPAREN pure_naked_param_ct_list opt_comma RPAREN{ std::swap($$,$2); }
-  ;
-
 pure_naked_param_ct_list
   : param_decl                                      { $$ = new std::list<AstArgDecl*>(); ($$)->push_back($1); }
   | pure_naked_param_ct_list COMMA param_decl       { ($1)->push_back($3); std::swap($$,$1); }
@@ -185,16 +180,6 @@ opt_colon
 opt_colon_type
   : opt_colon                                       { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
   | COLON type                                      { std::swap($$, $2); }
-  ;
-
-/* Most probably the grammar will not have the '->' since the closing ')' of
-the parameter list is already the delimiter. But for now I want to have the
-option of being able to allow the '->'.*/
-opt_arrow_type
-  : %empty                                          { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
-  | ARROW                                           { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
-  | ARROW type                                      { std::swap($$, $2); }
-  | type                                            { std::swap($$, $1); } 
   ;
 
 opt_comma
@@ -287,8 +272,15 @@ naked_fun_def
   ;
   
 naked_fun_decl
-  : ID opt_colon param_ct_list opt_arrow_type                        { $$ = parserExt.createAstFunDecl($1, $3); }
-  | ID opt_colon                                                     { $$ = parserExt.createAstFunDecl($1); }
+  : ID                                                        opt_ret_type  { $$ = parserExt.createAstFunDecl($1); }
+  | ID COLON                                                  opt_ret_type  { $$ = parserExt.createAstFunDecl($1); }
+  | ID COLON LPAREN                                    RPAREN opt_ret_type  { $$ = parserExt.createAstFunDecl($1); }
+  | ID COLON LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type  { $$ = parserExt.createAstFunDecl($1, $4); }
+  ;
+
+opt_ret_type
+  : %empty
+  | type
   ;
 
 initializer

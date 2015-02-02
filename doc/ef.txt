@@ -1294,22 +1294,26 @@ The +fun+ list expression defines or declares a new code object of function
 type.
 
 ----------------------------------------------------------------------
-fun_obj_def = 'fun fun_name naked_fun_type_parameterized \= fun_impl args_close_del;
+fun_obj_def = 'fun [\(] fun_name naked_fun_type_parameterized \= fun_impl args_close_del;
 
 fun_name = new_identifier | fun_name_operator | fun_name_ctor | fun_name_dtor;
 
 naked_fun_type_parameterized = [type_params] naked_fun_type;
 
-fun_signature = (
-  ## At most one parameter list
-  \( (parameter_decl \,{l?})* \)
-  ## Return type.  At most one.  -> can be omitted if preceded by parameter list
-  ["->"] (type_expr | 'noret) ]
+naked_fun_type = (
+  ## At most one parameter-list - return-type pair.  Omitting parameter list
+  ## defaults to a list of zero parameters.  Omitting the return type defaults
+  ## to void (returns `nothing').
+  [\: [\( naked_param_list \)] [return_type]]
   ## Multiple throws clauses are allowed, in which case they accumulate
   throws_clause
   ## Multiple modifiers allowed, in which case they accumulate
   'is fun_modifier*
   )*;
+
+param_list = (parameter_decl \,{l?})*;
+
+return_type = type_expr | 'noret;
 
 fun_modifiers = access_modifier | ...;
 
@@ -1317,6 +1321,13 @@ fun_impl = expr | ctor_body | prevent_auto_gen;
 
 access_modifier = 'public | 'protected | 'private;
 ----------------------------------------------------------------------
+
+The separator preceding / introducing the parameter-list - return-type
+argument to the +fun+ list expression is not just an opening parenthesis
+because that would raise ambiguities, e.g. when the function name preceding
+the parameter-list is actually a macro call.  E.g. in ++fun foo(...)...++, is
+++foo(...)++ a macro call which as a whole determines the new function's name,
+or is ++(...)++ the parameter list to the new function named ++foo++.
 
 .To-do
 - Allow that definition only uses name already introduced by declaration, so
