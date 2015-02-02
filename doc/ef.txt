@@ -326,6 +326,27 @@ https://github.com/sensorflo/yasmala[Yasmala] is the meta syntax (aka
 notation) used in this document to describe the syntax of EF.
 
 
+=== Terms
+
+implementation-defined behavior;; Similar to C&plus;&plus;.  The EF
+specification must specify the range of possible behaviors.
+
+side effect;; As C&plus;&plus;: A change in the state of the execution
+environment: 1) Accessing an object designated volatile 2) modifying an object
+3) calling a library I/O function 4) calling a function that does any of
+those.
+
+undefined behavior;; As C&plus;&plus; -- However the hope is that EF has no
+constructs with undefined behavior.  Note to myself: undefined behavior
+includes that the implementation deliberately chooses a specific behaviour and
+optionally documents it.
+
+unspecified behavior;; Similar to C&plus;&plus;.  Contrary to C&plus;&plus;,
+the EF specification must specify the range of possible behaviors.
+
+well-formed program;; As C&plus;&plus;
+
+
 === Program structure
 
 In EF everything is composed of expressions, thus a program is just an
@@ -336,7 +357,7 @@ program = sa_expr;
 
 
 == Lexical structure
-...
+
 
 === Source file character encoding
 Source files optionally start with something that specifies the character
@@ -352,6 +373,8 @@ Similar as in C&plus;&plus;.  Regarding the optional leading sharp sign, see
 
 ----------------------------------------------------------------------
 identifier = [\#]'[a-zA-Z_]'[a-zA-Z_0-9]+;
+new_nonempty_identifier = identifier | 'none;
+new_identifier = [new_nonempty_identifier];
 ----------------------------------------------------------------------
 
 
@@ -374,7 +397,6 @@ Control with style guidelines that it is only used as first two characters in
 the file.  Note that the hash has another meaning when not followed by an
 exclamation mark, see <<sharp_prefix>>.
 
-
 .To-do
 - Institutionalize using Doxygen or Doxygen like markup language.
 - See EFDoc why it makes sense to integrate the doc language into the
@@ -384,6 +406,20 @@ exclamation mark, see <<sharp_prefix>>.
   comment (one keyword) or none at all has to be written and still have 1)
   good doc output 2) even in code the maintainer sees quickly that the
   identifier is not documented here but at another place.
+
+
+==== EFDoc
+
+Everything up to the first occurrence of the sequence ``++@.++'' belongs to
+the _brief part_.  The rest is in the _details part_.  Considerations: Make it
+feasible to use dot for abbreviations in the brief part.  Make it feasible to
+auto fill EFDoc text.
+
+Default to which <construct> a doc comment belongs: ++fun <fun name> fun
+<param_1> param_1 ... <param_n> param_n <ret_type> fun <fun body>++.
+Overwrite with a leading ++<++ or ++>++ to set the construct to which the doc
+comment belongs.  There can be multiple doc comments before / after a
+construct.  Each construct 
 
 
 [[expressions]]
@@ -412,7 +448,7 @@ list_expr =
 ----------------------------------------------------------------------
 
 - _standalone expression_ (aka mini block expression): See <<standalone_expr>>.
-- _(standalone) expression sequence_: See <<expr_seq>>. 
+- _standalone expression sequence_: See <<sa_expr_seq>>. 
 - _sub expression_: Part of an enclosing expression, can be operand to an
   operator.
 - _primary expression_: Leaf of an operator expression tree.
@@ -447,11 +483,13 @@ if              a       :     b    else     c   end if
 
 The pattern is always the same: A leading `function name' which is either a
 keyword or some punctuation.  Followed by an optional left-parenthesis being
-the argument list open delimiter.  Followed by an argument list where the
-arguments are separated by separators.  The valid separators are specific to
-the `function name'.  For example the +if+ `function' has ++:++ or +else+ as
-argument separators.  The list expression is closed / delimited by a dollar or
-right parenthesis.
+the argument list open delimiter (*to-do*: reconsider that -- it creates
+ambiguities in cases such as function definitions where a left parenthesis can
+also be an separator).  Followed by an argument list where the arguments are
+separated by separators.  The valid separators are specific to the `function
+name'.  For example the +if+ `function' has ++:++ or +else+ as argument
+separators.  The list expression is closed / delimited by a dollar or right
+parenthesis.
 
 ----------------------------------------------------------------------
 list_expr = fun_name args_open_del naked_arg_list args_close_del;
@@ -510,7 +548,6 @@ argument list.
  * runtime sequence
  * data list
 
-
 [[literal_list]]
 ==== Literal lists +{...}+
 
@@ -530,7 +567,8 @@ These operators correspond to what is found in most programming languages.
 
 ----------------------------------------------------------------------
 operator_expr = boolean_expr | bit_expr | comparison_expr |
-  arithmetic_expr | assignment_expr | other_operator_expr;
+  arithmetic_expr | assignment_expr | fun_call_expr | regex_expr |
+  subscript_expr | ct_list_expr | obj_def_op_expr | other_operator_expr;
 
 arithmetic_expr =
   ('root2 | 'log2 | 'loge | 'log10 | \+ | \-) sub_expr | 
@@ -548,32 +586,41 @@ boolean_expr = 'not sub_expr | sub_expr boolean_bin_op sub_expr;
 
 boolean_bin_op = 'or | `|| | 'and | `&& | `^^ | 'xor | 'nand | `!&& | 'nor | `!|| ;
 
-comparison_expr = sub_expr (`== | `!= | \< | \> | `<= | `>= ) sub_expr;
+comparison_expr = sub_expr (`== | `!= | \< | \> | `<= | `>= | `<=>) sub_expr;
 
 assignment_expr = sub_expr (`\= | `+= | `-= | `*= | `/= | `%= | ... ) sub_expr;
 
+regex_expr = sub_expr (`=~ | `!~ ) sub_expr;
+
+subscript_expr = sub_expr \[ (index_expr \,{?})* \];
+index_expr = sub_expr | range_expr;  
+range_expr = sub_expr \: sub_expr;
+
+ct_list_expr = sub_expr#element ( 'x | `*, ) sub_expr#repeat_count;
+
 other_operator_expr =
+  \@ sub_expr | ## pointer object access
   sub_expr `?: sub_expr; ## null coalescing operator
 ----------------------------------------------------------------------
 
 Note that the term `operator expression' is not entirely well defined.  Both
-grammar symbols +operator_expr+ and +standalone_expr_seq+ (see <<expr_seq>>)
+grammar symbols +operator_expr+ and +standalone_expr_seq+ (see <<sa_expr_seq>>)
 are `operator expressions', but only the former is named as such.  Also from a
 grammar point of view nothing indicates that +standalone_expr_seq+ is also an
 `operator expression'.
 
 
-[[expr_seq]]
+[[sa_expr_seq]]
 [[seq_operator]]
-==== Expression sequence / sequence operator ";"
+==== Standalone expression sequence / sequence operator ";"
 The previously introduced operators have sub expressions as operands.  The
 _sequence operator_ ";", being a binary left-associative operator, has
 <<standalone_expression>>s as operands.  The value of the lhs operand (being a
 standalone expression) is thrown away.  That standalone expression is thus
 used for side-effects only.  The value of the sequence operator expression is
 the value of the rhs operand.  The sequence operator is thus comparable to
-C&plus;&plus;'s comma operator.  _(standalone) expression sequence_ is the
-term used for the expression resulting from using the sequence operator.
+C&plus;&plus;'s comma operator.  _standalone expression sequence_ is the term
+used for the expression resulting from using the sequence operator.
 
 ----------------------------------------------------------------------
 standalone_expr_seq = (standalone_expr [\;]{0}){2,}
@@ -585,8 +632,8 @@ explicit form of the sequence operator.
 
 Style guidelines:
 
-- Of a given expression sequence, all sequence operator tokens are semicolons,
-  or all sequence operator `tokens' are blanks.
+- Of a given standalone expression sequence, all sequence operator tokens are
+  semicolons, or all sequence operator `tokens' are blanks.
 - The blank `token' cannot be used if its rhs and lhs are on the same line.
   Note that this helps to prevent the accidental invocation of an operator
   list (e.g. ++-(...)++) where the user wrongly used parentheses ++(...)++
@@ -594,21 +641,17 @@ Style guidelines:
 
 
 [[standalone_expression]]
-[[temporaries]]
 [[mb_expr]]
-=== Mini block expression / standalone expression / temporaries
+=== Mini block expression / standalone expression
 A _standalone expression_ (aka _mini block expression_) is comparable with a
 statement in C or Java.  It either is 1) the lhs operand of the expression
-sequence binary operator, or it is 2) the lhs operand of the sequence operator
+sequence binary operator, or it is 2) the rhs operand of the sequence operator
 or the argument to an enclosing list expression.  In the former case its value
 is thrown away, see <<seq_operator>>.  That is unlike a sub expression, whose
 value is always used by the enclosing expression (although that one might
 throw it away without looking at it).  In the later case its value is used as
-argument to the enclosing expression.
-
-Probably EF will define the storage duration of temporary objects similar to
-C&plus;&plus;: The storage duration of temporaries is given by the enclosing
-`mini block expression' (aka standalone expression).
+argument to the enclosing expression.  Standalone expression delimit the
+storage duration of <<temporaries>>.
 
 Style guideline: If the standalone expression is an operator expression, it
 must be one with a side effect as primary responsibility (e.g. infix/postfix
@@ -620,12 +663,49 @@ operators which really are function calls?
 
 
 === Order of evaluation / side effects
-The operands of operators, and the operands (i.e. elements) of list
-expressions, appear to be evaluated from left to right.  It is also guaranteed
-that every operand of an operator (except the conditional operators &&, ||,
-and ? :) or list expression appears to be fully evaluated before any part of
-the operation or list expression itself is performed.
 
+In the following, operators / operands / evaluation are regarded as a
+specialized variant of `arguments' / `functions´ / `function call'.
+`Evaluating an argument' means recursively evaluating the call tree rooted at
+the said argument.  The order of evaluation of `arguments' of `functions' is
+unspecified within the following bounds:
+
+- After the `function' returns, all its side-effects have been completed.
+- After evaluating the first `argument' of a given `function', all of the
+  remaining `arguments' of the same `function' must be evaluated before any
+  `argument' of another `function' can be evaluated.
+- Short circuit operators (+and+, +or+, ...) and most list expressions
+  (+if+, ...) are allowed to not evaluate some of their arguments at all.
+
+It follows that: 
+
+- All `arguments' appear to be fully evaluated, inclusive side-effects, before
+  the `function' is invoked.
+- It's unspecified behavior but not undefined behavior what happens when one
+  `argument' write accesses an object and another `argument' also read or
+  write accesses the same object.  One or the other happens before the other,
+  but no other behaviors can happen.  *to-do*: what should a compiler do if it
+  detects such a case?  Requiring it to detect all cases a) is only possibly
+  for all cases at run-time b) probably imposes to much run-time costs.  A
+  proper function internally can, from a defensive point of view, read and
+  write access any object, so it's probably not feasible to detect whether two
+  functions read and write access the same object. 
+
+
+Motivation:
+
+- Make different calling conventions feasible.  E.g. depending on in which
+  order arguments are passed to functions, one or the other order of
+  evaluating arguments is more natural.
+- Specify as much as feasible, in order to make the `uncertainty' as small as
+  possible.
+ * It helps to reason about when exceptions can occur
+- Treating operators the same as functions is more uniform, also when
+  considering that operators can be overloaded and then become true functions.
+
+See also:
+- http://en.wikipedia.org/wiki/Evaluation_strategy
+- http://en.wikipedia.org/wiki/Out-of-order_execution
 
 === Grouping sub expressions / overriding precedence
 
@@ -658,30 +738,55 @@ component.
 [[types]]
 == Types
 
-
-[[type_system]]
-=== Type system
-
 Roughly similar to C&plus;&plus;.  However more strongly typed, e.g. in order
 to facilitate pointer alias analysis (see <<tools>>).
-
-
-=== Primitive types / Type classification
 
 Roughly similar to C&plus;&plus;. Note that `primitive' type is not the same
 as `built-in' type, see also <<builtin_types>>.
 
-- _Fundamental types_
- * More or less those of C&plus;&plus;
 
-- _Compound types_
- * Raw general pointer
-  ** <<raw_ptr>>
-  ** Raw pointer to member
- * <<raw_array>>
- * Function
- * <<enumeration>>
- * Class
+=== Fundamental types
+
+More or less those of C&plus;&plus;
+
+----------------------------------------------------------------------
+fundamental_type_expr =
+  ## arithmetic types
+    ## integral types. probably some need to be moved into stdlib
+    ['u|'s].(
+      'efbyte#*not necessary 8bit*#|'short|'int|'long|'longlong|
+      ['f['ast]|'l['east]]'int('8|'16|'32|'64|'128|'258) |
+      ['bigint|'intx]) | ## probably needs to be moved into stdlib
+    ## floating point types
+    'float | 'double | 'longdouble | 
+    ## character types. value is code point. maybe move some to lib. would
+    ## have to be variable with anyway, no? How does C++ do it?
+    'char | 'wchar | 'utf8char | 'utf16char | 'utf32char
+  'bool |
+  'tnull | ## type of the null literal
+  'void;
+----------------------------------------------------------------------
+
+
+=== Compound types
+
+* Raw general pointer
+ ** <<raw_ptr>>
+ ** Raw pointer to member
+* <<raw_array>>
+* <<function_type>>
+* <<enumeration>>
+* <<class>>
+
+----------------------------------------------------------------------
+compound_type_expr =
+  generic_pointer_type_expr |
+  array_type_expr |
+  enum_type_expr | 
+  function_type_expr | 
+  class_type_expr | 
+  union_type;
+----------------------------------------------------------------------
 
 
 [[raw_ptr]]
@@ -695,13 +800,16 @@ smart pointers and nearly never raw pointers directly.  See also raw_ptr in
 ==== Raw array
 
 A _(fixed size) raw array_ is comparable to C's arrays.  Syntax: see
-+array_type+.  The size is part of the type.  ++raw[sub_expr#size]type_expr++
-is from a logical point of view equivalent to
++array_type_expr+.  The size is part of the type.
+++raw[sub_expr#size]type_expr++ is from a logical point of view equivalent to
 ++raw_array<sub_expr#size,type_expr>++.
 
-Size must be known at compile time.  Size 0 is allowed.  The size can be
-omitted if it can be deduced from the initializer list, e.g. in ++var a :
-raw[]int = {2,4,8}$++ the size 3 can be deduced.
+Size must be known at compile time.  Zero sized arrays are allowed.  The size
+can be omitted if it can be deduced from the initializer list, e.g. in ++var a
+: raw[]int = {2,4,8}$++ the size 3 can be deduced.
+
+Creating a pointer to the one past the end element and possibly dereferencing
+it is allowed.  Note that this includes zero sized arrays.
 
 Standard style guidelines disallow its use.  It's intended that the user
 nearly always uses collections and nearly never raw arrays directly.
@@ -716,6 +824,10 @@ var a({1,1,2,3,5}) : raw[5]int$
 var a : raw[5]int = {1,1,2,3,5}$
 var pa : raw*raw[5]int = new raw[5]int({1,1,2,3,5})$
 ----------------------------------------------------------------------
+
+*to-do*: 
+
+* Do array elements of zero size impose any problems?
 
 
 [[variable_sized_raw_array]]
@@ -732,14 +844,7 @@ be important for the case where we want to make any costs, e.g. pointer
 dereferencing, clearly visible.
 
 
-[[builtin_types]]
-=== Built-in types
-Built-in types can be seen as built-in classes; wrappers around primitive
-types.  Collections, iterators, 
-
-==== Smart pointers
-Are described in <<smart_pointers>>.
-
+[[enumeration]]
 ==== Enumerations / compile-time sets
 Enumerations are an list of named constants.  Each is initialized at compile
 time with a constexpr.  That list is then an distinct type.  Somewhat similar
@@ -768,6 +873,17 @@ in the `wrong' order.
   delivers "foo".
 
 
+
+[[builtin_types]]
+=== Built-in compound types
+Built-in types can be seen as built-in classes; wrappers around primitive
+types.  Collections, iterators, 
+
+
+==== Smart pointers
+Are described in <<smart_pointers>>.
+
+
 ==== Strings & Characters
 ...
 
@@ -787,76 +903,61 @@ type, typically 8bit bytes, e.g. utf-8 or utf-16.
 
 ...
 
+
+[[type_qualifiers]]
+=== Type qualifiers
+
+-------------------------------------------------------------------------------
+type_qualifier = 'const | 'volatile | 'alignas \< expr \> ;
+-------------------------------------------------------------------------------
+
+Notes:
+
+- About placing const objects in ROM:
+  http://stackoverflow.com/a/2271055/1306466
+ * An const object which's constructor call expression can be evaluated at
+   compile time can be placed into ROM.  &To-do* But how about the destructor?
+   We must prevent running a ctor which modifies members: 1) only allow const
+   objects to be put into ROM which's destructor does not modify members 2)
+   allow to elide destructor call -- but I don't see yet a meaningful rule,
+   since not calling a destructor is against the core idea of having
+   destructors.
+
+
+=== Expression category taxonomy
+
+Try to make it much simpler than C&plus;&plus;. I hope to get away with only
+the types, type qualifiers, object properties already described, and nothing
+more.
+
+See <<TCppStd>> 3.10:
+
+- C&plus;&plus;: glvalue -> EF: any data object.
+- C&plus;&plus;: lvalue -> EF: an glvalue that is not an xvalue
+- C&plus;&plus;: xvalue -> EF: temporaries
+- C&plus;&plus;: prvalue -> EF: literals
+
+*to-do*: EF's category taxonomy for: <<temporaries>>, <<literals>>, +this+,
++super+
+
+
 === Declaring types / type expressions
 ----------------------------------------------------------------------
-type_def = class_type_def | interface_type_def | enum_type_def |
-  union_type_def | alias_type_def;
+type_def = class_type_def | enum_type_def | union_type_def | alias_type_def;
 
 type_expr =
-  [type_qualifier] (fundamental_type | compound_type_expr) |
+  identifier | ## name of a type alias
+  type_qualifier* (fundamental_type_expr | compound_type_expr) |
   "g(" type_expr \);  ## to change precedence of type expr operators
                       ## maybe not needed now, but maybe in future
 
-type_expr_list = (type_expr \,{?})*;
-
-type_qualifier = 
-  'const |:  ## ignored for &, &&, raw arrays
-  'volatile |: ## ignored for &, &&, raw arrays
-  'alignas<expr>;
-
-fundamental_type = ## aka primitive type
-  ## arithmetic types
-    ## integral types. probably some need to be moved into stdlib
-    ['u|'s].(
-      'efbyte#*not necessary 8bit*#|'short|'int|'long|'longlong|
-      ['f['ast]|'l['east]]'int('8|'16|'32|'64|'128|'258) |
-      ['bigint|'intx]) | ## probably needs to be moved into stdlib
-    ## floating point types
-    'float | 'double | 'longdouble | 
-    ## character types. value is code point. maybe move some to lib. would
-    ## have to be variable with anyway, no? How does C++ do it?
-    'char | 'wchar | 'utf8char | 'utf16char | 'utf32char
-  'bool |
-  'tnull | ## type of null pointer literal
-  'void |
-  'noret;
-
-## !!!!to-do/ensure!!!! all the following after the same pattern as above
-compound_type_expr =
-  generic_reference_type |
-  generic_pointer_type |
-  array_type |
-  enum_type | 
-  function_type | 
-  class_type | 
-  union_type;
-
-## - drop the name reference and use alias?
-## - As in C++, probably references are not objects (thus don't have an
-##   address), but sometimes still need memory to store where they refer to.
-## - is the property of a const ref still needed that it extends lifetime of a
-##   temporary? I think this is now unneeded complexity
-## - isn't it that rvalue ref is just some kind of smart pointer? The old
-##   owner says: I don't need my content anymore, and the rvalue ref says: I
-##   take ownership of your content and do with it whatever I want. With
-##   classes supporting move semantics the actual data is not really on the
-##   stack, its on the heap anyway. Thus a function can new the data directly
-##   using some smart ptr.
-##   * Mind the swap example
-##   * Read http://www.drdobbs.com/cpp/c11-uniqueptr/240002708
-generic_reference_type = 
-  ## when type_expr is itself a ref, this outer ref is ignored. Warn if
-  ## type_expr is directly explicitly an ref
-  (\&|'ref) type_expr | 
-  ("&&"|'mref) type_expr;
-
-generic_pointer_type =
+generic_pointer_type_expr =
   ## 'normal' (name??? to distinguish from member pointer) pointer
   ['[sub]]#ptrsubtype (\*|'ptrto) type_expr | 
   ## pointer (built-in) to member type
   ['[sub]]#ptrsubtype (\*|'ptrto) type_expr 'in class_type; 
 
-array_type = 
+array_type_expr = 
   [array_sub_type] (\[ctconst_expr#n\]|'arrayof ctconst_expr#n) type_expr; 
 array_sub_type = 'raw | ...;
 ----------------------------------------------------------------------
@@ -889,8 +990,8 @@ correspond exactly to what it technically is.
 ## At compile-time defines an alias for the given type_expr. At run-time does
 ## nothing.
 type_alias_decl =
-  ('newtype|'typealias) identifier | ## incomplete type
-  ('newtype|'typealias) identifier type_expr;
+  ('newtype|'typealias) new_identifier | ## incomplete type
+  ('newtype|'typealias) new_identifier type_expr;
 ----------------------------------------------------------------------
 
 * ++typealias++: Declares an identifier which is an alias for type_expr, but
@@ -922,20 +1023,40 @@ When everything is an object, than a type object would have these methods
   (Naturally EF already provides those operators)
 
 
-=== Implicit Conversions
+=== Conversions
 
-Much less implicit conversions than C&plus;&plus;.  No narrowing implicit
-conversions.  Maybe apply the principle `explicit is better than implicit'.
-After all, EF also tries to result in more maintainable SW.  And always trying
-to be clever and short by using a lot of implicit stuff makes it hard
-maintain.  Also mind that most people are not interested in studying the
-language in depth.  Apply the principle of `make it easy to be used correctly
-and hard to be used incorrectly'.  Maybe once again make it a compiler switch
-whether e.g. the 0 equivalent is bool false.  Then normally those implicit
-conversions are turned off and those hackers really wanting them can turn them
-on (and then there is also no reason against using EF).
+[[ways_to_define_cast]]
+Conversion from type A to type B can be defined in multiple places:
+1) B defines a constructor that expects an A or *A 2) A defines a cast
+operator to B 3) There is a global cast operator from A to B.  Semantically
+those three are the same single method -- It is an error if a cast from A to B
+is defined in multiple ways.  This is a special case of
+<<ways_to_define_operator>>.
 
-=== Explicit Conversions
+*to-do*:
+- Considering a given member method of class A which accepts a type B (often
+  equals A), and now semantically we want that the `same' method also accepts
+  a type C.  1) An (implicit) casts can be used to cast C to A and thus the
+  existing method can be used 2) An overloaded method is added which directly
+  expects B.  How should EF cope with that to reduce ambiguities /
+  uncertainties as much as possible?
+- How to treat ++A.operator=(*B)++? Shall that also belong to the set of
+  methods which as a whole define one single method?  Technically the
+  assignment method can not replace any of the other three, but it's still
+  very close.  E.g. if a function expects an argument of type A, a type B can
+  be passed if there is an ++A.operator=(*B)++.  Maybe the user should have
+  the possibility to mark the assignment as explicit, in which case it can
+  only be used when explicitly the assignment operator is used.
+
+
+==== Implicit Conversions
+No narrowing implicit conversions, except for to-bool.  Style guidelines
+define when implicit to-bool conversion are allowed.  The default is ``never
+except when its the top-level operation in the condition of a control flow
+construct''.
+
+
+==== Explicit Conversions
 
 ...
 
@@ -965,6 +1086,20 @@ Some ideas:
 - re-entrant
 - thread safe
 - (pure) virtual
+
+
+[[function_type]]
+=== Function type
+
+The +fun+ list expression introduces describes the details of a function type,
+i.e. its sub-types.
+
+----------------------------------------------------------------------
+function_type_expr = 'fun naked_fun_type args_close_del;
+----------------------------------------------------------------------
+
+Note that since it is part of a type expression, the same keyword +fun+ that
+already is used in non-type-expressions can be reused.
 
 
 === (Named) Methods
@@ -1042,19 +1177,23 @@ Provide special statements to acknowledge ``I don't write-to / read-from this
 member on purpose''.
 
 
-=== (Named) Functions
+=== Declaring / defining (named) functions
+
+The +fun+ list expression defines or declares a new code object of function
+type.
 
 ----------------------------------------------------------------------
-## At compile-time defines an function object.  At run-time does nothing.
-fun_obj_def =
-  'fun fun_name fun_type_expr \= fun_impl args_close_del;
-fun_name = identifier | fun_name_operator | fun_name_ctor | fun_name_dtor;
-fun_type_expr = fun_signature | identifier#*function type*#;
+fun_obj_def = 'fun fun_name naked_fun_type_parameterized \= fun_impl args_close_del;
+
+fun_name = new_identifier | fun_name_operator | fun_name_ctor | fun_name_dtor;
+
+naked_fun_type_parameterized = [type_params] naked_fun_type;
+
 fun_signature = (
   ## At most one parameter list
-  \( parameter_list \) 
+  \( (parameter_def \,{?})* \) 
   ## Return type.  At most one.  -> can be omitted if preceded by parameter list
-  ["->"] type_expr]    
+  ["->"] (type_expr | 'noret) ]    
   ## Multiple throws clause allowed which accumulate
   'throws type_expr*
   ## Multiple modifiers allowed which accumulate
@@ -1067,24 +1206,7 @@ fun_impl = expr | ctor_body | prevent_auto_gen;
 
 access_modifier = 'public | 'protected | 'private;
 
-named_type_list = (named_type \,{?})*; 
-## To-do:
-## - "[\= ctconst_expr]" is not really part of a general type list, it is
-##   only available in a function signature.
-## - make it really analogous/'compatible' to how objects are defined in
-##   general.  What this makes special though is that were in a `(argument)
-##   object declaration context', i.e. declaration of objects is the only
-##   reasonable thing to do, thus we can omit things which are otherwise
-##   needed to declare an object.
-named_type = ('val | 'var) [identifier#name [\= ctconst_expr] \:] type_expr;
-----------------------------------------------------------------------
-
-For example:
-----------------------------------------------------------------------
-fun factorial(int:i) -> int {
-  if (i<=1) { 1 }
-  else { i * factorial(i-1) }
-}
+parameter_def =  ['val|'var|'obj] naked_obj_def;
 ----------------------------------------------------------------------
 
 .To-do
@@ -1106,10 +1228,11 @@ other-operand-type: Where A is the lhs (and the other is the rhs), and vice
 versa.  Also, in case the operation is implemented in a commutative way, only
 one implementation can be given which is called in either case.
 
+[[ways_to_define_operator]]
 A binary operator with class A and B as operands can thus be defined in three
-places: in A, in B, globally.  It really is the same method / operator, at
-least logically, so make it a compile (or linker?) error if it is defined in
-multiple places.
+places: in A, in B, globally.  Semantically those three are the same single
+method -- it is a compile (or linker?) error if it is defined in multiple
+ways.  See also <<ways_to_define_cast>>.
 
 ----------------------------------------------------------------------
 fun_name_operator =
@@ -1138,8 +1261,10 @@ See also ``Properties of some standard methods/operators''.
 === Code chunk call
 
 ----------------------------------------------------------------------
-fun_call_expr = sub_expr arg_list;
+fun_call_expr = fun_call_target arg_list;
+fun_call_target = sub_expr | identifier [type_args];
 arg_list = \( ct_list \);
+ct_list = (expr \,{?})*;
 ----------------------------------------------------------------------
 
 Note that a function call as a whole looks like an <<list_expr>>, but actually
@@ -1197,8 +1322,31 @@ Notes:
 An anonymous aka unnamed function.  An unnamed closure which makes no
 references to environment.
 
+Maybe since in EF everything is an expression, thus also function definitions,
+that already qualifies as lambda.  
 
-=== MethLambdas
+--------------------------------------------------
+sort(my_collection, fun(a:int,b:int)=a<b$);
+
+## the type of the arguments is known to the compiler because sort expects a
+## function with two ints
+sort(my_collection, fun(x,y)=x<y$);
+
+## also the names of the parameters can be left away, then the names used
+## in the declaration of sort must be used. 
+sort(my_collection, fun=a<b$);
+--------------------------------------------------
+
+*to-do*:
+
+- Learn D's `lazy evaluation'.  Maybe EF can do something in the same spirit.
+  As far as I understand it is `bad' in the sense that at call site it is not
+  immediately clear that the expression is lazy evaluated -- but then again,
+  EF just provides features, the user has to decide which features he deems
+  fit, and balance the pros and cons.
+
+
+=== Method Lambdas
 
 An unnamed method. 
 
@@ -1211,6 +1359,11 @@ variables not in its parameter list.  See also
 http://stackoverflow.com/questions/220658/what-is-the-difference-between-a-closure-and-a-lambda
 
 Can they be templatized?
+
+
+=== Delegates
+
+Not really a code chunk on its own, but a pointer to one.  See D.
 
 
 === Contracts
@@ -1357,6 +1510,7 @@ properties:
 * _alignment_:
 * _lock wrapper_ Just an first idea.  See also <<concurrency>>.
 
+[[storage_duration]]
 * _storage duration_: Begins after _storage allocation_ (which is before
   constructor call, but not necessarily directly before) and ends just before
   _storage deallocation_ (which is after destructor call, but not necessarily
@@ -1365,11 +1519,14 @@ properties:
  ** _static_
   *** _system static_: system global, implies shared ownership and implies
       shared access
-  *** _process static_: process global, implies shared access
-  *** _thread static_: thread private global, implies exclusive access
+  *** _process static_: process global, implies shared access.  Const objects
+      might be in code segment.
+  *** _thread static_: thread private global, implies exclusive access.  Const
+      objects might be in code segment.
  ** _automatic_: Informally explained: objects on stack.  That includes
     <<temporaries>> and parameters.
  ** _dynamic_: Informally explained: objects on heap.
+ ** _unstored_: An object occupying no storage.  E.g. for certain literals.
 
 * _owner(s)_ / _exclusive/shared ownership_: The owner is responsible for
   freeing the underlying memory resource.  Knowing the owner(s) implicitly
@@ -1405,13 +1562,13 @@ properties:
     The compiler must ensure that the (last remaining) owner does not free an
     object which still has other observers.  See also `current observers'.
  ** __``execution thread(s) having observers''__ / _mutual exclusion required_
-    / _time shared_ / _exclusive / shared access_ (accessors being different ``threads of
-    execution''): If all the observers are in one execution thread, or if none
-    of the observers makes write access, then no mutual exclusion is needed.
-    Otherwise the object needs some form of mutual exclusion.  ``execution
-    thread'' is meant to be an umbrella term for thread, process,
-    ISRs, .... *To-do:* 1) What exactly does `to be in' mean when saying 'an
-    observer is in execution thread ...'
+    / _time shared_ / _exclusive / shared access_ (observers being in
+    different ``threads of execution''): If all the observers are in one
+    execution thread, or if none of the observers makes write access, then no
+    mutual exclusion is needed.  Otherwise the object needs some form of
+    mutual exclusion.  ``execution thread'' is meant to be an umbrella term
+    for thread, process, ISRs, .... *To-do:* 1) What exactly does `to be in'
+    mean when saying 'an observer is in execution thread ...'
 
 An object has additionally the following run time property:
 
@@ -1445,6 +1602,29 @@ An object has additionally the following run time property:
   (checked by compiler) only free an object if no observer beside the owner
   remains.  (or more specifically, if no observer actually observes / accesses
   the object after the deletion). See also `allowed observers'.
+
+*to-do*:
+
+- Study http://bartoszmilewski.com/category/d-programming-language/page/2/
+- Is a literal an object?  If so, what are its properties according to the
+  above?  In C&plus;&plus; its an prvalue, see <<TCppStd>> 3.10.  
+  * How about making it a const object in either process or thread
+    global storage.  However for most cases, in particular fundamental types,
+    the compiler and linker are expected to optimize away any real storage
+    allocation apart from within code segment.
+  * How about a new storage duration ``unstored''?  Fundamental types can be
+    copy constructed with their literals (with a constructor which has no
+    formal signature -- here we take advantage of it being a built-in
+    type). You can't take the address of it, for that you need to create a
+    temporary, either explicitly or implicitely.
+    ** How about collection literals: strings, ct_list, ...? _unless_ the
+       target architecture allows it, they can't be `inline' in the code
+       segment, so they must be in the (const) data segment and thus could be
+       treated has having storage.
+- What is the result of the address-of operator?  How about making it a
+  (const) temporary.  That would be consistent with the mental image that all
+  operators return their result as a temporary.  For C&plus;&plus; see
+  <<TCppStd>> 5.3.1/3.
 
 
 [[obj_decl_def]]
@@ -1481,55 +1661,78 @@ scope = 'block_scope | 'full_expr_scope;
   collections.
 
 
+[[local_object]]
 === Local objects
 
-A bit simplified, the ++obj++ family of `functions' create a new object,
-initialize it with the given initializer, bind the given identifier as name to
-it and finally return a reference to the new object.
+<<storage_duration>> is automatic.  Scope is the enclosing block.
+
+
+[[local_object_def]]
+==== Definition
+
+A bit simplified, the ++obj++ family of list expressions allocate local
+storage for the object, initialize (aka construct) it with the given
+initializer, bind the given identifier as name to it and finally return a
+`reference' (*to-do*: There are no references in EF, so what exactly is
+returned?) to the new object.
+
+There is also analogous form to define multiple local data objects.  It
+returns a list of `references' (*to-do*: same point as in previous paragraph)
+to the defined data objects.  Also here the list of identifiers can omit
+naming certain elements of the list.  Note that thus a trailing comma means
+that the last element of the list is unnamed -- i.e. a trailing comma does has
+an effect.  (*to-do*: reconsider that and force to always state a token.  A
+special token, e.g. +none+ could be used to mean `unnamed' identifier. But
+then again especially for lambdas, unnamed object in a concise syntax can be
+convenient -- as so often, leave the decision to the user via style
+guidelines).
 
 ----------------------------------------------------------------------
-## if obj_prop_expr is omitted it defaults to 'auto_t'
-## if identifier is omitted, it's an unnamed object
-## obj{}
-local_obj_def =
-  ## intended for simple small (chars for code) initializers; obj_prop_expr is
-  ## typically less important and thus at the end
-  ('val|'var|'obj)     [identifier#name] initializer                        [\: obj_prop_expr] ['is data_obj_modifiers]\$ |
-  ('val|'var|'obj) td ([identifier#name] initializer \,{?})+ td             [\: obj_prop_expr] ['is data_obj_modifiers]\$ |
-  ('val|'var|'obj) td ([identifier#name]             \,{?})+ td initializer [\: obj_prop_expr] ['is data_obj_modifiers]\$ |
+obj_def_list_expr =
+  ('val|'var|'obj)
+  naked_obj_def
+  args_close_del |
 
-  ## intended for complex multi-line initializers
-  ('vals|'vars|'objs) [identifiers#name] [\: obj_prop_expr] initializers \$ |
+  ('vals|'vars|'objs)
+  (new_identifier [initializer] \,{0))*
+  ( \: type_expr
+    'is data_obj_modifier*
+  )*
+  [\= expr]
+  args_close_del; 
 
-  ## short form.  Is now an binary operator
-  identifier#name ( `:= | `:&= ) sub_expr#initvalue  |
-  td (identifier \,{?})* td ( `:= | `:&= ) td (sub_expr \,{?})* td ;
+naked_obj_def = 
+  new_identifier#name
+  ( initializer |
+    \: type_expr |
+    'is data_obj_modifier* 
+  )*;
 
-identifiers =  (identifier \,{?})* ## a tuple, to be defined uniformly elsewhere
-
-initializers = (initializer \,{?})* ## a tuple, to be defined uniformly elsewhere
-
-td = #* tuple delimiter *# ;
+obj_def_op_expr = 
+  new_nonempty_identifier#name ( `:= | `:&= ) sub_expr#initializer;
 ----------------------------------------------------------------------
 
-.Example
-----------------------------------------------------------------------
-obj a = 3, b(3), c$
+The earliest lexical point the name can be used is the next standalone
+expression of the enclosing standalone expression sequence.
 
-fun get(int, &double)$
-get( 0, obj double f )$ 
 
-obj string { a, b } = get2strings()$
-----------------------------------------------------------------------
+*to-do*:
+
+- As with function declaration, omitting the name to create an unnamed object,
+  but still using the ++\(...\)++ initializer results in ++val(...)$++, which
+  is an ambiguity to the list expression syntax variant ++val(...)++.
 
 
 [[initialization]]
 ==== Initialization (aka construction)
 
+The syntax to initialize a data object is always is composed of the following
++initializer+ rule:
+
 ----------------------------------------------------------------------
 initializer =
   arg_list |    ## constructor call
-  \= sub_expr | ## equivalent to "(sub_expr)"
+  \= expr | ## equivalent to "(expr)"
   'nop_init | 'laterctor;
 ----------------------------------------------------------------------
 
@@ -1651,6 +1854,63 @@ That would be roughly equivalent to C's ++{...}++.
   extend the concept to scope the variable to the enclosing full expression.
 
 
+[[temporaries]]
+=== Temporaries
+A _temporary_ is the unnamed data object returned by an non-void (sub-)
+expression.
+
+It's not clear yet how to define the storage duration of temporaries.
+Possibilities:
+
+* The storage duration of a temporary ends after evaluating a
+  <<standalone_expression>> (hence the alternative name ``mini block
+  expression'').  That allows that an expression can take a pointer to a
+  temporary as argument, possibly modify it, and return a pointer to it, and
+  that pointer can be used as argument to an outer expression.
+* The storage duration ends after the parent in the expression tree is
+  finished.
+
+It's not clear what the exact object properties shall be:
+
+* Shall a temporary be const as in C?  From a very general point of view,
+  const (aka immutable) objects are easier to work with than mutable ones.
+  Also regarding concurrency.  With objects on stack concurrency is seldom an
+  issue since such objects very seldom are accessed by multiple threads.  I
+  think I find it better to make temporaries mutable.  Then a temporary can be
+  passed as mutable argument to a function -- for most cases that makes no
+  sense since after the function returns nobody has access to the modified
+  temporary.  (*to-do*: Examples where that could be useful).  Or make it
+  const, and the user can explicitly `cast' that object (without creating
+  another object) to non-const.  That would also be closer to the principle
+  that most things in EF are const by default. 
+
+
+==== Make local
+There is the idea to provide a feature with witch storage duration can be
+defined local (instead standalone expression).  Or in other words, define that
+the object is not a temporary but an unnamed `normal' local object.  That
+would be similar to what C&plus;&plus; can do when you bind a temporary to a
+const reference.
+
+It's not yet clear by what means.  For example:
+
+* A unary prefix operator ++make_local++ / +ml+, which defines that its
+  argument shall be an unnamed local object instead a temporary.  Possibly,
+  similar to definition of local objects, with further arguments define the
+  exact block which shall be the owner.  The rules for when and how storage is
+  allocated on the stack is the same as for <<local_object_def>>.
+* Note: Using +val+/+var+ without providing a name does not work because that
+  would create a _new_ local object, tough unnamed, which is (copy-)
+  initialized by the temporary.
+
+However `make local' might be a feature with diminishing returns.  The benefit
+is that, in case you need that object at more places in your block than just
+one single place in the expression tree, you don't have to copy it to a local
+object.  However other concept already help to mitigate such costs: RVO, move
+semantics, the ability to create local objects virtually everywhere since
+everything is an expression. 
+
+
 [[variable_sized_obj]]
 === Variable sized object
 If variable sized raw arrays are allowed as members, then the whole object
@@ -1663,30 +1923,16 @@ has as attribute, whether it contributes to defining distinct type or not.
 See <<templates>>.
 
 
-=== Non local objects
-Actually don't differentiate, do it always the same way.  EF tries to have to
-have context free grammar (do i use the term correctly?).  So to define global
-static objects, we have to say storage type static.  C&plus;&plus; does it
-also this way.  The initializer are expressions to be evaluated the same way
-as non - ctconst expressions in global scope: in undetermined order at program
-start-up.
-
-Similar for member obj of classes.  The syntax is the same as for all obj
-definitions.  It's only that the initializer is executed upon construction of
-the class' object.
-
-Static class obj are virtually the same as global static obj.  It's just that
-the scope is different.
-
+[[class]]
 == Classes
 
-+class_def+ and +interface_def+ are both +type_expr+.
+=== Defining
 ----------------------------------------------------------------------
 ## At compile-time define a new class type. At run-time does nothing.
-class_type_def = 'class identifier#name [\: base_class_list] \{ classimpl \};
-interface_type_def = 'interface identifier#name [\: interface_list] \{ classimpl \};
-base_class_list = identifier#superclass [\, interface_list] | interface_list;
-interface_list = (identifier#interface \,{?})*;
+class_type_def = ('class|'interface) identifier#name [type_params]
+  [\: super_class_list] ['is class_modifier*] \= expr#body args_close_del;
+super_class_list = ( ['public|'protected|'private] class_type_expr \,{?} )*;
+class_modifier = ... ;
 ----------------------------------------------------------------------
 
 Only single inheritance, no multiple inheritance, but implementing of an
@@ -1694,11 +1940,19 @@ arbitrary amount of interfaces.
 
 *to-do*:
 
-* Proper naming.  E.g. `generic class' for the generic class concept, and
+* Proper naming.  E.g. `general class' for the general class concept, and
   `proper class' (or `strict class'), `interface' and `struct' for
   specializations of that generic concept.
 
 
+=== Referencing 
+
+--------------------------------------------------
+class_type_expr = identifier#*class' name*# [type_args];
+--------------------------------------------------
+
+
+[[constructor]]
 === Constructor
 
 ----------------------------------------------------------------------
@@ -1755,6 +2009,10 @@ non-public fields.
 - How to call the constructor explicitly?  E.g. for already allocated but not
   yet constructed objects.  E.g. due to use of some `non-standard' +new+
   construct, or due to the +laterctor+ initializer.
+- The code shall be required to explicitly state which one of these sub-types
+  a constructor is: copy constructor, move constructor, cast (copy)
+  constructor, cast move constructor, or other.  See also <<assignment>> which
+  has a similar requirement.
 - How to allow that when a member is never read accessed between construction
   and one or more write access (which completely replace the object), that
   only the last write access can be made the one single construction.  Maybe
@@ -1765,6 +2023,9 @@ non-public fields.
   Mind also getting the address of a constructor or explicitly calling a
   constructor.  
 - What is D's init?  Why not just use default ctor?
+- Make cast constructors explicit by default, i.e. they only can be called
+  explicitly, not implicitely.  If you want an implicitly call-able cast
+  constructor, you have to explicitly declare it as such.
 
 
 === Destructor
@@ -1774,6 +2035,21 @@ fun_name_dtor = `~this | 'dtor | 'destructor;
 ----------------------------------------------------------------------
 
 How to call the destructor explicitly? 
+
+
+[[assignment]]
+=== Assignment
+
+*to-do*:
+
+- The code shall be required to explicitly state which of these sub-types an
+  assignment is: copy assignment, move assignment, cast (copy) assignment,
+  cast move assignment, other.  See also <<constructor>> which has a similar
+  requirement.  See also <<ways_to_define_cast>> for cases where the
+  assignment indirectly allows an lhs of another type.
+- Make `cast assignments' explicit by default, i.e. they only can be called
+  explicitly, not implicitely.  If you want an implicitly call-able `cast
+  assignment', you have to explicitly declare it as such.
 
 
 === Friend
@@ -1803,22 +2079,34 @@ See chapter <<code_chunks>>.
 See D
 
 
-=== Deletion of ctor, dtor, assignment
+[[prevent_auto_gen_of_method]]
+=== Prevent automatic generation of methods
+
+Automatically generated methods can be for example the default constructor,
+destructor, maybe assignment -- however probably EF should not auto generate
+assignment, ...
 
 Instead of making those private, which has the disadvantage that for methods
-of the same class the compiler doesn't say anything, only the linker, delete
-them.  I think C&plus;&plus;11 also has this feature.  For convenience, also
-give a short whatever to delete a group for often occurring use-cases
+of the same class the compiler doesn't say anything, only the linker, tell the
+compiler to not generate them, e.g. by a ++no_generate++ or +delete+ keyword
+somewhere in the method `definition'.  For convenience, also give a short
+whatever to delete a group for often occurring use-cases.
 
-copy ctor and assignment operator for classes not intended to be copied in any
-way
+----------------------------------------------------------------------
+prevent_auto_gen = 'delete;
+----------------------------------------------------------------------
 
 
-=== Inmutable classes
+=== Const classes
 
-Classes can be `tagged' +inmutable+.  Apart from the constructor and the
-destructor, all members must be const.  Motivation: 1) Helps communicating
-intend 2) Helps that not accidentaly a member is ever non-const.
+Classes can be `tagged' +const+ (aka immutable).  Apart from the constructor
+and the destructor, all members must be const.  Motivation: 1) Helps
+communicating intend 2) Helps that not accidentaly a member is ever non-const.
+
+Should the compiler complain if an non-const object is created of a const
+class?  It's not an error, is just somewhat senseless.  But if it did
+complain, it also means to break client code if a so far non-const class is
+made const.
 
 
 === Abstract classes
@@ -1856,8 +2144,10 @@ that requires invoking it at the right time which is a cost that is not
 directly explicitly visible.
 
 However allows for non-virtual methods, since they don't cost more than global
-functions, apart from passing the implicit +this+ argument.  Also allow for
-class static methods.
+functions, apart from passing the implicit +this+ argument.  Calling a member
+method is more less clearly distinguishable from calling a global method, so
+this cost is pretty good visible at call site.  Also allow for class static
+methods.
 
 Also allows inheritance, which in absence of any virtual method is technically
 the same as just have a normal member (++struct D extends B = $++ is
@@ -1880,46 +2170,56 @@ As in C&plus;&plus; the default access modifier is +public+.
 flow_control_expr = conditional_expr | loop_expr | jump_expr | 
   other_control_flow_expr;
 
-conditional_expr = ifchain_expr | givenchain_expr | jumptable_expr |
+conditional_expr = if_expr | givenchain_expr | jumptable_expr |
   'unless [\(] sa_expr (\,|'do) block_expr (\)|'end);
 
-ifchain_expr = '
-  'if [\(] sa_expr (\,|'then) sa_expr
-  ((\,|'elif) sa_expr (\,|'then) sa_expr)*
-  ## if ommited defaults to "else {nop}", i.e. type void 
-  ['else sa_expr]
-  (\)|'end);
+if_expr =
+  'if [\(] sa_expr#condition [\:|'then] expr#body
+  ('elif sa_expr#condition [\:|'then] expr#body)*
+  ['else expr#body]
+  args_close_del;
 
 givenchain_expr =
   ## the optional 2nd expression is a predicate function object which defaults
   ## to test for equality.
-  'given \( expr_list#*one or two*# \) 
+  'given sa_expr [\:] 
   ('when \( expr_list#*at least one*# \) block_expr_opt_falltrough)* 
-  ['else block_expr]
+  ['else expr]
 
 jumptable_expr =
-  'jumptable \( sa_expr \) 
+  'jumptable sa_expr
   ('when \( expr_list#*at least one*# \) block_expr_opt_falltrough)* 
-  ['else block_expr]  
+  ['else expr]  
+  args_close_del;
 
 loop_expr =
   ## to-do 
-  ## - like in python something ala "foreach ( key,val in mymap )" 
-  ## - like in ?? a nested loop in one written loop "multiforeach ( i,j in matrixindicies )"
-  ##   However that gets difficult with jumps (break,continue,...). To which loop do they refer?
-  ##   Probably a feature with dimishing returns.
-  ## - See function definition for how to declare variables in a `object
-  ##   declaration context'
-  'foreach \( (sa_expr#obj_decl_context 'in collection_expr )+ \) block_expr |
-  'for \(  expr_list#*<void,bool,void>*# \) block_expr |
-  ##['begin sub_expr] 'while sa_expr 'inc sub_expr 'do sub_expr | what does ruby, python,
-  ##scala, ... do?
-  ('while|'until) [\(] sa_expr (\,|'do) sa_expr (\)|'end) |
-  'do [\(] sa_expr ('while|'until) sa_expr (\)|'end);
-  ## ????? what was my problem that i wanted a condition at the start AND the
-  ## end???
-## alternatively: 
-## integralexpr.times closureexpr
+  ## - Provide something ala "foreach ( key,val in mymap )". Maybe that works
+  ##   if mymap returns a built-in list of fixed size, so it can be assigned
+  ##   to the ``list of fixed sized'' key,val.
+  ## - like in ?? a nested loop in one written loop "multiforeach ( i,j in
+  ##   matrixindicies )" However that gets difficult with jumps
+  ##   (break,continue,...). To which loop do they refer?  Probably a feature
+  ##   with dimishing returns.
+  ## - ['begin sub_expr] 'while sa_expr 'inc sub_expr 'do sub_expr | what does ruby, python,
+  ##   scala, ... do?
+  ## - alternatively: integralexpr.times(closureexpr)
+  'foreach [\(] sa_expr [\:|'in] sa_expr [\:\|'do]
+  expr#body
+  args_close_del |
+
+  ['for|'loop] [\(] expr#init \, expr#condition \, expr#inc [\:|'do]
+  expr#body
+  args_close_del |
+
+  ('while|'until) [\(] sa_expr#condition [\:|'do]
+  expr#body
+  args_close_del |
+
+  'do [\(]
+  expr#body
+  ('while|'until) expr#condition
+  args_close_del;
 
 ## jumps. The result type of control flow jump operands is typically
 ## noret. See also labelled_sa_expr.
@@ -2064,7 +2364,7 @@ memory.
 ----------------------------------------------------------------------
 memory_mgmt_expr =
   ('new | 'raw_new) [\(] type_expr initializer args_close_del |
-  'raw_delete [\(] sub_expr args_close_del;
+  'raw_delete [\(] expr args_close_del;
 ----------------------------------------------------------------------
 
 +new+ creates a new data object, internally using +raw_new+, and returns an
@@ -2138,7 +2438,7 @@ of their members by themselves.
 - Allow zero sized objects (which then also makes zero sized arrays more
   feasible).  Most probably that means that the `costs' of this decision are
   that `multiple' such objects really are identical, i.e. there is really only
-  one object which has different names.  
+  one object which has different names.
 - +alignof+
 - bit fields
 - pack as attribute to structs/classes
@@ -2154,12 +2454,18 @@ owning pointer::  All of the owning pointers have two variants: 1) to single
   correct delete operator (delete vs delete[]) can be called.  An owning smart
   pointer is responsible to call the destructor of the pointee and then to
   free the underlying memory resource.
-
-  Also each owning pointer has two variants in respect to collaboration with
++
+Also each owning pointer has two variants in respect to collaboration with
   garbage collector: _pure owning smart pointers_ are really the owner
   independent of whether GC is turned off or on.  _Regular owning smart
   pointers_ are the owner only if GC is turned off.  If GC is turned on, they
   leave ownership to the GC.
++
+Constructors and assignments shall not accept non-owning pointers.  If one
+  wants to do that, one needs to use some explicit construct with which he can
+  say: ``Here's an object whose owner is technically unknown, but I promise
+  it's save to take ownership of that object, so create an unique_ptr (or
+  other owning pointer) owning it''.
 
 non-owning pointer:: ...
 
@@ -2180,6 +2486,14 @@ address / implicit `pointer':: Owning `constant pointer'.  Pointees are:
 
 [[weak_ptr]]
 weak_ptr:: Non-owning, but can be promoted to a shared_ptr.
+
+
+##   * Mind the swap example
+##   * Read http://www.drdobbs.com/cpp/c11-uniqueptr/240002708
+
+
+
+
 
 [[observer_ptr]]
 observer_ptr:: Non-owning.  Compiler ensures at compile time that that the
@@ -2218,6 +2532,9 @@ Rules to assign an object/pointer to an observer_ptr:
 - The observer pointer is member of a parent object for which the above
   rules (for observer pointer objs) are true.
 - in GC mode, observer_ptr can put to what ++gc_new++ returns
+- Have methods promise (say via an attribute) that they don't modify any
+  non-local owning pointer.  Then a caller can safely pass an owning pointer
+  to an argument being an observer pointer.
 
 How to avoid the expensive shared pointers:
 
@@ -2229,6 +2546,9 @@ How to avoid the expensive shared pointers:
   run-time: unique_ptr ctor when inserting a node plus dtor when removing a
   node minus the costs the shared_ptr solution would have had.
 
+Built-in smart-pointer implementation shall be decoupled from
+<<memory_management_primitives>> such that also other `allocators' can be
+used.
 
 *to-do*:
 
@@ -2240,6 +2560,37 @@ How to avoid the expensive shared pointers:
   a type given an input type, and which, regarding the previous example,
   internally has the relation unique pointer -> observer pointer and shared
   pointer -> shared pointer.
+
+
+[[dereferencing]]
+[[addr_of]]
+[[pointer_obj_access]]
+=== Dereferencing / address of / pointer object access
+
+Dereferencing a pointer is implicit, there is no dereferencing operator.  EF
+pointers are treated similar to references in C&plus;&plus;, only that they
+are mutable.  Benefits:
+
+* Client of a function needs not to care whether the function expects argument
+  as T or *T.  That is important to make calling overloaded operators
+  convenient; without, calling an overloaded operator would be very
+  cumbersome: ++a = &(b + &c)++ instead the natural ++a = b + c++
+* Client of an data object needs not to care whether the object is implemented
+  as T or *T.
+
+Say there is a pointer named p and a function named foo returning a pointer
+(representing an example of an expression returning a pointer). As explained
+before, the name p and the expression ++foo()++ refer to the pointee, not to
+the pointer itself.
+
+To access the pointer object itself, e.g. to modify it, the unary prefix
+_pointer object access_ operator +@+ is used.  In the example above, ++@p++
+and ++@foo()++ denote the pointer object, not the pointee.
+
+
+
+Since the address of operator in C / C&plus;&plus; is only used to let a
+pointer object point to a given object, that operator is not needed in EF. 
 
 
 == Compilation
@@ -2303,6 +2654,10 @@ conditional expression we get conditional declarations.
 
 == Namespaces in general
 
+Namespaces can be created using a list expression, say ++namespace...$++.
+That would be roughly equivalent to C&plus;&plus;'s ++namespace {...}++.
+
+
 Classes/Modules are also namespaces.
 
 * Somehow make it hard to accidentally shadow a name and/or to accidentally
@@ -2325,6 +2680,16 @@ Classes/Modules are also namespaces.
   the act of importing the namespace would shadow names -- does that result in
   a warning -- or only if the names used within the argument list are ones
   that where auto-imported and now shadow others?
+
+* Consider that private members are not in the scope of sub classes, or that
+  members of subclasses can shadow them without warning / error.  After all,
+  private members are implementation details which shall have no impact on
+  other classes, inclusive subclasses, when changed.  However when adding a
+  private member can cause a subclass not to compile because the subclass
+  already has a member of the same name, that principle is broken.  *to-do*:
+  What about virtual private method (possibly abstract), where it is expected
+  that a subclass overrides them, but we still want to prevent the subclass
+  from invoking it -- maybe a too rare case?
 
 * Have the same namespace for identifiers for objects (including code objects)
   and for types and label and whatever.  This is simpler for the parser
@@ -2440,10 +2805,43 @@ Template static objects.  There is only one object in the whole program (in
 C&plus;&plus;, given a class static member in a templatized class, there is
 one object per template instance).
 
+=== Defining a parameterized type / function
+
+The definition a paramterized type differs only from the definition of a
+non-paramterized type that the former contains a +type_params+ and the later
+does not.  Here only +type_params+ is described.
+
+----------------------------------------------------------------------
+type_params = \< ( new_identifier [\: metatype_for_type_param] \,{?})* \>;
+metatype_for_type_param =
+  type_bounds | <1>
+  type_expr;    <2>
+type_bounds = ... ;
+----------------------------------------------------------------------
+<1> The argument for this parameter must be a +type_expr+ within the given
+    bounds.
+<2> The argument for this parameter is an +expr+ of the given type.
+
+
+=== Referring to a parameterized type / function
+
+----------------------------------------------------------------------
+type_args = \< (type_arg \,{?})* \>;
+type_arg = type_expr | ('ea|'expr_arg) expr;
+----------------------------------------------------------------------
+
+Note:
+
+- The body of a rule cannot contain ++type_expr|expr++.  E.g. because
+  ++[...]++ is prefix operator in ++type_expr++ and postfix operator in
+  ++expr++.  Thus some way of disambiguation is needed so the parser knows
+  whether it has to parse a +type_expr+ or an +expr+.
+
 
 == Optimizations
 
 See book Writing Efficient Programs.  See also <<cheap_destructors>>.
+
 
 === Copy elision
 
@@ -2561,8 +2959,7 @@ EF tries to support tools as e.g. optimizers and verifiers by making pointer
 alias analysis feasible (at least more feasible than in C or C&plus;&plus;) by
 only providing constructs where analysis has a change to follow where pointers
 point to.  E.g. by 1) not providing pointer arithmetic (however there are
-iterators) and 2) not providing integer->pointer casts.  See also
-<<type_system>>.
+iterators) and 2) not providing integer->pointer casts.
 
 When D has guidelines/rules how to name unnamed/temporary objects / code
 chunks, then tools can profit.  The semantic intelligence of an IDE can show
@@ -2651,6 +3048,15 @@ the explicit version would probably be
 std::tuple<const int&,const double&>(i,j) = gettwo();
 ----------------------------------------------------------------------
 
+== Bibliography
+
+[bibliography]
+- [[[TCppStd]]] The ISO C&plus;&plus; standard (for C&plus;&plus;11). In
+  short just `the standard'.  Officially known as `ISO International Standard
+  ISO/IEC 14882:2011(E) – Programming Language
+  C&plus;&plus;'. http://isocpp.org/std/the-standard.
+
 //  LocalWords:  decl malloc IPC laterinit laterctor alist sa ary arg args
-//  LocalWords:  del foreach OverrideAndDelete Inmutable endof Structs
-//  LocalWords:  allocator allocators
+//  LocalWords:  del foreach OverrideAndDelete Inmutable endof Structs vals
+//  LocalWords:  allocator allocators addr TCppStd IEC params param jumptable
+//  LocalWords:  funt tfun prvalue unstored xvalue glvalue
