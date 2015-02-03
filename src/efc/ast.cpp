@@ -420,8 +420,14 @@ basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
+/** The list's elements must be non-null */
 AstCtList::AstCtList(std::list<AstValue*>* childs) :
   m_childs(childs ? childs : new std::list<AstValue*>() ) {
+  for (std::list<AstValue*>::iterator it = childs->begin();
+       it != childs->end();
+       ++it) {
+    assert(*it);
+  }
 }
 
 /** When child is NULL it is ignored */

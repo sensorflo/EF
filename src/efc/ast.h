@@ -285,6 +285,7 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   AstCtList* Add(AstValue* child);
   AstCtList* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
+  /** The elements are guaranteed to be non-null */
   const std::list<AstValue*>& childs() const { return *m_childs; }
 private:
   AstCtList(const AstCtList&);
