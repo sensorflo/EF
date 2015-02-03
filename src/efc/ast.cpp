@@ -174,13 +174,13 @@ basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-const AstValue* AstDataDef::initValue() const {
+const AstValue& AstDataDef::initValue() const {
   const std::list<AstValue*>& args = m_ctorArgs->childs();
   if (!args.empty()) {
     assert(args.size()==1); // more ctor arguments not yet supported
-    return args.front();
+    return *(args.front());
   }
-  return NULL;
+  return m_decl->objType().defaultValue();
 }
 
 llvm::Value* AstNumber::accept(IrBuilderAst& visitor, Access access) const {

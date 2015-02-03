@@ -350,14 +350,10 @@ Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access access) {
   }
   stentry->isDefined() = true;
 
-  // Calculate value to initialzie new data object with
-  Value* initValue = dataDef.initValue() ?
-    dataDef.initValue()->accept(*this) :
-    ConstantInt::get( getGlobalContext(), APInt(32, 0));
-  assert(initValue);
-
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.
+  Value* initValue = dataDef.initValue().accept(*this);
+  assert(initValue);
   if ( stentry->objType().qualifier()==ObjType::eNoQualifier ) {
     stentry->valueIr() = initValue;
     if ( eRead!=access ) {

@@ -133,7 +133,7 @@ public:
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const AstDataDecl& decl() const { return *m_decl; }
-  virtual const AstValue* initValue() const;
+  virtual const AstValue& initValue() const;
 private:
   /** We're the owner. Is garanteed to be non-null */
   const AstDataDecl* const m_decl;

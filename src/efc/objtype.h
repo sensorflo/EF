@@ -6,6 +6,7 @@
 
 class ObjTypeFunda;
 class ObjTypeFun;
+class AstValue;
 
 /** Abstract base class for all object types */
 class ObjType {
@@ -33,6 +34,8 @@ public:
   std::string toStr() const;
 
   Qualifier qualifier() const { return m_qualifier; }
+
+  virtual const AstValue& defaultValue() const = 0;
 
 protected:
   ObjType(Qualifier qualifier) : m_qualifier(qualifier) {};
@@ -69,6 +72,7 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
 
   EType type() const { return m_type; }
+  virtual const AstValue& defaultValue() const;
 
 private:
   EType m_type;
@@ -86,6 +90,7 @@ public:
   virtual MatchType match(const ObjType& other) const { return other.match2(*this); }
   virtual MatchType match2(const ObjTypeFun& other) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
+  virtual const AstValue& defaultValue() const;
 
 private:
   /** We're the owner of the container object and the objects pointed to by

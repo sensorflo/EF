@@ -1,4 +1,5 @@
 #include "objtype.h"
+#include "ast.h"
 #include <cassert>
 #include <sstream>
 using namespace std;
@@ -49,6 +50,11 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
+const AstValue& ObjTypeFunda::defaultValue() const {
+  static AstNumber def(0);
+  return def;
+}
+
 ObjTypeFun::ObjTypeFun(list<ObjType*>* args, ObjType* ret) :
   ObjType(eNoQualifier),
   m_args( args ? args : new list<ObjType*>),
@@ -97,5 +103,13 @@ list<ObjType*>* ObjTypeFun::createArgs(ObjType* arg1, ObjType* arg2,
   if (arg2) { l->push_back(arg2); }
   if (arg3) { l->push_back(arg3); }
   return l;
+}
+
+const AstValue& ObjTypeFun::defaultValue() const {
+  // The liskov substitution principle is broken here, ObjTypeFun cannot
+  // provide a defaultValue method. A possible solution would be to introduce
+  // a 'ObjTypeData' abstract class into the ObjType hierarchy, but currently
+  // I think that is overkill.
+  assert(false);
 }
 
