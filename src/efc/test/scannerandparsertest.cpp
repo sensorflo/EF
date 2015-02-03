@@ -411,6 +411,12 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "val foo=() : int    $", "data(decldata(foo int) ())", spec);
   TEST_PARSE( "val foo    : int =()$", "data(decldata(foo int) ())", spec);
 
+  spec = "initializer is in 'ctor call' style with 2+ arguments. "
+    "Here it's about parsing, the fact that the type 'int' does not expect "
+    "two arguments is irrelevant here.";
+  TEST_PARSE( "val foo =(42,77) :int         $", "data(decldata(foo int) (42 77))", spec);
+  TEST_PARSE( "val foo          :int =(42,77)$", "data(decldata(foo int) (42 77))", spec);
+
   spec = "short version with implicit type";
   TEST_PARSE( "foo:=42", "data(decldata(foo int) (42))", spec);
 }

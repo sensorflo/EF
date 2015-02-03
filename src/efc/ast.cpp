@@ -169,10 +169,7 @@ basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
   os << "data(";
   m_decl->printTo(os);
   os << " (";
-  const AstValue* iv = initValue();
-  if (iv) {
-    iv->printTo(os);
-  }
+  m_ctorArgs->printTo(os);
   os << "))";
   return os;
 }
