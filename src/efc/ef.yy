@@ -94,7 +94,7 @@
 %type <std::list<AstArgDecl*>*> pure_naked_param_ct_list
 %type <AstSeq*> pure2_standalone_expr_seq
 %type <std::list<AstValue*>*> pure_ct_list
-%type <AstValue*> expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
+%type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifier> valvar
@@ -129,23 +129,27 @@ opt
 %start program;
 
 program
-  : expr END_OF_FILE                                { driver.astRoot() = $1; }
+  : block_expr END_OF_FILE                          { driver.astRoot() = $1; }
   ;
 
-/* Note that the trailing 'seq_operator' is not really a sequence operator, i.e. it does not build a list */
-expr
+block_expr
+  : standalone_expr_seq                             { std::swap($$,$1); }
+  ;
+
+/* Note that the trailing 'seq_operator' is not really a sequence operator,
+i.e. it does not build an expression sequence */
+standalone_expr_seq
   : standalone_expr seq_operator                    { std::swap($$,$1); }
   | pure2_standalone_expr_seq seq_operator          { $$ = $1; }
   ;
 
-/* The sequence operator builds the sequence consisting of two or more elements */
 pure2_standalone_expr_seq
   : standalone_expr seq_operator standalone_expr           { $$ = new AstSeq($1,$3); }
   | pure2_standalone_expr_seq seq_operator standalone_expr { ($1)->Add($3); std::swap($$,$1); }
   ;
 
 standalone_expr
-  : sub_expr                                        { std::swap($$,$1); }                        
+  : sub_expr                                        { std::swap($$,$1); }
   ;
 
 ct_list
@@ -221,7 +225,7 @@ operator_expr
 primary_expr
   : list_expr                                       { std::swap($$,$1); }
   | NUMBER                                          { $$ = new AstNumber($1); }
-  | G_LPAREN expr RPAREN                            { $$ = $2; }
+  | G_LPAREN standalone_expr_seq RPAREN             { $$ = $2; }
   | ID                                              { $$ = new AstSymbol(new std::string($1)); }
   ;
   
@@ -268,7 +272,7 @@ naked_data_def
   ;
 
 naked_fun_def
-  : naked_fun_decl EQUAL expr                                        { $$ = parserExt.createAstFunDef(($1).first, $3, *(($1).second)); }
+  : naked_fun_decl EQUAL block_expr                                  { $$ = parserExt.createAstFunDef(($1).first, $3, *(($1).second)); }
   ;
   
 naked_fun_decl
@@ -289,7 +293,7 @@ initializer
   ;
 
 naked_if
-  : standalone_expr opt_colon expr opt_elif_list opt_else            { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
+  : standalone_expr opt_colon block_expr opt_elif_list opt_else      { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
   ;
 
 valvar
@@ -299,12 +303,12 @@ valvar
 
 opt_elif_list
   : %empty                                                           { $$ = new std::list<AstIf::ConditionActionPair>(); }  
-  | opt_elif_list ELIF standalone_expr opt_colon expr                { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
+  | opt_elif_list ELIF standalone_expr opt_colon block_expr          { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
   ;  
 
 opt_else
   : %empty                                                           { $$ = NULL; }
-  | ELSE expr                                                        { $$ = $2; }
+  | ELSE block_expr                                                  { $$ = $2; }
   ;
 
 /* Epilogue section

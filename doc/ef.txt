@@ -461,8 +461,9 @@ one of these two syntax forms:
 * _list expression_: See <<list_expr>>.
 
 ----------------------------------------------------------------------
-program = expr;
-expr = (standalone_expr|standalone_expr_seq) [\;];
+program = block_expr;
+block_expr = standalone_expr_seq;
+standalone_expr_seq = (standalone_expr [\;]{l?})+;
 standalone_expr = sub_expr;
 sub_expr = operator_rt_expr | primary_expr;
 primary_expr = list_expr | literal | ID | group_expr | mi_end_expr |
@@ -545,7 +546,7 @@ Note that in ++{a, b, c}++, the opening brace ++{++ is considered the
 `function name'. The `function' ++{++ creates a literal list, see
 <<literal_list>>.
 
-Note that a function call as a whole looks like an list expr, but actually is
+Note that a function call as a whole looks like an list expression, but actually is
 an <<operator_expr>>, see <<code_chunk_call>>.  It's a binary operator with
 the rhs being an expression delivering an code object, and the lhs being an
 argument list.
@@ -654,7 +655,9 @@ C&plus;&plus;'s comma operator.  _standalone expression sequence_ is the term
 used for the expression resulting from using the sequence operator.
 
 ----------------------------------------------------------------------
-standalone_expr_seq = (standalone_expr [\;]{l0}){2,}
+standalone_expr_seq = ...;
+## See chapter <<expressions>>. Later it should redundantly be repeated here
+## for the reader's convenience.
 ----------------------------------------------------------------------
 
 Note that the semicolon is optional.  That means that the sequence operator is
@@ -671,9 +674,25 @@ Style guidelines:
   instead ++g(...)++to group a sub expression.
 
 
+[[block]]
+=== Block expression
+When a local object is defined (see <<local_object_def>>) the storage needed
+for that object is allocated and associated (see <<associated_block>>) with a
+block.  The block is then the owner of that storage.  At the end of a block,
+all storage owned by the block is freed.  (*to-do*: Elaborate who exactly is
+the owner of the local objects.  It is the owner who es responsible to
+destruct them).
+
+--------------------------------------------------
+block_expr = ...;
+## See chapter <<expressions>>. Later it should redundantly be repeated here
+## for the reader's convenience.
+--------------------------------------------------
+
+
 [[standalone_expression]]
 [[mb_expr]]
-=== Mini block expression / standalone expression
+=== Standalone expression / Mini block expression
 A _standalone expression_ (aka _mini block expression_) is comparable with a
 statement in C or Java.  It either is 1) the lhs operand of the expression
 sequence binary operator, or it is 2) the rhs operand of the sequence operator
@@ -683,6 +702,12 @@ value is always used by the enclosing expression (although that one might
 throw it away without looking at it).  In the later case its value is used as
 argument to the enclosing expression.  Standalone expression delimit the
 storage duration of <<temporaries>>.
+
+--------------------------------------------------
+standalone_expr = ...;
+## See chapter <<expressions>>. Later it should redundantly be repeated here
+## for the reader's convenience.
+--------------------------------------------------
 
 Style guideline: If the standalone expression is an operator expression, it
 must be one with a side effect as primary responsibility (e.g. infix/postfix
@@ -744,7 +769,7 @@ See also:
 use just regular parentheses.  
 
 ----------------------------------------------------------------------
-group_expr = "g(" expr \);
+group_expr = "g(" standalone_expr_seq \);
 ----------------------------------------------------------------------
 
 Rational for not using normal parentheses: parentheses are already used for
@@ -775,7 +800,7 @@ For example:
 The compile-time types currently are one of `type' or `unknown'.
 
 +type_expr+ is parsed (*to-do*: is `parsed' the correct word?) differently
-from +expr+.  So to parse an expression, we need to know whether we are in
+from +block_expr+.  So to parse an expression, we need to know whether we are in
 meta type `unknown' context or in meta type `type' context.  The top level is
 `unknown'.  Some grammar rules impose `type' meta type context on their sub
 elements (*to-do*: what is the correct word?).  At a few places the thus given
@@ -783,7 +808,7 @@ meta type context is not what you intend to have, and you want to explicitly
 change the meta type context.
 
 --------------------------------------------------
-explicit_rt_expr = ('rte|'rt_expr) [\(] expr args_close_del;
+explicit_rt_expr = ('rte|'rt_expr) [\(] sub_expr args_close_del;
 explicit_type_expr = ('te|'type_expr) [\(] type_expr args_close_del ;
 --------------------------------------------------
 
@@ -1053,7 +1078,7 @@ of type expression primaries.
 === Type qualifiers
 
 -------------------------------------------------------------------------------
-type_qualifier = 'const | 'volatile | 'alignas \< expr \> ;
+type_qualifier = 'const | 'volatile | 'alignas \< sub_expr \> ;
 -------------------------------------------------------------------------------
 
 Notes:
@@ -1345,7 +1370,7 @@ return_type = type_expr | 'noret;
 
 fun_modifiers = access_modifier | ...;
 
-fun_impl = expr | ctor_body | prevent_auto_gen;
+fun_impl = block_expr | ctor_body | prevent_auto_gen;
 
 access_modifier = 'public | 'protected | 'private;
 ----------------------------------------------------------------------
@@ -1419,11 +1444,11 @@ See also ``Properties of some standard methods/operators''.
 fun_call_expr = fun_call_target arg_list;
 fun_call_target = sub_expr | identifier [type_args];
 arg_list = \( ct_list \);
-ct_list = (expr \,{l?})*;
+ct_list = (sub_expr \,{l?})*;
 ----------------------------------------------------------------------
 
 Note that a function call as a whole looks like an <<list_expr>>, but actually
-is an operator expr.  Its rhs is an expression delivering an code object, and
+is an operator expression.  Its rhs is an expression delivering an code object, and
 its lhs is an argument list.
 
 Style guideline: before the opening parenthesis of a function call there might
@@ -1747,7 +1772,7 @@ An object has additionally the following run time property:
       objects?  E.g. only using pure functions and/or statics earlier in the
       file.  imports are sub-divided into proper imports and `weak' imports
       which are used to break circular import dependencies.
-  *** Initializer is not a const expr and its about an object with static
+  *** Initializer is not a const sub_expr and its about an object with static
       storage duration in local scope: constructor is called the first time
       the flow of execution reached the point of declaration.  *to-do* make
       visible that at run time there is a check needed whether the init is
@@ -1832,7 +1857,8 @@ A bit simplified, the ++obj++ family of list expressions allocate local
 storage for the object, initialize (aka construct) it with the given
 initializer, bind the given identifier as name to it and finally return a
 `reference' (*to-do*: There are no references in EF, so what exactly is
-returned?) to the new object.
+returned?) to the new object.  Allocated storage (and thus indirectly also the
+object), has an associated block being the owner, see <<associated_block>>
 
 There is also analogous form to define multiple local data objects.  It
 returns a list of `references' (*to-do*: same point as in previous paragraph)
@@ -1856,7 +1882,7 @@ data_obj_def_list_expr =
   ( \: type_expr
     'is data_obj_modifier*
   )*
-  [\= expr]
+  [\= sub_expr]
   args_close_del; 
 
 naked_data_obj_decl = 
@@ -1891,7 +1917,7 @@ enclosing expression list, and it introduces an argument being an initializer.
 ----------------------------------------------------------------------
 initializer = \= (
   arg_list |
-  expr | ## short for "(expr)"
+  sub_expr | ## short for "(sub_expr)"
   'nop_init | 'laterctor);
 ----------------------------------------------------------------------
 
@@ -1968,7 +1994,27 @@ That implies that the compiler 1) must check that the data object is not
 accessed anymore after its destruction 2) does not call the destructor again.
 
 
+[[associated_block]]
 ==== Associated block
+This chapter is about which block is associated to a given storage, which
+includes the object owned by the storage.  See also <<block>> and
+<<local_object_def>>.
+
+Each node in the expression tree has a default block associated to it.
+Certain nodes create a new block, and most probably their children have that
+block associated to it (but not necessarily form a very general point of
+view).  At top level, it's the `module init function' which is run at
+start up.  By style guideline no local variables are allowed.  The class def
+node opens a new block, to which no locals may be associated to.  Function
+body nodes open a new block.  Flow control list expressions at their top level
+open a block.  The `block_expr' argument to a flow control list expression
+naturally opens a block.  By default style guideline, certain nodes define
+that there is no current block, and no blocks may be opened in the sub-tree.
+As the class example, there is the variant that a node defines that there
+currently is no current block, but blocks might be opened (but only if `open
+block node' is something call-able.  E.g if in the body of a class just
+explicitly a block is opened, that is not callable).
+
 Make it possible that all clauses of a flow control expression can introduce
 an object which is associated to an outer block.
 
@@ -2095,7 +2141,7 @@ See <<templates>>.
 ----------------------------------------------------------------------
 ## At compile-time define a new class type. At run-time does nothing.
 class_type_def_list_expr = ('class|'interface) identifier#name [type_params]
-  [\: super_class_list] ['is class_modifier*] \= expr#body args_close_del;
+  [\: super_class_list] ['is class_modifier*] \= block_expr#body args_close_del;
 super_class_list = ( ['public|'protected|'private] class_type_expr \,{l?} )*;
 class_modifier = ... ;
 ----------------------------------------------------------------------
@@ -2125,8 +2171,8 @@ class_type_expr = identifier#*class' name*# [type_args];
 ----------------------------------------------------------------------
 fun_name_ctor = 'this | 'ctor | 'constructor;
 ctor_body = [member_init_part] [classic_ctor_part];
-member_init_part = expr | 'this initializer;
-classic_ctor_part = mi_end_expr expr;
+member_init_part = block_expr | 'this initializer;
+classic_ctor_part = mi_end_expr block_expr;
 mi_end_expr = 'mi_end; ## of type void
 ----------------------------------------------------------------------
 
@@ -2391,9 +2437,9 @@ conditional_expr = if_expr | givenchain_expr | jumptable_expr |
   'unless [\(] sa_expr (\,|'do) block_expr (\)|'end);
 
 if_expr =
-  'if [\(] sa_expr#condition [\:|'then] expr#body
-  ('elif sa_expr#condition [\:|'then] expr#body)*
-  ['else expr#body]
+  'if [\(] sa_expr#condition [\:|'then] block_expr#body
+  ('elif sa_expr#condition [\:|'then] block_expr#body)*
+  ['else block_expr#body]
   args_close_del;
 
 givenchain_expr =
@@ -2401,12 +2447,12 @@ givenchain_expr =
   ## to test for equality.
   'given sa_expr [\:] 
   ('when \( expr_list#*at least one*# \) block_expr_opt_falltrough)* 
-  ['else expr]
+  ['else block_expr]
 
 jumptable_expr =
   'jumptable sa_expr
   ('when \( expr_list#*at least one*# \) block_expr_opt_falltrough)* 
-  ['else expr]  
+  ['else block_expr]  
   args_close_del;
 
 loop_expr =
@@ -2422,20 +2468,20 @@ loop_expr =
   ##   scala, ... do?
   ## - alternatively: integralexpr.times(closureexpr)
   'foreach [\(] sa_expr [\:|'in] sa_expr [\:\|'do]
-  expr#body
+  block_expr#body
   args_close_del |
 
-  ['for|'loop] [\(] expr#init \, expr#condition \, expr#inc [\:|'do]
-  expr#body
+  ['for|'loop] [\(] standalone_expr_seq#init \, sub_expr#condition \, standalone_expr_seq#inc [\:|'do]
+  block_expr#body
   args_close_del |
 
   ('while|'until) [\(] sa_expr#condition [\:|'do]
-  expr#body
+  block_expr#body
   args_close_del |
 
   'do [\(]
-  expr#body
-  ('while|'until) expr#condition
+  block_expr#body
+  ('while|'until) sa_expr#condition
   args_close_del;
 
 ## jumps. The result type of control flow jump operands is typically
@@ -2581,7 +2627,7 @@ memory.
 ----------------------------------------------------------------------
 memory_mgmt_list_expr =
   ('new | 'raw_new) [\(] type_expr initializer args_close_del |
-  'raw_delete [\(] expr args_close_del;
+  'raw_delete [\(] sub_expr args_close_del;
 ----------------------------------------------------------------------
 
 +new+ creates a new data object, internally using +raw_new+, and returns an
