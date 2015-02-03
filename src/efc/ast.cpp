@@ -146,19 +146,19 @@ ObjType& AstDataDecl::objType(bool stealOwnership) const {
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
-  m_ctorArgs(new AstCtList(initValue)) {
+  m_ctorArgs(initValue ? new AstCtList(initValue) : new AstCtList()) {
   assert(m_decl);
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
-  m_ctorArgs(ctorArgs) {
+  m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()) {
   assert(m_decl);
 }
 
 AstDataDef::~AstDataDef() {
   delete m_decl;
-  if ( m_ctorArgs ) { delete m_ctorArgs; }
+  delete m_ctorArgs;
 }
 
 llvm::Value* AstDataDef::accept(IrBuilderAst& visitor, Access access) const {
@@ -178,12 +178,10 @@ basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
 }
 
 const AstValue* AstDataDef::initValue() const {
-  if (m_ctorArgs) {
-    const std::list<AstValue*>& args = m_ctorArgs->childs();
-    if (!args.empty()) {
-      assert(args.size()==1); // more ctor arguments not yet supported
-      return args.front();
-    }
+  const std::list<AstValue*>& args = m_ctorArgs->childs();
+  if (!args.empty()) {
+    assert(args.size()==1); // more ctor arguments not yet supported
+    return args.front();
   }
   return NULL;
 }

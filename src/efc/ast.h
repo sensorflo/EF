@@ -137,7 +137,7 @@ public:
 private:
   /** We're the owner. Is garanteed to be non-null */
   const AstDataDecl* const m_decl;
-  /** We're the owner. Is _NOT_ garanteed to be non-null */
+  /** We're the owner. Is garanteed to be non-null */
   const AstCtList* const m_ctorArgs;
 };
 
