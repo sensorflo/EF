@@ -1648,7 +1648,7 @@ stored return value of the 1st call.
 
 ==== Return value optimization (RVO)
 
-Probably part of the more general copy elision.
+Probably part of the more general copy <<elision>>.
 
 
 == Modules
@@ -2163,7 +2163,12 @@ class_type_expr = identifier#*class' name*# [type_args];
 --------------------------------------------------
 
 
-=== Special methods
+[[known_semantics_methods]]
+=== Special methods / known semantics
+One way in they are special: they must adhere to given semantics, and the
+compiler can elide (see <<elision>> calling them if it discovers there is no
+need in calling them.
+
 
 [[constructor]]
 ==== Constructor
@@ -2271,9 +2276,13 @@ How to call the destructor explicitly?
 By style guideline, it must provide the strong exception guarantee.
 
 
-==== The big five
+[[clone]]
+==== clone
+
+
+==== The big six
 By style guideline, either none or all of the big five have to be defined.
-They are copy constructor, move constructor, assignment, swap, destructor.
+They are copy constructor, move constructor, assignment, swap, clone, destructor.
 
 
 === Automatic generated methods
@@ -2296,12 +2305,14 @@ need to explicitly be declared if the user wants them as members of the class.
 - Copy constructor
 - Move constructor
 - Destructor
-- Assignment operator
-- Equality operator
+- Assignment operator (!! virtual or not? slicing!!)
+- Equality operator (!! virtual or not? slicing!!)
 - All other comparisons operators, given an implementation of {++\<\=>++} or
   {one of {++==++, ++!=++} and one of {++\<=++, ++<++, ++>++, ++>=++}}.  See
   also the D programming language.
-- friend swap function
+- friend swap function (!! virtual or not? slicing!!)
+- clone?  (must be virtual to really make sense (else just use copy ctor), so
+  not every).  Or as in Java via an +Clonable+ interface?
 
 
 [[prevent_auto_gen_of_method]]
@@ -3124,9 +3135,15 @@ you need to that via the +explicit_rt_expr+ wrapper.
 See book Writing Efficient Programs.  See also <<cheap_destructors>>.
 
 
-=== Copy elision
+[[elision]]
+=== Elision of methods with known semantics (copy elision)
 
-...
+See also <<known_semantics_methods>>.
+
+.to-do:
+When a literal list is used as argument, e.g. for ctor, +++MyClass<T> =
+ctor(il:initializer_list<T>) ... $++, it would be nice if the elements could
+be constructed right in their final place, i.e. apply copy elision.
 
 
 === Lazy evaluation
