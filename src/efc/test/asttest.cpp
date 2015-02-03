@@ -41,8 +41,8 @@ TEST(AstTest, MAKE_TEST_NAME2(
   EXPECT_EQ( "decldata(foo int-mut)", AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)).toStr() ) << amendSpec(spec);
   
   spec = "AstDataDef";
-  EXPECT_EQ( "data(decldata(foo int))", AstDataDef(new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))).toStr() ) << amendSpec(spec);
-  EXPECT_EQ( "data(decldata(foo int-mut) 42)", AstDataDef(
+  EXPECT_EQ( "data(decldata(foo int) ())", AstDataDef(new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "data(decldata(foo int-mut) (42))", AstDataDef(
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       new AstNumber(42)).toStr() ) << amendSpec(spec);
   

@@ -168,12 +168,12 @@ llvm::Value* AstDataDef::accept(IrBuilderAst& visitor, Access access) const {
 basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
   os << "data(";
   m_decl->printTo(os);
+  os << " (";
   const AstValue* iv = initValue();
   if (iv) {
-    os << " ";
     iv->printTo(os);
   }
-  os << ")";
+  os << "))";
   return os;
 }
 
