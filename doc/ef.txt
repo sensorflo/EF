@@ -1558,18 +1558,10 @@ Interfaces should also be able to have invariants, no?
 
 === Overloading
 
-Consider not supporting overloading in EF.
+*to-do*:
 
-- Together with implicit conversions and namespaces / modules it gets
-  difficult to understand which conversions happen and which overloaded method
-  is called at the end.  Both for humans and for compilers.
-- I like overloading and use it not seldom.  Still it is only convenience, it
-  only saves me from having to invent multiple names instead just one name.
-  The maintainer also has to know multiple names instead just one, but he has
-  (having overloading) also to remember the multiple signatures, so no
-  difference for the maintainer.
-- On the other side, for constructors we most certainly have overloading
-  anyway. 
+- make it possible that these two methods most only be implemented once: (in
+  C&plus;&plus; lingo:) ++const T& foo() const++ and ++T& foo()++.
 
 
 === Variadic arguments
