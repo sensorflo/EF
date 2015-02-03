@@ -1330,6 +1330,31 @@ and which I don't have access to?  That problem is probably void if namespaces
 can't be reopened as in C&plus;&plus;
 
 
+[[convenience_method]]
+==== Convenience method
+A convenience method does has the same access rights as anything outside the
+class, i.e. can only access public members, but can be called as a true
+member.
+
+Motivation:
+
+- Only as few code as possible should depend on implementation details,
+  i.e. protected and private members.
+- If convenience methods were not allowed inside a class, it gets much more
+  difficult to implement them in a way that is easy accessible by clients of
+  the class and the convenience methods.
+
+
+*to-do*:
+
+- Can a convenience method be virtual?
+- Can they be defined outside the class?  I think I have this point already
+  elsewhere in this document, remove that redundancy.  But then the same type
+  appears to have different `member' methods, depending on where it is used
+  and what convenience methods where attached to that type in a given
+  namespace.
+
+
 ==== Force accessing all members
 
 Somehow let the compiler check / enforce that e.g. an assignment operator or
