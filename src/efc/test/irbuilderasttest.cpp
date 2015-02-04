@@ -104,6 +104,14 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
     new AstSeq(new AstOperator(AstOperator::eOr, new AstNumber(2), new AstNumber(2))), 0, "", eNe);
 
+  // ==
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator(AstOperator::eEqualTo, new AstNumber(2), new AstNumber(2))),
+    2==2, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(new AstOperator(AstOperator::eEqualTo, new AstNumber(1), new AstNumber(2))),
+    1==2, "");
+
   // + - * /
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(new AstOperator('+', new AstNumber(1), new AstNumber(2))),
@@ -184,6 +192,21 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstNumber(1))),
     1, spec);
   // unary div "/(x)" is invalid
+
+  spec = "binary equal-to: ==(1,1)";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstOperator(AstOperator::eEqualTo,
+        new AstNumber(1),
+        new AstNumber(1))),
+    1==1, spec);
+  spec = "binary equal-to: ==(1,2)";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstOperator(AstOperator::eEqualTo,
+        new AstNumber(1),
+        new AstNumber(2))),
+    1==2, spec);
 
   // n-ary not "!(x y z)" is invalid
   spec = "n-ary plus: +(1,2,3)";

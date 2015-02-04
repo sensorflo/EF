@@ -73,6 +73,7 @@
   AMPER_AMPER "&&"
   OR "or"
   PIPE_PIPE "||"
+  EQUAL_EQUAL "=="
   SLASH "/"
   G_LPAREN "g("
   LPAREN "("
@@ -90,6 +91,7 @@
 %right EQUAL
 %left PIPE_PIPE OR
 %left AMPER_AMPER AND
+%left EQUAL_EQUAL
 %left PLUS
       MINUS
 %left STAR
@@ -225,6 +227,7 @@ operator_expr
   | sub_expr PIPE_PIPE   sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr AND         sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
   | sub_expr AMPER_AMPER sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
+  | sub_expr EQUAL_EQUAL sub_expr                   { $$ = new AstOperator(AstOperator::eEqualTo, $1, $3); }
   | sub_expr PLUS        sub_expr                   { $$ = new AstOperator('+', $1, $3); }
   | sub_expr MINUS       sub_expr                   { $$ = new AstOperator('-', $1, $3); }
   | sub_expr STAR        sub_expr                   { $$ = new AstOperator('*', $1, $3); }

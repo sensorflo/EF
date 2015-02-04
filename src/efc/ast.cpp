@@ -316,6 +316,7 @@ AstOperator::EOperation AstOperator::toEOperation(const string& op) {
       m_opMap.insert(make_pair("&&", eAnd));
       m_opMap.insert(make_pair("or", eOr));
       m_opMap.insert(make_pair("||", eOr));
+      m_opMap.insert(make_pair("==", eEqualTo));
       m_opMap.insert(make_pair("not", eNot));
     }
     map<string,EOperation>::iterator i = m_opMap.find(op);
@@ -330,6 +331,7 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
   case AstOperator::eAnd: return os << "and";
   case AstOperator::eOr: return os << "or";
   case AstOperator::eNot: return os << "not";
+  case AstOperator::eEqualTo: return os << "==";
   default:
     if (static_cast<int>(op)<128) {
       return os << static_cast<char>(op);

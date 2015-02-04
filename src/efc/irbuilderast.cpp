@@ -146,8 +146,10 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
     resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 1));
     break;
   case AstOperator::eAssign: // fallthrough
+  case AstOperator::eEqualTo:
   case AstOperator::eDiv: {
     if ( op_==AstOperator::eAssign ) { assert(argschilds.size()==2); }
+    if ( op_==AstOperator::eEqualTo ){ assert(argschilds.size()==2); }
     if ( op_==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
     const AstValue& lhsAst = **(iter++);
     resultIr = lhsAst.accept(*this, op_==AstOperator::eAssign ? eWrite : eRead);
@@ -174,12 +176,13 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
     case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (resultIr,       operandIr,     "addtmp" ); break;
     case AstOperator::eMul      : resultIr = m_builder.CreateMul   (resultIr,       operandIr,     "multmp" ); break;
     case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (resultIr,       operandIr,     "divtmp" ); break;
+    case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(resultIr,       operandIr,     "cmptmp" ); break;
     default: assert(false); break;
     }
   }
 
   assert(resultIr);
-  if (op_==AstOperator::eNot || op_==AstOperator::eAnd || op_==AstOperator::eOr) {
+  if (op_==AstOperator::eNot || op_==AstOperator::eAnd || op_==AstOperator::eOr || op_==AstOperator::eEqualTo) {
     resultIr = m_builder.CreateZExt(resultIr, Type::getInt32Ty(getGlobalContext()));
   }
   return resultIr;

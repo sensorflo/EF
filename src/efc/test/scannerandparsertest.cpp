@@ -153,6 +153,14 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "a-b+c", "+(-(a b) c)", spec);
   TEST_PARSE( "a+b-c", "-(+(a b) c)", spec);
 
+  // precedence level group: ==
+  spec = "== is left associative";
+  TEST_PARSE( "a==b==c", "==(==(a b) c)", spec);
+  
+  spec = "== has lower precedence than +";
+  TEST_PARSE( "a==b+c", "==(a +(b c))", spec);
+  TEST_PARSE( "a+b==c", "==(+(a b) c)", spec);
+
   // precedence level group: binary and &&
   spec = "&& aka 'and' is left associative. && and 'and' are synonyms.";
   TEST_PARSE( "a &&  b &&  c", "and(and(a b) c)", spec);
@@ -234,6 +242,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "&&(x,y,z)", "and(x y z)", "");
   TEST_PARSE( "or(x,y,z)", "or(x y z)", "");
   TEST_PARSE( "||(x,y,z)", "or(x y z)", "");
+  TEST_PARSE( "==(1,1)", "==(1 1)", "");
   TEST_PARSE( "+()", "+()", "");
   TEST_PARSE( "-(1)", "-(1)", "");
   TEST_PARSE( "*(1,2)", "*(1 2)", "");

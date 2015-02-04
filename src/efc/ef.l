@@ -98,7 +98,8 @@ bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool
 "->"                return yy::Parser::make_ARROW(loc);
 "&&"                return yy::Parser::make_AMPER_AMPER(loc);
 "||"                return yy::Parser::make_PIPE_PIPE(loc);
-([-+*/!]|&&|"||"|"and"|"or"|"not"|"new"|"delete")[ \t]*"("    {   /*todo: allow comments and newlines intbetween*/
+"=="                return yy::Parser::make_EQUAL_EQUAL(loc);
+([-+*/!]|&&|"||"|"=="|"and"|"or"|"not"|"new"|"delete")[ \t]*"("    {   /*todo: allow comments and newlines intbetween*/
   char* p = yytext;
   for (/*nop*/; *p && *p!=' ' && *p!='\t' && *p!='('; ++p ) /*nop*/;
   return yy::Parser::make_OP_LPAREN(string(yytext,p), loc);

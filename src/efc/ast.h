@@ -221,6 +221,7 @@ public:
     eNot = '!',
     eAnd = 128,
     eOr,
+    eEqualTo
   };
   AstOperator(char op, AstCtList* args);
   AstOperator(const std::string& op, AstCtList* args);
