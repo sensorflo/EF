@@ -24,7 +24,13 @@ ObjType& AstValue::objType() const {
 }
 
 basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {
-  return os << m_value;
+  os << m_value;
+  if ( m_objType->match(ObjTypeFunda(ObjTypeFunda::eBool)) ) {
+    os << "bool";
+    // if value is outside range of bool, that is a topic that shall not
+    // interest us at this point here
+  }
+  return os;
 }
 
 AstSymbol::AstSymbol(const string* name) :
