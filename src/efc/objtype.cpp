@@ -51,8 +51,13 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
 }
 
 const AstValue& ObjTypeFunda::defaultValue() const {
-  static AstNumber def(0);
-  return def;
+  static AstNumber boolNumber(0, new ObjTypeFunda(eBool));
+  static AstNumber intNumber (0, new ObjTypeFunda(eInt));
+  switch (m_type) {
+  case eBool: return boolNumber;
+  case eInt:  return intNumber;
+  default:    assert(false);
+  }
 }
 
 ObjTypeFun::ObjTypeFun(list<ObjType*>* args, ObjType* ret) :
