@@ -60,6 +60,40 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
+    the_literal_false,
+    yylex,
+    returns_TOK_NUMBER_WITH_the_semantic_value_0_as_value_and_bool_as_type_AND_succeeds)) {
+  DriverOnTmpFile driver( "false" );
+
+  Parser::symbol_type st = yylex(driver);
+  EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
+  EXPECT_EQ(0, st.value.as<NumberToken>().m_value );
+  ObjTypeFunda expectedType(ObjTypeFunda::eBool);
+  EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
+
+  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+
+  EXPECT_FALSE( driver.d().gotError() );
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
+    the_literal_true,
+    yylex,
+    returns_TOK_NUMBER_WITH_the_semantic_value_1_as_value_and_bool_as_type_AND_succeeds)) {
+  DriverOnTmpFile driver( "true" );
+
+  Parser::symbol_type st = yylex(driver);
+  EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
+  EXPECT_EQ(1, st.value.as<NumberToken>().m_value );
+  ObjTypeFunda expectedType(ObjTypeFunda::eBool);
+  EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
+
+  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+
+  EXPECT_FALSE( driver.d().gotError() );
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_number_WITH_an_unknown_suffix,
     yylex,
     returns_TOK_NUMBER_AND_fails)) {

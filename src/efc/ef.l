@@ -61,6 +61,9 @@ and                 return yy::Parser::make_AND(loc);
 or                  return yy::Parser::make_OR(loc);
 raw_new             return yy::Parser::make_RAW_NEW(loc);
 raw_delete          return yy::Parser::make_RAW_DELETE(loc);
+false               return yy::Parser::make_NUMBER(NumberToken(0, new ObjTypeFunda(ObjTypeFunda::eBool)), loc);
+true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFunda(ObjTypeFunda::eBool)), loc);
+
 
   /* type keywords */
 int                 return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eInt, loc);
