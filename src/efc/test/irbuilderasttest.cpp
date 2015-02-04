@@ -955,6 +955,18 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
     << amendAst(astSeq);
 }
 
+// Temporary test while introducing types
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    a_seq_containing_a_bool_literal,
+    buildAndRunModule,
+    succeeds)) {
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstSeq(
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(1, ObjTypeFunda::eBool)),
+    1, "");
+}
+
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_if_else_expression_WITH_a_condition_evaluating_to_true,
     buildAndRunModule,

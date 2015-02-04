@@ -46,7 +46,11 @@ IrBuilderAst::~IrBuilderAst() {
 }
 
 void IrBuilderAst::buildModule(const AstValue& value) {
-  m_builder.CreateRet(value.accept(*this));
+  // Currently the return type is always int, so ensure the return type of the
+  // IR code is also Int32
+  Value* extResultIr = m_builder.CreateZExt( value.accept(*this),
+    Type::getInt32Ty(getGlobalContext()));
+  m_builder.CreateRet(extResultIr);
   verifyFunction(*m_mainFunction);
 }
 
@@ -182,14 +186,17 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
   }
 
   assert(resultIr);
-  if (op_==AstOperator::eNot || op_==AstOperator::eAnd || op_==AstOperator::eOr || op_==AstOperator::eEqualTo) {
-    resultIr = m_builder.CreateZExt(resultIr, Type::getInt32Ty(getGlobalContext()));
-  }
   return resultIr;
 }
 
 Value* IrBuilderAst::visit(const AstNumber& number, Access) {
-  return ConstantInt::get( getGlobalContext(), APInt(32, number.value()));
+  if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eInt)) ) {
+    return ConstantInt::get( getGlobalContext(), APInt(32, number.value()));
+  } else if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eBool))) {
+    return ConstantInt::get( getGlobalContext(), APInt(1, number.value()));
+  } else {
+    assert(false);
+  }
 }
 
 Value* IrBuilderAst::visit(const AstSymbol& symbol, Access access) {
@@ -249,7 +256,11 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
     }
   }
 
-  m_builder.CreateRet(funDef.body().accept(*this));
+  // Currently the return type is always int, so ensure the return type of the
+  // IR code is also Int32
+  Value* extResultIr = m_builder.CreateZExt( funDef.body().accept(*this),
+    Type::getInt32Ty(getGlobalContext()) );
+  m_builder.CreateRet(extResultIr);
 
   //verifyFunction(*functionIr);
 
@@ -402,7 +413,7 @@ Value* IrBuilderAst::visit(const AstIf& if_, Access access) {
   // IR for evaluate condition
   Value* condIr = capair.m_condition->accept(*this);
   Value* condCmpIr = m_builder.CreateICmpNE(condIr,
-    ConstantInt::get(getGlobalContext(), APInt(32, 0)), "ifcond");
+    ConstantInt::get(getGlobalContext(), APInt(1, 0)), "ifcond");
 
   // IR for branch based on condition
   m_builder.CreateCondBr(condCmpIr, ThenBB, ElseBB);

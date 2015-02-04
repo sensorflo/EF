@@ -20,16 +20,16 @@
 // code continues on the next line and to use it when code continues on the
 // same line. There can be zero or more elif parts. The else part is optional.
 fun factorial:(x:int) int =
-  if x
+  if 0==x
     x * factorial(x-1)
   else
     1
-  $  
+  $
 $
 
 // g(...) to group expressions
 // --------------------------------
-// 
+//
 // Unlike most other languages, parentheses with a leading g are used to group
 // expressions / overwrite precedence.
 g(1 + 2) * 3 // evaluates to 9, equivalent to '(1 + 2) * 3' in most languages
