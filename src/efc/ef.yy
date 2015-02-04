@@ -16,6 +16,14 @@
   #include "../ast.h"
   #include "../objtype.h"
   #include "../parserext.h"                        
+
+  class ObjType;
+  struct NumberToken {
+    NumberToken() : m_value(0), m_objType(NULL) {}
+    NumberToken(int value, ObjType* objType) : m_value(value), m_objType(objType) {}
+    int m_value;
+    ObjType* m_objType;
+  };
 }
 
 %param { Driver& driver }
@@ -77,7 +85,7 @@
 %token <ObjTypeFunda::EType> FUNDAMENTAL_TYPE
 %token <std::string> OP_LPAREN 
 %token <std::string> ID "identifier"
-%token <int> NUMBER "number"
+%token <NumberToken> NUMBER "number"
 %precedence ASSIGNEMENT
 %right EQUAL
 %left PIPE_PIPE OR
@@ -224,7 +232,7 @@ operator_expr
 
 primary_expr
   : list_expr                                       { std::swap($$,$1); }
-  | NUMBER                                          { $$ = new AstNumber($1); }
+  | NUMBER                                          { $$ = new AstNumber($1.m_value, $1.m_objType); }
   | G_LPAREN standalone_expr_seq RPAREN             { $$ = $2; }
   | ID                                              { $$ = new AstSymbol(new std::string($1)); }
   ;
