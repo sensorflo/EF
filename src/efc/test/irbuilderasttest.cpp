@@ -902,6 +902,36 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   }
 }
 
+TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
+    an_data_obj_def_WITH_an_initializer_of_a_larger_type,
+    buildAndRunModule,
+    throws,
+    BECAUSE_there_are_no_narrowing_implicit_conversions)) {
+  auto_ptr<AstSeq> astSeq(
+    new AstSeq(
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool)),
+        new AstNumber(42, ObjTypeFunda::eInt))));
+  TestingIrBuilderAst UUT;
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
+    << amendAst(astSeq);
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
+    an_data_obj_def_WITH_an_initializer_of_a_smaller_type,
+    buildAndRunModule,
+    throws,
+    BECAUSE_currently_there_are_no_implicit_widening_conversions)) {
+  auto_ptr<AstSeq> astSeq(
+    new AstSeq(
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstNumber(0, ObjTypeFunda::eBool))));
+  TestingIrBuilderAst UUT;
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
+    << amendAst(astSeq);
+}
+
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_if_else_expression_WITH_a_condition_evaluating_to_true,
     buildAndRunModule,

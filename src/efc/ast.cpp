@@ -200,6 +200,12 @@ AstNumber::AstNumber(int value, ObjType* objType) :
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
 }
 
+AstNumber::AstNumber(int value, ObjTypeFunda::EType eType,
+  ObjTypeFunda::Qualifier qualifier) :
+  m_value(value),
+  m_objType(new ObjTypeFunda(eType, qualifier)) {
+}
+
 AstNumber::~AstNumber() {
   delete m_objType;
 }

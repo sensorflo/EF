@@ -147,6 +147,8 @@ private:
 class AstNumber : public AstValue {
 public:
   AstNumber(int value, ObjType* objType = NULL);
+  AstNumber(int value, ObjTypeFunda::EType eType,
+    ObjTypeFunda::Qualifier qualifier = ObjTypeFunda::eNoQualifier);
   ~AstNumber();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
