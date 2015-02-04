@@ -14,6 +14,7 @@ class AstSymbol;
 class AstFunCall;
 class AstOperator;
 class AstSeq;
+class AstCast;
 class AstCtList;
 class AstFunDef;
 class AstFunDecl;
@@ -29,6 +30,7 @@ enum Access { eRead, eWrite };
 class AstVisitor {
 public:
   virtual ~AstVisitor() {};
+  virtual void visit(const AstCast& cast) =0;
   virtual void visit(const AstSeq& seq) =0;
   virtual void visit(const AstCtList& ctList) =0;
   virtual void visit(const AstOperator& op) =0;
@@ -59,6 +61,22 @@ public:
   code objects. */
   virtual const std::string& address_as_id_hack() const; 
   virtual ObjType& objType() const;
+};
+
+class AstCast : public AstValue {
+public:
+  AstCast(AstValue* child, ObjType* objType);
+  AstCast(AstValue* child, ObjTypeFunda::EType objType);
+  ~AstCast();
+  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
+
+private:
+  /** We're the owner. Is guaranteed to be non-null */
+  const AstValue* m_child;
+  /** We're the owner. Is garanteed to be non-null. */
+  ObjType* m_objType;
 };
 
 class AstFunDef : public AstValue {

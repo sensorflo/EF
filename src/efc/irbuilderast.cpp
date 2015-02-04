@@ -109,6 +109,10 @@ Value* IrBuilderAst::visit(const AstSeq& seq, Access) {
   return ret;
 }
 
+Value* IrBuilderAst::visit(const AstCast&, Access) {
+  return NULL;
+}
+
 Value* IrBuilderAst::visit(const AstOperator& op, Access) {
   const list<AstValue*>& argschilds = op.argschilds();
   list<AstValue*>::const_iterator iter = argschilds.begin();

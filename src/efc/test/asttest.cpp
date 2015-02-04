@@ -10,6 +10,10 @@ TEST(AstTest, MAKE_TEST_NAME2(
   string spec = "AstNumber";
   EXPECT_EQ( "42", AstNumber(42).toStr() ) << amendSpec(spec);
 
+  spec = "AstCast";
+  EXPECT_EQ( "cast(bool 0)",
+    AstCast(new AstNumber(0), ObjTypeFunda::eBool).toStr()) << amendSpec(spec);
+
   spec = "AstSymbol";
   EXPECT_EQ( "foo", AstSymbol(new string("foo")).toStr()) << amendSpec(spec);
 

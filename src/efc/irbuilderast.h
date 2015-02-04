@@ -19,6 +19,7 @@ public:
   int buildAndRunModule(const AstValue& value);
   
   llvm::Value*    visit(const AstSeq& seq, Access access = eRead);
+  llvm::Value*    visit(const AstCast& cast, Access access = eRead);
   llvm::Value*    visit(const AstOperator& op, Access access = eRead);
   llvm::Value*    visit(const AstNumber& number, Access access = eRead);
   llvm::Value*    visit(const AstSymbol& symbol, Access access = eRead);

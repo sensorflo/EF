@@ -44,6 +44,33 @@ basic_ostream<char>& AstSymbol::printTo(basic_ostream<char>& os) const {
   return os << *m_name;
 }
 
+AstCast::AstCast(AstValue* child, ObjType* objType) :
+  m_child(child ? child : new AstNumber(0)),
+  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
+}
+
+AstCast::AstCast(AstValue* child, ObjTypeFunda::EType objType) :
+  m_child(child ? child : new AstNumber(0)),
+  m_objType(new ObjTypeFunda(objType)) {
+}
+
+AstCast::~AstCast() {
+  delete m_child;
+  delete m_objType;
+}
+
+llvm::Value* AstCast::accept(IrBuilderAst& visitor, Access access) const {
+  return visitor.visit(*this, access);
+}
+
+basic_ostream<char>& AstCast::printTo(basic_ostream<char>& os) const {
+  os << "cast(";
+  os << *m_objType << " ";
+  m_child->printTo(os);
+  os << ")";
+  return os;
+}
+
 AstFunDef::AstFunDef(AstFunDecl* decl, AstValue* body) :
   m_decl(decl ? decl : new AstFunDecl("<unknown_name>")),
   m_body(body ? body : new AstNumber(0)) {
