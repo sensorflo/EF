@@ -15,6 +15,14 @@ const std::string& AstValue::address_as_id_hack() const {
   throw runtime_error::runtime_error("not an id");
 }
 
+ObjType& AstValue::objType() const {
+  // KLUDGE: Currently wrongly too much depends on that nearly all expressions
+  // are of type int, so for now the default has to be int opposed to an
+  // assertion, because here the type really isn't known.
+  static ObjTypeFunda ret(ObjTypeFunda::eInt);
+  return ret;
+}
+
 basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {
   return os << m_value;
 }
@@ -136,6 +144,10 @@ basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
   return os << "(" << m_name << " " << *m_objType << ")";
 }
 
+ObjType& AstDataDecl::objType() const {
+  return objType(false);
+}
+
 ObjType& AstDataDecl::objType(bool stealOwnership) const {
   if (stealOwnership) {
     assert(m_ownerOfObjType);
@@ -181,6 +193,15 @@ const AstValue& AstDataDef::initValue() const {
     return *(args.front());
   }
   return m_decl->objType().defaultValue();
+}
+
+AstNumber::AstNumber(int value, ObjType* objType) :
+  m_value(value),
+  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
+}
+
+AstNumber::~AstNumber() {
+  delete m_objType;
 }
 
 llvm::Value* AstNumber::accept(IrBuilderAst& visitor, Access access) const {

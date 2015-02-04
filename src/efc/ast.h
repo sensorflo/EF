@@ -58,6 +58,7 @@ public:
   /** A workaround to have an early notion of an address of data objects or
   code objects. */
   virtual const std::string& address_as_id_hack() const; 
+  virtual ObjType& objType() const;
 };
 
 class AstFunDef : public AstValue {
@@ -103,7 +104,8 @@ public:
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
-  virtual ObjType& objType(bool stealOwnership = false) const;
+  virtual ObjType& objType() const;
+  virtual ObjType& objType(bool stealOwnership) const;
 protected:
   enum Type { eNormal, eFunArg };
   AstDataDecl(const std::string& name, ObjType* objType, Type type);
@@ -144,13 +146,17 @@ private:
 /** Literal number */
 class AstNumber : public AstValue {
 public:
-  AstNumber(int value) : m_value(value) {}
+  AstNumber(int value, ObjType* objType = NULL);
+  ~AstNumber();
   virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   int value() const { return m_value; }
+  virtual ObjType& objType() const { return *m_objType; }
 private:
   const int m_value;
+  /** We're the owner. Is garanteed to be non-null. */
+  ObjType* m_objType;
 };
 
 class AstSymbol : public AstValue {
