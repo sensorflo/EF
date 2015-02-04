@@ -79,7 +79,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_cast_expression,
     parse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "int(false)", "cast(int 0)", "trivial example");
+  TEST_PARSE( "int(false)", "cast(int 0bool)", "trivial example");
   TEST_PARSE( "bool(0)", "cast(bool 0)", "trivial example");
 }
 
