@@ -210,8 +210,9 @@ sub_expr
   ;
 
 operator_expr
-  /* function call */
-  : sub_expr LPAREN ct_list RPAREN                  { $$ = new AstFunCall($1, $3); }
+  /* function call and cast */
+  : sub_expr         LPAREN ct_list         RPAREN  { $$ = new AstFunCall($1, $3); }
+  | FUNDAMENTAL_TYPE LPAREN standalone_expr RPAREN  { $$ = new AstCast($3, $1); }
 
   /* unary prefix */
   | NOT  sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
