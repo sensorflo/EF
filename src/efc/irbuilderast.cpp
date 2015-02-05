@@ -98,21 +98,6 @@ int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int ar
   return functionPtr(arg1, arg2);
 }
 
-Value* IrBuilderAst::visit(const AstSeq& seq, Access) {
-  const list<AstValue*>& childs = seq.childs();
-  if (childs.empty()) {
-    throw runtime_error::runtime_error("Empty sequence not allowed (yet)");
-  }
-  // Evalue all nodes of the sequence. The value of the sequence is the value
-  // of the last node.
-  Value* ret = NULL;
-  for (list<AstValue*>::const_iterator i = childs.begin();
-       i!=childs.end(); ++i) {
-    ret = (*i)->accept(*this);
-  }
-  return ret;
-}
-
 Value* IrBuilderAst::visit(const AstCast&, Access) {
   return NULL;
 }
@@ -149,6 +134,11 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
   case AstOperator::eMul:
     resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 1));
     break;
+  case AstOperator::eSeq:
+    if (argschilds.empty()) {
+      throw runtime_error::runtime_error("Empty sequence not allowed (yet)");
+    }
+    break;
   case AstOperator::eAssign: // fallthrough
   case AstOperator::eEqualTo:
   case AstOperator::eDiv: {
@@ -181,6 +171,7 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
     case AstOperator::eMul      : resultIr = m_builder.CreateMul   (resultIr,       operandIr,     "multmp" ); break;
     case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (resultIr,       operandIr,     "divtmp" ); break;
     case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(resultIr,       operandIr,     "cmptmp" ); break;
+    case AstOperator::eSeq      : resultIr = operandIr; break; // replacing previous resultIr
     default: assert(false); break;
     }
   }

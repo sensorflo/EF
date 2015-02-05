@@ -345,6 +345,7 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
   case AstOperator::eOr: return os << "or";
   case AstOperator::eNot: return os << "not";
   case AstOperator::eEqualTo: return os << "==";
+  case AstOperator::eSeq: return os << "seq";
   default:
     if (static_cast<int>(op)<128) {
       return os << static_cast<char>(op);
@@ -352,6 +353,15 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
       assert(false);
     }
   }
+}
+
+AstSeq::AstSeq(std::list<AstValue*>* childs) :
+  AstOperator(AstOperator::eSeq, new AstCtList(childs)) {
+}
+
+/** NULL childs are ignored.*/
+AstSeq::AstSeq(AstValue* child1, AstValue* child2, AstValue* child3) :
+  AstOperator(AstOperator::eSeq, child1, child2, child3) {
 }
 
 AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstValue* elseAction) :
@@ -433,62 +443,6 @@ basic_ostream<char>& AstFunCall::printTo(basic_ostream<char>& os) const {
   m_address->printTo(os);
   os << "(";
   m_args->printTo(os);
-  os << ")";
-  return os;
-}
-
-AstSeq::AstSeq(std::list<AstValue*>* childs) :
-  m_childs(childs ? childs : new std::list<AstValue*>()) {
-}
-
-/** When child is NULL it is ignored */
-AstSeq::AstSeq(AstValue* child) :
-  m_childs(new std::list<AstValue*>()) {
-  assert(m_childs);
-  if (child) { m_childs->push_back(child); }
-}
-
-/** NULL childs are ignored.*/
-AstSeq::AstSeq(AstValue* child1, AstValue* child2, AstValue* child3) :
-  m_childs(new std::list<AstValue*>()) {
-  assert(m_childs);
-  if (child1) { m_childs->push_back(child1); }
-  if (child2) { m_childs->push_back(child2); }
-  if (child3) { m_childs->push_back(child3); }
-}
-
-AstSeq::~AstSeq() {
-  for (list<AstValue*>::iterator i=m_childs->begin(); i!=m_childs->end(); ++i) {
-    delete (*i);
-  }
-  delete m_childs;
-}
-
-/** When child is NULL it is ignored */
-AstSeq* AstSeq::Add(AstValue* child) {
-  if (child) { m_childs->push_back(child); }
-  return this;
-}
-
-/** NULL childs are ignored. */
-AstSeq* AstSeq::Add(AstValue* child1, AstValue* child2, AstValue* child3) {
-  Add(child1);
-  Add(child2);
-  Add(child3);
-  return this;
-}
-
-llvm::Value* AstSeq::accept(IrBuilderAst& visitor, Access access) const {
-  return visitor.visit(*this, access);
-}
-
-basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) const {
-  os << "seq(";
-  for (list<AstValue*>::const_iterator i=m_childs->begin();
-       i!=m_childs->end(); ++i) {
-    if (i!=m_childs->begin()) { os << " "; }
-    (*i)->printTo(os);
-  }
   os << ")";
   return os;
 }

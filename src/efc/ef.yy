@@ -100,9 +100,8 @@
 %precedence LPAREN
 
 
-%type <AstCtList*> ct_list initializer
+%type <AstCtList*> ct_list initializer pure2_standalone_expr_seq
 %type <std::list<AstArgDecl*>*> pure_naked_param_ct_list
-%type <AstSeq*> pure2_standalone_expr_seq
 %type <std::list<AstValue*>*> pure_ct_list
 %type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
@@ -150,11 +149,11 @@ block_expr
 i.e. it does not build an expression sequence */
 standalone_expr_seq
   : standalone_expr seq_operator                    { std::swap($$,$1); }
-  | pure2_standalone_expr_seq seq_operator          { $$ = $1; }
+  | pure2_standalone_expr_seq seq_operator          { $$ = new AstOperator(AstOperator::eSeq, $1); }
   ;
 
 pure2_standalone_expr_seq
-  : standalone_expr seq_operator standalone_expr           { $$ = new AstSeq($1,$3); }
+  : standalone_expr seq_operator standalone_expr           { $$ = new AstCtList($1,$3); }
   | pure2_standalone_expr_seq seq_operator standalone_expr { ($1)->Add($3); std::swap($$,$1); }
   ;
 

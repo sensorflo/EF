@@ -31,39 +31,46 @@ string amendAst(const auto_ptr<AstSeq>& ast) {
   return amendAst(ast.get());
 }
 
-void testbuilAndRunModule(AstSeq* astSeq, int expectedResult,
+void testbuilAndRunModule(AstValue* astRoot, int expectedResult,
   const string& spec = "", ECmpOp cmpOp = eEq ) {
 
   // setup
-  ENV_ASSERT_TRUE( astSeq!=NULL );
-  auto_ptr<AstSeq> astSeqAp(astSeq);
+  ENV_ASSERT_TRUE( astRoot!=NULL );
+  auto_ptr<AstValue> astRootAp(astRoot);
   TestingIrBuilderAst UUT;
 
   // execute
-  int result = UUT.buildAndRunModule(*astSeq);
+  int result = UUT.buildAndRunModule(*astRoot);
 
   // verify
   switch (cmpOp) {
-  case eEq: EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
-  case eNe: EXPECT_NE(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
-  case eGt: EXPECT_GT(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
-  case eLt: EXPECT_LT(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
-  case eGe: EXPECT_GE(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
-  case eLe: EXPECT_LE(expectedResult, result) << amendSpec(spec) << amendAst(astSeq); break;
+  case eEq: EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
+  case eNe: EXPECT_NE(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
+  case eGt: EXPECT_GT(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
+  case eLt: EXPECT_LT(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
+  case eGe: EXPECT_GE(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
+  case eLe: EXPECT_LE(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
   }
 }
 
-#define TEST_BUILD_AND_RUN_MODULE(astSeq, expectedResult, spec) \
+#define TEST_BUILD_AND_RUN_MODULE(astRoot, expectedResult, spec) \
   {\
     SCOPED_TRACE("testbuilAndRunModule called from here (via TEST_BUILD_AND_RUN_MODULE)"); \
-    testbuilAndRunModule(astSeq, expectedResult, spec);\
+    testbuilAndRunModule(astRoot, expectedResult, spec);\
   }
 
-#define TEST_BUILD_AND_RUN_MODULE_CMPOP(astSeq, expectedResult, spec, cmpop) \
+#define TEST_BUILD_AND_RUN_MODULE_CMPOP(astRoot, expectedResult, spec, cmpop) \
   {\
     SCOPED_TRACE("testbuilAndRunModule called from here (via TEST_BUILD_AND_RUN_MODULE_CMPOP)"); \
-    testbuilAndRunModule(astSeq, expectedResult, spec, cmpop);  \
+    testbuilAndRunModule(astRoot, expectedResult, spec, cmpop);  \
   }
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    a_single_literal,
+    buildAndRunModule,
+    returns_the_literal_s_value)) {
+  TEST_BUILD_AND_RUN_MODULE(new AstNumber(42), 42, "");
+}
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_seq_with_one_or_more_numbers,

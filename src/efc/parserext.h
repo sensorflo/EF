@@ -11,7 +11,6 @@ of code. */
 class SymbolTableEntry;
 class Env;
 class AstValue;
-class AstSeq;
 class AstDataDecl;
 class AstDataDef;
 class AstArgDecl;

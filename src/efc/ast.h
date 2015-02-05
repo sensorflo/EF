@@ -13,7 +13,6 @@ class AstNumber;
 class AstSymbol;
 class AstFunCall;
 class AstOperator;
-class AstSeq;
 class AstCast;
 class AstCtList;
 class AstFunDef;
@@ -31,7 +30,6 @@ class AstVisitor {
 public:
   virtual ~AstVisitor() {};
   virtual void visit(const AstCast& cast) =0;
-  virtual void visit(const AstSeq& seq) =0;
   virtual void visit(const AstCtList& ctList) =0;
   virtual void visit(const AstOperator& op) =0;
   virtual void visit(const AstNumber& number) =0;
@@ -223,7 +221,8 @@ public:
     eNot = '!',
     eAnd = 128,
     eOr,
-    eEqualTo
+    eEqualTo,
+    eSeq
   };
   AstOperator(char op, AstCtList* args);
   AstOperator(const std::string& op, AstCtList* args);
@@ -253,6 +252,12 @@ private:
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   AstOperator::EOperation op);
 
+class AstSeq : public AstOperator {
+public:
+  AstSeq(std::list<AstValue*>* childs = NULL);
+  AstSeq(AstValue* child1, AstValue* child2 = NULL, AstValue* child3 = NULL);
+};
+
 /* If flow control expression */
 class AstIf : public AstValue {
 public:
@@ -280,27 +285,6 @@ private:
   const std::list<ConditionActionPair>* const m_conditionActionPairs;
   /** We're the owner. Is NOT garanteed to be non-null */
   const AstValue* const m_elseAction;
-};
-
-class AstSeq : public AstValue {
-public:
-  AstSeq(std::list<AstValue*>* childs);
-  AstSeq(AstValue* child1 = NULL);
-  AstSeq(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
-  ~AstSeq();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); }
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
-  AstSeq* Add(AstValue* child);
-  AstSeq* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
-  const std::list<AstValue*>& childs() const { return *m_childs; }
-private:
-  AstSeq(const AstSeq&);
-  AstSeq& operator=(const AstSeq&);
-
-  /** We're the owner of the list and the pointees. Pointers are garanteed to
-  be non null*/
-  std::list<AstValue*>*const m_childs;
 };
 
 class AstCtList : public AstNode {
