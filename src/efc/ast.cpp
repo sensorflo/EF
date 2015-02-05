@@ -43,7 +43,7 @@ AstSymbol::~AstSymbol() {
   delete m_name;
 }
 
-void AstSymbol::accept(AstVisitor& visitor) {
+void AstSymbol::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
@@ -74,7 +74,7 @@ AstCast::~AstCast() {
   delete m_objType;
 }
 
-void AstCast::accept(AstVisitor& visitor) {
+void AstCast::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
@@ -101,7 +101,7 @@ AstFunDef::~AstFunDef() {
   delete m_body;
 }
 
-void AstFunDef::accept(AstVisitor& visitor) {
+void AstFunDef::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
@@ -141,7 +141,7 @@ AstFunDecl::~AstFunDecl() {
   delete m_args;
 }
 
-void AstFunDecl::accept(AstVisitor& visitor) {
+void AstFunDecl::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
@@ -189,7 +189,7 @@ AstDataDecl::~AstDataDecl() {
   if (m_ownerOfObjType) { delete m_objType; }
 }
 
-void AstDataDecl::accept(AstVisitor& visitor) {
+void AstDataDecl::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
@@ -236,7 +236,7 @@ AstDataDef::~AstDataDef() {
   delete m_implicitInitializer;
 }
 
-void AstDataDef::accept(AstVisitor& visitor) {
+void AstDataDef::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
@@ -281,7 +281,7 @@ AstNumber::~AstNumber() {
   delete m_objType;
 }
 
-void AstNumber::accept(AstVisitor& visitor) {
+void AstNumber::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
@@ -334,7 +334,7 @@ AstOperator::~AstOperator() {
   delete m_args;
 }
 
-void AstOperator::accept(AstVisitor& visitor) {
+void AstOperator::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
@@ -422,7 +422,7 @@ list<AstIf::ConditionActionPair>* AstIf::makeConditionActionPairs(
   return tmp;
 }
 
-void AstIf::accept(AstVisitor& visitor) {
+void AstIf::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
@@ -458,7 +458,7 @@ AstFunCall::~AstFunCall() {
   delete m_address;
 }
 
-void AstFunCall::accept(AstVisitor& visitor) {
+void AstFunCall::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
@@ -522,7 +522,7 @@ AstCtList* AstCtList::Add(AstValue* child1, AstValue* child2, AstValue* child3) 
   return this;
 }
 
-void AstCtList::accept(AstVisitor& visitor) {
+void AstCtList::accept(AstConstVisitor& visitor) const {
   visitor.visit(*this);
 }
 
