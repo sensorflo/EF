@@ -29,23 +29,23 @@ enum Access { eRead, eWrite };
 class AstVisitor {
 public:
   virtual ~AstVisitor() {};
-  virtual void visit(const AstCast& cast) =0;
-  virtual void visit(const AstCtList& ctList) =0;
-  virtual void visit(const AstOperator& op) =0;
-  virtual void visit(const AstNumber& number) =0;
-  virtual void visit(const AstSymbol& symbol) =0;
-  virtual void visit(const AstFunCall& funCall) =0;
-  virtual void visit(const AstFunDef& funDef) =0;
-  virtual void visit(const AstFunDecl& funDecl) =0;
-  virtual void visit(const AstDataDecl& dataDecl) =0;
-  virtual void visit(const AstDataDef& dataDef) =0;
-  virtual void visit(const AstIf& if_) =0;
+  virtual void visit(AstCast& cast) =0;
+  virtual void visit(AstCtList& ctList) =0;
+  virtual void visit(AstOperator& op) =0;
+  virtual void visit(AstNumber& number) =0;
+  virtual void visit(AstSymbol& symbol) =0;
+  virtual void visit(AstFunCall& funCall) =0;
+  virtual void visit(AstFunDef& funDef) =0;
+  virtual void visit(AstFunDecl& funDecl) =0;
+  virtual void visit(AstDataDecl& dataDecl) =0;
+  virtual void visit(AstDataDef& dataDef) =0;
+  virtual void visit(AstIf& if_) =0;
 };
 
 class AstNode {
 public:
   virtual ~AstNode() {};
-  virtual void accept(AstVisitor& visitor) const =0;
+  virtual void accept(AstVisitor& visitor) =0;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const = 0;
   /** Similar to printTo; the resulting text is returned as string. */
   virtual std::string toStr() const;
@@ -66,13 +66,13 @@ public:
   AstCast(AstValue* child, ObjType* objType);
   AstCast(AstValue* child, ObjTypeFunda::EType objType);
   ~AstCast();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
 
 private:
   /** We're the owner. Is guaranteed to be non-null */
-  const AstValue* m_child;
+  AstValue* m_child;
   /** We're the owner. Is garanteed to be non-null. */
   ObjType* m_objType;
 };
@@ -81,16 +81,16 @@ class AstFunDef : public AstValue {
 public:
   AstFunDef(AstFunDecl* decl, AstValue* body);
   virtual ~AstFunDef();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); }
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); }
   virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
-  virtual const AstFunDecl& decl() const { return *m_decl; }
-  virtual const AstValue& body() const { return *m_body; }
+  virtual AstFunDecl& decl() const { return *m_decl; }
+  virtual AstValue& body() const { return *m_body; }
 private:
   /** We're the owner. Is garanteed to be non-null */
-  const AstFunDecl* const m_decl;
+  AstFunDecl* const m_decl;
   /** We're the owner. Is garanteed to be non-null */
-  const AstValue* const m_body;
+  AstValue* const m_body;
 };
 
 class AstFunDecl : public AstValue {
@@ -99,24 +99,24 @@ public:
   AstFunDecl(const std::string& name, AstArgDecl* arg1,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   ~AstFunDecl();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); };
   virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
-  virtual const std::list<AstArgDecl*>& args() const { return *m_args; }
+  virtual std::list<AstArgDecl*>& args() const { return *m_args; }
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
 private:
   const std::string m_name;
   /** We're the owner. Is garanteed to be non-null */
-  const std::list<AstArgDecl*>* const m_args;
+  std::list<AstArgDecl*>* const m_args;
 };
 
 class AstDataDecl : public AstValue {
 public:
   AstDataDecl(const std::string& name, ObjType* objType);
   ~AstDataDecl();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
@@ -147,14 +147,14 @@ public:
   AstDataDef(AstDataDecl* decl, AstValue* initValue);
   AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs = NULL);
   ~AstDataDef();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
-  virtual const AstDataDecl& decl() const { return *m_decl; }
-  virtual const AstValue& initValue() const;
+  virtual AstDataDecl& decl() const { return *m_decl; }
+  virtual AstValue& initValue() const;
 private:
   /** We're the owner. Is garanteed to be non-null */
-  const AstDataDecl* const m_decl;
+  AstDataDecl* const m_decl;
   /** We're the owner. Is garanteed to be non-null. */
   AstCtList* const m_ctorArgs;
   /** We're the owner. Is _NOT_ guaranteed to  be non-null. */
@@ -168,7 +168,7 @@ public:
   AstNumber(int value, ObjTypeFunda::EType eType,
     ObjTypeFunda::Qualifier qualifier = ObjTypeFunda::eNoQualifier);
   ~AstNumber();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   int value() const { return m_value; }
@@ -183,7 +183,7 @@ class AstSymbol : public AstValue {
 public:
   AstSymbol(const std::string* name);
   virtual ~AstSymbol();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   const std::string& name() const { return *m_name; }
@@ -195,18 +195,18 @@ private:
 
 class AstFunCall : public AstValue {
 public:
-  AstFunCall(const AstValue* address, AstCtList* args = NULL);
+  AstFunCall(AstValue* address, AstCtList* args = NULL);
   virtual ~AstFunCall();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
-  virtual const AstValue& address () const { return *m_address; }
-  virtual const AstCtList& args () const { return *m_args; }
+  virtual AstValue& address () const { return *m_address; }
+  virtual AstCtList& args () const { return *m_args; }
 private:
   /** We're the owner. Is garanteed to be non-null */
-  const AstValue*const m_address;
+  AstValue* const m_address;
   /** We're the owner. Is garanteed to be non-null */
-  const AstCtList* const m_args;
+  AstCtList* const m_args;
 };
 
 class AstOperator : public AstValue {
@@ -234,18 +234,18 @@ public:
   AstOperator(EOperation op, AstValue* operand1 = NULL, AstValue* operand2 = NULL,
     AstValue* operand3 = NULL);
   virtual ~AstOperator();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   EOperation op() const { return m_op; }
-  const std::list<AstValue*>& argschilds() const;
+  std::list<AstValue*>& argschilds() const;
 private:
   static EOperation toEOperation(const std::string& op);
   AstOperator(const AstOperator&);
   AstOperator& operator=(const AstOperator&);
   const EOperation m_op;
   /** We're the owner. Is garanteed to be non-null */
-  const AstCtList* const m_args;
+  AstCtList* const m_args;
   static std::map<std::string, EOperation> m_opMap;
 };
 
@@ -266,19 +266,19 @@ public:
   AstIf(std::list<ConditionActionPair>* conditionActionPairs, AstValue* elseAction = NULL);
   AstIf(AstValue* cond, AstValue* action, AstValue* elseAction = NULL);
   virtual ~AstIf();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
-  const std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
-  const AstValue* elseAction() const { return m_elseAction; }
+  std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
+  AstValue* elseAction() const { return m_elseAction; }
 private:
   static std::list<ConditionActionPair>* makeDefaultConditionActionPairs();
   static std::list<ConditionActionPair>* makeConditionActionPairs(
     AstValue* cond, AstValue* action);
   /** We're the owner. Is garanteed to be non-null and size>=1*/
-  const std::list<ConditionActionPair>* const m_conditionActionPairs;
+  std::list<ConditionActionPair>* const m_conditionActionPairs;
   /** We're the owner. Is NOT garanteed to be non-null */
-  const AstValue* const m_elseAction;
+  AstValue* const m_elseAction;
 };
 
 class AstCtList : public AstNode {
@@ -287,13 +287,13 @@ public:
   AstCtList(AstValue* child1 = NULL);
   AstCtList(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   ~AstCtList();
-  virtual void accept(AstVisitor& visitor) const { visitor.visit(*this); };
+  virtual void accept(AstVisitor& visitor) { visitor.visit(*this); };
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   AstCtList* Add(AstValue* child);
   AstCtList* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   /** The elements are guaranteed to be non-null */
-  const std::list<AstValue*>& childs() const { return *m_childs; }
+  std::list<AstValue*>& childs() const { return *m_childs; }
 private:
   AstCtList(const AstCtList&);
   AstCtList& operator=(const AstCtList&);

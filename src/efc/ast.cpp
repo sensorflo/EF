@@ -228,7 +228,7 @@ basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-const AstValue& AstDataDef::initValue() const {
+AstValue& AstDataDef::initValue() const {
   const std::list<AstValue*>& args = m_ctorArgs->childs();
   if (!args.empty()) {
     assert(args.size()==1); // more ctor arguments not yet supported
@@ -316,7 +316,7 @@ basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-const list<AstValue*>& AstOperator::argschilds() const {
+list<AstValue*>& AstOperator::argschilds() const {
   return m_args->childs();
 }
 
@@ -413,7 +413,7 @@ basic_ostream<char>& AstIf::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-AstFunCall::AstFunCall(const AstValue* address, AstCtList* args) :
+AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
   m_address(address ? address : new AstSymbol(NULL)),
   m_args(args ? args : new AstCtList()) {
   assert(m_address);
