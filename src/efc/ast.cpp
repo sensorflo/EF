@@ -497,8 +497,8 @@ basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) const {
 AstCtList::AstCtList(std::list<AstValue*>* childs) :
   m_childs(childs ? childs : new std::list<AstValue*>() ) {
   assert(m_childs);
-  for (std::list<AstValue*>::iterator it = childs->begin();
-       it != childs->end();
+  for (std::list<AstValue*>::iterator it = m_childs->begin();
+       it != m_childs->end();
        ++it) {
     assert(*it);
   }
