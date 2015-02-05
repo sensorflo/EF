@@ -27,6 +27,10 @@ string amendAst(const AstNode* ast) {
   return string("\nInput AST in its canonical form:\n") + ast->toStr() + "\n";
 }
 
+string amendAst(const auto_ptr<AstValue>& ast) {
+  return amendAst(ast.get());
+}
+
 string amendAst(const auto_ptr<AstSeq>& ast) {
   return amendAst(ast.get());
 }
@@ -87,50 +91,50 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   // not
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator(AstOperator::eNot, new AstNumber(2))), 0, "");
+    new AstOperator(AstOperator::eNot, new AstNumber(2)), 0, "");
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstSeq(new AstOperator(AstOperator::eNot, new AstNumber(0))), 0, "", eNe);
+    new AstOperator(AstOperator::eNot, new AstNumber(0)), 0, "", eNe);
 
   // and
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator(AstOperator::eAnd, new AstNumber(0), new AstNumber(0))), 0, "");
+    new AstOperator(AstOperator::eAnd, new AstNumber(0), new AstNumber(0)), 0, "");
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator(AstOperator::eAnd, new AstNumber(0), new AstNumber(2))), 0, "");
+    new AstOperator(AstOperator::eAnd, new AstNumber(0), new AstNumber(2)), 0, "");
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator(AstOperator::eAnd, new AstNumber(2), new AstNumber(0))), 0, "");
+    new AstOperator(AstOperator::eAnd, new AstNumber(2), new AstNumber(0)), 0, "");
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstSeq(new AstOperator(AstOperator::eAnd, new AstNumber(2), new AstNumber(2))), 0, "", eNe);
+    new AstOperator(AstOperator::eAnd, new AstNumber(2), new AstNumber(2)), 0, "", eNe);
 
   // or
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator(AstOperator::eOr, new AstNumber(0), new AstNumber(0))), 0, "");
+    new AstOperator(AstOperator::eOr, new AstNumber(0), new AstNumber(0)), 0, "");
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstSeq(new AstOperator(AstOperator::eOr, new AstNumber(0), new AstNumber(2))), 0, "", eNe);
+    new AstOperator(AstOperator::eOr, new AstNumber(0), new AstNumber(2)), 0, "", eNe);
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstSeq(new AstOperator(AstOperator::eOr, new AstNumber(2), new AstNumber(0))), 0, "", eNe);
+    new AstOperator(AstOperator::eOr, new AstNumber(2), new AstNumber(0)), 0, "", eNe);
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstSeq(new AstOperator(AstOperator::eOr, new AstNumber(2), new AstNumber(2))), 0, "", eNe);
+    new AstOperator(AstOperator::eOr, new AstNumber(2), new AstNumber(2)), 0, "", eNe);
 
   // ==
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator(AstOperator::eEqualTo, new AstNumber(2), new AstNumber(2))),
+    new AstOperator(AstOperator::eEqualTo, new AstNumber(2), new AstNumber(2)),
     2==2, "");
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator(AstOperator::eEqualTo, new AstNumber(1), new AstNumber(2))),
+    new AstOperator(AstOperator::eEqualTo, new AstNumber(1), new AstNumber(2)),
     1==2, "");
 
   // + - * /
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator('+', new AstNumber(1), new AstNumber(2))),
+    new AstOperator('+', new AstNumber(1), new AstNumber(2)),
     1+2, "");
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator('-', new AstNumber(1), new AstNumber(2))),
+    new AstOperator('-', new AstNumber(1), new AstNumber(2)),
     1-2, "");
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator('*', new AstNumber(1), new AstNumber(2))),
+    new AstOperator('*', new AstNumber(1), new AstNumber(2)),
     1*2, "");
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator('/', new AstNumber(6), new AstNumber(3))),
+    new AstOperator('/', new AstNumber(6), new AstNumber(3)),
     6/3, "");
 }
 
@@ -146,23 +150,23 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   //null-ary not "!()" is invalid 
   string spec = "null-ary or: or() = false";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator(AstOperator::eOr)),
+    new AstOperator(AstOperator::eOr),
     0, spec);
   spec = "null-ary and: and() = true";
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstSeq(new AstOperator(AstOperator::eAnd)),
+    new AstOperator(AstOperator::eAnd),
     0, spec, eNe);
   spec = "null-ary minus: -() = 0";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator('-')),
+    new AstOperator('-'),
     0, spec);
   spec = "null-ary minus: +() = 0";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator('+')),
+    new AstOperator('+'),
     0, spec);
   spec = "null-ary mult: *() = 1";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(new AstOperator('*')),
+    new AstOperator('*'),
     1, spec);
   //null-ary div "/()" is invalid
 
@@ -170,83 +174,67 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // unary not "!(x)" is the normal case and has been tested above
   spec = "unary or: or(x) = bool(x)";
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstSeq(
-      new AstOperator(AstOperator::eOr,
-        new AstNumber(2))),
+    new AstOperator(AstOperator::eOr, new AstNumber(2)),
     0, spec, eNe);
   spec = "unary and: and(x) = bool(x)";
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstSeq(
-      new AstOperator(AstOperator::eAnd,
-        new AstNumber(2))),
+    new AstOperator(AstOperator::eAnd, new AstNumber(2)),
     0, spec, eNe);
   spec = "unary minus: -(x)";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator('-',
-        new AstNumber(1))),
+    new AstOperator('-', new AstNumber(1)),
     -1, spec);
   spec = "unary plus: +(x) = x";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator('+',
-        new AstNumber(1))),
+    new AstOperator('+', new AstNumber(1)),
     +1, spec);
   spec = "spec = unary mult: *(x) = x";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator('*',
-        new AstNumber(1))),
+    new AstOperator('*', new AstNumber(1)),
     1, spec);
   // unary div "/(x)" is invalid
 
   spec = "binary equal-to: ==(1,1)";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator(AstOperator::eEqualTo,
-        new AstNumber(1),
-        new AstNumber(1))),
+    new AstOperator(AstOperator::eEqualTo,
+      new AstNumber(1),
+      new AstNumber(1)),
     1==1, spec);
   spec = "binary equal-to: ==(1,2)";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator(AstOperator::eEqualTo,
-        new AstNumber(1),
-        new AstNumber(2))),
+    new AstOperator(AstOperator::eEqualTo,
+      new AstNumber(1),
+      new AstNumber(2)),
     1==2, spec);
 
   // n-ary not "!(x y z)" is invalid
   spec = "n-ary plus: +(1,2,3)";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator('+',
-        new AstNumber(1),
-        new AstNumber(2),
-        new AstNumber(3))),
+    new AstOperator('+',
+      new AstNumber(1),
+      new AstNumber(2),
+      new AstNumber(3)),
     1+2+3, spec);
   spec = "n-ary minus: -(1,2,3)";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator('-',
-        new AstNumber(1),
-        new AstNumber(2),
-        new AstNumber(3))),
+    new AstOperator('-',
+      new AstNumber(1),
+      new AstNumber(2),
+      new AstNumber(3)),
     1-2-3, spec);
   spec = "n-ary mult: *(1,2,3)";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator('*',
-        new AstNumber(1),
-        new AstNumber(2),
-        new AstNumber(3))),
+    new AstOperator('*',
+      new AstNumber(1),
+      new AstNumber(2),
+      new AstNumber(3)),
     1*2*3, spec);
   spec = "n-ary div: /(24,4,3)";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstOperator('/',
-        new AstNumber(24),
-        new AstNumber(4),
-        new AstNumber(3))),
+    new AstOperator('/',
+      new AstNumber(24),
+      new AstNumber(4),
+      new AstNumber(3)),
     24/4/3, spec);
 }
 
@@ -531,10 +519,10 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   string spec = "Example: at global scope";
   {
-    auto_ptr<AstSeq> astSeq(new AstSeq(new AstSymbol(new string("x"))));
+    auto_ptr<AstValue> ast(new AstSymbol(new string("x")));
     TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
-      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
+      << amendAst(ast) << amendSpec(spec);
   }
 
   spec = "Example: within a function body";
@@ -649,9 +637,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_call_to_an_undefined_function,
     buildAndRunModule,
     throws)) {
-  auto_ptr<AstSeq> astSeq(new AstSeq(new AstFunCall(new AstSymbol(new string("foo")))));
+  auto_ptr<AstValue> ast(new AstFunCall(new AstSymbol(new string("foo"))));
   TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendAst(ast);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -689,10 +677,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   string spec = "Value of definition expression should equal initializer's value";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstNumber(42))),
+    new AstDataDef(
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstNumber(42)),
     42, spec);
 
   spec = "Value of definition expression is an rvalue and thus _not_ "
@@ -718,10 +705,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   string spec = "Value of definition expression should equal initializer's value";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-        new AstNumber(42))),
+    new AstDataDef(
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+      new AstNumber(42)),
     42, spec);
 
   spec = "Definition expresssion is an lvalue which concequently is assignable to";
@@ -937,14 +923,13 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
     buildAndRunModule,
     throws,
     BECAUSE_there_are_no_narrowing_implicit_conversions)) {
-  auto_ptr<AstSeq> astSeq(
-    new AstSeq(
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool)),
-        new AstNumber(42, ObjTypeFunda::eInt))));
+  auto_ptr<AstValue> ast(
+    new AstDataDef(
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool)),
+      new AstNumber(42, ObjTypeFunda::eInt)));
   TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
-    << amendAst(astSeq);
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
+    << amendAst(ast);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
@@ -952,14 +937,13 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
     buildAndRunModule,
     throws,
     BECAUSE_currently_there_are_no_implicit_widening_conversions)) {
-  auto_ptr<AstSeq> astSeq(
-    new AstSeq(
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstNumber(0, ObjTypeFunda::eBool))));
+  auto_ptr<AstValue> ast(
+    new AstDataDef(
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstNumber(0, ObjTypeFunda::eBool)));
   TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
-    << amendAst(astSeq);
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
+    << amendAst(ast);
 }
 
 // Temporary test while introducing types
@@ -979,11 +963,10 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     returns_the_value_of_the_then_clause)) {
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstIf(
-        new AstNumber(1, ObjTypeFunda::eBool), // condition
-        new AstNumber(2), // then clause
-        new AstNumber(3))), // else clause
+    new AstIf(
+      new AstNumber(1, ObjTypeFunda::eBool), // condition
+      new AstNumber(2), // then clause
+      new AstNumber(3)), // else clause
     2, "");
 }
 
@@ -992,11 +975,10 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     returns_the_value_of_the_else_clause)) {
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstIf(
-        new AstNumber(0, ObjTypeFunda::eBool), // condition
-        new AstNumber(2), // then clause
-        new AstNumber(3))), // else clause
+    new AstIf(
+      new AstNumber(0, ObjTypeFunda::eBool), // condition
+      new AstNumber(2), // then clause
+      new AstNumber(3)), // else clause
     3, "");
 }
 
@@ -1005,9 +987,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     returns_default_value_of_expressions_type)) {
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
-      new AstIf(
-        new AstNumber(0, ObjTypeFunda::eBool), // condition
-        new AstNumber(2))), // then clause
+    new AstIf(
+      new AstNumber(0, ObjTypeFunda::eBool), // condition
+      new AstNumber(2)), // then clause
     0, ""); // default for int
 }
