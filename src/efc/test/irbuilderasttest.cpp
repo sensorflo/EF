@@ -65,6 +65,19 @@ void testbuilAndRunModule(AstValue* astRoot, int expectedResult,
     testbuilAndRunModule(astRoot, expectedResult, spec, cmpop);  \
   }
 
+void testbuilAndRunModuleThrows(AstValue* astRoot, const string& spec = "") {
+  auto_ptr<AstValue> ast(astRoot);
+  TestingIrBuilderAst UUT;
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astRoot)) <<
+    amendSpec(spec) << amendAst(astRoot);
+}
+
+#define TEST_BUILD_AND_RUN_MODULE_THROWS(astRoot, spec)                 \
+  {                                                                     \
+    SCOPED_TRACE("testbuilAndRunModuleThrows called from here (via TEST_BUILD_AND_RUN_MODULE_THROWS)"); \
+    testbuilAndRunModuleThrows(astRoot, spec);         \
+  }
+
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_single_literal,
     buildAndRunModule,
@@ -143,10 +156,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   //null-ary not "!()" is invalid 
   string spec = "null-ary seq throws";
-  { auto_ptr<AstValue> ast(new AstOperator(';'));
-    TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendAst(ast);
-  }
+  TEST_BUILD_AND_RUN_MODULE_THROWS(new AstOperator(';'), spec);
   spec = "null-ary or: or() = false";
   TEST_BUILD_AND_RUN_MODULE(
     new AstOperator(AstOperator::eOr),
@@ -519,25 +529,18 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     throws)) {
 
   string spec = "Example: at global scope";
-  {
-    auto_ptr<AstValue> ast(new AstSymbol(new string("x")));
-    TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
-      << amendAst(ast) << amendSpec(spec);
-  }
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstSymbol(new string("x")),
+    spec);
 
   spec = "Example: within a function body";
-  {
-    auto_ptr<AstValue> ast(
-      new AstOperator(';',
-        new AstFunDef(
-          new AstFunDecl("foo"),
-          new AstSymbol(new string("x"))),
-        new AstNumber(42)));
-    TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
-      << amendAst(ast) << amendSpec(spec);
-  }
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstOperator(';',
+      new AstFunDef(
+        new AstFunDecl("foo"),
+        new AstSymbol(new string("x"))),
+      new AstNumber(42)),
+    spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -638,9 +641,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_call_to_an_undefined_function,
     buildAndRunModule,
     throws)) {
-  auto_ptr<AstValue> ast(new AstFunCall(new AstSymbol(new string("foo"))));
-  TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendAst(ast);
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstFunCall(new AstSymbol(new string("foo"))), "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -649,26 +651,22 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     throws)) {
 
   string spec = "Function foo expects one arg, but zero where passed on call";
-  {
-    auto_ptr<AstValue> ast( new AstOperator(';',
-        new AstFunDef(
-          new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-          new AstNumber(42)),
-        new AstFunCall(new AstSymbol(new string("foo")))));
-    TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendSpec(spec) << amendAst(ast);
-  }
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstOperator(';',
+      new AstFunDef(
+        new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstNumber(42)),
+      new AstFunCall(new AstSymbol(new string("foo")))),
+    spec);
 
   spec = "Function foo expects no args, but one arg was passed on call";
-  {
-    auto_ptr<AstValue> ast( new AstOperator(';',
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstOperator(';',
         new AstFunDef(
           new AstFunDecl("foo"),
           new AstNumber(42)),
-        new AstFunCall(new AstSymbol(new string("foo")), new AstCtList(new AstNumber(0)))));
-    TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendSpec(spec) << amendAst(ast);
-  }
+      new AstFunCall(new AstSymbol(new string("foo")), new AstCtList(new AstNumber(0)))),
+    spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -685,18 +683,15 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   spec = "Value of definition expression is an rvalue and thus _not_ "
     "assignable to";
-  {
-    auto_ptr<AstValue> ast(
-      new AstOperator(';',
-        new AstOperator('=',
-          new AstDataDef(
-            new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-            new AstNumber(42)),
-          new AstNumber(77)),
-        new AstSymbol(new string("foo"))));
-    TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendAst(ast);
-  }
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstOperator(';',
+      new AstOperator('=',
+        new AstDataDef(
+          new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstNumber(42)),
+        new AstNumber(77)),
+      new AstSymbol(new string("foo"))),
+    spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -785,16 +780,15 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
     buildAndRunModule,
     throws,
     BECAUSE_values_are_immutable_data_objects)) {
-  auto_ptr<AstValue> ast(
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
     new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)),
       new AstOperator('=',
         new AstSymbol(new string("foo")),
-        new AstNumber(77))));
-  TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendAst(ast);
+        new AstNumber(77))),
+    "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -828,16 +822,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   string spec = "Example: one uses 'val' (aka 'var const'), the other 'var' "
     "(aka 'val mutable'). The two also contribute to the type";
-  {
-    auto_ptr<AstValue> ast(
-      new AstOperator(';',
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eNoQualifier)),
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-        new AstNumber(42)));
-    TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) <<
-      amendSpec(spec) << amendAst(ast);
-  }
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstOperator(';',
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eNoQualifier)),
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+      new AstNumber(42)),
+    spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
@@ -879,44 +869,32 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     throws)) {
 
   string spec = "Example: two 'x' in 'global' scope";
-  {
-    auto_ptr<AstValue> ast(
-      new AstOperator(';',
-        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))));
-    TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
-      << amendAst(ast) << amendSpec(spec);
-  }
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstOperator(';',
+      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
+    spec);
 
   spec = "Example: two 'x' in argument list of a function";
-  {
-    auto_ptr<AstValue> ast(
-      new AstOperator(';',
-        new AstFunDef(
-          new AstFunDecl(
-            "foo",
-            new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-            new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-          new AstNumber(42)),
-        new AstNumber(42)));
-    TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
-      << amendAst(ast) << amendSpec(spec);
-  }
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstOperator(';',
+      new AstFunDef(
+        new AstFunDecl(
+          "foo",
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstNumber(42)),
+      new AstNumber(42)),
+    spec);
 
   spec = "Example: 'x' as argument to a function and as local variable within";
-  {
-    auto_ptr<AstValue> ast(
-      new AstOperator(';',
-        new AstFunDef(
-          new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-          new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
-        new AstNumber(42)));
-    TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
-      << amendAst(ast) << amendSpec(spec);
-  }
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstOperator(';',
+      new AstFunDef(
+        new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
+      new AstNumber(42)),
+    spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
@@ -924,13 +902,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
     buildAndRunModule,
     throws,
     BECAUSE_there_are_no_narrowing_implicit_conversions)) {
-  auto_ptr<AstValue> ast(
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
     new AstDataDef(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool)),
-      new AstNumber(42, ObjTypeFunda::eInt)));
-  TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
-    << amendAst(ast);
+      new AstNumber(42, ObjTypeFunda::eInt)),
+    "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
@@ -938,13 +914,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
     buildAndRunModule,
     throws,
     BECAUSE_currently_there_are_no_implicit_widening_conversions)) {
-  auto_ptr<AstValue> ast(
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
     new AstDataDef(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new AstNumber(0, ObjTypeFunda::eBool)));
-  TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
-    << amendAst(ast);
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    "");
 }
 
 // Temporary test while introducing types
