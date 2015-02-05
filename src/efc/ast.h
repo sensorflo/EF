@@ -53,7 +53,9 @@ public:
   ~AstCast();
   virtual void accept(AstVisitor& visitor);
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
+  AstValue& child() const { return *m_child; }
+  ObjType& objType() const { return *m_objType; }
 
 private:
   /** We're the owner. Is guaranteed to be non-null */
@@ -136,6 +138,7 @@ public:
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual AstDataDecl& decl() const { return *m_decl; }
+  AstCtList& ctorArgs() const { return *m_ctorArgs; }
   virtual AstValue& initValue() const;
 private:
   /** We're the owner. Is garanteed to be non-null */
@@ -186,7 +189,7 @@ public:
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   virtual AstValue& address () const { return *m_address; }
-  virtual AstCtList& args () const { return *m_args; }
+  AstCtList& args () const { return *m_args; }
 private:
   /** We're the owner. Is garanteed to be non-null */
   AstValue* const m_address;
@@ -223,7 +226,8 @@ public:
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   EOperation op() const { return m_op; }
-  std::list<AstValue*>& argschilds() const;
+  AstCtList& args() const { return *m_args; }
+
 private:
   static EOperation toEOperation(const std::string& op);
   AstOperator(const AstOperator&);

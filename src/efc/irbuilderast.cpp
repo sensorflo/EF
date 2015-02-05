@@ -103,7 +103,7 @@ Value* IrBuilderAst::visit(const AstCast&, Access) {
 }
 
 Value* IrBuilderAst::visit(const AstOperator& op, Access) {
-  const list<AstValue*>& argschilds = op.argschilds();
+  const list<AstValue*>& argschilds = op.args().childs();
   list<AstValue*>::const_iterator iter = argschilds.begin();
   Value* resultIr = NULL;
   AstOperator::EOperation op_ = op.op();

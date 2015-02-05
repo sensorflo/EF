@@ -349,10 +349,6 @@ basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-list<AstValue*>& AstOperator::argschilds() const {
-  return m_args->childs();
-}
-
 AstOperator::EOperation AstOperator::toEOperation(const string& op) {
   if (op.size()==1) {
     return static_cast<EOperation>(op[0]);
