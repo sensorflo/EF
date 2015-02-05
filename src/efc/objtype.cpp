@@ -50,14 +50,8 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-const AstValue& ObjTypeFunda::defaultValue() const {
-  static AstNumber boolNumber(0, new ObjTypeFunda(eBool));
-  static AstNumber intNumber (0, new ObjTypeFunda(eInt));
-  switch (m_type) {
-  case eBool: return boolNumber;
-  case eInt:  return intNumber;
-  default:    assert(false);
-  }
+AstValue* ObjTypeFunda::createDefaultAstValue() const {
+  return new AstNumber(0, new ObjTypeFunda(m_type));
 }
 
 ObjTypeFun::ObjTypeFun(list<ObjType*>* args, ObjType* ret) :
@@ -110,9 +104,9 @@ list<ObjType*>* ObjTypeFun::createArgs(ObjType* arg1, ObjType* arg2,
   return l;
 }
 
-const AstValue& ObjTypeFun::defaultValue() const {
+AstValue* ObjTypeFun::createDefaultAstValue() const {
   // The liskov substitution principle is broken here, ObjTypeFun cannot
-  // provide a defaultValue method. A possible solution would be to introduce
+  // provide a createDefaultAstValue method. A possible solution would be to introduce
   // a 'ObjTypeData' abstract class into the ObjType hierarchy, but currently
   // I think that is overkill.
   assert(false);

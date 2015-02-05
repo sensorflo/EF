@@ -157,8 +157,10 @@ public:
 private:
   /** We're the owner. Is garanteed to be non-null */
   const AstDataDecl* const m_decl;
-  /** We're the owner. Is garanteed to be non-null */
-  const AstCtList* const m_ctorArgs;
+  /** We're the owner. Is garanteed to be non-null. */
+  AstCtList* const m_ctorArgs;
+  /** We're the owner. Is _NOT_ guaranteed to  be non-null. */
+  AstValue* m_implicitInitializer;
 };
 
 /** Literal number */

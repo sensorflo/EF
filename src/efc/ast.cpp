@@ -195,14 +195,16 @@ ObjType& AstDataDecl::objType(bool stealOwnership) const {
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
-  m_ctorArgs(initValue ? new AstCtList(initValue) : new AstCtList()) {
+  m_ctorArgs(initValue ? new AstCtList(initValue) : new AstCtList()),
+  m_implicitInitializer(initValue ? NULL : m_decl->objType().createDefaultAstValue()) {
   assert(m_decl);
   assert(m_ctorArgs);
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
-  m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()) {
+  m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()),
+  m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_decl->objType().createDefaultAstValue()) {
   assert(m_decl);
   assert(m_ctorArgs);
 }
@@ -210,6 +212,7 @@ AstDataDef::AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs) :
 AstDataDef::~AstDataDef() {
   delete m_decl;
   delete m_ctorArgs;
+  delete m_implicitInitializer;
 }
 
 llvm::Value* AstDataDef::accept(IrBuilderAst& visitor, Access access) const {
@@ -230,8 +233,10 @@ const AstValue& AstDataDef::initValue() const {
   if (!args.empty()) {
     assert(args.size()==1); // more ctor arguments not yet supported
     return *(args.front());
+  } else {
+    assert(m_implicitInitializer);
+    return *m_implicitInitializer;
   }
-  return m_decl->objType().defaultValue();
 }
 
 AstNumber::AstNumber(int value, ObjType* objType) :
