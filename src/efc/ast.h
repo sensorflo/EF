@@ -219,10 +219,10 @@ public:
     eDiv = '/',
     ePlus = '+',
     eNot = '!',
+    eSeq = ';',
     eAnd = 128,
     eOr,
-    eEqualTo,
-    eSeq
+    eEqualTo
   };
   AstOperator(char op, AstCtList* args);
   AstOperator(const std::string& op, AstCtList* args);

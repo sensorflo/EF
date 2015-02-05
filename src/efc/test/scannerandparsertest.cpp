@@ -25,9 +25,6 @@ string explainParseErrorCode(int errorCode) {
     return "parser failed for unknown reason\n";
 }
 
-/** The expectedAst shall not contain the top-level 'seq()' that is created
-for every efProgram. 'seq()' is added automatically around the given
-expectedAst. */
 void testParse(const string& efProgram, const string& expectedAst,
   const string& spec = "") {
   // setup
@@ -208,16 +205,16 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   // precedence level group: binary sequence operator (; or adjancted standalone expression)
   spec = "sequence operator (; or adjancted standalone expression) is left associative";
-  TEST_PARSE( "a;b;c", "seq(a b c)", spec);
-  TEST_PARSE( "a;b c", "seq(a b c)", spec);
-  TEST_PARSE( "a b;c", "seq(a b c)", spec);
-  TEST_PARSE( "a b c", "seq(a b c)", spec);
+  TEST_PARSE( "a;b;c", ";(a b c)", spec);
+  TEST_PARSE( "a;b c", ";(a b c)", spec);
+  TEST_PARSE( "a b;c", ";(a b c)", spec);
+  TEST_PARSE( "a b c", ";(a b c)", spec);
 
   spec = "sequence operator (; or adjancted standalone expression) has lower precedence than =";
-  TEST_PARSE( "a ; b = c", "seq(a =(b c))", spec);
-  TEST_PARSE( "a   b = c", "seq(a =(b c))", spec);
-  TEST_PARSE( "a = b ; c", "seq(=(a b) c)", spec);
-  TEST_PARSE( "a = b   c", "seq(=(a b) c)", spec);
+  TEST_PARSE( "a ; b = c", ";(a =(b c))", spec);
+  TEST_PARSE( "a   b = c", ";(a =(b c))", spec);
+  TEST_PARSE( "a = b ; c", ";(=(a b) c)", spec);
+  TEST_PARSE( "a = b   c", ";(=(a b) c)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -226,9 +223,9 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "g(1+2)*g(3-4)/5", "/(*(+(1 2) -(3 4)) 5)",
     "g(...) group: 1) overwrites precedence and 2) turns sub_expr into exp");
-  TEST_PARSE( "g(1 2)", "seq(1 2)",
+  TEST_PARSE( "g(1 2)", ";(1 2)",
     "g(...) group can contain not only a sub_expr but also an expr");
-  TEST_PARSE( "g(1 2)*3", "*(seq(1 2) 3)",
+  TEST_PARSE( "g(1 2)*3", "*(;(1 2) 3)",
     "g(...) group can contain not only a sub_expr but also an expr");
 }
 
@@ -316,10 +313,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "fun foo: () int = 42 end foo$", "fun(declfun(foo () int) 42)", spec);
 
   spec = "example with zero arguments and simple but not trivial body";
-  TEST_PARSE( "fun foo:        = 42 1+2$", "fun(declfun(foo () int) seq(42 +(1 2)))", spec);
-  TEST_PARSE( "fun foo: ()     = 42 1+2$", "fun(declfun(foo () int) seq(42 +(1 2)))", spec);
-  TEST_PARSE( "fun foo: () int = 42 1+2$", "fun(declfun(foo () int) seq(42 +(1 2)))", spec);
-  TEST_PARSE( "fun(foo: () int = 42 1+2)", "fun(declfun(foo () int) seq(42 +(1 2)))", spec);
+  TEST_PARSE( "fun foo:        = 42 1+2$", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
+  TEST_PARSE( "fun foo: ()     = 42 1+2$", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
+  TEST_PARSE( "fun foo: () int = 42 1+2$", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
+  TEST_PARSE( "fun(foo: () int = 42 1+2)", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
 
   spec = "example with one argument and trivial body";
   TEST_PARSE( "fun foo: (arg1:int)     = 42$", "fun(declfun(foo ((arg1 int-mut)) int) 42)", spec);

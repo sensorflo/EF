@@ -19,11 +19,6 @@ TEST(AstTest, MAKE_TEST_NAME2(
   spec = "AstSymbol";
   EXPECT_EQ( "foo", AstSymbol(new string("foo")).toStr()) << amendSpec(spec);
 
-  spec = "AstSeq";
-  EXPECT_EQ( "seq()", AstSeq().toStr() ) << amendSpec(spec);
-  EXPECT_EQ( "seq(42)", AstSeq(new AstNumber(42)).toStr() ) << amendSpec(spec);
-  EXPECT_EQ( "seq(42 77)", AstSeq(new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
-
   spec = "AstOperator";
   EXPECT_EQ( "+(42 77)"  , AstOperator('+'       , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
   EXPECT_EQ( "not(42)"   , AstOperator('!'       , new AstNumber(42)).toStr() ) << amendSpec(spec);
@@ -32,15 +27,16 @@ TEST(AstTest, MAKE_TEST_NAME2(
   EXPECT_EQ( "and(42 77)", AstOperator("and"     , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
   EXPECT_EQ( "or(42 77)" , AstOperator("||"      , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
   EXPECT_EQ( "or(42 77)" , AstOperator("or"      , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( ";(42 77)"  , AstOperator(';'       , new AstNumber(42), new AstNumber(77)).toStr() ) << amendSpec(spec);;
 
   spec = "AstIf";
-  EXPECT_EQ( "if(x seq(1))", AstIf(
+  EXPECT_EQ( "if(x 1)", AstIf(
       new AstSymbol(new string("x")),
-      new AstSeq(new AstNumber(1))).toStr() ) << amendSpec(spec);
-  EXPECT_EQ( "if(x seq(1) seq(0))", AstIf(
+      new AstNumber(1)).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "if(x 1 0)", AstIf(
       new AstSymbol(new string("x")),
-      new AstSeq(new AstNumber(1)),
-      new AstSeq(new AstNumber(0))).toStr() ) << amendSpec(spec);
+      new AstNumber(1),
+      new AstNumber(0)).toStr() ) << amendSpec(spec);
 
   spec = "AstDataDecl";
   EXPECT_EQ( "decldata(foo int)", AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)).toStr() ) << amendSpec(spec);
@@ -64,7 +60,7 @@ TEST(AstTest, MAKE_TEST_NAME2(
   EXPECT_EQ( "declfun(foo ((arg1 int-mut) (arg2 int-mut)) int)", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))).toStr()) << amendSpec(spec);
 
   spec = "AstFunDef";
-  EXPECT_EQ( "fun(declfun(foo () int) seq())", AstFunDef(new AstFunDecl("foo"),new AstSeq()).toStr() ) << amendSpec(spec);
+  EXPECT_EQ( "fun(declfun(foo () int) 42)", AstFunDef(new AstFunDecl("foo"),new AstNumber(42)).toStr() ) << amendSpec(spec);
 
   spec = "AstFunCall";
   EXPECT_EQ( "foo()", AstFunCall(new AstSymbol(new string("foo")), new AstCtList()).toStr() ) << amendSpec(spec);

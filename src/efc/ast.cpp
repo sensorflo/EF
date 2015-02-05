@@ -345,7 +345,6 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
   case AstOperator::eOr: return os << "or";
   case AstOperator::eNot: return os << "not";
   case AstOperator::eEqualTo: return os << "==";
-  case AstOperator::eSeq: return os << "seq";
   default:
     if (static_cast<int>(op)<128) {
       return os << static_cast<char>(op);
