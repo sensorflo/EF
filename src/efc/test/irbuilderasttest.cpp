@@ -974,7 +974,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstIf(
-        new AstNumber(1), // condition
+        new AstNumber(1, ObjTypeFunda::eBool), // condition
         new AstNumber(2), // then clause
         new AstNumber(3))), // else clause
     2, "");
@@ -987,7 +987,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstIf(
-        new AstNumber(0), // condition
+        new AstNumber(0, ObjTypeFunda::eBool), // condition
         new AstNumber(2), // then clause
         new AstNumber(3))), // else clause
     3, "");
@@ -1000,7 +1000,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_AND_RUN_MODULE(
     new AstSeq(
       new AstIf(
-        new AstNumber(0), // condition
+        new AstNumber(0, ObjTypeFunda::eBool), // condition
         new AstNumber(2))), // then clause
     0, ""); // default for int
 }
