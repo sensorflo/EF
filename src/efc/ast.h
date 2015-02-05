@@ -32,10 +32,7 @@ public:
   virtual ~AstNode() {};
   virtual void accept(AstConstVisitor& visitor) const =0;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const = 0;
-  /** Similar to printTo; the resulting text is returned as string. */
-  virtual std::string toStr() const;
-  /** Print node recursively in its canonical form to given stream */
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const = 0;
+  std::string toStr() const;
 };
 
 class AstValue : public AstNode {
@@ -53,7 +50,6 @@ public:
   ~AstCast();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
   AstValue& child() const { return *m_child; }
   ObjType& objType() const { return *m_objType; }
 
@@ -70,7 +66,6 @@ public:
   virtual ~AstFunDef();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual AstFunDecl& decl() const { return *m_decl; }
   virtual AstValue& body() const { return *m_body; }
 private:
@@ -88,7 +83,6 @@ public:
   ~AstFunDecl();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
   virtual std::list<AstArgDecl*>& args() const { return *m_args; }
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
@@ -105,13 +99,9 @@ public:
   ~AstDataDecl();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual const std::string& name() const { return m_name; }
   virtual ObjType& objType() const;
   virtual ObjType& objType(bool stealOwnership) const;
-protected:
-  enum Type { eNormal, eFunArg };
-  AstDataDecl(const std::string& name, ObjType* objType, Type type);
   
 private:
   const std::string m_name;
@@ -120,13 +110,13 @@ private:
   ObjType* m_objType;
   /** See m_objType */
   mutable bool m_ownerOfObjType;
-  const Type m_type;
 };
 
 class AstArgDecl : public AstDataDecl {
 public:
   AstArgDecl(const std::string& name, ObjType* objType) :
-    AstDataDecl(name, &objType->addQualifier(ObjType::eMutable), eFunArg) {};
+    AstDataDecl(name, &objType->addQualifier(ObjType::eMutable)) {};
+  virtual void accept(AstConstVisitor& visitor) const;
 };
 
 class AstDataDef : public AstValue {
@@ -136,7 +126,6 @@ public:
   ~AstDataDef();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   virtual AstDataDecl& decl() const { return *m_decl; }
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   virtual AstValue& initValue() const;
@@ -158,7 +147,6 @@ public:
   ~AstNumber();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   int value() const { return m_value; }
   virtual ObjType& objType() const { return *m_objType; }
 private:
@@ -173,7 +161,6 @@ public:
   virtual ~AstSymbol();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   const std::string& name() const { return *m_name; }
   virtual const std::string& address_as_id_hack() const { return *m_name; }
 private:
@@ -187,7 +174,6 @@ public:
   virtual ~AstFunCall();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   virtual AstValue& address () const { return *m_address; }
   AstCtList& args () const { return *m_args; }
 private:
@@ -224,7 +210,6 @@ public:
   virtual ~AstOperator();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
 
@@ -257,7 +242,6 @@ public:
   virtual ~AstIf();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const; 
   std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
   AstValue* elseAction() const { return m_elseAction; }
 private:
@@ -278,7 +262,6 @@ public:
   ~AstCtList();
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>&) const;
   AstCtList* Add(AstValue* child);
   AstCtList* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   /** The elements are guaranteed to be non-null */

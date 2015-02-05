@@ -52,10 +52,13 @@ out/objtype.o: objtype.cpp $(GEN_HEADERS) *.h
 out/irbuilderast.o: irbuilderast.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
+out/astprinter.o: astprinter.cpp $(GEN_HEADERS) *.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 out/efc.o: efc.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efc: out/parser.o out/scanner.o out/parserext.o out/driver.o out/ast.o out/objtype.o out/env.o out/irbuilderast.o out/efc.o
+out/efc: out/parser.o out/scanner.o out/parserext.o out/driver.o out/ast.o out/objtype.o out/env.o out/irbuilderast.o out/astprinter.o out/efc.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 
@@ -89,6 +92,9 @@ out/scannerandparsertest.o: test/scannerandparsertest.cpp $(GEN_HEADERS) *.h tes
 out/irbuilderasttest.o: test/irbuilderasttest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated-declarations -c -o $@ $<
 
+out/astprintertest.o: test/astprintertest.cpp $(GEN_HEADERS) *.h test/*.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 out/asttest.o: test/asttest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
@@ -98,7 +104,7 @@ out/envtest.o: test/envtest.cpp $(GEN_HEADERS) *.h test/*.h
 out/objtypetest.o: test/objtypetest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efctest: out/scanner.o out/objtype.o out/ast.o out/env.o out/irbuilderast.o out/parser.o out/parserext.o out/driver.o out/objtypetest.o out/envtest.o out/asttest.o out/parserexttest.o out/scannertest.o out/scannerandparsertest.o out/irbuilderasttest.o out/gtestprinter.o out/test.o out/tutorialstest.o out/efctest.o out/libgtest.a
+out/efctest: out/scanner.o out/objtype.o out/ast.o out/env.o out/astprinter.o out/irbuilderast.o out/parser.o out/parserext.o out/driver.o out/objtypetest.o out/envtest.o out/asttest.o out/parserexttest.o out/scannertest.o out/scannerandparsertest.o out/astprintertest.o out/irbuilderasttest.o out/gtestprinter.o out/test.o out/tutorialstest.o out/efctest.o out/libgtest.a
 	$(CXX)  $(LDFLAGS) -pthread -o $@ $^ $(LIBS)
 
 

@@ -1,15 +1,13 @@
 #include "ast.h"
 #include "irbuilderast.h"
 #include "astvisitor.h"
-#include <sstream>
+#include "astprinter.h"
 #include <cassert>
 #include <stdexcept>
 using namespace std;
 
 string AstNode::toStr() const {
-  ostringstream ss;
-  printTo(ss);
-  return ss.str();
+  return AstPrinter::toStr(*this);
 }
 
 const std::string& AstValue::address_as_id_hack() const {
@@ -22,16 +20,6 @@ ObjType& AstValue::objType() const {
   // assertion, because here the type really isn't known.
   static ObjTypeFunda ret(ObjTypeFunda::eInt);
   return ret;
-}
-
-basic_ostream<char>& AstNumber::printTo(basic_ostream<char>& os) const {
-  os << m_value;
-  if ( m_objType->match(ObjTypeFunda(ObjTypeFunda::eBool)) ) {
-    os << "bool";
-    // if value is outside range of bool, that is a topic that shall not
-    // interest us at this point here
-  }
-  return os;
 }
 
 AstSymbol::AstSymbol(const string* name) :
@@ -49,10 +37,6 @@ void AstSymbol::accept(AstConstVisitor& visitor) const {
 
 llvm::Value* AstSymbol::accept(IrBuilderAst& visitor, Access access) const {
   return visitor.visit(*this, access);
-}
-
-basic_ostream<char>& AstSymbol::printTo(basic_ostream<char>& os) const {
-  return os << *m_name;
 }
 
 AstCast::AstCast(AstValue* child, ObjType* objType) :
@@ -82,14 +66,6 @@ llvm::Value* AstCast::accept(IrBuilderAst& visitor, Access access) const {
   return visitor.visit(*this, access);
 }
 
-basic_ostream<char>& AstCast::printTo(basic_ostream<char>& os) const {
-  os << "cast(";
-  os << *m_objType << " ";
-  m_child->printTo(os);
-  os << ")";
-  return os;
-}
-
 AstFunDef::AstFunDef(AstFunDecl* decl, AstValue* body) :
   m_decl(decl ? decl : new AstFunDecl("<unknown_name>")),
   m_body(body ? body : new AstNumber(0)) {
@@ -107,15 +83,6 @@ void AstFunDef::accept(AstConstVisitor& visitor) const {
 
 llvm::Function* AstFunDef::accept(IrBuilderAst& visitor, Access) const {
   return visitor.visit(*this);
-}
-
-basic_ostream<char>& AstFunDef::printTo(basic_ostream<char>& os) const {
-  os << "fun(";
-  m_decl->printTo(os);
-  os << " ";
-  m_body->printTo(os);
-  os <<")";
-  return os;
 }
 
 AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args) :
@@ -149,19 +116,6 @@ llvm::Function* AstFunDecl::accept(IrBuilderAst& visitor, Access) const {
   return visitor.visit(*this);
 }
 
-basic_ostream<char>& AstFunDecl::printTo(basic_ostream<char>& os) const {
-  os << "declfun(" << m_name << " (";
-  for (list<AstArgDecl*>::const_iterator i=m_args->begin();
-       i!=m_args->end(); ++i) {
-    if (i!=m_args->begin()) { os << " "; }
-    (*i)->printTo(os);
-  }
-  os << ") ";
-  os << ObjTypeFunda(ObjTypeFunda::eInt);
-  os << ")";
-  return os;
-}
-
 list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
   AstArgDecl* arg2, AstArgDecl* arg3) {
   list<AstArgDecl*>* args = new list<AstArgDecl*>;
@@ -174,15 +128,7 @@ list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
 AstDataDecl::AstDataDecl(const string& name, ObjType* objType) :
   m_name(name),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
-  m_ownerOfObjType(true),
-  m_type(eNormal) {
-}
-
-AstDataDecl::AstDataDecl(const string& name, ObjType* objType, Type type) :
-  m_name(name),
-  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
-  m_ownerOfObjType(true),
-  m_type(type) {
+  m_ownerOfObjType(true) {
 }
 
 AstDataDecl::~AstDataDecl() {
@@ -197,11 +143,6 @@ llvm::Value* AstDataDecl::accept(IrBuilderAst& visitor, Access access) const {
   return visitor.visit(*this, access);
 }
 
-basic_ostream<char>& AstDataDecl::printTo(basic_ostream<char>& os) const {
-  if (eNormal==m_type) { os << "decldata"; }
-  return os << "(" << m_name << " " << *m_objType << ")";
-}
-
 ObjType& AstDataDecl::objType() const {
   return objType(false);
 }
@@ -212,6 +153,10 @@ ObjType& AstDataDecl::objType(bool stealOwnership) const {
     m_ownerOfObjType = false;
   }
   return *m_objType;
+}
+
+void AstArgDecl::accept(AstConstVisitor& visitor) const {
+  visitor.visit(*this);
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
@@ -242,15 +187,6 @@ void AstDataDef::accept(AstConstVisitor& visitor) const {
 
 llvm::Value* AstDataDef::accept(IrBuilderAst& visitor, Access access) const {
   return visitor.visit(*this, access);
-}
-
-basic_ostream<char>& AstDataDef::printTo(basic_ostream<char>& os) const {
-  os << "data(";
-  m_decl->printTo(os);
-  os << " (";
-  m_ctorArgs->printTo(os);
-  os << "))";
-  return os;
 }
 
 AstValue& AstDataDef::initValue() const {
@@ -342,13 +278,6 @@ llvm::Value* AstOperator::accept(IrBuilderAst& visitor, Access access) const {
   return visitor.visit(*this, access);
 }
 
-basic_ostream<char>& AstOperator::printTo(basic_ostream<char>& os) const {
-  os << m_op << '(';
-  m_args->printTo(os);
-  os << ')';
-  return os;
-}
-
 AstOperator::EOperation AstOperator::toEOperation(const string& op) {
   if (op.size()==1) {
     return static_cast<EOperation>(op[0]);
@@ -430,22 +359,6 @@ llvm::Value* AstIf::accept(IrBuilderAst& visitor, Access access) const {
   return visitor.visit(*this, access);
 }
 
-basic_ostream<char>& AstIf::printTo(basic_ostream<char>& os) const {
-  os << "if(";
-  list<ConditionActionPair>::const_iterator i = m_conditionActionPairs->begin();
-  for ( /*nop*/; i!=m_conditionActionPairs->end(); ++i ) {
-    if ( i!=m_conditionActionPairs->begin() ) { os << " "; }
-    i->m_condition->printTo(os);
-    os << " ";
-    i->m_action->printTo(os);
-  }
-  if (m_elseAction) {
-    os << " ";
-    m_elseAction->printTo(os); }
-  os << ")";
-  return os;
-}
-
 AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
   m_address(address ? address : new AstSymbol(NULL)),
   m_args(args ? args : new AstCtList()) {
@@ -464,14 +377,6 @@ void AstFunCall::accept(AstConstVisitor& visitor) const {
 
 llvm::Value* AstFunCall::accept(IrBuilderAst& visitor, Access access) const {
   return visitor.visit(*this, access);
-}
-
-basic_ostream<char>& AstFunCall::printTo(basic_ostream<char>& os) const {
-  m_address->printTo(os);
-  os << "(";
-  m_args->printTo(os);
-  os << ")";
-  return os;
 }
 
 /** The list's elements must be non-null */
@@ -529,13 +434,3 @@ void AstCtList::accept(AstConstVisitor& visitor) const {
 llvm::Value* AstCtList::accept(IrBuilderAst&, Access) const {
   return NULL;
 }
-
-basic_ostream<char>& AstCtList::printTo(basic_ostream<char>& os) const {
-  for (list<AstValue*>::const_iterator i=m_childs->begin();
-       i!=m_childs->end(); ++i) {
-    if (i!=m_childs->begin()) { os << " "; }
-    (*i)->printTo(os);
-  }
-  return os;
-}
-
