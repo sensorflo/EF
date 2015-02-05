@@ -411,6 +411,7 @@ basic_ostream<char>& AstIf::printTo(basic_ostream<char>& os) const {
 AstFunCall::AstFunCall(const AstValue* address, AstCtList* args) :
   m_address(address ? address : new AstSymbol(NULL)),
   m_args(args ? args : new AstCtList()) {
+  assert(m_address);
   assert(m_args);
 }
 
@@ -438,12 +439,14 @@ AstSeq::AstSeq(std::list<AstValue*>* childs) :
 /** When child is NULL it is ignored */
 AstSeq::AstSeq(AstValue* child) :
   m_childs(new std::list<AstValue*>()) {
+  assert(m_childs);
   if (child) { m_childs->push_back(child); }
 }
 
 /** NULL childs are ignored.*/
 AstSeq::AstSeq(AstValue* child1, AstValue* child2, AstValue* child3) :
   m_childs(new std::list<AstValue*>()) {
+  assert(m_childs);
   if (child1) { m_childs->push_back(child1); }
   if (child2) { m_childs->push_back(child2); }
   if (child3) { m_childs->push_back(child3); }
@@ -488,6 +491,7 @@ basic_ostream<char>& AstSeq::printTo(basic_ostream<char>& os) const {
 /** The list's elements must be non-null */
 AstCtList::AstCtList(std::list<AstValue*>* childs) :
   m_childs(childs ? childs : new std::list<AstValue*>() ) {
+  assert(m_childs);
   for (std::list<AstValue*>::iterator it = childs->begin();
        it != childs->end();
        ++it) {
@@ -498,12 +502,14 @@ AstCtList::AstCtList(std::list<AstValue*>* childs) :
 /** When child is NULL it is ignored */
 AstCtList::AstCtList(AstValue* child) :
   m_childs(new std::list<AstValue*>()) {
+  assert(m_childs);
   if (child) { m_childs->push_back(child); }
 }
 
 /** NULL childs are ignored.*/
 AstCtList::AstCtList(AstValue* child1, AstValue* child2, AstValue* child3) :
   m_childs(new std::list<AstValue*>()) {
+  assert(m_childs);
   if (child1) { m_childs->push_back(child1); }
   if (child2) { m_childs->push_back(child2); }
   if (child3) { m_childs->push_back(child3); }
