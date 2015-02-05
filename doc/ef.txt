@@ -664,6 +664,9 @@ Note that the semicolon is optional.  That means that the sequence operator is
 implicit when two standalone expressions are adjacent.  The semicolon is the
 explicit form of the sequence operator.
 
+Note that the evaluation of the sequence operator's operands is special, see
+<<order_of_evaluation>>.
+
 Style guidelines:
 
 - Of a given standalone expression sequence, all sequence operator tokens are
@@ -718,6 +721,7 @@ cast the whole expression to void.  *to-do*: How to handle overloaded
 operators which really are function calls?
 
 
+[[order_of_evaluation]]
 === Order of evaluation / side effects
 
 In the following, operators / operands / evaluation are regarded as a
@@ -730,10 +734,16 @@ unspecified within the following bounds:
 - After evaluating the first `argument' of a given `function', all of the
   remaining `arguments' of the same `function' must be evaluated before any
   `argument' of another `function' can be evaluated.
-- Short circuit operators (+and+, +or+, ...) and most list expressions
-  (+if+, ...) are allowed to not evaluate some of their arguments at all.
+- Short circuit operators (+and+, +or+, ...), inclusive their operator call
+  forms (+and(...)+, +or(...)+, ...), evaluate the operands from left to
+  right.  As soon as the outcome of the expression is known, no more operands
+  are evaluated.
+- Most list expressions (+if+, ...) are allowed to not evaluate some of their
+  arguments at all.
+- The sequence operator (++;++) evaluates its lhs before it evaluates
+  its rhs.
 
-It follows that: 
+It follows that:
 
 - All `arguments' appear to be fully evaluated, inclusive side-effects, before
   the `function' is invoked.
