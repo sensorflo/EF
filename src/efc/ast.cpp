@@ -53,11 +53,15 @@ basic_ostream<char>& AstSymbol::printTo(basic_ostream<char>& os) const {
 AstCast::AstCast(AstValue* child, ObjType* objType) :
   m_child(child ? child : new AstNumber(0)),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
+  assert(m_child);
+  assert(m_objType);
 }
 
 AstCast::AstCast(AstValue* child, ObjTypeFunda::EType objType) :
   m_child(child ? child : new AstNumber(0)),
   m_objType(new ObjTypeFunda(objType)) {
+  assert(m_child);
+  assert(m_objType);
 }
 
 AstCast::~AstCast() {
