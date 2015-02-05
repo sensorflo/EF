@@ -2674,9 +2674,10 @@ in step 1:
 +raw_delete+ deletes an data object created with +raw_new+.  Standard style
 guidelines disallow its use.
 
-1. call destructor of data object
-2. free storage (*to-do*: using which storage allocator exactly?)
-3. Set it's argument to null if its an lvalue (that means the're effectively
+1. abort +raw_delete+ if it's a null ptr
+2. call destructor of data object
+3. free storage (*to-do*: using which storage allocator exactly?)
+4. Set it's argument to null if its an lvalue (that means the're effectively
    two delete versions).  If you don't want to pay the cost of nullyfing your
    lvalue arg, cast it to a non-lvalue.
 
