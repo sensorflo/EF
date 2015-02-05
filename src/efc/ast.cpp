@@ -197,12 +197,14 @@ AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_ctorArgs(initValue ? new AstCtList(initValue) : new AstCtList()) {
   assert(m_decl);
+  assert(m_ctorArgs);
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()) {
   assert(m_decl);
+  assert(m_ctorArgs);
 }
 
 AstDataDef::~AstDataDef() {
