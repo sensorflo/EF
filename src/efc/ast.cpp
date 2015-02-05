@@ -237,12 +237,14 @@ const AstValue& AstDataDef::initValue() const {
 AstNumber::AstNumber(int value, ObjType* objType) :
   m_value(value),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
+  assert(m_objType);
 }
 
 AstNumber::AstNumber(int value, ObjTypeFunda::EType eType,
   ObjTypeFunda::Qualifier qualifier) :
   m_value(value),
   m_objType(new ObjTypeFunda(eType, qualifier)) {
+  assert(m_objType);
 }
 
 AstNumber::~AstNumber() {
