@@ -354,15 +354,6 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
   }
 }
 
-AstSeq::AstSeq(std::list<AstValue*>* childs) :
-  AstOperator(AstOperator::eSeq, new AstCtList(childs)) {
-}
-
-/** NULL childs are ignored.*/
-AstSeq::AstSeq(AstValue* child1, AstValue* child2, AstValue* child3) :
-  AstOperator(AstOperator::eSeq, child1, child2, child3) {
-}
-
 AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstValue* elseAction) :
   m_conditionActionPairs(
     conditionActionPairs ? conditionActionPairs : makeDefaultConditionActionPairs()),

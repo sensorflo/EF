@@ -252,12 +252,6 @@ private:
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   AstOperator::EOperation op);
 
-class AstSeq : public AstOperator {
-public:
-  AstSeq(std::list<AstValue*>* childs = NULL);
-  AstSeq(AstValue* child1, AstValue* child2 = NULL, AstValue* child3 = NULL);
-};
-
 /* If flow control expression */
 class AstIf : public AstValue {
 public:

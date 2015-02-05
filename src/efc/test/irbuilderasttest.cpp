@@ -31,10 +31,6 @@ string amendAst(const auto_ptr<AstValue>& ast) {
   return amendAst(ast.get());
 }
 
-string amendAst(const auto_ptr<AstSeq>& ast) {
-  return amendAst(ast.get());
-}
-
 void testbuilAndRunModule(AstValue* astRoot, int expectedResult,
   const string& spec = "", ECmpOp cmpOp = eEq ) {
 
@@ -77,17 +73,16 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    a_seq_with_one_or_more_numbers,
-    buildAndRunModule,
-    returns_the_last_number)) {
-  TEST_BUILD_AND_RUN_MODULE(new AstSeq(new AstNumber(42)), 42, "");
-  TEST_BUILD_AND_RUN_MODULE(new AstSeq(new AstNumber(11), new AstNumber(22)), 22, "");
-}
-
-TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     an_operator,
     buildAndRunModule,
     returns_the_result_of_that_operator)) {
+
+  // ; aka sequence
+  string spec = "The sequence operator evaluates all arguments and returns the last";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(';', new AstNumber(42)), 42, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(';', new AstNumber(11), new AstNumber(22)), 22, "");
 
   // not
   TEST_BUILD_AND_RUN_MODULE(
@@ -145,10 +140,14 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   // such operators are
   // - n-ary
-  // - have AstSeq as childs
 
   //null-ary not "!()" is invalid 
-  string spec = "null-ary or: or() = false";
+  string spec = "null-ary seq throws";
+  { auto_ptr<AstValue> ast(new AstOperator(';'));
+    TestingIrBuilderAst UUT;
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendAst(ast);
+  }
+  spec = "null-ary or: or() = false";
   TEST_BUILD_AND_RUN_MODULE(
     new AstOperator(AstOperator::eOr),
     0, spec);
@@ -172,6 +171,10 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
 
   // unary not "!(x)" is the normal case and has been tested above
+  spec = "unary seq: ;(x) = x";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(';', new AstNumber(2)),
+    2, spec);
   spec = "unary or: or(x) = bool(x)";
   TEST_BUILD_AND_RUN_MODULE_CMPOP(
     new AstOperator(AstOperator::eOr, new AstNumber(2)),
@@ -208,6 +211,13 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     1==2, spec);
 
   // n-ary not "!(x y z)" is invalid
+  spec = "n-ary seq: ;(1,2,3)";
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(';',
+      new AstNumber(1),
+      new AstNumber(2),
+      new AstNumber(3)),
+    3, spec);
   spec = "n-ary plus: +(1,2,3)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstOperator('+',
@@ -239,21 +249,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    an_empty_seq,
-    buildAndRunModule,
-    throws)) {
-  auto_ptr<AstSeq> astSeq(new AstSeq());
-  TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
-}
-
-TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_seq_with_some_expressions_not_having_a_value_but_the_last_having_a_value,
     buildAndRunModule,
     returns_the_result_of_the_last_expression)) {
   string spec = "Sequence containing a function declaration";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstFunDecl("foo"),
       new AstNumber(42)),
     42, spec);
@@ -269,20 +270,20 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
-    auto_ptr<AstSeq> astSeq(new AstSeq(new AstFunDecl("foo"), new AstNumber(42)));
+    auto_ptr<AstValue> ast(new AstOperator(';',new AstFunDecl("foo"), new AstNumber(42)));
     TestingIrBuilderAst UUT;
 
     // execute
-    UUT.buildModule(*astSeq);
+    UUT.buildModule(*ast);
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
     EXPECT_TRUE(functionIr!=NULL)
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(functionIr->arg_size(), 0)
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
   }
 
   spec = "Example: two arguments";
@@ -290,8 +291,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
-    auto_ptr<AstSeq> astSeq(
-      new AstSeq(
+    auto_ptr<AstValue> ast(
+      new AstOperator(';',
         new AstFunDecl(
           "foo",
           new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
@@ -300,16 +301,16 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     TestingIrBuilderAst UUT;
 
     // execute
-    UUT.buildModule(*astSeq);
+    UUT.buildModule(*ast);
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
     EXPECT_TRUE(functionIr!=NULL)
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(functionIr->arg_size(), 2)
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
   }
 }
 
@@ -323,22 +324,22 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
-    auto_ptr<AstSeq> astSeq(new AstSeq(
+    auto_ptr<AstValue> ast(new AstOperator(';',
         new AstFunDef(new AstFunDecl("foo"), new AstNumber(77)),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
 
     // execute
-    UUT.buildModule(*astSeq);
+    UUT.buildModule(*ast);
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
     EXPECT_TRUE(functionIr!=NULL)
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(functionIr->arg_size(), 0)
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
   }
 
   spec = "Example: two arguments";
@@ -349,7 +350,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     list<string>* args = new list<string>();
     args->push_back("arg1");
     args->push_back("arg2");
-    auto_ptr<AstSeq> astSeq( new AstSeq(
+    auto_ptr<AstValue> ast( new AstOperator(';',
         new AstFunDef(
           new AstFunDecl(
             "foo",
@@ -360,16 +361,16 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     TestingIrBuilderAst UUT;
 
     // execute
-    UUT.buildModule(*astSeq);
+    UUT.buildModule(*ast);
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
     EXPECT_TRUE(functionIr!=NULL)
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(functionIr->arg_size(), args->size())
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
   }
 }
 
@@ -383,17 +384,17 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
-    auto_ptr<AstSeq> astSeq(new AstSeq(
+    auto_ptr<AstValue> ast(new AstOperator(';',
         new AstFunDef(new AstFunDecl("foo"), new AstNumber(77)),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
 
     // execute
-    UUT.buildModule(*astSeq);
+    UUT.buildModule(*ast);
 
     // verify
     EXPECT_EQ( 77, UUT.jitExecFunction("foo") )
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
   }
 
   spec = "Example: one argument, which however is ignored";
@@ -401,8 +402,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // setup
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
-    auto_ptr<AstSeq> astSeq(
-      new AstSeq(
+    auto_ptr<AstValue> ast(
+      new AstOperator(';',
         new AstFunDef(
           new AstFunDecl(
             "foo",
@@ -412,11 +413,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     TestingIrBuilderAst UUT;
 
     // execute
-    UUT.buildModule(*astSeq);
+    UUT.buildModule(*ast);
 
     // verify
     EXPECT_EQ( 42, UUT.jitExecFunction1Arg("foo", 256) )
-      << amendAst(astSeq) << amendSpec(spec);
+      << amendAst(ast) << amendSpec(spec);
   }
 }
 
@@ -427,8 +428,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // setup
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
-  auto_ptr<AstSeq> astSeq(
-    new AstSeq(
+  auto_ptr<AstValue> ast(
+    new AstOperator(';',
       new AstFunDef(
         new AstFunDecl(
           "foo",
@@ -438,12 +439,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TestingIrBuilderAst UUT;
 
   // execute
-  UUT.buildModule(*astSeq);
+  UUT.buildModule(*ast);
 
   // verify
   int x = 256;
   EXPECT_EQ( x, UUT.jitExecFunction1Arg("foo", x) )
-    << amendAst(astSeq);
+    << amendAst(ast);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -456,8 +457,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // setup
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
-  auto_ptr<AstSeq> astSeq(
-    new AstSeq(
+  auto_ptr<AstValue> ast(
+    new AstOperator(';',
       new AstFunDef(
         new AstFunDecl(
           "foo",
@@ -470,12 +471,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TestingIrBuilderAst UUT;
 
   // execute
-  UUT.buildModule(*astSeq);
+  UUT.buildModule(*ast);
 
   // verify
   int x = 2;
   int y = 3;
-  EXPECT_EQ( x*y, UUT.jitExecFunction2Arg("foo", x, y) ) << amendAst(astSeq);
+  EXPECT_EQ( x*y, UUT.jitExecFunction2Arg("foo", x, y) ) << amendAst(ast);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -488,13 +489,13 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // setup
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
-  auto_ptr<AstSeq> astSeq(
-    new AstSeq(
+  auto_ptr<AstValue> ast(
+    new AstOperator(';',
       new AstFunDef(
         new AstFunDecl(
           "foo",
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstSeq(
+        new AstOperator(';',
           new AstOperator('=',
             new AstSymbol(new string("x")),
             new AstOperator('+',
@@ -505,11 +506,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TestingIrBuilderAst UUT;
 
   // execute
-  UUT.buildModule(*astSeq);
+  UUT.buildModule(*ast);
 
   // verify
   int x = 2;
-  EXPECT_EQ( x+1, UUT.jitExecFunction1Arg("foo", x)) << amendAst(astSeq);
+  EXPECT_EQ( x+1, UUT.jitExecFunction1Arg("foo", x)) << amendAst(ast);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -527,15 +528,15 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   spec = "Example: within a function body";
   {
-    auto_ptr<AstSeq> astSeq(
-      new AstSeq(
+    auto_ptr<AstValue> ast(
+      new AstOperator(';',
         new AstFunDef(
           new AstFunDecl("foo"),
           new AstSymbol(new string("x"))),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
-      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
+      << amendAst(ast) << amendSpec(spec);
   }
 }
 
@@ -544,7 +545,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     succeeds)) {
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstFunDecl("foo"),
       new AstFunDecl("foo"),
       new AstNumber(42)),
@@ -556,7 +557,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     succeeds)) {
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstFunDecl("foo"),
       new AstFunDef(new AstFunDecl("foo"), new AstNumber(42)),
       new AstFunCall(new AstSymbol(new string("foo")))),
@@ -571,26 +572,26 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   {
     TestingIrBuilderAst UUT;
     ParserExt parserExt(*UUT.m_env);
-    auto_ptr<AstSeq> astSeq(
-      new AstSeq(
+    auto_ptr<AstValue> ast(
+      new AstOperator(';',
         parserExt.createAstFunDecl("foo").first,
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)));
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) <<
-      amendSpec(spec) << amendAst(astSeq);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) <<
+      amendSpec(spec) << amendAst(ast);
   }
 
   spec = "First fundamental type, then function type";
   {
     TestingIrBuilderAst UUT;
     ParserExt parserExt(*UUT.m_env);
-    auto_ptr<AstSeq> astSeq(
-      new AstSeq(
+    auto_ptr<AstValue> ast(
+      new AstOperator(';',
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         parserExt.createAstFunDecl("foo").first,
         new AstNumber(42)));
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) <<
-      amendSpec(spec) << amendAst(astSeq);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) <<
+      amendSpec(spec) << amendAst(ast);
   }
 }
 
@@ -601,7 +602,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   string spec = "Trivial function with zero arguments returning a constant";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstFunDef(
         new AstFunDecl("foo"),
         new AstNumber(42)),
@@ -610,7 +611,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   spec = "Simple function with one argument which is ignored and a constant is returned";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstFunDef(
         new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstNumber(42)),
@@ -619,7 +620,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   spec = "Simple function with two arguments whichs sum is returned";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstFunDef(
         new AstFunDecl(
           "add",
@@ -649,24 +650,24 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   string spec = "Function foo expects one arg, but zero where passed on call";
   {
-    auto_ptr<AstSeq> astSeq( new AstSeq(
+    auto_ptr<AstValue> ast( new AstOperator(';',
         new AstFunDef(
           new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
           new AstNumber(42)),
         new AstFunCall(new AstSymbol(new string("foo")))));
     TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendSpec(spec) << amendAst(astSeq);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendSpec(spec) << amendAst(ast);
   }
 
   spec = "Function foo expects no args, but one arg was passed on call";
   {
-    auto_ptr<AstSeq> astSeq( new AstSeq(
+    auto_ptr<AstValue> ast( new AstOperator(';',
         new AstFunDef(
           new AstFunDecl("foo"),
           new AstNumber(42)),
         new AstFunCall(new AstSymbol(new string("foo")), new AstCtList(new AstNumber(0)))));
     TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendSpec(spec) << amendAst(astSeq);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendSpec(spec) << amendAst(ast);
   }
 }
 
@@ -685,8 +686,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   spec = "Value of definition expression is an rvalue and thus _not_ "
     "assignable to";
   {
-    auto_ptr<AstSeq> astSeq(
-      new AstSeq(
+    auto_ptr<AstValue> ast(
+      new AstOperator(';',
         new AstOperator('=',
           new AstDataDef(
             new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
@@ -694,7 +695,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           new AstNumber(77)),
         new AstSymbol(new string("foo"))));
     TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendAst(ast);
   }
 }
 
@@ -712,7 +713,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   spec = "Definition expresssion is an lvalue which concequently is assignable to";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstOperator('=',
         new AstDataDef(
           new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -729,7 +730,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   string spec = "value (aka immutable (aka const) data obj)";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)),
@@ -740,7 +741,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   spec = "variable (aka mutable data obj)";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)),
@@ -757,7 +758,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   string spec = "Example: Assignement 'foo=77' being last expression in sequence"; 
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)),
@@ -768,7 +769,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   spec = "Example: After assignment 'foo=77', there is a further 'foo' expression"; 
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)),
@@ -784,8 +785,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
     buildAndRunModule,
     throws,
     BECAUSE_values_are_immutable_data_objects)) {
-  auto_ptr<AstSeq> astSeq(
-    new AstSeq(
+  auto_ptr<AstValue> ast(
+    new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)),
@@ -793,7 +794,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
         new AstSymbol(new string("foo")),
         new AstNumber(77))));
   TestingIrBuilderAst UUT;
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) << amendAst(astSeq);
+  EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) << amendAst(ast);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -801,7 +802,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     returns_the_default)) {
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
       new AstSymbol(new string("foo"))),
@@ -813,7 +814,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     succeeds)) {
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstNumber(42)),
@@ -828,14 +829,14 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   string spec = "Example: one uses 'val' (aka 'var const'), the other 'var' "
     "(aka 'val mutable'). The two also contribute to the type";
   {
-    auto_ptr<AstSeq> astSeq(
-      new AstSeq(
+    auto_ptr<AstValue> ast(
+      new AstOperator(';',
         new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eNoQualifier)),
         new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq)) <<
-      amendSpec(spec) << amendAst(astSeq);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) <<
+      amendSpec(spec) << amendAst(ast);
   }
 }
 
@@ -849,7 +850,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
 
   string spec = "function argument named 'x' shadows 'global' variable also named 'x'";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       new AstFunDef(
         new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
@@ -861,7 +862,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
 
   spec = "variable 'x' local to a function shadows 'global' variable also named 'x'";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       new AstFunDef(
         new AstFunDecl("foo"),
@@ -879,19 +880,19 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   string spec = "Example: two 'x' in 'global' scope";
   {
-    auto_ptr<AstSeq> astSeq(
-      new AstSeq(
+    auto_ptr<AstValue> ast(
+      new AstOperator(';',
         new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))));
     TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
-      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
+      << amendAst(ast) << amendSpec(spec);
   }
 
   spec = "Example: two 'x' in argument list of a function";
   {
-    auto_ptr<AstSeq> astSeq(
-      new AstSeq(
+    auto_ptr<AstValue> ast(
+      new AstOperator(';',
         new AstFunDef(
           new AstFunDecl(
             "foo",
@@ -900,21 +901,21 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           new AstNumber(42)),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
-      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
+      << amendAst(ast) << amendSpec(spec);
   }
 
   spec = "Example: 'x' as argument to a function and as local variable within";
   {
-    auto_ptr<AstSeq> astSeq(
-      new AstSeq(
+    auto_ptr<AstValue> ast(
+      new AstOperator(';',
         new AstFunDef(
           new AstFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
           new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
         new AstNumber(42)));
     TestingIrBuilderAst UUT;
-    EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
-      << amendAst(astSeq) << amendSpec(spec);
+    EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast))
+      << amendAst(ast) << amendSpec(spec);
   }
 }
 
@@ -952,7 +953,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     succeeds)) {
   TEST_BUILD_AND_RUN_MODULE(
-    new AstSeq(
+    new AstOperator(';',
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(1, ObjTypeFunda::eBool)),
     1, "");
