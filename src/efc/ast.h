@@ -11,11 +11,13 @@
 
 #include "astforwards.h"
 class AstConstVisitor;
+class AstVisitor;
 class IrBuilderAst;
 
 class AstNode {
 public:
   virtual ~AstNode() {};
+  virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const = 0;
   std::string toStr() const;
@@ -34,6 +36,7 @@ public:
   AstCast(AstValue* child, ObjType* objType);
   AstCast(AstValue* child, ObjTypeFunda::EType objType);
   ~AstCast();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   AstValue& child() const { return *m_child; }
@@ -50,6 +53,7 @@ class AstFunDef : public AstValue {
 public:
   AstFunDef(AstFunDecl* decl, AstValue* body);
   virtual ~AstFunDef();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual AstFunDecl& decl() const { return *m_decl; }
@@ -67,6 +71,7 @@ public:
   AstFunDecl(const std::string& name, AstArgDecl* arg1,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   ~AstFunDecl();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual const std::string& name() const { return m_name; }
@@ -83,6 +88,7 @@ class AstDataDecl : public AstValue {
 public:
   AstDataDecl(const std::string& name, ObjType* objType);
   ~AstDataDecl();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual const std::string& name() const { return m_name; }
@@ -102,6 +108,7 @@ class AstArgDecl : public AstDataDecl {
 public:
   AstArgDecl(const std::string& name, ObjType* objType) :
     AstDataDecl(name, &objType->addQualifier(ObjType::eMutable)) {};
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 };
 
@@ -110,6 +117,7 @@ public:
   AstDataDef(AstDataDecl* decl, AstValue* initValue);
   AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs = NULL);
   ~AstDataDef();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual AstDataDecl& decl() const { return *m_decl; }
@@ -131,6 +139,7 @@ public:
   AstNumber(int value, ObjTypeFunda::EType eType,
     ObjTypeFunda::Qualifier qualifier = ObjTypeFunda::eNoQualifier);
   ~AstNumber();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   int value() const { return m_value; }
@@ -145,6 +154,7 @@ class AstSymbol : public AstValue {
 public:
   AstSymbol(const std::string* name);
   virtual ~AstSymbol();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   const std::string& name() const { return *m_name; }
@@ -158,6 +168,7 @@ class AstFunCall : public AstValue {
 public:
   AstFunCall(AstValue* address, AstCtList* args = NULL);
   virtual ~AstFunCall();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual AstValue& address () const { return *m_address; }
@@ -194,6 +205,7 @@ public:
   AstOperator(EOperation op, AstValue* operand1 = NULL, AstValue* operand2 = NULL,
     AstValue* operand3 = NULL);
   virtual ~AstOperator();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   EOperation op() const { return m_op; }
@@ -226,6 +238,7 @@ public:
   AstIf(std::list<ConditionActionPair>* conditionActionPairs, AstValue* elseAction = NULL);
   AstIf(AstValue* cond, AstValue* action, AstValue* elseAction = NULL);
   virtual ~AstIf();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
@@ -246,6 +259,7 @@ public:
   AstCtList(AstValue* child1 = NULL);
   AstCtList(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   ~AstCtList();
+  virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   AstCtList* Add(AstValue* child);

@@ -357,6 +357,19 @@ void AstOperator::accept(AstConstVisitor& visitor) const { visitor.visit(*this);
 void AstIf::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCtList::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 
+void AstCast::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstFunDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstFunDecl::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstDataDecl::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstArgDecl::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstDataDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstNumber::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstSymbol::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstFunCall::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstOperator::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstCtList::accept(AstVisitor& visitor) { visitor.visit(*this); }
+
 llvm::Value* AstCast::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
 llvm::Function* AstFunDef::accept(IrBuilderAst& visitor, Access) const { return visitor.visit(*this); }
 llvm::Function* AstFunDecl::accept(IrBuilderAst& visitor, Access) const { return visitor.visit(*this); }
