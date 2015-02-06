@@ -913,6 +913,23 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
     "");
 }
 
+// TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
+//     an_operator_involving_two_data_objects_of_different_type,
+//     buildAndRunModule,
+//     throws,
+//     BECAUSE_currently_EF_has_no_implicit_conversions)) {
+//   auto_ptr<AstSeq> astSeq(
+//     new AstSeq(
+//       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable))),
+//       new AstDataDef(new AstDataDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
+//       new AstOperator('=',
+//         new AstSymbol(new string("x")),
+//         new AstSymbol(new string("y")))));
+//   TestingIrBuilderAst UUT;
+//   EXPECT_ANY_THROW(UUT.buildAndRunModule(*astSeq))
+//     << amendAst(astSeq);
+// }
+
 // Temporary test while introducing types
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_seq_containing_a_bool_literal,

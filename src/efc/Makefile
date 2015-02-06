@@ -52,6 +52,9 @@ out/objtype.o: objtype.cpp $(GEN_HEADERS) *.h
 out/astdefaultiterator.o: astdefaultiterator.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
+out/semanticanalizer.o: semanticanalizer.cpp $(GEN_HEADERS) *.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 out/irbuilderast.o: irbuilderast.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
@@ -61,7 +64,7 @@ out/astprinter.o: astprinter.cpp $(GEN_HEADERS) *.h
 out/efc.o: efc.cpp $(GEN_HEADERS) *.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efc: out/parser.o out/scanner.o out/parserext.o out/driver.o out/ast.o out/objtype.o out/astdefaultiterator.o out/env.o out/irbuilderast.o out/astprinter.o out/efc.o
+out/efc: out/parser.o out/scanner.o out/parserext.o out/driver.o out/ast.o out/objtype.o out/astdefaultiterator.o out/env.o out/semanticanalizer.o out/irbuilderast.o out/astprinter.o out/efc.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 
@@ -92,6 +95,9 @@ out/parserexttest.o: test/parserexttest.cpp $(GEN_HEADERS) *.h test/*.h
 out/scannerandparsertest.o: test/scannerandparsertest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
+out/semanticanalizertest.o: test/semanticanalizertest.cpp $(GEN_HEADERS) *.h test/*.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 out/irbuilderasttest.o: test/irbuilderasttest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated-declarations -c -o $@ $<
 
@@ -107,7 +113,7 @@ out/envtest.o: test/envtest.cpp $(GEN_HEADERS) *.h test/*.h
 out/objtypetest.o: test/objtypetest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efctest: out/scanner.o out/objtype.o out/astdefaultiterator.o out/ast.o out/env.o out/astprinter.o out/irbuilderast.o out/parser.o out/parserext.o out/driver.o out/objtypetest.o out/envtest.o out/asttest.o out/parserexttest.o out/scannertest.o out/scannerandparsertest.o out/astprintertest.o out/irbuilderasttest.o out/gtestprinter.o out/test.o out/tutorialstest.o out/efctest.o out/libgtest.a
+out/efctest: out/scanner.o out/objtype.o out/astdefaultiterator.o out/ast.o out/env.o out/astprinter.o out/semanticanalizer.o out/irbuilderast.o out/parser.o out/parserext.o out/driver.o out/objtypetest.o out/envtest.o out/asttest.o out/parserexttest.o out/scannertest.o out/scannerandparsertest.o out/astprintertest.o out/semanticanalizertest.o out/irbuilderasttest.o out/gtestprinter.o out/test.o out/tutorialstest.o out/efctest.o out/libgtest.a
 	$(CXX)  $(LDFLAGS) -pthread -o $@ $^ $(LIBS)
 
 

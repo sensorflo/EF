@@ -1,5 +1,6 @@
 #include "driver.h"
 #include "env.h"
+#include "semanticanalizer.h"
 #include "irbuilderast.h"
 #include "gensrc/parser.hpp"
 #include <stdio.h>
@@ -45,11 +46,15 @@ void Driver::buildAndRunModule() {
     throw runtime_error::runtime_error("parse failed");
   }
 
+  // semantic analysis and transformations
+  SemanticAnalizer semanticAnalizer;
+  AstNode* astAfterSa = semanticAnalizer.transform(*astAfterParse);  
+
   // generate IR code and JIT execute it
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
   IrBuilderAst irBuilderAst(m_env);
-  cout << irBuilderAst.buildAndRunModule(*dynamic_cast<AstValue*>(astAfterParse)) << "\n";
+  cout << irBuilderAst.buildAndRunModule(*dynamic_cast<AstValue*>(astAfterSa)) << "\n";
 }
 
 int Driver::scannAndParse(AstNode*& ast) {
