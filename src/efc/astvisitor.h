@@ -28,7 +28,7 @@ public:
   virtual void visit(const AstFunDef& funDef) =0;
   virtual void visit(const AstFunDecl& funDecl) =0;
   virtual void visit(const AstDataDecl& dataDecl) =0;
-  virtual void visit(const AstArgDecl& dataDef) =0;
+  virtual void visit(const AstArgDecl& argDecl) =0;
   virtual void visit(const AstDataDef& dataDef) =0;
   virtual void visit(const AstIf& if_) =0;
 };
