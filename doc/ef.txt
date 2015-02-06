@@ -2110,17 +2110,20 @@ Possibilities:
 
 It's not clear what the exact object properties shall be:
 
-* Shall a temporary be const as in C?  From a very general point of view,
-  const (aka immutable) objects are easier to work with than mutable ones.
-  Also regarding concurrency.  With objects on stack concurrency is seldom an
-  issue since such objects very seldom are accessed by multiple threads.  I
-  think I find it better to make temporaries mutable.  Then a temporary can be
-  passed as mutable argument to a function -- for most cases that makes no
-  sense since after the function returns nobody has access to the modified
-  temporary.  (*to-do*: Examples where that could be useful).  Or make it
-  const, and the user can explicitly `cast' that object (without creating
-  another object) to non-const.  That would also be closer to the principle
-  that most things in EF are const by default. 
+* Shall a temporary be const as in C?  Let the user choose.  The default is
+  const.  Provide a short construct to const cast a temporary to non-const.
++
+Pro and contra const: From a very general point of view, const (aka immutable)
+  objects are easier to work with than mutable ones.  Also regarding
+  concurrency.  With objects on stack concurrency is seldom an issue since
+  such objects very seldom are accessed by multiple threads.  I think I find
+  it better to make temporaries mutable.  Then a temporary can be passed as
+  mutable argument to a function -- for most cases that makes no sense since
+  after the function returns nobody has access to the modified temporary.
+  (*to-do*: Examples where that could be useful).  Or make it const, and the
+  user can explicitly `cast' that object (without creating another object) to
+  non-const.  That would also be closer to the principle that most things in
+  EF are const by default.
 
 
 ==== Make local
@@ -2378,6 +2381,13 @@ is no private anymore.  In my eyes private also protects myself / the
 maintainers from making mistakes in one single module.  E.g. sometimes
 redundancy sadly is needed, and then I want to encapsulate that redundancy in
 an very small area, i.e. a very small helper class.
+
+
+=== Modifier sections
+
+Similar to C&plus;&plus; where a class has a public / protected / private
+section, EF has sections where the stated modifiers (not only access
+modifiers) are the default.
 
 
 === Methods / Operators
@@ -3180,6 +3190,15 @@ If its true that it is not applicable in an hard-real time environment, then
 provide compiler switch to turn it off.  However would that work?  Probably
 the caller module and the module implementing the function must be compiled
 with the same compiler switch.
+
+
+=== Inlining (aka inline expansion)
+
+In general the compiler is allowed to automatically choose whether produced
+the machine code performs a function call, or whether the body of the function
+is inline expanded at call side.  However the user shall be able tho choose
+between the following for each call: a proper call, inline expansion or
+compiler is allowed to choose (the default).
 
 
 == Concurrency
