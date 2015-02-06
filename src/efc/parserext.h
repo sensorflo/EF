@@ -8,15 +8,9 @@ of code. */
 #include "objtype.h"
 #include <list>
 
+#include "astforwards.h"
 class SymbolTableEntry;
 class Env;
-class AstValue;
-class AstDataDecl;
-class AstDataDef;
-class AstArgDecl;
-class AstFunDecl;
-class AstFunDef;
-class AstCtList;
 
 struct RawAstDataDecl {
   RawAstDataDecl(const std::string& name, ObjType* objType) :

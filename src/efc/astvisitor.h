@@ -1,20 +1,7 @@
 #ifndef ASTVISITOR_H
 #define ASTVISITOR_H
 
-class AstNode;
-class AstNumber;
-class AstSymbol;
-class AstFunCall;
-class AstOperator;
-class AstCast;
-class AstCtList;
-class AstFunDef;
-class AstFunDecl;
-class AstDataDecl;
-class AstArgDecl;
-class AstDataDef;
-class AstIf;
-
+#include "astforwards.h"
 
 class AstConstVisitor {
 public:

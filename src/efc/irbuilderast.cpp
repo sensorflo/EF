@@ -1,4 +1,5 @@
 #include "irbuilderast.h"
+#include "ast.h"
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/IR/Value.h"

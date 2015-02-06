@@ -1,9 +1,11 @@
 #ifndef IR_BUILDER_AST_H
 #define IR_BUILDER_AST_H
-#include "ast.h"
 #include "env.h"
 #include "objtype.h"
+#include "access.h"
 #include "llvm/IR/IRBuilder.h"
+
+#include "astforwards.h"
 namespace llvm {
   class Module;
   class ExecutionEngine;

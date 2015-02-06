@@ -1,6 +1,7 @@
 #include "test.h"
 #include "../irbuilderast.h"
 #include "../parserext.h"
+#include "../ast.h"
 #include "llvm/IR/Module.h"
 #include <memory>
 using namespace testing;

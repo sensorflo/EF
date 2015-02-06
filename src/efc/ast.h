@@ -1,6 +1,7 @@
 #ifndef AST_H
 #define AST_H
 #include "objtype.h"
+#include "access.h"
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Function.h"
 #include <string>
@@ -8,24 +9,9 @@
 #include <iostream>
 #include <map>
 
-class AstNode;
-class AstNumber;
-class AstSymbol;
-class AstFunCall;
-class AstOperator;
-class AstCast;
-class AstCtList;
-class AstFunDef;
-class AstFunDecl;
-class AstDataDecl;
-class AstArgDecl;
-class AstDataDef;
-class AstIf;
-
+#include "astforwards.h"
 class AstConstVisitor;
 class IrBuilderAst;
-
-enum Access { eRead, eWrite };
 
 class AstNode {
 public:
