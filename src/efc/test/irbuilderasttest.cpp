@@ -22,15 +22,6 @@ public:
   Env* m_env;
 };
 
-string amendAst(const AstNode* ast) {
-  assert(ast);
-  return string("\nInput AST in its canonical form:\n") + ast->toStr() + "\n";
-}
-
-string amendAst(const auto_ptr<AstValue>& ast) {
-  return amendAst(ast.get());
-}
-
 void testbuilAndRunModule(AstValue* astRoot, int expectedResult,
   const string& spec = "", ECmpOp cmpOp = eEq ) {
 
