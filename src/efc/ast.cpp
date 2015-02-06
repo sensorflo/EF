@@ -31,14 +31,6 @@ AstSymbol::~AstSymbol() {
   delete m_name;
 }
 
-void AstSymbol::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
-
-llvm::Value* AstSymbol::accept(IrBuilderAst& visitor, Access access) const {
-  return visitor.visit(*this, access);
-}
-
 AstCast::AstCast(AstValue* child, ObjType* objType) :
   m_child(child ? child : new AstNumber(0)),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
@@ -58,14 +50,6 @@ AstCast::~AstCast() {
   delete m_objType;
 }
 
-void AstCast::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
-
-llvm::Value* AstCast::accept(IrBuilderAst& visitor, Access access) const {
-  return visitor.visit(*this, access);
-}
-
 AstFunDef::AstFunDef(AstFunDecl* decl, AstValue* body) :
   m_decl(decl ? decl : new AstFunDecl("<unknown_name>")),
   m_body(body ? body : new AstNumber(0)) {
@@ -75,14 +59,6 @@ AstFunDef::AstFunDef(AstFunDecl* decl, AstValue* body) :
 
 AstFunDef::~AstFunDef() {
   delete m_body;
-}
-
-void AstFunDef::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
-
-llvm::Function* AstFunDef::accept(IrBuilderAst& visitor, Access) const {
-  return visitor.visit(*this);
 }
 
 AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args) :
@@ -108,14 +84,6 @@ AstFunDecl::~AstFunDecl() {
   delete m_args;
 }
 
-void AstFunDecl::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
-
-llvm::Function* AstFunDecl::accept(IrBuilderAst& visitor, Access) const {
-  return visitor.visit(*this);
-}
-
 list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
   AstArgDecl* arg2, AstArgDecl* arg3) {
   list<AstArgDecl*>* args = new list<AstArgDecl*>;
@@ -135,14 +103,6 @@ AstDataDecl::~AstDataDecl() {
   if (m_ownerOfObjType) { delete m_objType; }
 }
 
-void AstDataDecl::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
-
-llvm::Value* AstDataDecl::accept(IrBuilderAst& visitor, Access access) const {
-  return visitor.visit(*this, access);
-}
-
 ObjType& AstDataDecl::objType() const {
   return objType(false);
 }
@@ -153,10 +113,6 @@ ObjType& AstDataDecl::objType(bool stealOwnership) const {
     m_ownerOfObjType = false;
   }
   return *m_objType;
-}
-
-void AstArgDecl::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
@@ -179,14 +135,6 @@ AstDataDef::~AstDataDef() {
   delete m_decl;
   delete m_ctorArgs;
   delete m_implicitInitializer;
-}
-
-void AstDataDef::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
-
-llvm::Value* AstDataDef::accept(IrBuilderAst& visitor, Access access) const {
-  return visitor.visit(*this, access);
 }
 
 AstValue& AstDataDef::initValue() const {
@@ -215,14 +163,6 @@ AstNumber::AstNumber(int value, ObjTypeFunda::EType eType,
 
 AstNumber::~AstNumber() {
   delete m_objType;
-}
-
-void AstNumber::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
-
-llvm::Value* AstNumber::accept(IrBuilderAst& visitor, Access access) const {
-  return visitor.visit(*this, access);
 }
 
 map<string, AstOperator::EOperation> AstOperator::m_opMap;
@@ -268,14 +208,6 @@ AstOperator::AstOperator(AstOperator::EOperation op, AstValue* operand1, AstValu
 
 AstOperator::~AstOperator() {
   delete m_args;
-}
-
-void AstOperator::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
-
-llvm::Value* AstOperator::accept(IrBuilderAst& visitor, Access access) const {
-  return visitor.visit(*this, access);
 }
 
 AstOperator::EOperation AstOperator::toEOperation(const string& op) {
@@ -351,14 +283,6 @@ list<AstIf::ConditionActionPair>* AstIf::makeConditionActionPairs(
   return tmp;
 }
 
-void AstIf::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
-
-llvm::Value* AstIf::accept(IrBuilderAst& visitor, Access access) const {
-  return visitor.visit(*this, access);
-}
-
 AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
   m_address(address ? address : new AstSymbol(NULL)),
   m_args(args ? args : new AstCtList()) {
@@ -369,14 +293,6 @@ AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
 AstFunCall::~AstFunCall() {
   delete m_args;
   delete m_address;
-}
-
-void AstFunCall::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
-
-llvm::Value* AstFunCall::accept(IrBuilderAst& visitor, Access access) const {
-  return visitor.visit(*this, access);
 }
 
 /** The list's elements must be non-null */
@@ -427,10 +343,29 @@ AstCtList* AstCtList::Add(AstValue* child1, AstValue* child2, AstValue* child3) 
   return this;
 }
 
-void AstCtList::accept(AstConstVisitor& visitor) const {
-  visitor.visit(*this);
-}
 
-llvm::Value* AstCtList::accept(IrBuilderAst&, Access) const {
-  return NULL;
-}
+void AstCast::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstFunDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstFunDecl::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstDataDecl::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstArgDecl::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstDataDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstNumber::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstSymbol::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstFunCall::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstOperator::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstIf::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstCtList::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+
+llvm::Value* AstCast::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
+llvm::Function* AstFunDef::accept(IrBuilderAst& visitor, Access) const { return visitor.visit(*this); }
+llvm::Function* AstFunDecl::accept(IrBuilderAst& visitor, Access) const { return visitor.visit(*this); }
+llvm::Value* AstDataDecl::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
+llvm::Value* AstDataDef::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
+llvm::Value* AstNumber::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
+llvm::Value* AstSymbol::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
+llvm::Value* AstFunCall::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
+llvm::Value* AstOperator::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
+llvm::Value* AstIf::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
+llvm::Value* AstCtList::accept(IrBuilderAst&, Access) const { return NULL; }
+
