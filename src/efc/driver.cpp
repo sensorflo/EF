@@ -1,5 +1,6 @@
 #include "driver.h"
 #include "env.h"
+#include "irbuilderast.h"
 #include "gensrc/parser.hpp"
 #include <stdio.h>
 #include <errno.h>
@@ -11,17 +12,17 @@ extern FILE* yyin;
 extern void yyrestart(FILE*);
 extern void yyinitializeParserLoc(string* filename);
 
-Driver::Driver(Env& env, const std::string& fileName) :
+Driver::Driver(const std::string& fileName) :
+  m_fileName(fileName),
   m_gotError(false),
   m_gotWarning(false),
   m_astRoot(NULL),
-  m_parserExt(env),
+  m_parserExt(m_env),
   m_parser(new Parser(*this, m_parserExt, m_astRoot)) {
   // Ctor/Dtor must RAII yyin and m_parser
 
   if (!m_parser) { cerr << "Out of memory"; exit(1); }
   
-  m_fileName = fileName;
   if (m_fileName.empty() || m_fileName == "-") {
     yyin = stdin;
   } else if (!(yyin = fopen(m_fileName.c_str(), "r"))) {
@@ -36,9 +37,25 @@ Driver::~Driver() {
   delete m_parser;
 }
 
-int Driver::parse(AstNode*& astRoot) {
+void Driver::buildAndRunModule() {
+  // scann and parse
+  AstNode* astAfterParse = NULL;
+  int retParse = scannAndParse(astAfterParse);
+  if (retParse) {
+    throw runtime_error::runtime_error("parse failed");
+  }
+
+  // generate IR code and JIT execute it
+  // It's assumed that the module wants an implicit main method, thus
+  // a cast to AstValue is required
+  IrBuilderAst irBuilderAst(m_env);
+  cout << irBuilderAst.buildAndRunModule(*dynamic_cast<AstValue*>(astAfterParse)) << "\n";
+}
+
+int Driver::scannAndParse(AstNode*& ast) {
+  // the parser internally drives the scanner
   int ret = m_parser->parse(); // as a side-effect, sets m_astRoot
-  astRoot = m_astRoot;
+  ast = m_astRoot;
   return ret;
 }
 
@@ -68,10 +85,3 @@ void Driver::exitInternError(const string& msg) {
   cerr << "internal error: " << msg << "\n";
   exit(1);
 }
-
-// yy_flex_debug = true;
-
-
-// yy::ef_parser parser(*this);
-// parser.set_debug_level(/*m_traceParsing*/true);
-

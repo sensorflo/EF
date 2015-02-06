@@ -32,7 +32,7 @@ void testParse(const string& efProgram, const string& expectedAst,
 
   // exercise
   AstNode* actualAst = NULL;
-  int res = driver.d().parse(actualAst);
+  int res = driver.d().scannAndParse(actualAst);
 
   // verify
   EXPECT_FALSE( driver.d().gotError() ) <<
@@ -44,7 +44,7 @@ void testParse(const string& efProgram, const string& expectedAst,
     amendSpec(spec) <<
     amendEfProgram(efProgram);
   ASSERT_TRUE( NULL != actualAst ) <<
-    "parse did return NULL as actualAst\n" <<
+    "scannAndParse did return NULL as actualAst\n" <<
     amendSpec(spec) <<
     amendEfProgram(efProgram);
   EXPECT_EQ( expectedAst, actualAst->toStr() ) <<
@@ -63,7 +63,7 @@ void testParse(const string& efProgram, const string& expectedAst,
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_literal,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "42", "42", "trivial example");
   TEST_PARSE( "false", "0bool", "trivial example");
@@ -72,7 +72,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_cast_expression,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "int(false)", "cast(int 0bool)", "trivial example");
   TEST_PARSE( "bool(0)", "cast(bool 0)", "trivial example");
@@ -80,14 +80,14 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_math_expression,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "42 + 77", "+(42 77)", "trivial example");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_math_expression,
-    parse,
+    scannAndParse,
     it_honors_precedence_and_associativity) ) {
 
   // for each precedence level
@@ -219,7 +219,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_math_expression_containing_brace_grouping,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "g(1+2)*g(3-4)/5", "/(*(+(1 2) -(3 4)) 5)",
     "g(...) group: 1) overwrites precedence and 2) turns sub_expr into exp");
@@ -231,7 +231,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_operator_in_call_syntax,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "!(x)", "not(x)", "");
   TEST_PARSE( "not(x)", "not(x)", "");
@@ -248,7 +248,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_assignement_expression,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "foo = 42", "=(foo 42)", "trivial example");
   TEST_PARSE( "foo = 1+2*3", "=(foo +(1 *(2 3)))", "simple example");
@@ -257,7 +257,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_function_declaration,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   string spec = "example with zero arguments and explicit return type";
   //Toggling 1) 'keyword...;' vs 'keyword(...)' vs 'keyword...end...;' syntax
@@ -294,7 +294,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_reference_to_a_symbol_within_a_function_definition,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   string spec = "example with one argument and a body just returning the arg";
   TEST_PARSE( "fun foo: (x:int) int = x$", "fun(declfun(foo ((x int-mut)) int) x)", spec);
@@ -302,7 +302,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_function_definition,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "example with zero arguments and trivial body";
@@ -336,7 +336,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_function_call,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "trivial example";
@@ -350,7 +350,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_data_definition,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "trivial example with explicit init value";
@@ -446,7 +446,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_ifelse_flow_control_expression,
-    parse,
+    scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   // toggling 1) no elif part, one elif part, two elif parts
   // toggling 2) without/with else part

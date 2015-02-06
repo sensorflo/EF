@@ -40,11 +40,10 @@ class DriverOnTmpFile {
 public:
   DriverOnTmpFile( const std::string& content ) :
     m_tmpFile(content),
-    m_driver(m_env, m_tmpFile.fileName()) {};
+    m_driver(m_tmpFile.fileName()) {};
   operator Driver&() { return m_driver; }
   Driver& d() { return m_driver; }
 private:
-  Env m_env;
   TmpFile m_tmpFile;
   Driver m_driver;
 };

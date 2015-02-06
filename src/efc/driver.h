@@ -1,29 +1,30 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 #include "parserext.h"
+#include "env.h"
 #include "gensrc/parser.hpp"
 #include <string>
 
 namespace yy {
   class Parser; 
 }
-class Env;
 class AstNode;
 
 #define YY_DECL yy::Parser::symbol_type yylex(Driver& driver)
 YY_DECL;
 
-/* Hosts the scanner and parser, and drives the parser which in turn drives
-the scanner. The scanner has no own class; it is driven by it's global
-function yylex.*/
+/* Hosts the scanner, parser, semantic analyizer, IR builder etc. and drives
+those. The scanner has no own class; it is driven by it's global function
+yylex.*/
 class Driver {
 public:
-  Driver(Env& env, const std::string& fileName);
+  Driver(const std::string& fileName);
   virtual ~Driver();
   
-  int parse(AstNode*& astRoot);
+  void buildAndRunModule();
+  int scannAndParse(AstNode*& ast);
 
-  // referenced by both Scanner and Parser
+  // referenced by scanner, parser etc.
   // --------------------------------------------------
   void warning(const yy::location& loc, const std::string& msg);
   void error(const yy::location& loc, const std::string& msg);
@@ -38,6 +39,7 @@ public:
 private:
   /** The name of the file being parsed */
   std::string m_fileName;
+  Env m_env;
   bool m_gotError;
   bool m_gotWarning;
   AstNode* m_astRoot;
