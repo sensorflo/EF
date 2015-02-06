@@ -8,7 +8,7 @@ namespace yy {
   class Parser; 
 }
 class Env;
-class AstValue;
+class AstNode;
 
 #define YY_DECL yy::Parser::symbol_type yylex(Driver& driver)
 YY_DECL;
@@ -21,7 +21,7 @@ public:
   Driver(Env& env, const std::string& fileName);
   virtual ~Driver();
   
-  int parse(AstValue*& astRoot);
+  int parse(AstNode*& astRoot);
 
   // referenced by both Scanner and Parser
   // --------------------------------------------------
@@ -30,7 +30,7 @@ public:
   void exitInternError(const yy::location& loc, const std::string& msg);
   void exitInternError(const std::string& msg);
 
-  AstValue*& astRoot() { return m_astRoot; }
+  AstNode*& astRoot() { return m_astRoot; }
   std::string& fileName() { return m_fileName; }
   bool gotError() const { return m_gotError; }
   bool gotWarning() const { return m_gotWarning; }
@@ -40,7 +40,7 @@ private:
   std::string m_fileName;
   bool m_gotError;
   bool m_gotWarning;
-  AstValue* m_astRoot;
+  AstNode* m_astRoot;
   ParserExt m_parserExt;
   /** We're the owner. Guaranteed to be non-NULL */
   yy::Parser* m_parser;

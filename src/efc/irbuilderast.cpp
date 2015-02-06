@@ -25,10 +25,21 @@ IrBuilderAst::IrBuilderAst(Env& env) :
   m_mainFunction(NULL),
   m_mainBasicBlock(NULL),
   m_env(env) {
-
   assert(m_module);
   assert(m_executionEngine);
+}
 
+IrBuilderAst::~IrBuilderAst() {
+  if (m_executionEngine) { delete m_executionEngine; }
+}
+
+void IrBuilderAst::buildModuleNoImplicitMain(const AstNode& root) {
+  root.accept(*this);
+}
+
+/** In contrast to buildModuleNoImplicitMain an implicit main method is put
+around the given AST. */
+void IrBuilderAst::buildModule(const AstValue& root) {
   vector<Type*> argsIr(0);
   Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
   FunctionType* functionTypeIr = FunctionType::get( retTypeIr, argsIr, false);
@@ -40,23 +51,18 @@ IrBuilderAst::IrBuilderAst(Env& env) :
     m_mainFunction);
   assert(m_mainBasicBlock);
   m_builder.SetInsertPoint(m_mainBasicBlock);
-}
 
-IrBuilderAst::~IrBuilderAst() {
-  if (m_executionEngine) { delete m_executionEngine; }
-}
-
-void IrBuilderAst::buildModule(const AstValue& value) {
   // Currently the return type is always int, so ensure the return type of the
   // IR code is also Int32
-  Value* extResultIr = m_builder.CreateZExt( value.accept(*this),
-    Type::getInt32Ty(getGlobalContext()));
+  Value* resultIr = root.accept(*this);
+  Value* extResultIr = m_builder.CreateZExt( resultIr, Type::getInt32Ty(getGlobalContext()));
   m_builder.CreateRet(extResultIr);
+
   verifyFunction(*m_mainFunction);
 }
 
-int IrBuilderAst::buildAndRunModule(const AstValue& value) {
-  buildModule(value);
+int IrBuilderAst::buildAndRunModule(const AstValue& root) {
+  buildModule(root);
   return jitExecFunction(m_mainFunction);
 }
 
