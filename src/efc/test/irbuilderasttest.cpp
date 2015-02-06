@@ -147,9 +147,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // - n-ary
 
   //null-ary not "!()" is invalid 
-  string spec = "null-ary seq throws";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(new AstOperator(';'), spec);
-  spec = "null-ary or: or() = false";
+  string spec = "null-ary or: or() = false";
   TEST_BUILD_AND_RUN_MODULE(
     new AstOperator(AstOperator::eOr),
     0, spec);

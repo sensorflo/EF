@@ -14,7 +14,18 @@ void SemanticAnalizer::visit(AstCast&) {}
 
 void SemanticAnalizer::visit(AstCtList&) {}
 
-void SemanticAnalizer::visit(AstOperator&) {}
+void SemanticAnalizer::visit(AstOperator& op) {
+  const list<AstValue*>& argschilds = op.args().childs();
+  switch (op.op()) {
+  case AstOperator::eSeq:
+    if (argschilds.empty()) {
+      throw runtime_error::runtime_error("Empty sequence not allowed (yet)");
+    }
+    break;
+  default:
+    break;
+  }
+}
 
 void SemanticAnalizer::visit(AstNumber&) {}
 

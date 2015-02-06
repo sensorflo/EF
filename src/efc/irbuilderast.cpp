@@ -142,9 +142,7 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
     resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 1));
     break;
   case AstOperator::eSeq:
-    if (argschilds.empty()) {
-      throw runtime_error::runtime_error("Empty sequence not allowed (yet)");
-    }
+    // nop
     break;
   case AstOperator::eAssign: // fallthrough
   case AstOperator::eEqualTo:

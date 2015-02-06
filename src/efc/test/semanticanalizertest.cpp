@@ -55,3 +55,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     "");
 }
 
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+    a_sequence_with_zero_args,
+    transform,
+    throws,
+    BECAUSE_currently_there_is_no_NOP_operation)) {
+  TEST_TRANSFORM_THROWS(new AstOperator(';'), "");
+}
+
