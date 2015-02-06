@@ -366,12 +366,6 @@ Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access access) {
   }
   stentry->isDefined() = true;
 
-  // initializer must be of same type. Currently there are no implicit conversions
-  if ( ObjType::eNoMatch ==
-    dataDef.decl().objType().match(dataDef.initValue().objType()) ) {
-    throw runtime_error::runtime_error("Object type missmatch");
-  }
-
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.
   Value* initValue = dataDef.initValue().accept(*this);

@@ -30,6 +30,12 @@ void SemanticAnalizer::visit(AstDataDecl&) {}
 
 void SemanticAnalizer::visit(AstArgDecl&) {}
 
-void SemanticAnalizer::visit(AstDataDef&) {}
+void SemanticAnalizer::visit(AstDataDef& dataDef) {
+  // initializer must be of same type. Currently there are no implicit conversions
+  if ( ObjType::eNoMatch ==
+    dataDef.decl().objType().match(dataDef.initValue().objType()) ) {
+    throw runtime_error::runtime_error("Object type missmatch");
+  }
+}
 
 void SemanticAnalizer::visit(AstIf&) {}

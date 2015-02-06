@@ -7,6 +7,18 @@
 using namespace testing;
 using namespace std;
 
+void testTransformThrows(AstNode* ast, const string& spec) {
+  ENV_ASSERT_TRUE( ast!=NULL );
+  SemanticAnalizer UUT;
+  EXPECT_ANY_THROW(UUT.transform(*ast)) << amendSpec(spec) << amendAst(ast);
+}
+
+#define TEST_TRANSFORM_THROWS(ast, spec)                                \
+  {                                                                     \
+    SCOPED_TRACE("transform called from here (via TEST_TRANSFORM_THROWS)"); \
+    testTransformThrows(ast, spec);                                     \
+  }
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_trivial_AST,
     transform,
@@ -18,3 +30,28 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     "old AST: " << amendAst(oldAst) << "\n" <<
     "new AST: " << amendAst(newAst);
 }
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+    an_data_obj_def_WITH_an_initializer_of_a_larger_type,
+    transform,
+    throws,
+    BECAUSE_there_are_no_narrowing_implicit_conversions)) {
+  TEST_TRANSFORM_THROWS(
+    new AstDataDef(
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool)),
+      new AstNumber(42, ObjTypeFunda::eInt)),
+    "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+    an_data_obj_def_WITH_an_initializer_of_a_smaller_type,
+    transform,
+    throws,
+    BECAUSE_currently_there_are_no_implicit_widening_conversions)) {
+  TEST_TRANSFORM_THROWS(
+    new AstDataDef(
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    "");
+}
+
