@@ -4,7 +4,7 @@
 #include <sstream>
 using namespace std;
 
-AstPrinter::AstPrinter(std::basic_ostream<char>& os) : m_os(os) {
+AstPrinter::AstPrinter(basic_ostream<char>& os) : m_os(os) {
 }
 
 string AstPrinter::toStr(const AstNode& root) {
@@ -29,7 +29,7 @@ void AstPrinter::visit(const AstCast& cast) {
 }
 
 void AstPrinter::visit(const AstCtList& ctList) {
-  std::list<AstValue*>& childs = ctList.childs();
+  list<AstValue*>& childs = ctList.childs();
   for (list<AstValue*>::const_iterator i=childs.begin();
        i!=childs.end(); ++i) {
     if (i!=childs.begin()) { m_os << " "; }

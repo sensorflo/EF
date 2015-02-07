@@ -2,6 +2,7 @@
 #include <stdio.h>
 using namespace testing;
 using namespace testing::internal;
+using namespace std;
 
 namespace testing {
   enum GTestColor {
@@ -21,7 +22,7 @@ namespace testing {
   //
   // FormatCountableNoun(1, "formula", "formuli") returns "1 formula".
   // FormatCountableNoun(5, "book", "books") returns "5 books".
-  static std::string FormatCountableNoun(int count,
+  static string FormatCountableNoun(int count,
     const char * singular_form,
     const char * plural_form) {
     return internal::StreamableToString(count) + " " +
@@ -29,12 +30,12 @@ namespace testing {
   }
 
   // Formats the count of tests.
-  static std::string FormatTestCount(int test_count) {
+  static string FormatTestCount(int test_count) {
     return FormatCountableNoun(test_count, "test", "tests");
   }
 
   // Formats the count of test cases.
-  static std::string FormatTestCaseCount(int test_case_count) {
+  static string FormatTestCaseCount(int test_case_count) {
     return FormatCountableNoun(test_case_count, "test case", "test cases");
   }
 
@@ -124,8 +125,8 @@ namespace testing {
       va_end(args);
     };
 
-    // Prints a TestPartResult to an std::string.
-    static std::string PrintTestPartResultToString(
+    // Prints a TestPartResult to an string.
+    static string PrintTestPartResultToString(
       const TestPartResult& test_part_result,
       const string& test_name) {
 
@@ -154,7 +155,7 @@ namespace testing {
     // Prints a TestPartResult.
     static void PrintTestPartResult(const TestPartResult& test_part_result,
       const string& testName) {
-      const std::string& result =
+      const string& result =
         PrintTestPartResultToString(test_part_result, testName);
       printf("%s\n", result.c_str());
       fflush(stdout);
@@ -219,7 +220,7 @@ void GTestPrinter::OnEnvironmentsSetUpStart(
 }
 
 void GTestPrinter::OnTestCaseStart(const TestCase& test_case) {
-  const std::string counts =
+  const string counts =
     FormatCountableNoun(test_case.test_to_run_count(), "test", "tests");
   ColoredPrintf(COLOR_GREEN, "[----------] ");
   printf("%s from %s", counts.c_str(), test_case.name());
@@ -273,7 +274,7 @@ void GTestPrinter::OnTestEnd(const TestInfo& test_info) {
 void GTestPrinter::OnTestCaseEnd(const TestCase& test_case) {
   if (!GTEST_FLAG(print_time)) return;
 
-  const std::string counts =
+  const string counts =
     FormatCountableNoun(test_case.test_to_run_count(), "test", "tests");
   ColoredPrintf(COLOR_GREEN, "[----------] ");
   printf("%s from %s (%s ms total)\n\n",

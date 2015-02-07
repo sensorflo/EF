@@ -10,7 +10,7 @@ string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
-const std::string& AstValue::address_as_id_hack() const {
+const string& AstValue::address_as_id_hack() const {
   throw runtime_error::runtime_error("not an id");
 }
 
@@ -138,7 +138,7 @@ AstDataDef::~AstDataDef() {
 }
 
 AstValue& AstDataDef::initValue() const {
-  const std::list<AstValue*>& args = m_ctorArgs->childs();
+  const list<AstValue*>& args = m_ctorArgs->childs();
   if (!args.empty()) {
     assert(args.size()==1); // more ctor arguments not yet supported
     return *(args.front());
@@ -296,10 +296,10 @@ AstFunCall::~AstFunCall() {
 }
 
 /** The list's elements must be non-null */
-AstCtList::AstCtList(std::list<AstValue*>* childs) :
-  m_childs(childs ? childs : new std::list<AstValue*>() ) {
+AstCtList::AstCtList(list<AstValue*>* childs) :
+  m_childs(childs ? childs : new list<AstValue*>() ) {
   assert(m_childs);
-  for (std::list<AstValue*>::iterator it = m_childs->begin();
+  for (list<AstValue*>::iterator it = m_childs->begin();
        it != m_childs->end();
        ++it) {
     assert(*it);
@@ -308,14 +308,14 @@ AstCtList::AstCtList(std::list<AstValue*>* childs) :
 
 /** When child is NULL it is ignored */
 AstCtList::AstCtList(AstValue* child) :
-  m_childs(new std::list<AstValue*>()) {
+  m_childs(new list<AstValue*>()) {
   assert(m_childs);
   if (child) { m_childs->push_back(child); }
 }
 
 /** NULL childs are ignored.*/
 AstCtList::AstCtList(AstValue* child1, AstValue* child2, AstValue* child3) :
-  m_childs(new std::list<AstValue*>()) {
+  m_childs(new list<AstValue*>()) {
   assert(m_childs);
   if (child1) { m_childs->push_back(child1); }
   if (child2) { m_childs->push_back(child2); }

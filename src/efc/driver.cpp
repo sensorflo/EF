@@ -13,7 +13,7 @@ extern FILE* yyin;
 extern void yyrestart(FILE*);
 extern void yyinitializeParserLoc(string* filename);
 
-Driver::Driver(const std::string& fileName) :
+Driver::Driver(const string& fileName) :
   m_fileName(fileName),
   m_gotError(false),
   m_gotWarning(false),
@@ -64,7 +64,7 @@ int Driver::scannAndParse(AstNode*& ast) {
   return ret;
 }
 
-static std::basic_ostream<char>& print(std::basic_ostream<char>& os,
+static basic_ostream<char>& print(basic_ostream<char>& os,
   const location& loc) {
   return os << *loc.begin.filename << ":" <<
     loc.begin.line << ":" << 
