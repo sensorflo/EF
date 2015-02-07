@@ -201,8 +201,8 @@ Value* IrBuilderAst::visit(const AstNumber& number, Access) {
 Value* IrBuilderAst::visit(const AstSymbol& symbol, Access access) {
   SymbolTableEntry* stentry = m_env.find(symbol.name());
   if (NULL==stentry) {
-    throw runtime_error::runtime_error("Symbol '" + symbol.name() +
-      "' not declared");
+    m_errorHandler.add(new Error(Error::eUnknownName));
+    throw BuildError();
   }
   assert( stentry->valueIr() );
 
@@ -310,7 +310,8 @@ Function* IrBuilderAst::visit(const AstFunDecl& funDecl) {
 Value* IrBuilderAst::visit(const AstFunCall& funCall, Access access) {
   Function* callee = m_module->getFunction(funCall.address().address_as_id_hack());
   if (!callee) {
-    throw runtime_error::runtime_error("Function not defined");
+    m_errorHandler.add(new Error(Error::eUnknownName));
+    throw BuildError();
   }
 
   const list<AstValue*>& argsAst = funCall.args().childs();

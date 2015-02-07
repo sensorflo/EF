@@ -6,6 +6,7 @@ class Error {
 public:
   enum No {
     eNone,
+    eUnknownName,
     eCnt
   };
 

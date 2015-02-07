@@ -75,6 +75,40 @@ void testbuilAndRunModuleThrows(AstValue* astRoot, const string& spec = "") {
     testbuilAndRunModuleThrows(astRoot, spec);         \
   }
 
+void testbuilAndRunModuleReportsError(AstValue* astRoot, Error::No expectedErrorNo,
+  const string& spec = "") {
+
+  // setup
+  ENV_ASSERT_TRUE( astRoot!=NULL );
+  auto_ptr<AstValue> ast(astRoot);
+  TestingIrBuilderAst UUT;
+  bool didThrowBuildError = false;
+
+  // execute
+  try {
+    UUT.buildAndRunModule(*astRoot);
+  }
+
+  // verify
+  catch (BuildError& buildError) {
+    didThrowBuildError = true;
+
+    const ErrorHandler::Container& errors = UUT.m_errorHandler->errors();
+    EXPECT_EQ(1, errors.size()) <<
+      "Expecting exactly one error\n" << 
+      amendSpec(spec) << amendAst(astRoot);
+    EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
+      amendSpec(spec) << amendAst(astRoot);
+  }
+  EXPECT_TRUE(didThrowBuildError);
+}
+
+#define TEST_BUILD_AND_RUN_MODULE_REPORTS_ERROR(astRoot, expectedErrorNo, spec) \
+  {                                                                     \
+    SCOPED_TRACE("testbuilAndRunModuleReportsError called from here (via TEST_BUILD_AND_RUN_MODULE_REPORTS_ERROR)"); \
+    testbuilAndRunModuleReportsError(astRoot, expectedErrorNo, spec);   \
+  }
+
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_single_literal,
     buildAndRunModule,
@@ -519,23 +553,17 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    a_reference_to_an_inexistent_data_object,
+    a_reference_to_an_unknown_name,
     buildModule,
-    throws)) {
-
-  string spec = "Example: at global scope";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    reports_an_eErrUnknownName)) {
+  TEST_BUILD_AND_RUN_MODULE_REPORTS_ERROR(
     new AstSymbol(new string("x")),
-    spec);
+    Error::eUnknownName, "");
 
-  spec = "Example: within a function body";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
-    new AstOperator(';',
-      new AstFunDef(
-        new AstFunDecl("foo"),
-        new AstSymbol(new string("x"))),
-      new AstNumber(42)),
-    spec);
+  // since currently IrBuilderAstT implements AstFunCall specially
+  TEST_BUILD_AND_RUN_MODULE_REPORTS_ERROR(
+    new AstFunCall(new AstSymbol(new string("foo"))),
+    Error::eUnknownName, "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -630,14 +658,6 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstFunCall(new AstSymbol(new string("add")),
         new AstCtList(new AstNumber(1), new AstNumber(2)))),
     1+2, spec);
-}
-
-TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    a_function_call_to_an_undefined_function,
-    buildAndRunModule,
-    throws)) {
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
-    new AstFunCall(new AstSymbol(new string("foo"))), "");
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
