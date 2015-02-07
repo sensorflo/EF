@@ -38,9 +38,9 @@ private:
 in the constructor. */
 class DriverOnTmpFile {
 public:
-  DriverOnTmpFile( const std::string& content ) :
+  DriverOnTmpFile(const std::string& content, std::basic_ostream<char>* ostream = NULL) :
     m_tmpFile(content),
-    m_driver(m_tmpFile.fileName()) {};
+    m_driver(m_tmpFile.fileName(), ostream) {};
   operator Driver&() { return m_driver; }
   Driver& d() { return m_driver; }
 private:

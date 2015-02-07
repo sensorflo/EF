@@ -18,7 +18,7 @@ those. The scanner has no own class; it is driven by it's global function
 yylex.*/
 class Driver {
 public:
-  Driver(const std::string& fileName);
+  Driver(const std::string& fileName, std::basic_ostream<char>* ostream = NULL);
   virtual ~Driver();
   
   void buildAndRunModule();
@@ -37,11 +37,15 @@ public:
   bool gotWarning() const { return m_gotWarning; }
 
 private:
+  std::basic_ostream<char>& print(const yy::location& loc);
+  
   /** The name of the file being parsed */
   std::string m_fileName;
   Env m_env;
   bool m_gotError;
   bool m_gotWarning;
+  /** We're _not_ the owner */
+  std::basic_ostream<char>& m_ostream;
   AstNode* m_astRoot;
   ParserExt m_parserExt;
   /** We're the owner. Guaranteed to be non-NULL */

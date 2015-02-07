@@ -13,17 +13,17 @@ extern FILE* yyin;
 extern void yyrestart(FILE*);
 extern void yyinitializeParserLoc(string* filename);
 
-Driver::Driver(const string& fileName) :
+/** \param osstream caller keeps ownership */
+Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_fileName(fileName),
   m_gotError(false),
   m_gotWarning(false),
+  m_ostream(ostream ? *ostream : cerr),
   m_astRoot(NULL),
   m_parserExt(m_env),
   m_parser(new Parser(*this, m_parserExt, m_astRoot)) {
   // Ctor/Dtor must RAII yyin and m_parser
 
-  if (!m_parser) { cerr << "Out of memory"; exit(1); }
-  
   if (m_fileName.empty() || m_fileName == "-") {
     yyin = stdin;
   } else if (!(yyin = fopen(m_fileName.c_str(), "r"))) {
@@ -64,29 +64,28 @@ int Driver::scannAndParse(AstNode*& ast) {
   return ret;
 }
 
-static basic_ostream<char>& print(basic_ostream<char>& os,
-  const location& loc) {
-  return os << *loc.begin.filename << ":" <<
+basic_ostream<char>& Driver::print(const location& loc) {
+  return m_ostream << *loc.begin.filename << ":" <<
     loc.begin.line << ":" << 
     loc.begin.column << ": ";
 }
 
 void Driver::warning(const location& loc, const string& msg) {
-  print(cerr,loc) << "warning: " << msg << "\n";
+  print(loc) << "warning: " << msg << "\n";
   m_gotWarning = true;
 }
 
 void Driver::error(const location& loc, const string& msg) {
-  print(cerr,loc) << "error: " << msg << "\n";
+  print(loc) << "error: " << msg << "\n";
   m_gotError = true;
 }
 
 void Driver::exitInternError(const location& loc, const string& msg) {
-  print(cerr,loc) << "internal error: " << msg << "\n";
+  print(loc) << "internal error: " << msg << "\n";
   exit(1);
 }
 
 void Driver::exitInternError(const string& msg) {
-  cerr << "internal error: " << msg << "\n";
+  m_ostream << "internal error: " << msg << "\n";
   exit(1);
 }
