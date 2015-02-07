@@ -2,6 +2,7 @@
 #define DRIVER_H
 #include "parserext.h"
 #include "env.h"
+#include "errorhandler.h"
 #include "gensrc/parser.hpp"
 #include <string>
 
@@ -50,6 +51,7 @@ private:
   ParserExt m_parserExt;
   /** We're the owner. Guaranteed to be non-NULL */
   yy::Parser* m_parser;
+  ErrorHandler m_errorHandler;
 };
   
 #endif

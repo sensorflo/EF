@@ -1,5 +1,7 @@
 #include "irbuilderast.h"
 #include "ast.h"
+#include "env.h"
+#include "errorhandler.h"
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/IR/Value.h"
@@ -18,13 +20,14 @@ void IrBuilderAst::staticOneTimeInit() {
   InitializeNativeTarget();
 }
 
-IrBuilderAst::IrBuilderAst(Env& env) :
+IrBuilderAst::IrBuilderAst(Env& env, ErrorHandler& errorHandler) :
   m_builder(getGlobalContext()),
   m_module(new Module("Main", getGlobalContext())),
   m_executionEngine(EngineBuilder(m_module).setErrorStr(&m_errStr).create()),
   m_mainFunction(NULL),
   m_mainBasicBlock(NULL),
-  m_env(env) {
+  m_env(env),
+  m_errorHandler(errorHandler) {
   assert(m_module);
   assert(m_executionEngine);
 }

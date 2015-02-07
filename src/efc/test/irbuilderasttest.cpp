@@ -2,6 +2,8 @@
 #include "../irbuilderast.h"
 #include "../parserext.h"
 #include "../ast.h"
+#include "../env.h"
+#include "../errorhandler.h"
 #include "llvm/IR/Module.h"
 #include <memory>
 using namespace testing;
@@ -14,13 +16,16 @@ enum ECmpOp {
 
 class TestingIrBuilderAst : public IrBuilderAst {
 public:
-  TestingIrBuilderAst() : IrBuilderAst( *(m_env = new Env()) ) {};
-  ~TestingIrBuilderAst() { delete m_env; };
+  TestingIrBuilderAst() : IrBuilderAst(
+    *(m_env = new Env()),
+    *(m_errorHandler = new ErrorHandler()) ) {};
+  ~TestingIrBuilderAst() { delete m_env; delete m_errorHandler; };
   using IrBuilderAst::jitExecFunction;
   using IrBuilderAst::jitExecFunction1Arg;
   using IrBuilderAst::jitExecFunction2Arg;
   using IrBuilderAst::m_module;
   Env* m_env;
+  ErrorHandler* m_errorHandler;
 };
 
 void testbuilAndRunModule(AstValue* astRoot, int expectedResult,

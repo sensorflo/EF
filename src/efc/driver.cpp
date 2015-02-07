@@ -53,7 +53,7 @@ void Driver::buildAndRunModule() {
   // generate IR code and JIT execute it
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
-  IrBuilderAst irBuilderAst(m_env);
+  IrBuilderAst irBuilderAst(m_env, m_errorHandler);
   cout << irBuilderAst.buildAndRunModule(*dynamic_cast<AstValue*>(astAfterSa)) << "\n";
 }
 

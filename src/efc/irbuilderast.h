@@ -1,6 +1,5 @@
 #ifndef IR_BUILDER_AST_H
 #define IR_BUILDER_AST_H
-#include "env.h"
 #include "objtype.h"
 #include "access.h"
 #include "llvm/IR/IRBuilder.h"
@@ -11,11 +10,15 @@ namespace llvm {
   class ExecutionEngine;
   class BasicBlock;
 }
+class Env;
+class SymbolTableEntry;
+class ErrorHandler;
+
 
 class IrBuilderAst {
 public:
   static void staticOneTimeInit();
-  IrBuilderAst(Env& env);
+  IrBuilderAst(Env& env, ErrorHandler& errorHandler);
   virtual ~IrBuilderAst();
   void buildModuleNoImplicitMain(const AstNode& root);
   void buildModule(const AstValue& root);
@@ -55,6 +58,7 @@ private:
   llvm::Function* m_mainFunction;
   llvm::BasicBlock* m_mainBasicBlock;
   Env& m_env;
+  ErrorHandler& m_errorHandler;
 };
 
 #endif
