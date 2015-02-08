@@ -10,10 +10,6 @@ using namespace testing;
 using namespace std;
 using namespace llvm;
 
-enum ECmpOp {
-  eEq, eNe, eLt, eGt, eGe, eLe
-};
-
 class TestingIrBuilderAst : public IrBuilderAst {
 public:
   TestingIrBuilderAst() : IrBuilderAst(
@@ -29,7 +25,7 @@ public:
 };
 
 void testbuilAndRunModule(AstValue* astRoot, int expectedResult,
-  const string& spec = "", ECmpOp cmpOp = eEq ) {
+  const string& spec = "") {
 
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
@@ -40,26 +36,13 @@ void testbuilAndRunModule(AstValue* astRoot, int expectedResult,
   int result = UUT.buildAndRunModule(*astRoot);
 
   // verify
-  switch (cmpOp) {
-  case eEq: EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
-  case eNe: EXPECT_NE(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
-  case eGt: EXPECT_GT(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
-  case eLt: EXPECT_LT(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
-  case eGe: EXPECT_GE(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
-  case eLe: EXPECT_LE(expectedResult, result) << amendSpec(spec) << amendAst(astRoot); break;
-  }
+  EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot);
 }
 
 #define TEST_BUILD_AND_RUN_MODULE(astRoot, expectedResult, spec) \
   {\
     SCOPED_TRACE("testbuilAndRunModule called from here (via TEST_BUILD_AND_RUN_MODULE)"); \
     testbuilAndRunModule(astRoot, expectedResult, spec);\
-  }
-
-#define TEST_BUILD_AND_RUN_MODULE_CMPOP(astRoot, expectedResult, spec, cmpop) \
-  {\
-    SCOPED_TRACE("testbuilAndRunModule called from here (via TEST_BUILD_AND_RUN_MODULE_CMPOP)"); \
-    testbuilAndRunModule(astRoot, expectedResult, spec, cmpop);  \
   }
 
 void testbuilAndRunModuleThrows(AstValue* astRoot, const string& spec = "") {
@@ -130,29 +113,57 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   // not
   TEST_BUILD_AND_RUN_MODULE(
-    new AstOperator(AstOperator::eNot, new AstNumber(2)), 0, "");
-  TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstOperator(AstOperator::eNot, new AstNumber(0)), 0, "", eNe);
+    new AstOperator(AstOperator::eNot,
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    !false, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(AstOperator::eNot,
+      new AstNumber(1, ObjTypeFunda::eBool)),
+    !true, "");
 
   // and
   TEST_BUILD_AND_RUN_MODULE(
-    new AstOperator(AstOperator::eAnd, new AstNumber(0), new AstNumber(0)), 0, "");
+    new AstOperator(AstOperator::eAnd,
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    false && false, "");
   TEST_BUILD_AND_RUN_MODULE(
-    new AstOperator(AstOperator::eAnd, new AstNumber(0), new AstNumber(2)), 0, "");
+    new AstOperator(AstOperator::eAnd,
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(1, ObjTypeFunda::eBool)),
+    false && true, "");
   TEST_BUILD_AND_RUN_MODULE(
-    new AstOperator(AstOperator::eAnd, new AstNumber(2), new AstNumber(0)), 0, "");
-  TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstOperator(AstOperator::eAnd, new AstNumber(2), new AstNumber(2)), 0, "", eNe);
+    new AstOperator(AstOperator::eAnd,
+      new AstNumber(1, ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    true && false, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(AstOperator::eAnd,
+      new AstNumber(1, ObjTypeFunda::eBool),
+      new AstNumber(1, ObjTypeFunda::eBool)),
+    true && true, "");
 
   // or
   TEST_BUILD_AND_RUN_MODULE(
-    new AstOperator(AstOperator::eOr, new AstNumber(0), new AstNumber(0)), 0, "");
-  TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstOperator(AstOperator::eOr, new AstNumber(0), new AstNumber(2)), 0, "", eNe);
-  TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstOperator(AstOperator::eOr, new AstNumber(2), new AstNumber(0)), 0, "", eNe);
-  TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstOperator(AstOperator::eOr, new AstNumber(2), new AstNumber(2)), 0, "", eNe);
+    new AstOperator(AstOperator::eOr,
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    false || false, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(AstOperator::eOr,
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(1, ObjTypeFunda::eBool)),
+    false || true, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(AstOperator::eOr,
+      new AstNumber(1, ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    true || false, "");
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(AstOperator::eOr,
+      new AstNumber(1, ObjTypeFunda::eBool),
+      new AstNumber(1, ObjTypeFunda::eBool)),
+    true || true, "");
 
   // ==
   TEST_BUILD_AND_RUN_MODULE(
@@ -189,11 +200,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   string spec = "null-ary or: or() = false";
   TEST_BUILD_AND_RUN_MODULE(
     new AstOperator(AstOperator::eOr),
-    0, spec);
+    false, spec);
   spec = "null-ary and: and() = true";
-  TEST_BUILD_AND_RUN_MODULE_CMPOP(
+  TEST_BUILD_AND_RUN_MODULE(
     new AstOperator(AstOperator::eAnd),
-    0, spec, eNe);
+    true, spec);
   spec = "null-ary minus: -() = 0";
   TEST_BUILD_AND_RUN_MODULE(
     new AstOperator('-'),
@@ -215,13 +226,13 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     new AstOperator(';', new AstNumber(2)),
     2, spec);
   spec = "unary or: or(x) = bool(x)";
-  TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstOperator(AstOperator::eOr, new AstNumber(2)),
-    0, spec, eNe);
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(AstOperator::eOr, new AstNumber(1, ObjTypeFunda::eBool)),
+    true, spec);
   spec = "unary and: and(x) = bool(x)";
-  TEST_BUILD_AND_RUN_MODULE_CMPOP(
-    new AstOperator(AstOperator::eAnd, new AstNumber(2)),
-    0, spec, eNe);
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(AstOperator::eAnd, new AstNumber(1, ObjTypeFunda::eBool)),
+    true, spec);
   spec = "unary minus: -(x)";
   TEST_BUILD_AND_RUN_MODULE(
     new AstOperator('-', new AstNumber(1)),

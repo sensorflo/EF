@@ -165,20 +165,18 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
   for (; iter!=argschilds.end(); ++iter) {
     const AstValue& operandAst = **iter;
     Value* operandIr = operandAst.accept(*this, eRead);
-    Value* operandIrBool = m_builder.CreateICmpNE(operandIr,
-      ConstantInt::get( getGlobalContext(), APInt(32, 0)));
 
     switch (op_) {
-    case AstOperator::eAssign   :            m_builder.CreateStore (operandIr,      resultIr                );
+    case AstOperator::eAssign   :            m_builder.CreateStore (operandIr, resultIr            );
                                   resultIr = operandIr; break;
-    case AstOperator::eNot      : resultIr = m_builder.CreateNot   (operandIrBool,                 "nottmp" ); break;
-    case AstOperator::eAnd      : resultIr = m_builder.CreateAnd   (resultIr,       operandIrBool, "andtmp" ); break;
-    case AstOperator::eOr       : resultIr = m_builder.CreateOr    (resultIr,       operandIrBool, "ortmp"  ); break;
-    case AstOperator::eSub      : resultIr = m_builder.CreateSub   (resultIr,       operandIr,     "subtmp" ); break;
-    case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (resultIr,       operandIr,     "addtmp" ); break;
-    case AstOperator::eMul      : resultIr = m_builder.CreateMul   (resultIr,       operandIr,     "multmp" ); break;
-    case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (resultIr,       operandIr,     "divtmp" ); break;
-    case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(resultIr,       operandIr,     "cmptmp" ); break;
+    case AstOperator::eNot      : resultIr = m_builder.CreateNot   (operandIr,            "nottmp" ); break;
+    case AstOperator::eAnd      : resultIr = m_builder.CreateAnd   (resultIr,  operandIr, "andtmp" ); break;
+    case AstOperator::eOr       : resultIr = m_builder.CreateOr    (resultIr,  operandIr, "ortmp"  ); break;
+    case AstOperator::eSub      : resultIr = m_builder.CreateSub   (resultIr,  operandIr, "subtmp" ); break;
+    case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (resultIr,  operandIr, "addtmp" ); break;
+    case AstOperator::eMul      : resultIr = m_builder.CreateMul   (resultIr,  operandIr, "multmp" ); break;
+    case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (resultIr,  operandIr, "divtmp" ); break;
+    case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(resultIr,  operandIr, "cmptmp" ); break;
     case AstOperator::eSeq      : resultIr = operandIr; break; // replacing previous resultIr
     default: assert(false); break;
     }
