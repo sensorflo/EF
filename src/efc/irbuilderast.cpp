@@ -363,12 +363,6 @@ Value* IrBuilderAst::visit(const AstFunCall& funCall, Access access) {
 }
 
 Value* IrBuilderAst::visit(const AstDataDecl& dataDecl, Access) {
-  SymbolTableEntry* dummy;
-  return visit(dataDecl, dummy);
-}
-
-Value* IrBuilderAst::visit(const AstDataDecl& dataDecl,
-  SymbolTableEntry*& o_stentry) {
 
   // Insert new name as a new symbol table entry into the environment, with
   // NULL as ValueIr field. If the name is allready in the environment, verify
@@ -384,7 +378,10 @@ Value* IrBuilderAst::visit(const AstDataDecl& dataDecl,
       throw BuildError();
     }
   }
-  o_stentry = envs_stentry_ptr;
+
+  // Since later the non-IR generating part will be extracted, a temporary
+  // const cast is not too bad
+  const_cast<AstDataDecl&>(dataDecl).setStentry(envs_stentry_ptr);
 
   // note that this can be NULL. E.g. when we just created a new symbol table
   // entry above, or if it was only declared but never defined so far.
@@ -393,8 +390,8 @@ Value* IrBuilderAst::visit(const AstDataDecl& dataDecl,
 
 Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access access) {
   // process data declaration. That ensures an entry in the symbol table
-  SymbolTableEntry* stentry = NULL;
-  visit(dataDef.decl(), stentry);
+  visit(dataDef.decl());
+  SymbolTableEntry*const& stentry = dataDef.decl().stentry();
   assert(stentry);
 
   if (stentry->isDefined()) {

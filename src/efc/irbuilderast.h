@@ -33,7 +33,6 @@ public:
   llvm::Function* visit(const AstFunDecl& funDecl);
   llvm::Function* visit(const AstFunDecl& funDecl, SymbolTableEntry*& o_stentry);
   llvm::Value*    visit(const AstDataDecl& dataDecl, Access access = eRead);
-  llvm::Value*    visit(const AstDataDecl& dataDecl, SymbolTableEntry*& stentry);
   llvm::Value*    visit(const AstDataDef& dataDef, Access access = eRead);
   llvm::Value*    visit(const AstIf& if_, Access access = eRead);
 

@@ -13,6 +13,7 @@
 class AstConstVisitor;
 class AstVisitor;
 class IrBuilderAst;
+class SymbolTableEntry;
 
 class AstNode {
 public:
@@ -92,7 +93,8 @@ private:
 
 class AstDataDecl : public AstValue {
 public:
-  AstDataDecl(const std::string& name, ObjType* objType);
+  AstDataDecl(const std::string& name, ObjType* objType,
+    SymbolTableEntry* stentry = NULL);
   ~AstDataDecl();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
@@ -100,6 +102,8 @@ public:
   virtual const std::string& name() const { return m_name; }
   virtual ObjType& objType() const;
   virtual ObjType& objType(bool stealOwnership) const;
+  virtual SymbolTableEntry* stentry() const { return m_stentry; }
+  virtual void setStentry(SymbolTableEntry* stentry);
   
 private:
   const std::string m_name;
@@ -108,6 +112,9 @@ private:
   ObjType* m_objType;
   /** See m_objType */
   mutable bool m_ownerOfObjType;
+  /** We're _not_ the owner; null means this DataDecl was not yet put into
+  the environment */
+  SymbolTableEntry* m_stentry;
 };
 
 class AstArgDecl : public AstDataDecl {

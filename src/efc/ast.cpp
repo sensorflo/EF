@@ -119,10 +119,12 @@ list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
   return args;
 }
 
-AstDataDecl::AstDataDecl(const string& name, ObjType* objType) :
+AstDataDecl::AstDataDecl(const string& name, ObjType* objType,
+  SymbolTableEntry* stentry) :
   m_name(name),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
-  m_ownerOfObjType(true) {
+  m_ownerOfObjType(true),
+  m_stentry(stentry) {
 }
 
 AstDataDecl::~AstDataDecl() {
@@ -139,6 +141,12 @@ ObjType& AstDataDecl::objType(bool stealOwnership) const {
     m_ownerOfObjType = false;
   }
   return *m_objType;
+}
+
+void AstDataDecl::setStentry(SymbolTableEntry* stentry) {
+  assert(stentry);
+  assert(!m_stentry); // it makes no sense to set it twice
+  m_stentry = stentry;
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
