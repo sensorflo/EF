@@ -58,6 +58,7 @@ void IrBuilderAst::buildModule(const AstValue& root) {
   // Currently the return type is always int, so ensure the return type of the
   // IR code is also Int32
   Value* resultIr = root.accept(*this);
+  assert(resultIr);
   Value* extResultIr = m_builder.CreateZExt( resultIr, Type::getInt32Ty(getGlobalContext()));
   m_builder.CreateRet(extResultIr);
 
@@ -130,6 +131,7 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
     } else {
       const AstValue& lhsAst = **(iter++);
       resultIr = lhsAst.accept(*this);
+      assert(resultIr);
     }
     break;
   case AstOperator::eOr:
@@ -155,6 +157,7 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
     if ( op_==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
     const AstValue& lhsAst = **(iter++);
     resultIr = lhsAst.accept(*this, op_==AstOperator::eAssign ? eWrite : eRead);
+    assert(resultIr);
     break;
   }
   default:
@@ -165,6 +168,9 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
   for (; iter!=argschilds.end(); ++iter) {
     const AstValue& operandAst = **iter;
     Value* operandIr = operandAst.accept(*this, eRead);
+    if ( op_!=AstOperator::eSeq ) {
+      assert(operandIr);
+    }
 
     switch (op_) {
     case AstOperator::eAssign   :            m_builder.CreateStore (operandIr, resultIr            );
@@ -321,7 +327,9 @@ Value* IrBuilderAst::visit(const AstFunCall& funCall, Access access) {
   vector<Value*> argsIr;
   for ( list<AstValue*>::const_iterator i = argsAst.begin();
         i != argsAst.end(); ++i ) {
-    argsIr.push_back((*i)->accept(*this));
+    Value* argIr = (*i)->accept(*this);
+    assert(argIr);
+    argsIr.push_back(argIr);
   }
 
   return m_builder.CreateCall(callee, argsIr, "calltmp");
@@ -351,7 +359,10 @@ Value* IrBuilderAst::visit(const AstDataDecl& dataDecl,
     stIterStEntry->setObjType(&dataDecl.objType(true));
   }
   stentry = stIterStEntry;
-  return ConstantInt::get( getGlobalContext(), APInt(32, 0));
+
+  // note that this can be NULL. E.g. when we just created a new symbol table
+  // entry above, or if it was only declared but never defined so far.
+  return envs_stentry_ptr->valueIr();
 }
 
 Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access access) {
@@ -404,6 +415,7 @@ Value* IrBuilderAst::visit(const AstIf& if_, Access access) {
 
   // IR for evaluate condition
   Value* condIr = capair.m_condition->accept(*this);
+  assert(condIr);
   Value* condCmpIr = m_builder.CreateICmpNE(condIr,
     ConstantInt::get(getGlobalContext(), APInt(1, 0)), "ifcond");
 
@@ -413,6 +425,7 @@ Value* IrBuilderAst::visit(const AstIf& if_, Access access) {
   // IR for then clause
   m_builder.SetInsertPoint(ThenBB);
   Value* thenValue = capair.m_action->accept(*this);
+  assert(thenValue);
   m_builder.CreateBr(MergeBB);
   ThenBB = m_builder.GetInsertBlock();
 
@@ -425,6 +438,7 @@ Value* IrBuilderAst::visit(const AstIf& if_, Access access) {
   } else {
     elseValue = ConstantInt::get( getGlobalContext(), APInt(32, 0));
   }
+  assert(elseValue);
   m_builder.CreateBr(MergeBB);
   ElseBB = m_builder.GetInsertBlock();
 
