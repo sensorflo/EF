@@ -625,22 +625,27 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     re_declaration_of_an_identifier_with_different_type,
     buildAndRunModule,
-    throws)) {
+    reports_an_eIncompatibleRedaclaration)) {
   string spec = "First function type, then fundamental type";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
+  TEST_BUILD_MODULE_REPORTS_ERROR(
     new AstOperator(';',
       pe.mkFunDecl("foo").first,
-      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new AstNumber(42)),
-    spec);
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))),
+    Error::eIncompatibleRedaclaration, spec);
 
   spec = "First fundamental type, then function type";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
-      new AstOperator(';',
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        pe.mkFunDecl("foo").first,
-        new AstNumber(42)),
-    spec);
+  TEST_BUILD_MODULE_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDecl("foo").first),
+    Error::eIncompatibleRedaclaration, spec);
+
+  spec = "One mutable, the other inmutable";
+  TEST_BUILD_MODULE_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eNoQualifier)),
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+    Error::eIncompatibleRedaclaration, spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -847,21 +852,6 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))));
   EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
-}
-
-TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    multiple_data_obj_declaration_of_x_WITH_nonidentical_type,
-    buildAndRunModule,
-    throws)) {
-
-  string spec = "Example: one uses 'val' (aka 'var const'), the other 'var' "
-    "(aka 'val mutable'). The two also contribute to the type";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
-    new AstOperator(';',
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eNoQualifier)),
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-      new AstNumber(42)),
-    spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME2(

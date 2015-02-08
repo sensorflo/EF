@@ -301,8 +301,8 @@ Function* IrBuilderAst::visit(const AstFunDecl& funDecl,
   } else {
     assert(envs_stentry_ptr);
     if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(funDecl.objType()) ) {
-      throw runtime_error::runtime_error("Idenifier '" + funDecl.name() +
-        "' declared or defined again with a different type.");
+      m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
+      throw BuildError();
     }
   }
   o_stentry = envs_stentry_ptr;
@@ -380,8 +380,8 @@ Value* IrBuilderAst::visit(const AstDataDecl& dataDecl,
   } else {
     assert(envs_stentry_ptr);
     if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(dataDecl.objType()) ) {
-      throw runtime_error::runtime_error("Idenifier '" + dataDecl.name() +
-        "' declared or defined again with a different type.");
+      m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
+      throw BuildError();
     }
   }
   o_stentry = envs_stentry_ptr;

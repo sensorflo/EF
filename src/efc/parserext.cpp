@@ -52,8 +52,8 @@ pair<AstFunDecl*,SymbolTableEntry*> ParserExt::mkFunDecl(
   } else {
     assert(stIterStEntry);
     if ( ObjType::eFullMatch != stIterStEntry->objType().match(*objTypeFun) ) {
-      throw runtime_error::runtime_error("Idenifier '" + name +
-        "' declared or defined again with a different type.");
+      m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
+      throw BuildError();
     }
     delete objTypeFun;
   }

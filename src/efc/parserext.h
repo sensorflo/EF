@@ -29,7 +29,8 @@ struct RawAstDataDef {
 
 class ParserExt {
 public:
-  ParserExt(Env& env, ErrorHandler& errorHandler) : m_env(env) {}
+  ParserExt(Env& env, ErrorHandler& errorHandler) : m_env(env),
+    m_errorHandler(errorHandler) {}
 
   AstDataDecl* mkDataDecl(ObjType::Qualifier qualifier,
     RawAstDataDecl*& rawAstDataDecl);
@@ -46,7 +47,7 @@ public:
 
 private:
   Env& m_env;
-  // ErrorHandler& m_errorHandler;
+  ErrorHandler& m_errorHandler;
 };
 
 #endif
