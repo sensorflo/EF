@@ -5,7 +5,7 @@
 #include <stdexcept>
 using namespace std;
 
-AstDataDecl* ParserExt::createAstDataDecl(ObjType::Qualifier qualifier,
+AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifier qualifier,
   RawAstDataDecl*& rawAstDataDecl) {
   assert(rawAstDataDecl);
   assert(rawAstDataDecl->m_objType);
@@ -17,18 +17,18 @@ AstDataDecl* ParserExt::createAstDataDecl(ObjType::Qualifier qualifier,
   return astDataDecl;
 }
 
-AstDataDef* ParserExt::createAstDataDef(ObjType::Qualifier qualifier,
+AstDataDef* ParserExt::mkDataDef(ObjType::Qualifier qualifier,
   RawAstDataDef*& rawAstDataDef) {
   assert(rawAstDataDef);
   AstDataDef* astDataDef = new AstDataDef(
-    createAstDataDecl(qualifier, rawAstDataDef->m_decl),
+    mkDataDecl(qualifier, rawAstDataDef->m_decl),
     rawAstDataDef->m_ctorArgs);
   delete rawAstDataDef;
   rawAstDataDef = NULL;
   return astDataDef;
 }
 
-pair<AstFunDecl*,SymbolTableEntry*> ParserExt::createAstFunDecl(
+pair<AstFunDecl*,SymbolTableEntry*> ParserExt::mkFunDecl(
   const string name, list<AstArgDecl*>* args) {
 
   // create ObjTypeFun object
@@ -62,13 +62,13 @@ pair<AstFunDecl*,SymbolTableEntry*> ParserExt::createAstFunDecl(
     stIterStEntry);
 }
 
-pair<AstFunDecl*,SymbolTableEntry*> ParserExt::createAstFunDecl(
+pair<AstFunDecl*,SymbolTableEntry*> ParserExt::mkFunDecl(
   const string name, AstArgDecl* arg1, AstArgDecl* arg2, AstArgDecl* arg3) {
-  return createAstFunDecl( name, 
+  return mkFunDecl( name, 
     AstFunDecl::createArgs(arg1, arg2, arg3));
 }
 
-AstFunDef* ParserExt::createAstFunDef(std::pair<AstFunDecl*,SymbolTableEntry*> decl_stentry,
+AstFunDef* ParserExt::mkFunDef(std::pair<AstFunDecl*,SymbolTableEntry*> decl_stentry,
   AstValue* body) {
   assert(decl_stentry.second);
   if (decl_stentry.second->isDefined()) {

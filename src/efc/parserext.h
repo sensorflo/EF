@@ -30,17 +30,17 @@ class ParserExt {
 public:
   ParserExt(Env& env) : m_env(env) {}
 
-  AstDataDecl* createAstDataDecl(ObjType::Qualifier qualifier,
+  AstDataDecl* mkDataDecl(ObjType::Qualifier qualifier,
     RawAstDataDecl*& rawAstDataDecl);
-  AstDataDef* createAstDataDef(ObjType::Qualifier qualifier,
+  AstDataDef* mkDataDef(ObjType::Qualifier qualifier,
     RawAstDataDef*& rawAstDataDef);
 
-  std::pair<AstFunDecl*,SymbolTableEntry*> createAstFunDecl(
+  std::pair<AstFunDecl*,SymbolTableEntry*> mkFunDecl(
     const std::string name, std::list<AstArgDecl*>* args = NULL);
-  std::pair<AstFunDecl*,SymbolTableEntry*> createAstFunDecl(
+  std::pair<AstFunDecl*,SymbolTableEntry*> mkFunDecl(
     const std::string name, AstArgDecl* arg1, AstArgDecl* arg2 = NULL,
     AstArgDecl* arg3 = NULL);
-  AstFunDef* createAstFunDef(std::pair<AstFunDecl*,SymbolTableEntry*> decl_stentry,
+  AstFunDef* mkFunDef(std::pair<AstFunDecl*,SymbolTableEntry*> decl_stentry,
     AstValue* body);
 
 private:

@@ -241,7 +241,7 @@ primary_expr
   ;
   
 list_expr
-  : valvar kwao naked_data_def kwac                 { $$ = parserExt.createAstDataDef($1, $3); }
+  : valvar kwao naked_data_def kwac                 { $$ = parserExt.mkDataDef($1, $3); }
   | DECL kwao FUN naked_fun_decl kwac               { $$ = ($4).first; }
   | FUN kwao naked_fun_def kwac                     { $$ = $3; }
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
@@ -283,14 +283,14 @@ naked_data_def
   ;
 
 naked_fun_def
-  : naked_fun_decl EQUAL block_expr                                  { $$ = parserExt.createAstFunDef($1, $3); }
+  : naked_fun_decl EQUAL block_expr                                  { $$ = parserExt.mkFunDef($1, $3); }
   ;
   
 naked_fun_decl
-  : ID                                                        opt_ret_type  { $$ = parserExt.createAstFunDecl($1); }
-  | ID COLON                                                  opt_ret_type  { $$ = parserExt.createAstFunDecl($1); }
-  | ID COLON LPAREN                                    RPAREN opt_ret_type  { $$ = parserExt.createAstFunDecl($1); }
-  | ID COLON LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type  { $$ = parserExt.createAstFunDecl($1, $4); }
+  : ID                                                        opt_ret_type  { $$ = parserExt.mkFunDecl($1); }
+  | ID COLON                                                  opt_ret_type  { $$ = parserExt.mkFunDecl($1); }
+  | ID COLON LPAREN                                    RPAREN opt_ret_type  { $$ = parserExt.mkFunDecl($1); }
+  | ID COLON LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type  { $$ = parserExt.mkFunDecl($1, $4); }
   ;
 
 opt_ret_type

@@ -611,7 +611,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     ParserExt parserExt(*UUT.m_env);
     auto_ptr<AstValue> ast(
       new AstOperator(';',
-        parserExt.createAstFunDecl("foo").first,
+        parserExt.mkFunDecl("foo").first,
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)));
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) <<
@@ -625,7 +625,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     auto_ptr<AstValue> ast(
       new AstOperator(';',
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        parserExt.createAstFunDecl("foo").first,
+        parserExt.mkFunDecl("foo").first,
         new AstNumber(42)));
     EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast)) <<
       amendSpec(spec) << amendAst(ast);

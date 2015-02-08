@@ -8,32 +8,32 @@ using namespace std;
 
 TEST(ParserExtTest, MAKE_TEST_NAME(
     an_already_declared_function_named_foo,
-    createAstFunDecl_WITH_name_foo_AND_different_signature,
+    mkFunDecl_WITH_name_foo_AND_different_signature,
     throws) ) {
   // setup
   Env env;
   ParserExt UUT(env);
-  UUT.createAstFunDecl("foo");
+  UUT.mkFunDecl("foo");
 
   // exercise & verify
   EXPECT_ANY_THROW(
-    UUT.createAstFunDecl("foo",
+    UUT.mkFunDecl("foo",
       new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))));
 }
 
 TEST(ParserExtTest, MAKE_TEST_NAME4(
     an_already_definded_function_named_foo,
-    createAstFunDef_WITH_same_name_AND_same_signature,
+    mkFunDef_WITH_same_name_AND_same_signature,
     throws,
     BECAUSE_an_object_can_only_be_defined_once)) {
   // setup
   Env env;
   ParserExt UUT(env);
-  pair<AstFunDecl*,SymbolTableEntry*> pair1 = UUT.createAstFunDecl("foo");
-  UUT.createAstFunDef(pair1, new AstNumber(77));
-  pair<AstFunDecl*,SymbolTableEntry*> pair2 = UUT.createAstFunDecl("foo");
+  pair<AstFunDecl*,SymbolTableEntry*> pair1 = UUT.mkFunDecl("foo");
+  UUT.mkFunDef(pair1, new AstNumber(77));
+  pair<AstFunDecl*,SymbolTableEntry*> pair2 = UUT.mkFunDecl("foo");
 
   // exercise & verify
   EXPECT_ANY_THROW(
-    UUT.createAstFunDef(pair2, new AstNumber(77)));
+    UUT.mkFunDef(pair2, new AstNumber(77)));
 }
