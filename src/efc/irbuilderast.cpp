@@ -234,7 +234,12 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
   SymbolTableEntry* stentry = NULL;
   Function* functionIr = visit(funDef.decl(), stentry);
   assert(functionIr);
-  stentry->isDefined() = true; // since this node (AstFunDef) is the definition
+
+  if (stentry->isDefined()) {
+    throw runtime_error::runtime_error("Function '" + funDef.decl().name() +
+      "' is already defined.");
+  }
+  stentry->isDefined() = true;
 
   m_env.pushScope(); 
   m_builder.SetInsertPoint(

@@ -23,20 +23,3 @@ TEST(ParserExtTest, MAKE_TEST_NAME(
       new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))));
 }
 
-TEST(ParserExtTest, MAKE_TEST_NAME4(
-    an_already_definded_function_named_foo,
-    mkFunDef_WITH_same_name_AND_same_signature,
-    throws,
-    BECAUSE_an_object_can_only_be_defined_once)) {
-  // setup
-  Env env;
-  ErrorHandler errorHandler;
-  ParserExt UUT(env, errorHandler);
-  pair<AstFunDecl*,SymbolTableEntry*> pair1 = UUT.mkFunDecl("foo");
-  UUT.mkFunDef(pair1, new AstNumber(77));
-  pair<AstFunDecl*,SymbolTableEntry*> pair2 = UUT.mkFunDecl("foo");
-
-  // exercise & verify
-  EXPECT_ANY_THROW(
-    UUT.mkFunDef(pair2, new AstNumber(77)));
-}

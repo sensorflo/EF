@@ -72,10 +72,8 @@ pair<AstFunDecl*,SymbolTableEntry*> ParserExt::mkFunDecl(
 AstFunDef* ParserExt::mkFunDef(std::pair<AstFunDecl*,SymbolTableEntry*> decl_stentry,
   AstValue* body) {
   assert(decl_stentry.second);
-  if (decl_stentry.second->isDefined()) {
-    throw runtime_error::runtime_error("Function '" + decl_stentry.first->name() +
-      "' is already defined.");
-  }
-  decl_stentry.second->isDefined() = true;
+
+  // handling stentry.isDefined() is done later
+
   return new AstFunDef(decl_stentry.first, body);
 }

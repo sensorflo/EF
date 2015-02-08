@@ -919,6 +919,14 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
       new AstNumber(42)),
     spec);
+
+  spec = "Example: two functions";
+  TEST_BUILD_AND_RUN_MODULE_THROWS(
+    new AstOperator(';',
+      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42)),
+      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42)),
+      new AstNumber(42)),
+    spec);
 }
 
 // Temporary test while introducing types
