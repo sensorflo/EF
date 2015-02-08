@@ -42,7 +42,7 @@ void AstDefaultIterator::visit(AstFunDef& funDef) {
 
 void AstDefaultIterator::visit(AstFunDecl& funDecl) {
   m_visitor.visit(funDecl);
-  for (list<AstArgDecl*>::iterator i=funDecl.args().begin();
+  for (list<AstArgDecl*>::const_iterator i=funDecl.args().begin();
        i!=funDecl.args().end(); ++i) {
     (*i)->accept(*this);
   }

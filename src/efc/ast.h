@@ -25,9 +25,6 @@ public:
 
 class AstValue : public AstNode {
 public:
-  /** A workaround to have an early notion of an address of data objects or
-  code objects. */
-  virtual const std::string& address_as_id_hack() const; 
   virtual ObjType& objType() const;
 };
 
@@ -75,13 +72,22 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
   virtual const std::string& name() const { return m_name; }
-  virtual std::list<AstArgDecl*>& args() const { return *m_args; }
+  virtual std::list<AstArgDecl*>const& args() const { return *m_args; }
+  virtual ObjType& objType() const;
+  virtual ObjType& objType(bool stealOwnership) const;
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
 private:
+  void initObjType();
+  
   const std::string m_name;
   /** We're the owner. Is garanteed to be non-null */
   std::list<AstArgDecl*>* const m_args;
+  /** If m_ownerOfObjType is true, we're the owner. Is garanteed to be
+  non-null. */
+  ObjType* m_objType;
+  /** See m_objType */
+  mutable bool m_ownerOfObjType;
 };
 
 class AstDataDecl : public AstValue {
@@ -158,7 +164,6 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
   const std::string& name() const { return *m_name; }
-  virtual const std::string& address_as_id_hack() const { return *m_name; }
 private:
   /** We're the owner. Is garanteed to be non-null */
   const std::string* const m_name;

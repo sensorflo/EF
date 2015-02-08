@@ -231,7 +231,10 @@ Value* IrBuilderAst::visit(const AstSymbol& symbol, Access access) {
 }
 
 Function* IrBuilderAst::visit(const AstFunDef& funDef) {
-  Function* functionIr = visit(funDef.decl());
+  SymbolTableEntry* stentry = NULL;
+  Function* functionIr = visit(funDef.decl(), stentry);
+  assert(functionIr);
+  stentry->isDefined() = true; // since this node (AstFunDef) is the definition
 
   m_env.pushScope(); 
   m_builder.SetInsertPoint(
@@ -276,48 +279,69 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
 }
 
 Function* IrBuilderAst::visit(const AstFunDecl& funDecl) {
+  SymbolTableEntry* dummy;
+  return visit(funDecl, dummy);
+}
+
+Function* IrBuilderAst::visit(const AstFunDecl& funDecl,
+  SymbolTableEntry*& o_stentry) {
+
   // currently rettype and type of args is always int
 
-  // create IR function with given name and signature
-  vector<Type*> argsIr(funDecl.args().size(),
-    Type::getInt32Ty(getGlobalContext()));
-  Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
-  FunctionType* functionTypeIr = FunctionType::get(retTypeIr, argsIr, false);
-  assert(functionTypeIr);
-  Function* functionIr = Function::Create( functionTypeIr,
-    Function::ExternalLinkage, funDecl.name(), m_module );
-  assert(functionIr);
-
-  // If the names differ (see condition of if statement below) that means a
-  // function with that name already existed, so LLVM automaticaly chose a new
-  // name. If the function already existed, blindly assume that this
-  // declaration's signature matches the signature of the previous declaration
-  // (to ensure that was the semantic analyzer's job) and just 'undo' creating
-  // a new function by erasing the new wrongly created function.
-  if (functionIr->getName() != funDecl.name()) {
-    functionIr->eraseFromParent();
-    functionIr = m_module->getFunction(funDecl.name());
+  // Insert new name as a new symbol table entry into the environment, with
+  // NULL as ValueIr field. If the name is allready in the environment, verify
+  // the type matches.
+  Env::InsertRet insertRet = m_env.insert( funDecl.name(), NULL);
+  SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
+  if (insertRet.second) {
+    envs_stentry_ptr = new SymbolTableEntry(NULL, &funDecl.objType(true));
+  } else {
+    assert(envs_stentry_ptr);
+    if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(funDecl.objType()) ) {
+      throw runtime_error::runtime_error("Idenifier '" + funDecl.name() +
+        "' declared or defined again with a different type.");
+    }
   }
+  o_stentry = envs_stentry_ptr;
 
-  // set names of arguments of IR function
-  else {
+  // If not already done so, create empty function in IR form
+  if ( ! envs_stentry_ptr->valueIr() ) {
+    // create IR function with given name and signature
+    vector<Type*> argsIr(funDecl.args().size(),
+      Type::getInt32Ty(getGlobalContext()));
+    Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
+    FunctionType* functionTypeIr = FunctionType::get(retTypeIr, argsIr, false);
+    assert(functionTypeIr);
+    Function* functionIr = Function::Create( functionTypeIr,
+      Function::ExternalLinkage, funDecl.name(), m_module );
+    assert(functionIr);
+
+    // If the names differ (see condition of if statement below) that means a
+    // function with that name already existed, so LLVM automaticaly chose a new
+    // name. That cannot be since above our environment said the name is unique.
+    assert(functionIr->getName() == funDecl.name());
+
+    // set names of arguments of IR function
     list<AstArgDecl*>::const_iterator iterArgsAst = funDecl.args().begin();
     Function::arg_iterator iterArgsIr = functionIr->arg_begin();
     for (/*nop*/; iterArgsAst!=funDecl.args().end(); ++iterArgsAst, ++iterArgsIr) {
       iterArgsIr->setName((*iterArgsAst)->name());
     }
+
+    o_stentry->valueIr() = functionIr;
+    return functionIr;
   }
 
-  return functionIr;
+  // Function is already in environment, return it
+  else {
+    return dynamic_cast<Function*>(o_stentry->valueIr());
+  }
 }
 
 Value* IrBuilderAst::visit(const AstFunCall& funCall, Access access) {
-  Function* callee = m_module->getFunction(funCall.address().address_as_id_hack());
-  if (!callee) {
-    m_errorHandler.add(new Error(Error::eUnknownName));
-    throw BuildError();
-  }
-
+  Function* callee = dynamic_cast<Function*>(funCall.address().accept(*this));
+  assert(callee);
+    
   const list<AstValue*>& argsAst = funCall.args().childs();
 
   if (callee->arg_size() != argsAst.size()) {

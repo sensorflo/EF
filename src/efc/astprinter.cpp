@@ -73,7 +73,7 @@ void AstPrinter::visit(const AstFunDef& funDef) {
 
 void AstPrinter::visit(const AstFunDecl& funDecl) {
   m_os << "declfun(" << funDecl.name() << " (";
-  for (list<AstArgDecl*>::iterator i=funDecl.args().begin();
+  for (list<AstArgDecl*>::const_iterator i=funDecl.args().begin();
        i!=funDecl.args().end(); ++i) {
     if (i!=funDecl.args().begin()) { m_os << " "; }
     (*i)->accept(*this);

@@ -10,10 +10,6 @@ string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
-const string& AstValue::address_as_id_hack() const {
-  throw runtime_error::runtime_error("not an id");
-}
-
 ObjType& AstValue::objType() const {
   // KLUDGE: Currently wrongly too much depends on that nearly all expressions
   // are of type int, so for now the default has to be int opposed to an
@@ -63,8 +59,11 @@ AstFunDef::~AstFunDef() {
 
 AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args) :
   m_name(name),
-  m_args(args ? args : new list<AstArgDecl*>()) {
+  m_args(args ? args : new list<AstArgDecl*>()),
+  m_objType(NULL),
+  m_ownerOfObjType(true) {
   assert(m_args);
+  initObjType();
 }
 
 /** Same as overloaded ctor for convenience; it's easier to pass short
@@ -72,8 +71,11 @@ argument lists. An empty string means 'no argument'. */
 AstFunDecl::AstFunDecl(const string& name, AstArgDecl* arg1,
   AstArgDecl* arg2, AstArgDecl* arg3) :
   m_name(name),
-  m_args(createArgs(arg1, arg2, arg3)) {
+  m_args(createArgs(arg1, arg2, arg3)),
+  m_objType(NULL),
+  m_ownerOfObjType(true) {
   assert(m_args);
+  initObjType();
 }
 
 AstFunDecl::~AstFunDecl() {
@@ -82,6 +84,30 @@ AstFunDecl::~AstFunDecl() {
     delete *i;
   }
   delete m_args;
+  if (m_ownerOfObjType) { delete m_objType; }
+}
+
+void AstFunDecl::initObjType() {
+  list<ObjType*>* argtypes = new list<ObjType*>;
+  for (list<AstArgDecl*>::iterator i = m_args->begin(); i!=m_args->end(); ++i) {
+    // for simplicity, currently only args of type ObjTypeFunda are allowed
+    ObjTypeFunda* argtype_src = dynamic_cast<ObjTypeFunda*>(&(*i)->objType());
+    assert(argtype_src);
+    argtypes->push_back(new ObjTypeFunda(*argtype_src));
+  }
+  m_objType = new ObjTypeFun(argtypes, new ObjTypeFunda(ObjTypeFunda::eInt));
+}
+
+ObjType& AstFunDecl::objType() const {
+  return objType(false);
+}
+
+ObjType& AstFunDecl::objType(bool stealOwnership) const {
+  if (stealOwnership) {
+    assert(m_ownerOfObjType);
+    m_ownerOfObjType = false;
+  }
+  return *m_objType;
 }
 
 list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
