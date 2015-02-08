@@ -57,11 +57,13 @@ AstFunDef::~AstFunDef() {
   delete m_body;
 }
 
-AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args) :
+AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args,
+  SymbolTableEntry* stentry) :
   m_name(name),
   m_args(args ? args : new list<AstArgDecl*>()),
   m_objType(NULL),
-  m_ownerOfObjType(true) {
+  m_ownerOfObjType(true),
+  m_stentry(stentry) {
   assert(m_args);
   initObjType();
 }
@@ -73,7 +75,8 @@ AstFunDecl::AstFunDecl(const string& name, AstArgDecl* arg1,
   m_name(name),
   m_args(createArgs(arg1, arg2, arg3)),
   m_objType(NULL),
-  m_ownerOfObjType(true) {
+  m_ownerOfObjType(true),
+  m_stentry(NULL) {
   assert(m_args);
   initObjType();
 }
@@ -117,6 +120,12 @@ list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
   if (arg2) { args->push_back(arg2); }
   if (arg3) { args->push_back(arg3); }
   return args;
+}
+
+void AstFunDecl::setStentry(SymbolTableEntry* stentry) {
+  assert(stentry);
+  assert(!m_stentry); // it makes no sense to set it twice
+  m_stentry = stentry;
 }
 
 AstDataDecl::AstDataDecl(const string& name, ObjType* objType,

@@ -109,7 +109,7 @@
 %type <ObjType::Qualifier> valvar
 %type <RawAstDataDecl*> naked_data_decl
 %type <RawAstDataDef*> naked_data_def
-%type <std::pair<AstFunDecl*,SymbolTableEntry*>> naked_fun_decl
+%type <AstFunDecl*> naked_fun_decl
 %type <AstFunDef*> naked_fun_def
 %type <ObjType*> type opt_colon_type
 
@@ -242,7 +242,7 @@ primary_expr
   
 list_expr
   : valvar kwao naked_data_def kwac                 { $$ = parserExt.mkDataDef($1, $3); }
-  | DECL kwao FUN naked_fun_decl kwac               { $$ = ($4).first; }
+  | DECL kwao FUN naked_fun_decl kwac               { $$ = $4; }
   | FUN kwao naked_fun_def kwac                     { $$ = $3; }
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
   | OP_LPAREN ct_list RPAREN                        { $$ = new AstOperator($1, $2); }

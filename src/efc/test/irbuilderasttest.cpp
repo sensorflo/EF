@@ -325,7 +325,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   string spec = "Sequence containing a function declaration";
   TEST_BUILD_AND_RUN_MODULE(
     new AstOperator(';',
-      pe.mkFunDecl("foo").first,
+      pe.mkFunDecl("foo"),
       new AstNumber(42)),
     42, spec);
 }
@@ -343,7 +343,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     TestingIrBuilderAst UUT;
     ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
     auto_ptr<AstValue> ast(
-      pe.mkFunDecl("foo").first);
+      pe.mkFunDecl("foo"));
 
     // execute
     UUT.buildModuleNoImplicitMain(*ast);
@@ -369,7 +369,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       pe.mkFunDecl(
         "foo",
         new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))).first);
+        new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))));
 
     // execute
     UUT.buildModuleNoImplicitMain(*ast);
@@ -603,8 +603,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   EXPECT_NO_THROW(
     UUT.buildModuleNoImplicitMain(
       *new AstOperator(';',
-        pe.mkFunDecl("foo").first,
-        pe.mkFunDecl("foo").first)));
+        pe.mkFunDecl("foo"),
+        pe.mkFunDecl("foo"))));
   EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
 }
 
@@ -617,7 +617,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   EXPECT_NO_THROW(
     UUT.buildModuleNoImplicitMain(
       *new AstOperator(';',
-        pe.mkFunDecl("foo").first,
+        pe.mkFunDecl("foo"),
         pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42)))));
   EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
 }
@@ -629,7 +629,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   string spec = "First function type, then fundamental type";
   TEST_BUILD_MODULE_REPORTS_ERROR(
     new AstOperator(';',
-      pe.mkFunDecl("foo").first,
+      pe.mkFunDecl("foo"),
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))),
     Error::eIncompatibleRedaclaration, spec);
 
@@ -637,7 +637,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TEST_BUILD_MODULE_REPORTS_ERROR(
     new AstOperator(';',
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      pe.mkFunDecl("foo").first),
+      pe.mkFunDecl("foo")),
     Error::eIncompatibleRedaclaration, spec);
 
   spec = "One mutable, the other inmutable";

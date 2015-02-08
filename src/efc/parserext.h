@@ -37,13 +37,10 @@ public:
   AstDataDef* mkDataDef(ObjType::Qualifier qualifier,
     RawAstDataDef*& rawAstDataDef);
 
-  std::pair<AstFunDecl*,SymbolTableEntry*> mkFunDecl(
-    const std::string name, std::list<AstArgDecl*>* args = NULL);
-  std::pair<AstFunDecl*,SymbolTableEntry*> mkFunDecl(
-    const std::string name, AstArgDecl* arg1, AstArgDecl* arg2 = NULL,
-    AstArgDecl* arg3 = NULL);
-  AstFunDef* mkFunDef(std::pair<AstFunDecl*,SymbolTableEntry*> decl_stentry,
-    AstValue* body);
+  AstFunDecl* mkFunDecl(const std::string name, std::list<AstArgDecl*>* args = NULL);
+  AstFunDecl* mkFunDecl(const std::string name, AstArgDecl* arg1,
+    AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
+  AstFunDef* mkFunDef(AstFunDecl* decl, AstValue* body);
 
 private:
   Env& m_env;

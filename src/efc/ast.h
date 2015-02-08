@@ -65,7 +65,8 @@ private:
 
 class AstFunDecl : public AstValue {
 public:
-  AstFunDecl(const std::string& name, std::list<AstArgDecl*>* args = NULL);
+  AstFunDecl(const std::string& name, std::list<AstArgDecl*>* args = NULL,
+    SymbolTableEntry* stentry = NULL);
   AstFunDecl(const std::string& name, AstArgDecl* arg1,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   ~AstFunDecl();
@@ -78,6 +79,9 @@ public:
   virtual ObjType& objType(bool stealOwnership) const;
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
+  virtual SymbolTableEntry* stentry() const { return m_stentry; }
+  virtual void setStentry(SymbolTableEntry* stentry);
+
 private:
   void initObjType();
   
@@ -89,6 +93,9 @@ private:
   ObjType* m_objType;
   /** See m_objType */
   mutable bool m_ownerOfObjType;
+  /** We're _not_ the owner; null means this FunDecl was not yet put into
+  the environment */
+  SymbolTableEntry* m_stentry;
 };
 
 class AstDataDecl : public AstValue {

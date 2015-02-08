@@ -231,9 +231,10 @@ Value* IrBuilderAst::visit(const AstSymbol& symbol, Access access) {
 }
 
 Function* IrBuilderAst::visit(const AstFunDef& funDef) {
-  SymbolTableEntry* stentry = NULL;
-  Function* functionIr = visit(funDef.decl(), stentry);
+  Function* functionIr = visit(funDef.decl());
   assert(functionIr);
+  SymbolTableEntry*const& stentry = funDef.decl().stentry();
+  assert(stentry);
 
   if (stentry->isDefined()) {
     throw runtime_error::runtime_error("Function '" + funDef.decl().name() +
@@ -287,33 +288,31 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
 }
 
 Function* IrBuilderAst::visit(const AstFunDecl& funDecl) {
-  SymbolTableEntry* dummy;
-  return visit(funDecl, dummy);
-}
-
-Function* IrBuilderAst::visit(const AstFunDecl& funDecl,
-  SymbolTableEntry*& o_stentry) {
-
   // currently rettype and type of args is always int
 
   // Insert new name as a new symbol table entry into the environment, with
   // NULL as ValueIr field. If the name is allready in the environment, verify
   // the type matches.
-  Env::InsertRet insertRet = m_env.insert( funDecl.name(), NULL);
-  SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
-  if (insertRet.second) {
-    envs_stentry_ptr = new SymbolTableEntry(NULL, &funDecl.objType(true));
-  } else {
-    assert(envs_stentry_ptr);
-    if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(funDecl.objType()) ) {
-      m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
-      throw BuildError();
+  if (!funDecl.stentry()) {
+    Env::InsertRet insertRet = m_env.insert( funDecl.name(), NULL);
+    SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
+    if (insertRet.second) {
+      envs_stentry_ptr = new SymbolTableEntry(NULL, &funDecl.objType(true));
+    } else {
+      assert(envs_stentry_ptr);
+      if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(funDecl.objType()) ) {
+        m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
+        throw BuildError();
+      }
     }
-  }
-  o_stentry = envs_stentry_ptr;
 
+    // Since later the non-IR generating part will be extracted, a temporary
+    // const cast is not too bad
+    const_cast<AstFunDecl&>(funDecl).setStentry(envs_stentry_ptr);
+  }
+  
   // If not already done so, create empty function in IR form
-  if ( ! envs_stentry_ptr->valueIr() ) {
+  if ( ! funDecl.stentry()->valueIr() ) {
     // create IR function with given name and signature
     vector<Type*> argsIr(funDecl.args().size(),
       Type::getInt32Ty(getGlobalContext()));
@@ -336,13 +335,13 @@ Function* IrBuilderAst::visit(const AstFunDecl& funDecl,
       iterArgsIr->setName((*iterArgsAst)->name());
     }
 
-    o_stentry->valueIr() = functionIr;
+    funDecl.stentry()->valueIr() = functionIr;
     return functionIr;
   }
 
   // Function is already in environment, return it
   else {
-    return dynamic_cast<Function*>(o_stentry->valueIr());
+    return dynamic_cast<Function*>(funDecl.stentry()->valueIr());
   }
 }
 
@@ -372,25 +371,27 @@ Value* IrBuilderAst::visit(const AstDataDecl& dataDecl, Access) {
   // Insert new name as a new symbol table entry into the environment, with
   // NULL as ValueIr field. If the name is allready in the environment, verify
   // the type matches.
-  Env::InsertRet insertRet = m_env.insert( dataDecl.name(), NULL);
-  SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
-  if (insertRet.second) {
-    envs_stentry_ptr = new SymbolTableEntry(NULL, &dataDecl.objType(true));
-  } else {
-    assert(envs_stentry_ptr);
-    if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(dataDecl.objType()) ) {
-      m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
-      throw BuildError();
+  if (!dataDecl.stentry()) {
+    Env::InsertRet insertRet = m_env.insert( dataDecl.name(), NULL);
+    SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
+    if (insertRet.second) {
+      envs_stentry_ptr = new SymbolTableEntry(NULL, &dataDecl.objType(true));
+    } else {
+      assert(envs_stentry_ptr);
+      if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(dataDecl.objType()) ) {
+        m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
+        throw BuildError();
+      }
     }
+
+    // Since later the non-IR generating part will be extracted, a temporary
+    // const cast is not too bad
+    const_cast<AstDataDecl&>(dataDecl).setStentry(envs_stentry_ptr);
   }
-
-  // Since later the non-IR generating part will be extracted, a temporary
-  // const cast is not too bad
-  const_cast<AstDataDecl&>(dataDecl).setStentry(envs_stentry_ptr);
-
+  
   // note that this can be NULL. E.g. when we just created a new symbol table
   // entry above, or if it was only declared but never defined so far.
-  return envs_stentry_ptr->valueIr();
+  return dataDecl.stentry()->valueIr();
 }
 
 Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access access) {
