@@ -30,10 +30,10 @@ TEST(ParserExtTest, MAKE_TEST_NAME4(
   Env env;
   ParserExt UUT(env);
   pair<AstFunDecl*,SymbolTableEntry*> pair1 = UUT.createAstFunDecl("foo");
-  UUT.createAstFunDef(pair1.first, new AstNumber(77), *pair1.second);
+  UUT.createAstFunDef(pair1, new AstNumber(77));
   pair<AstFunDecl*,SymbolTableEntry*> pair2 = UUT.createAstFunDecl("foo");
 
   // exercise & verify
   EXPECT_ANY_THROW(
-    UUT.createAstFunDef(pair2.first, new AstNumber(77), *pair2.second));
+    UUT.createAstFunDef(pair2, new AstNumber(77)));
 }

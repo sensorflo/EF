@@ -283,7 +283,7 @@ naked_data_def
   ;
 
 naked_fun_def
-  : naked_fun_decl EQUAL block_expr                                  { $$ = parserExt.createAstFunDef(($1).first, $3, *(($1).second)); }
+  : naked_fun_decl EQUAL block_expr                                  { $$ = parserExt.createAstFunDef($1, $3); }
   ;
   
 naked_fun_decl

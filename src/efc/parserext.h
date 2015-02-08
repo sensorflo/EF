@@ -40,8 +40,8 @@ public:
   std::pair<AstFunDecl*,SymbolTableEntry*> createAstFunDecl(
     const std::string name, AstArgDecl* arg1, AstArgDecl* arg2 = NULL,
     AstArgDecl* arg3 = NULL);
-  AstFunDef* createAstFunDef(AstFunDecl* funDecl, AstValue* body,
-    SymbolTableEntry& stentry);
+  AstFunDef* createAstFunDef(std::pair<AstFunDecl*,SymbolTableEntry*> decl_stentry,
+    AstValue* body);
 
 private:
   Env& m_env;

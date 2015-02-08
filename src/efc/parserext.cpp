@@ -68,13 +68,13 @@ pair<AstFunDecl*,SymbolTableEntry*> ParserExt::createAstFunDecl(
     AstFunDecl::createArgs(arg1, arg2, arg3));
 }
 
-AstFunDef* ParserExt::createAstFunDef(AstFunDecl* funDecl, AstValue* body,
-  SymbolTableEntry& stentry) {
-  assert(funDecl);
-  if (stentry.isDefined()) {
-    throw runtime_error::runtime_error("Function '" + funDecl->name() +
+AstFunDef* ParserExt::createAstFunDef(std::pair<AstFunDecl*,SymbolTableEntry*> decl_stentry,
+  AstValue* body) {
+  assert(decl_stentry.second);
+  if (decl_stentry.second->isDefined()) {
+    throw runtime_error::runtime_error("Function '" + decl_stentry.first->name() +
       "' is already defined.");
   }
-  stentry.isDefined() = true;
-  return new AstFunDef(funDecl, body);
+  decl_stentry.second->isDefined() = true;
+  return new AstFunDef(decl_stentry.first, body);
 }
