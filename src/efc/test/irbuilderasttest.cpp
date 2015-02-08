@@ -65,18 +65,21 @@ void testbuilAndRunModuleThrows(TestingIrBuilderAst& UUT, AstValue* astRoot,
     testbuilAndRunModuleThrows(UUT, astRoot, spec);                     \
   }
 
-void testbuilAndRunModuleReportsError(AstValue* astRoot, Error::No expectedErrorNo,
-  const string& spec = "") {
+void testbuilModuleReportsError(TestingIrBuilderAst& UUT, AstValue* astRoot,
+  Error::No expectedErrorNo, bool bNoImplicitMain, const string& spec = "") {
 
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
   auto_ptr<AstValue> ast(astRoot);
-  TestingIrBuilderAst UUT;
   bool didThrowBuildError = false;
 
   // execute
   try {
-    UUT.buildAndRunModule(*astRoot);
+    if (bNoImplicitMain) {
+      UUT.buildModuleNoImplicitMain(*astRoot);
+    } else {
+      UUT.buildModule(*astRoot);
+    }
   }
 
   // verify
@@ -93,10 +96,20 @@ void testbuilAndRunModuleReportsError(AstValue* astRoot, Error::No expectedError
   EXPECT_TRUE(didThrowBuildError);
 }
 
-#define TEST_BUILD_AND_RUN_MODULE_REPORTS_ERROR(astRoot, expectedErrorNo, spec) \
+#define TEST_BUILD_MODULE_REPORTS_ERROR(astRoot, expectedErrorNo, spec) \
   {                                                                     \
-    SCOPED_TRACE("testbuilAndRunModuleReportsError called from here (via TEST_BUILD_AND_RUN_MODULE_REPORTS_ERROR)"); \
-    testbuilAndRunModuleReportsError(astRoot, expectedErrorNo, spec);   \
+    SCOPED_TRACE("testbuilModuleReportsError called from here (via TEST_BUILD_MODULE_REPORTS_ERROR)"); \
+    TestingIrBuilderAst UUT;                                            \
+    ParserExt pe(*UUT.m_env);                                           \
+    testbuilModuleReportsError(UUT, astRoot, expectedErrorNo, false, spec); \
+  }
+
+#define TEST_BUILD_MODULE_NO_IMPLICIT_MAIN_REPORTS_ERROR(astRoot, expectedErrorNo, spec) \
+  {                                                                     \
+    SCOPED_TRACE("testbuilModuleReportsError called from here (via TEST_BUILD_MODULE_NO_IMPLICIT_MAIN_REPORTS_ERROR)"); \
+    TestingIrBuilderAst UUT;                                            \
+    ParserExt pe(*UUT.m_env);                                           \
+    testbuilModuleReportsError(UUT, astRoot, expectedErrorNo, true, spec); \
   }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -571,12 +584,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_reference_to_an_unknown_name,
     buildModule,
     reports_an_eErrUnknownName)) {
-  TEST_BUILD_AND_RUN_MODULE_REPORTS_ERROR(
+  TEST_BUILD_MODULE_REPORTS_ERROR(
     new AstSymbol(new string("x")),
     Error::eUnknownName, "");
 
   // since currently IrBuilderAstT implements AstFunCall specially
-  TEST_BUILD_AND_RUN_MODULE_REPORTS_ERROR(
+  TEST_BUILD_MODULE_REPORTS_ERROR(
     new AstFunCall(new AstSymbol(new string("foo"))),
     Error::eUnknownName, "");
 }
