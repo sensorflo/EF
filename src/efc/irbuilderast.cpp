@@ -341,24 +341,23 @@ Value* IrBuilderAst::visit(const AstDataDecl& dataDecl, Access) {
 }
 
 Value* IrBuilderAst::visit(const AstDataDecl& dataDecl,
-  SymbolTableEntry*& stentry) {
+  SymbolTableEntry*& o_stentry) {
 
+  // Insert new name as a new symbol table entry into the environment, with
+  // NULL as ValueIr field. If the name is allready in the environment, verify
+  // the type matches.
   Env::InsertRet insertRet = m_env.insert( dataDecl.name(), NULL);
-  SymbolTable::iterator& stIter = insertRet.first;
-  SymbolTableEntry*& stIterStEntry = stIter->second;
-  bool wasAlreadyInMap = !insertRet.second;
-
-  if (!wasAlreadyInMap) {
-    stIterStEntry = new SymbolTableEntry(NULL, &dataDecl.objType(true));
+  SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
+  if (insertRet.second) {
+    envs_stentry_ptr = new SymbolTableEntry(NULL, &dataDecl.objType(true));
   } else {
-    assert(stIterStEntry);
-    if ( ObjType::eFullMatch != stIterStEntry->objType().match(dataDecl.objType()) ) {
+    assert(envs_stentry_ptr);
+    if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(dataDecl.objType()) ) {
       throw runtime_error::runtime_error("Idenifier '" + dataDecl.name() +
         "' declared or defined again with a different type.");
     }
-    stIterStEntry->setObjType(&dataDecl.objType(true));
   }
-  stentry = stIterStEntry;
+  o_stentry = envs_stentry_ptr;
 
   // note that this can be NULL. E.g. when we just created a new symbol table
   // entry above, or if it was only declared but never defined so far.
