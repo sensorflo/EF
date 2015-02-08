@@ -7,6 +7,7 @@ public:
   enum No {
     eNone,
     eUnknownName,
+    eIncompatibleRedaclaration,
     eCnt
   };
 

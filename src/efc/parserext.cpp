@@ -1,6 +1,7 @@
 #include "parserext.h"
 #include "env.h"
 #include "ast.h"
+#include "errorhandler.h"
 #include <cassert>
 #include <stdexcept>
 using namespace std;

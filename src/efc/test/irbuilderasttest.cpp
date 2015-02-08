@@ -42,7 +42,7 @@ void testbuilAndRunModule(TestingIrBuilderAst& UUT, AstValue* astRoot,
   {                                                                     \
     SCOPED_TRACE("testbuilAndRunModule called from here (via TEST_BUILD_AND_RUN_MODULE)"); \
     TestingIrBuilderAst UUT;                                            \
-    ParserExt pe(*UUT.m_env);                                           \
+    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);                      \
     testbuilAndRunModule(UUT, astRoot, expectedResult, spec);           \
   }
 
@@ -61,7 +61,7 @@ void testbuilAndRunModuleThrows(TestingIrBuilderAst& UUT, AstValue* astRoot,
   {                                                                     \
     SCOPED_TRACE("testbuilAndRunModuleThrows called from here (via TEST_BUILD_AND_RUN_MODULE_THROWS)"); \
     TestingIrBuilderAst UUT;                                            \
-    ParserExt pe(*UUT.m_env);                                           \
+    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);                      \
     testbuilAndRunModuleThrows(UUT, astRoot, spec);                     \
   }
 
@@ -100,7 +100,7 @@ void testbuilModuleReportsError(TestingIrBuilderAst& UUT, AstValue* astRoot,
   {                                                                     \
     SCOPED_TRACE("testbuilModuleReportsError called from here (via TEST_BUILD_MODULE_REPORTS_ERROR)"); \
     TestingIrBuilderAst UUT;                                            \
-    ParserExt pe(*UUT.m_env);                                           \
+    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);                      \
     testbuilModuleReportsError(UUT, astRoot, expectedErrorNo, false, spec); \
   }
 
@@ -108,7 +108,7 @@ void testbuilModuleReportsError(TestingIrBuilderAst& UUT, AstValue* astRoot,
   {                                                                     \
     SCOPED_TRACE("testbuilModuleReportsError called from here (via TEST_BUILD_MODULE_NO_IMPLICIT_MAIN_REPORTS_ERROR)"); \
     TestingIrBuilderAst UUT;                                            \
-    ParserExt pe(*UUT.m_env);                                           \
+    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);                      \
     testbuilModuleReportsError(UUT, astRoot, expectedErrorNo, true, spec); \
   }
 
@@ -341,7 +341,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrBuilderAst UUT;
-    ParserExt pe(*UUT.m_env);
+    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
     auto_ptr<AstValue> ast(
       pe.mkFunDecl("foo").first);
 
@@ -364,7 +364,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrBuilderAst UUT;
-    ParserExt pe(*UUT.m_env);
+    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
     auto_ptr<AstValue> ast(
       pe.mkFunDecl(
         "foo",
@@ -396,7 +396,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrBuilderAst UUT;
-    ParserExt pe(*UUT.m_env);
+    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
     auto_ptr<AstValue> ast(
       pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)));
 
@@ -419,7 +419,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrBuilderAst UUT;
-    ParserExt pe(*UUT.m_env);
+    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
     list<string>* args = new list<string>();
     args->push_back("arg1");
     args->push_back("arg2");
@@ -456,7 +456,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrBuilderAst UUT;
-    ParserExt pe(*UUT.m_env);
+    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
     auto_ptr<AstValue> ast(
       pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)));
 
@@ -474,7 +474,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // IrBuilder is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrBuilderAst UUT;
-    ParserExt pe(*UUT.m_env);
+    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
     auto_ptr<AstValue> ast(
       pe.mkFunDef(
         pe.mkFunDecl(
@@ -499,7 +499,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
   TestingIrBuilderAst UUT;
-  ParserExt pe(*UUT.m_env);
+  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
   auto_ptr<AstValue> ast(
     pe.mkFunDef(
       pe.mkFunDecl(
@@ -527,7 +527,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
   TestingIrBuilderAst UUT;
-  ParserExt pe(*UUT.m_env);
+  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
   auto_ptr<AstValue> ast(
     pe.mkFunDef(
       pe.mkFunDecl(
@@ -558,7 +558,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   // IrBuilder is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
   TestingIrBuilderAst UUT;
-  ParserExt pe(*UUT.m_env);
+  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
   auto_ptr<AstValue> ast(
     pe.mkFunDef(
       pe.mkFunDecl(
@@ -599,7 +599,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildModuleNoImplicitMain,
     succeeds)) {
   TestingIrBuilderAst UUT;
-  ParserExt pe(*UUT.m_env);
+  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
   EXPECT_NO_THROW(
     UUT.buildModuleNoImplicitMain(
       *new AstOperator(';',
@@ -613,7 +613,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildModuleNoImplicitMain,
     succeeds)) {
   TestingIrBuilderAst UUT;
-  ParserExt pe(*UUT.m_env);
+  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
   EXPECT_NO_THROW(
     UUT.buildModuleNoImplicitMain(
       *new AstOperator(';',
@@ -841,7 +841,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildAndRunModule,
     succeeds)) {
   TestingIrBuilderAst UUT;
-  ParserExt pe(*UUT.m_env);
+  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
   EXPECT_NO_THROW(
     new AstOperator(';',
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),

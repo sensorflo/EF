@@ -20,7 +20,7 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_gotWarning(false),
   m_ostream(ostream ? *ostream : cerr),
   m_astRoot(NULL),
-  m_parserExt(m_env),
+  m_parserExt(m_env, m_errorHandler),
   m_parser(new Parser(*this, m_parserExt, m_astRoot)) {
   // Ctor/Dtor must RAII yyin and m_parser
 

@@ -11,6 +11,7 @@ of code. */
 #include "astforwards.h"
 class SymbolTableEntry;
 class Env;
+class ErrorHandler;
 
 struct RawAstDataDecl {
   RawAstDataDecl(const std::string& name, ObjType* objType) :
@@ -28,7 +29,7 @@ struct RawAstDataDef {
 
 class ParserExt {
 public:
-  ParserExt(Env& env) : m_env(env) {}
+  ParserExt(Env& env, ErrorHandler& errorHandler) : m_env(env) {}
 
   AstDataDecl* mkDataDecl(ObjType::Qualifier qualifier,
     RawAstDataDecl*& rawAstDataDecl);
@@ -45,6 +46,7 @@ public:
 
 private:
   Env& m_env;
+  // ErrorHandler& m_errorHandler;
 };
 
 #endif

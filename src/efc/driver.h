@@ -42,6 +42,7 @@ private:
   
   /** The name of the file being parsed */
   std::string m_fileName;
+  ErrorHandler m_errorHandler;
   Env m_env;
   bool m_gotError;
   bool m_gotWarning;
@@ -51,7 +52,6 @@ private:
   ParserExt m_parserExt;
   /** We're the owner. Guaranteed to be non-NULL */
   yy::Parser* m_parser;
-  ErrorHandler m_errorHandler;
 };
   
 #endif

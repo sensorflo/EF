@@ -2,6 +2,7 @@
 #include "../parserext.h"
 #include "../env.h"
 #include "../ast.h"
+#include "../errorhandler.h"
 #include "../objtype.h"
 using namespace testing;
 using namespace std;
@@ -12,7 +13,8 @@ TEST(ParserExtTest, MAKE_TEST_NAME(
     throws) ) {
   // setup
   Env env;
-  ParserExt UUT(env);
+  ErrorHandler errorHandler;
+  ParserExt UUT(env, errorHandler);
   UUT.mkFunDecl("foo");
 
   // exercise & verify
@@ -28,7 +30,8 @@ TEST(ParserExtTest, MAKE_TEST_NAME4(
     BECAUSE_an_object_can_only_be_defined_once)) {
   // setup
   Env env;
-  ParserExt UUT(env);
+  ErrorHandler errorHandler;
+  ParserExt UUT(env, errorHandler);
   pair<AstFunDecl*,SymbolTableEntry*> pair1 = UUT.mkFunDecl("foo");
   UUT.mkFunDef(pair1, new AstNumber(77));
   pair<AstFunDecl*,SymbolTableEntry*> pair2 = UUT.mkFunDecl("foo");
