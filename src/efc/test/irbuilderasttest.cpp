@@ -319,7 +319,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_declaration,
-    buildModule,
+    buildModuleNoImplicitMain,
     adds_the_function_declaration_to_the_module_with_the_correct_signature)) {
 
   string spec = "Example: zero arguments";
@@ -330,12 +330,10 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     TestingIrBuilderAst UUT;
     ParserExt pe(*UUT.m_env);
     auto_ptr<AstValue> ast(
-      new AstOperator(';',
-        pe.mkFunDecl("foo").first,
-        new AstNumber(42)));
+      pe.mkFunDecl("foo").first);
 
     // execute
-    UUT.buildModule(*ast);
+    UUT.buildModuleNoImplicitMain(*ast);
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
@@ -355,15 +353,13 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     TestingIrBuilderAst UUT;
     ParserExt pe(*UUT.m_env);
     auto_ptr<AstValue> ast(
-      new AstOperator(';',
-        pe.mkFunDecl(
-          "foo",
-          new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))).first,
-        new AstNumber(42)));
+      pe.mkFunDecl(
+        "foo",
+        new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))).first);
 
     // execute
-    UUT.buildModule(*ast);
+    UUT.buildModuleNoImplicitMain(*ast);
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
@@ -378,7 +374,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_definition,
-    buildModule,
+    buildModuleNoImplicitMain,
     adds_the_definition_to_the_module_with_the_correct_signature)) {
 
   string spec = "Example: zero arguments";
@@ -388,12 +384,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrBuilderAst UUT;
     ParserExt pe(*UUT.m_env);
-    auto_ptr<AstValue> ast(new AstOperator(';',
-        pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)),
-        new AstNumber(42)));
+    auto_ptr<AstValue> ast(
+      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)));
 
     // execute
-    UUT.buildModule(*ast);
+    UUT.buildModuleNoImplicitMain(*ast);
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
@@ -415,17 +410,16 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     list<string>* args = new list<string>();
     args->push_back("arg1");
     args->push_back("arg2");
-    auto_ptr<AstValue> ast( new AstOperator(';',
-        pe.mkFunDef(
-          pe.mkFunDecl(
-            "foo",
-            new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
-            new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
-          new AstNumber(77)),
-        new AstNumber(42)));
+    auto_ptr<AstValue> ast(
+      pe.mkFunDef(
+        pe.mkFunDecl(
+          "foo",
+          new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstNumber(77)));
 
     // execute
-    UUT.buildModule(*ast);
+    UUT.buildModuleNoImplicitMain(*ast);
 
     // verify
     Function* functionIr = UUT.m_module->getFunction("foo");
@@ -440,7 +434,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_definition_foo_with_body_returning_a_value_x,
-    buildModule,
+    buildModuleNoImplicitMain,
     JIT_executing_foo_returns_x)) {
 
   string spec = "Example: zero arguments";
@@ -450,12 +444,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrBuilderAst UUT;
     ParserExt pe(*UUT.m_env);
-    auto_ptr<AstValue> ast(new AstOperator(';',
-        pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)),
-        new AstNumber(42)));
+    auto_ptr<AstValue> ast(
+      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)));
 
     // execute
-    UUT.buildModule(*ast);
+    UUT.buildModuleNoImplicitMain(*ast);
 
     // verify
     EXPECT_EQ( 77, UUT.jitExecFunction("foo") )
@@ -470,16 +463,14 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     TestingIrBuilderAst UUT;
     ParserExt pe(*UUT.m_env);
     auto_ptr<AstValue> ast(
-      new AstOperator(';',
-        pe.mkFunDef(
-          pe.mkFunDecl(
-            "foo",
-            new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
-          new AstNumber(42)),
-        new AstNumber(77)));
+      pe.mkFunDef(
+        pe.mkFunDecl(
+          "foo",
+          new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstNumber(42)));
 
     // execute
-    UUT.buildModule(*ast);
+    UUT.buildModuleNoImplicitMain(*ast);
 
     // verify
     EXPECT_EQ( 42, UUT.jitExecFunction1Arg("foo", 256) )
@@ -489,7 +480,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_definition_foo_with_argument_x_with_body_returning_x,
-    buildModule,
+    buildModuleNoImplicitMain,
     JIT_executing_foo_returns_x)) {
   // setup
   // IrBuilder is currently dumb and expects an expression having a value at
@@ -497,16 +488,14 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TestingIrBuilderAst UUT;
   ParserExt pe(*UUT.m_env);
   auto_ptr<AstValue> ast(
-    new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstSymbol(new string("x"))),
-      new AstNumber(77)));
+    pe.mkFunDef(
+      pe.mkFunDecl(
+        "foo",
+        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new AstSymbol(new string("x"))));
 
   // execute
-  UUT.buildModule(*ast);
+  UUT.buildModuleNoImplicitMain(*ast);
 
   // verify
   int x = 256;
@@ -516,7 +505,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_definition_foo_with_body_returning_a_simple_calculation_with_its_arguments,
-    buildModule,
+    buildModuleNoImplicitMain,
     JIT_executing_foo_returns_result_of_that_calculation)) {
 
   // Culcultation: x*y
@@ -527,19 +516,17 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TestingIrBuilderAst UUT;
   ParserExt pe(*UUT.m_env);
   auto_ptr<AstValue> ast(
-    new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstOperator('*',
-          new AstSymbol(new string("x")),
-          new AstSymbol(new string("y")))),
-      new AstNumber(77)));
+    pe.mkFunDef(
+      pe.mkFunDecl(
+        "foo",
+        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new AstOperator('*',
+        new AstSymbol(new string("x")),
+        new AstSymbol(new string("y")))));
 
   // execute
-  UUT.buildModule(*ast);
+  UUT.buildModuleNoImplicitMain(*ast);
 
   // verify
   int x = 2;
@@ -549,7 +536,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_definition_foo_with_argument_x_and_with_body_containing_a_simple_assignement_to_x_and_as_last_expr_in_bodies_seq_x,
-    buildModule,
+    buildModuleNoImplicitMain,
     JIT_executing_foo_returns_result_of_that_calculation)) {
 
   // Culcultation: x = x+1, return x
@@ -560,22 +547,20 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
   TestingIrBuilderAst UUT;
   ParserExt pe(*UUT.m_env);
   auto_ptr<AstValue> ast(
-    new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstOperator(';',
-          new AstOperator('=',
+    pe.mkFunDef(
+      pe.mkFunDecl(
+        "foo",
+        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new AstOperator(';',
+        new AstOperator('=',
+          new AstSymbol(new string("x")),
+          new AstOperator('+',
             new AstSymbol(new string("x")),
-            new AstOperator('+',
-              new AstSymbol(new string("x")),
-              new AstNumber(1))),
-          new AstSymbol(new string("x")))),
-      new AstNumber(77)));
+            new AstNumber(1))),
+        new AstSymbol(new string("x")))));
 
   // execute
-  UUT.buildModule(*ast);
+  UUT.buildModuleNoImplicitMain(*ast);
 
   // verify
   int x = 2;
@@ -598,26 +583,30 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     multiple_identical_function_declarations,
-    buildAndRunModule,
+    buildModuleNoImplicitMain,
     succeeds)) {
-  TEST_BUILD_AND_RUN_MODULE(
-    new AstOperator(';',
-      pe.mkFunDecl("foo").first,
-      pe.mkFunDecl("foo").first,
-      new AstNumber(42)),
-    42, "");
+  TestingIrBuilderAst UUT;
+  ParserExt pe(*UUT.m_env);
+  EXPECT_NO_THROW(
+    UUT.buildModuleNoImplicitMain(
+      *new AstOperator(';',
+        pe.mkFunDecl("foo").first,
+        pe.mkFunDecl("foo").first)));
+  EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     a_function_declaration_and_a_matching_function_definition,
-    buildAndRunModule,
+    buildModuleNoImplicitMain,
     succeeds)) {
-  TEST_BUILD_AND_RUN_MODULE(
-    new AstOperator(';',
-      pe.mkFunDecl("foo").first,
-      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42)),
-      new AstFunCall(new AstSymbol(new string("foo")))),
-    42, "");
+  TestingIrBuilderAst UUT;
+  ParserExt pe(*UUT.m_env);
+  EXPECT_NO_THROW(
+    UUT.buildModuleNoImplicitMain(
+      *new AstOperator(';',
+        pe.mkFunDecl("foo").first,
+        pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42)))));
+  EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -743,14 +732,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 
   spec = "Definition expresssion is an lvalue which concequently is assignable to";
   TEST_BUILD_AND_RUN_MODULE(
-    new AstOperator(';',
-      new AstOperator('=',
-        new AstDataDef(
-          new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-          new AstNumber(42)),
-        new AstNumber(77)),
-      new AstSymbol(new string("foo"))),
-      77, spec);
+    new AstOperator('=',
+      new AstDataDef(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+        new AstNumber(42)),
+      new AstNumber(77)),
+    77, spec);
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
@@ -827,14 +814,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    a_value_definition_of_foo_with_no_explicit_initializer_followed_by_a_reference_to_foo,
+    a_value_definition_of_foo_with_no_explicit_initializer,
     buildAndRunModule,
-    returns_the_default)) {
+    returns_the_default_which_is_zero)) {
   TEST_BUILD_AND_RUN_MODULE(
-    new AstOperator(';',
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
-      new AstSymbol(new string("foo"))),
+    new AstDataDef(
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
     0, "");
 }
 
@@ -842,12 +827,13 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     multiple_identical_data_object_declaration_of_x,
     buildAndRunModule,
     succeeds)) {
-  TEST_BUILD_AND_RUN_MODULE(
+  TestingIrBuilderAst UUT;
+  ParserExt pe(*UUT.m_env);
+  EXPECT_NO_THROW(
     new AstOperator(';',
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new AstNumber(42)),
-    42, "");
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))));
+  EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
