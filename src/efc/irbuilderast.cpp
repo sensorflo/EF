@@ -237,8 +237,8 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
   assert(stentry);
 
   if (stentry->isDefined()) {
-    throw runtime_error::runtime_error("Function '" + funDef.decl().name() +
-      "' is already defined.");
+    m_errorHandler.add(new Error(Error::eRedefinition));
+    throw BuildError();
   }
   stentry->isDefined() = true;
 
@@ -263,8 +263,8 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
     // since we just pushed a new scope. 
     if ( !insertRet.second ) {
       delete stentry;
-      throw runtime_error::runtime_error("Argument '" + argName +
-        "' already defined");
+      m_errorHandler.add(new Error(Error::eRedefinition));
+      throw BuildError();
     }
   }
 
@@ -401,8 +401,8 @@ Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access access) {
   assert(stentry);
 
   if (stentry->isDefined()) {
-    throw runtime_error::runtime_error("Data object '" +
-      dataDef.decl().name() + "' is already defined.");
+    m_errorHandler.add(new Error(Error::eRedefinition));
+    throw BuildError();
   }
   stentry->isDefined() = true;
 

@@ -914,45 +914,40 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    double_definition_of_a_variable,
-    buildAndRunModule,
-    throws)) {
+    redefinition_of_an_object_which_means_same_name_and_same_type,
+    buildModuleNoImplicitMain,
+    reports_an_eRedefinition)) {
 
-  string spec = "Example: two 'x' in 'global' scope";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
+  string spec = "Example: two local variables in implicit main method";
+  TEST_BUILD_MODULE_NO_IMPLICIT_MAIN_REPORTS_ERROR(
     new AstOperator(';',
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
-    spec);
+    Error::eRedefinition, spec);
 
-  spec = "Example: two 'x' in argument list of a function";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
-    new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstNumber(42)),
+  spec = "Example: two parameters";
+  TEST_BUILD_MODULE_NO_IMPLICIT_MAIN_REPORTS_ERROR(
+    pe.mkFunDef(
+      pe.mkFunDecl(
+        "foo",
+        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstNumber(42)),
-    spec);
+    Error::eRedefinition, spec);
 
-  spec = "Example: 'x' as argument to a function and as local variable within";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
-    new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
-      new AstNumber(42)),
-    spec);
+  spec = "Example: a parameter and a local variable in the function's body";
+  TEST_BUILD_MODULE_NO_IMPLICIT_MAIN_REPORTS_ERROR(
+    pe.mkFunDef(
+      pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)))),
+    Error::eRedefinition, spec);
 
   spec = "Example: two functions";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
+  TEST_BUILD_MODULE_NO_IMPLICIT_MAIN_REPORTS_ERROR(
     new AstOperator(';',
       pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42)),
-      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42)),
-      new AstNumber(42)),
-    spec);
+      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42))),
+    Error::eRedefinition, spec);
 }
 
 // Temporary test while introducing types

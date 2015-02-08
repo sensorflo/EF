@@ -9,6 +9,7 @@ public:
     eNone,
     eUnknownName,
     eIncompatibleRedaclaration,
+    eRedefinition,
     eCnt
   };
 

@@ -6,6 +6,7 @@ const char* toStr(Error::No no) {
   case Error::eNone: return "eNone";
   case Error::eUnknownName: return "eUnknownName";
   case Error::eIncompatibleRedaclaration: return "eIncompatibleRedaclaration";
+  case Error::eRedefinition: return "eRedefinition";
   case Error::eCnt: return "<unknown>";
   }
 }
