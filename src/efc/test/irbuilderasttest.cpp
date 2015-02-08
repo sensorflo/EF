@@ -51,9 +51,34 @@ void testbuilAndRunModuleThrows(TestingIrBuilderAst& UUT, AstValue* astRoot,
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
   auto_ptr<AstValue> ast(astRoot);
+  bool anyThrow = false;
+  string excptionwhat;
 
-  // execute & verify
-  EXPECT_ANY_THROW(UUT.buildAndRunModule(*ast.get())) <<
+  // execute
+  try {
+    UUT.buildAndRunModule(*ast.get());
+  }
+
+  // verify
+  catch (BuildError& buildError) {
+    ADD_FAILURE() << "Write the test not using the general ...Throws but the "
+      "more specific ...ReportsError\n" <<
+      amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(ast.get());
+  }
+  catch (exception& e) {
+    anyThrow = true;
+    excptionwhat = e.what();
+  }
+  catch (exception* e) {
+    anyThrow = true;
+    if ( e ) {
+      excptionwhat = e->what();
+    }
+  }
+  catch (...) {
+    anyThrow = true;
+  }
+  EXPECT_TRUE(anyThrow) << excptionwhat <<
     amendSpec(spec) << amendAst(ast.get());
 }
 
@@ -89,11 +114,12 @@ void testbuilModuleReportsError(TestingIrBuilderAst& UUT, AstValue* astRoot,
     const ErrorHandler::Container& errors = UUT.m_errorHandler->errors();
     EXPECT_EQ(1, errors.size()) <<
       "Expecting exactly one error\n" << 
-      amendSpec(spec) << amendAst(astRoot);
+      amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
     EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
-      amendSpec(spec) << amendAst(astRoot);
+      amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
   }
-  EXPECT_TRUE(didThrowBuildError);
+  EXPECT_TRUE(didThrowBuildError) <<
+    amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
 }
 
 #define TEST_BUILD_MODULE_REPORTS_ERROR(astRoot, expectedErrorNo, spec) \

@@ -1,5 +1,6 @@
 #include "test.h"
 #include "../ast.h"
+#include "../errorhandler.h"
 using namespace std;
 using namespace testing;
 
@@ -24,4 +25,15 @@ string amendAst(const AstNode* ast) {
 
 string amendAst(const auto_ptr<AstValue>& ast) {
   return amendAst(ast.get());
+}
+
+string amend(const ErrorHandler& errorHandler) {
+  stringstream ss;
+  ss << string("\nErrorHanlder's errors:");
+  if (errorHandler.errors().empty()) {
+    ss << " none\n";
+  } else {
+    ss << "\n" << errorHandler << '\n';
+  }
+  return ss.str();
 }

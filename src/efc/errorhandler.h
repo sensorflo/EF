@@ -1,6 +1,7 @@
 #ifndef ERRORHANDLER_H
 #define ERRORHANDLER_H
 #include <list>
+#include <ostream>
 
 class Error {
 public:
@@ -18,6 +19,12 @@ private:
   No m_no;
 };
 
+const char* toStr(Error::No no);
+
+std::ostream& operator<<(std::ostream& os, Error::No no);
+
+std::ostream& operator<<(std::ostream& os, const Error& error);
+
 class ErrorHandler {
 public:
   typedef std::list<Error*> Container;
@@ -26,12 +33,14 @@ public:
 
   /** Errorhandler overtakes ownership */
   void add(Error* error) { m_errors.push_back(error); }
-  const Container& errors() { return m_errors; }
+  const Container& errors() const { return m_errors; }
 
 private:
   /** We're the owner of the pointees */
   Container m_errors;
 };
+
+std::ostream& operator<<(std::ostream& os, const ErrorHandler& errorHandler);
 
 /** ErrorHandler contains the details. */
 class BuildError {};
