@@ -270,9 +270,12 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
 
   //verifyFunction(*functionIr);
 
-  // Previous building block is again the insert point
-  m_builder.SetInsertPoint(m_mainBasicBlock);
-
+  // Previous building block is again the insert point. Currently that can
+  // only be the implicit main. A null m_mainBasicBlock means there is no
+  // implicit main.
+  if ( m_mainBasicBlock ) {
+    m_builder.SetInsertPoint(m_mainBasicBlock);
+  }
   m_env.popScope(); 
 
   return functionIr;
