@@ -12,7 +12,6 @@
 #include "astforwards.h"
 class AstConstVisitor;
 class AstVisitor;
-class IrBuilderAst;
 class SymbolTableEntry;
 class ErrorHandler;
 
@@ -21,7 +20,6 @@ public:
   virtual ~AstNode() {};
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
-  virtual void accept(IrBuilderAst& visitor) = 0;
   virtual Access access() const { return eRead; }
   virtual void setAccess(Access access, ErrorHandler& errorHandler);
   std::string toStr() const;
@@ -44,7 +42,6 @@ public:
   ~AstCast();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   AstValue& child() const { return *m_child; }
   ObjType& objType() const { return *m_objType; }
 
@@ -68,7 +65,6 @@ public:
   virtual ~AstFunDef();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   virtual AstFunDecl& decl() const { return *m_decl; }
   virtual AstValue& body() const { return *m_body; }
 private:
@@ -96,7 +92,6 @@ public:
   ~AstFunDecl();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   virtual const std::string& name() const { return m_name; }
   virtual std::list<AstArgDecl*>const& args() const { return *m_args; }
   virtual ObjType& objType() const;
@@ -138,7 +133,6 @@ public:
   ~AstDataDecl();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   virtual const std::string& name() const { return m_name; }
   virtual ObjType& objType() const;
   virtual ObjType& objType(bool stealOwnership) const;
@@ -182,7 +176,6 @@ public:
   ~AstDataDef();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   virtual AstDataDecl& decl() const { return *m_decl; }
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   virtual AstValue& initValue() const;
@@ -214,7 +207,6 @@ public:
   ~AstNumber();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   int value() const { return m_value; }
   virtual ObjType& objType() const { return *m_objType; }
 private:
@@ -237,7 +229,6 @@ public:
   virtual ~AstSymbol() {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   const std::string& name() const { return m_name; }
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
@@ -259,7 +250,6 @@ public:
   virtual ~AstFunCall();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   virtual AstValue& address () const { return *m_address; }
   AstCtList& args () const { return *m_args; }
 private:
@@ -303,7 +293,6 @@ public:
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
 
@@ -343,7 +332,6 @@ public:
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
   AstValue* elseAction() const { return m_elseAction; }
 private:
@@ -371,7 +359,6 @@ public:
   ~AstCtList();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void accept(IrBuilderAst& visitor);
   AstCtList* Add(AstValue* child);
   AstCtList* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   /** The elements are guaranteed to be non-null */

@@ -119,7 +119,12 @@ llvm::Value* IrBuilderAst::callAcceptOn(AstNode& node) {
   return node.irValue();
 }
 
-void IrBuilderAst::visit(AstCast&) {
+void IrBuilderAst::visit(AstCast& cast) {
+  cast.setIrValue(NULL);
+}
+
+void IrBuilderAst::visit(AstCtList&) {
+  assert(false); // parent of AstCtList shall not decent run accept on AstCtList
 }
 
 void IrBuilderAst::visit(AstOperator& op) {
@@ -399,6 +404,10 @@ void IrBuilderAst::visit(AstDataDecl& dataDecl) {
   // can only be defined but not declared-only, we don't have to care about
   // eRead/eWrite access yet.
   dataDecl.setIrValue(dataDecl.stentry()->valueIr());
+}
+
+void IrBuilderAst::visit(AstArgDecl& argDecl) {
+  visit( dynamic_cast<AstDataDecl&>(argDecl));
 }
 
 void IrBuilderAst::visit(AstDataDef& dataDef) {

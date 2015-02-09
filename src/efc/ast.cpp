@@ -1,5 +1,4 @@
 #include "ast.h"
-#include "irbuilderast.h"
 #include "astvisitor.h"
 #include "astprinter.h"
 #include "errorhandler.h"
@@ -432,16 +431,3 @@ void AstFunCall::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstOperator::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCtList::accept(AstVisitor& visitor) { visitor.visit(*this); }
-
-void AstCast::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
-void AstFunDef::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
-void AstFunDecl::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
-void AstDataDecl::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
-void AstDataDef::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
-void AstNumber::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
-void AstSymbol::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
-void AstFunCall::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
-void AstOperator::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
-void AstIf::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
-void AstCtList::accept(IrBuilderAst&) { }
-

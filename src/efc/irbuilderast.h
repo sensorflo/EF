@@ -2,6 +2,7 @@
 #define IR_BUILDER_AST_H
 #include "objtype.h"
 #include "access.h"
+#include "astvisitor.h"
 #include "llvm/IR/IRBuilder.h"
 #include <stack>
 
@@ -16,7 +17,7 @@ class SymbolTableEntry;
 class ErrorHandler;
 
 
-class IrBuilderAst {
+class IrBuilderAst : private AstVisitor  {
 public:
   static void staticOneTimeInit();
   IrBuilderAst(Env& env, ErrorHandler& errorHandler);
@@ -26,18 +27,20 @@ public:
   int runModule();
   int buildAndRunModule(AstValue& root);
   
-  void visit(AstCast& cast);
-  void visit(AstOperator& op);
-  void visit(AstNumber& number);
-  void visit(AstSymbol& symbol);
-  void visit(AstFunCall& funCall);
-  void visit(AstFunDef& funDef);
-  void visit(AstFunDecl& funDecl);
-  void visit(AstDataDecl& dataDecl);
-  void visit(AstDataDef& dataDef);
-  void visit(AstIf& if_);
-
 private:
+  virtual void visit(AstCast& cast);
+  virtual void visit(AstCtList& ctList);
+  virtual void visit(AstOperator& op);
+  virtual void visit(AstNumber& number);
+  virtual void visit(AstSymbol& symbol);
+  virtual void visit(AstFunCall& funCall);
+  virtual void visit(AstFunDef& funDef);
+  virtual void visit(AstFunDecl& funDecl);
+  virtual void visit(AstDataDecl& dataDecl);
+  virtual void visit(AstArgDecl& argDecl);
+  virtual void visit(AstDataDef& dataDef);
+  virtual void visit(AstIf& if_);
+
   friend class TestingIrBuilderAst;
   
   int jitExecFunction(llvm::Function* function);
