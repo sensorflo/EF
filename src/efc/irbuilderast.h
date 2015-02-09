@@ -3,6 +3,7 @@
 #include "objtype.h"
 #include "access.h"
 #include "llvm/IR/IRBuilder.h"
+#include <stack>
 
 #include "astforwards.h"
 namespace llvm {
@@ -55,7 +56,7 @@ private:
   /** We're the owner */
   llvm::ExecutionEngine* m_executionEngine;
   llvm::Function* m_mainFunction;
-  llvm::BasicBlock* m_mainBasicBlock;
+  std::stack<llvm::BasicBlock*> m_BasicBlockStack;
   Env& m_env;
   ErrorHandler& m_errorHandler;
 };

@@ -649,6 +649,21 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
+    a_function_definition_in_a_function_body,
+    buildAndRunModule,
+    succeeds)) {
+  
+  TEST_BUILD_AND_RUN_MODULE(
+    new AstOperator(';',
+      pe.mkFunDef(pe.mkFunDecl("foo"),
+        new AstOperator(';',
+          pe.mkFunDef(pe.mkFunDecl("bar"), new AstNumber(42)),
+          new AstFunCall(new AstSymbol("bar")))),
+      new AstFunCall(new AstSymbol("foo"))),
+    42, "");
+}
+
+TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     re_declaration_of_an_identifier_with_different_type,
     buildAndRunModule,
     reports_an_eIncompatibleRedaclaration)) {

@@ -25,7 +25,6 @@ IrBuilderAst::IrBuilderAst(Env& env, ErrorHandler& errorHandler) :
   m_module(new Module("Main", getGlobalContext())),
   m_executionEngine(EngineBuilder(m_module).setErrorStr(&m_errStr).create()),
   m_mainFunction(NULL),
-  m_mainBasicBlock(NULL),
   m_env(env),
   m_errorHandler(errorHandler) {
   assert(m_module);
@@ -43,6 +42,10 @@ void IrBuilderAst::buildModuleNoImplicitMain(const AstNode& root) {
 /** In contrast to buildModuleNoImplicitMain an implicit main method is put
 around the given AST. */
 void IrBuilderAst::buildModule(const AstValue& root) {
+
+  // protects against double definition of the implicit main method
+  assert(!m_mainFunction);
+
   vector<Type*> argsIr(0);
   Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
   FunctionType* functionTypeIr = FunctionType::get( retTypeIr, argsIr, false);
@@ -50,10 +53,8 @@ void IrBuilderAst::buildModule(const AstValue& root) {
     Function::ExternalLinkage, "main", m_module );
   assert(m_mainFunction);
 
-  m_mainBasicBlock = BasicBlock::Create(getGlobalContext(), "entry",
-    m_mainFunction);
-  assert(m_mainBasicBlock);
-  m_builder.SetInsertPoint(m_mainBasicBlock);
+  m_builder.SetInsertPoint( BasicBlock::Create( getGlobalContext(), "entry",
+      m_mainFunction));
 
   // Currently the return type is always int, so ensure the return type of the
   // IR code is also Int32
@@ -243,6 +244,9 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
   stentry->isDefined() = true;
 
   m_env.pushScope(); 
+  if ( m_builder.GetInsertBlock() ) {
+    m_BasicBlockStack.push(m_builder.GetInsertBlock());
+  }
   m_builder.SetInsertPoint(
     BasicBlock::Create(getGlobalContext(), "entry", functionIr));
 
@@ -276,11 +280,9 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
 
   //verifyFunction(*functionIr);
 
-  // Previous building block is again the insert point. Currently that can
-  // only be the implicit main. A null m_mainBasicBlock means there is no
-  // implicit main.
-  if ( m_mainBasicBlock ) {
-    m_builder.SetInsertPoint(m_mainBasicBlock);
+  if ( !m_BasicBlockStack.empty() ) {
+    m_builder.SetInsertPoint(m_BasicBlockStack.top());
+    m_BasicBlockStack.pop();
   }
   m_env.popScope(); 
 
