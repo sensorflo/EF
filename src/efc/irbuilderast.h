@@ -23,6 +23,7 @@ public:
   virtual ~IrBuilderAst();
   void buildModuleNoImplicitMain(const AstNode& root);
   void buildModule(const AstValue& root);
+  int runModule();
   int buildAndRunModule(const AstValue& root);
   
   llvm::Value*    visit(const AstCast& cast, Access access = eRead);

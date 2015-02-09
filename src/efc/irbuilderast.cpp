@@ -68,6 +68,10 @@ void IrBuilderAst::buildModule(const AstValue& root) {
 
 int IrBuilderAst::buildAndRunModule(const AstValue& root) {
   buildModule(root);
+  return runModule();
+}
+
+int IrBuilderAst::runModule() {
   return jitExecFunction(m_mainFunction);
 }
 
