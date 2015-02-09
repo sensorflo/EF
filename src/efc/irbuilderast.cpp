@@ -290,28 +290,12 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
 Function* IrBuilderAst::visit(const AstFunDecl& funDecl) {
   // currently rettype and type of args is always int
 
-  // Insert new name as a new symbol table entry into the environment, with
-  // NULL as ValueIr field. If the name is allready in the environment, verify
-  // the type matches.
-  if (!funDecl.stentry()) {
-    Env::InsertRet insertRet = m_env.insert( funDecl.name(), NULL);
-    SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
-    if (insertRet.second) {
-      envs_stentry_ptr = new SymbolTableEntry(NULL, &funDecl.objType(true));
-    } else {
-      assert(envs_stentry_ptr);
-      if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(funDecl.objType()) ) {
-        m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
-        throw BuildError();
-      }
-    }
+  // It is required that an earlier pass did insert this AstFundDecl into the
+  // environment
+  assert(funDecl.stentry());
 
-    // Since later the non-IR generating part will be extracted, a temporary
-    // const cast is not too bad
-    const_cast<AstFunDecl&>(funDecl).setStentry(envs_stentry_ptr);
-  }
-  
-  // If not already done so, create empty function in IR form
+  // If there is not yet an empty IR function associated to the stentry, to it
+  // now. 
   if ( ! funDecl.stentry()->valueIr() ) {
     // create IR function with given name and signature
     vector<Type*> argsIr(funDecl.args().size(),
@@ -339,7 +323,8 @@ Function* IrBuilderAst::visit(const AstFunDecl& funDecl) {
     return functionIr;
   }
 
-  // Function is already in environment, return it
+  // An earlier declaration of this function, i.e. one with the same stentry,
+  // allready created the empty IR function
   else {
     return dynamic_cast<Function*>(funDecl.stentry()->valueIr());
   }
@@ -368,9 +353,10 @@ Value* IrBuilderAst::visit(const AstFunCall& funCall, Access access) {
 
 Value* IrBuilderAst::visit(const AstDataDecl& dataDecl, Access) {
 
-  // Insert new name as a new symbol table entry into the environment, with
-  // NULL as ValueIr field. If the name is allready in the environment, verify
-  // the type matches.
+  // Add to environment only local data objects. Currently there are only
+  // local data objects. Insert new name as a new symbol table entry into the
+  // environment, with NULL as ValueIr field. If the name is allready in the
+  // environment, verify the type matches.
   if (!dataDecl.stentry()) {
     Env::InsertRet insertRet = m_env.insert( dataDecl.name(), NULL);
     SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;

@@ -10,6 +10,10 @@ AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifier qualifier,
   RawAstDataDecl*& rawAstDataDecl) {
   assert(rawAstDataDecl);
   assert(rawAstDataDecl->m_objType);
+
+  // add to environment everything except local data objects. Currently there
+  // are only local data objects, so currently there is nothing todo.
+
   AstDataDecl* astDataDecl = new AstDataDecl(
     rawAstDataDecl->m_name,
     &(rawAstDataDecl->m_objType->addQualifier(qualifier)));
