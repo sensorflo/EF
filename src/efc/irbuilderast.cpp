@@ -424,9 +424,9 @@ Value* IrBuilderAst::visit(const AstIf& if_, Access access) {
 
   // setup needed basic blocks
   Function* functionIr = m_builder.GetInsertBlock()->getParent();
-  BasicBlock* ThenBB = BasicBlock::Create(getGlobalContext(), "then", functionIr);
-  BasicBlock* ElseBB = BasicBlock::Create(getGlobalContext(), "else");
-  BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
+  BasicBlock* ThenFirstBB = BasicBlock::Create(getGlobalContext(), "ifthen", functionIr);
+  BasicBlock* ElseFirstBB = BasicBlock::Create(getGlobalContext(), "ifelse");
+  BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "ifmerge");
 
   // IR for evaluate condition
   Value* condIr = capair.m_condition->accept(*this);
@@ -435,18 +435,18 @@ Value* IrBuilderAst::visit(const AstIf& if_, Access access) {
     ConstantInt::get(getGlobalContext(), APInt(1, 0)), "ifcond");
 
   // IR for branch based on condition
-  m_builder.CreateCondBr(condCmpIr, ThenBB, ElseBB);
+  m_builder.CreateCondBr(condCmpIr, ThenFirstBB, ElseFirstBB);
 
   // IR for then clause
-  m_builder.SetInsertPoint(ThenBB);
+  m_builder.SetInsertPoint(ThenFirstBB);
   Value* thenValue = capair.m_action->accept(*this);
   assert(thenValue);
   m_builder.CreateBr(MergeBB);
-  ThenBB = m_builder.GetInsertBlock();
+  BasicBlock* ThenLastBB = m_builder.GetInsertBlock();
 
   // IR for else clause
-  functionIr->getBasicBlockList().push_back(ElseBB);
-  m_builder.SetInsertPoint(ElseBB);
+  functionIr->getBasicBlockList().push_back(ElseFirstBB);
+  m_builder.SetInsertPoint(ElseFirstBB);
   Value* elseValue = NULL;
   if ( if_.elseAction() ) {
     elseValue = if_.elseAction()->accept(*this);
@@ -455,16 +455,16 @@ Value* IrBuilderAst::visit(const AstIf& if_, Access access) {
   }
   assert(elseValue);
   m_builder.CreateBr(MergeBB);
-  ElseBB = m_builder.GetInsertBlock();
+  BasicBlock* ElseLastBB = m_builder.GetInsertBlock();
 
   // IR for merge of then/else clauses
   functionIr->getBasicBlockList().push_back(MergeBB);
   m_builder.SetInsertPoint(MergeBB);
   PHINode* phi = m_builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2,
-    "iftmp");
+    "ifphi");
   assert(phi);
-  phi->addIncoming(thenValue, ThenBB);
-  phi->addIncoming(elseValue, ElseBB);
+  phi->addIncoming(thenValue, ThenLastBB);
+  phi->addIncoming(elseValue, ElseLastBB);
   return phi;
 }
 
