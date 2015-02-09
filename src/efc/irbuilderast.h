@@ -17,17 +17,19 @@ class SymbolTableEntry;
 class ErrorHandler;
 
 
-class IrBuilderAst : private AstVisitor  {
+class IrBuilderAst : public AstVisitor  {
 public:
   static void staticOneTimeInit();
-  IrBuilderAst(Env& env, ErrorHandler& errorHandler);
+  IrBuilderAst(Env& env, ErrorHandler& errorHandler, AstVisitor* enclosingVisitor = NULL);
   virtual ~IrBuilderAst();
+
+  void setEnclosingVisitor(AstVisitor* enclosingVisitor);
+
   void buildModuleNoImplicitMain(AstNode& root);
   void buildModule(AstValue& root);
   int runModule();
   int buildAndRunModule(AstValue& root);
   
-private:
   virtual void visit(AstCast& cast);
   virtual void visit(AstCtList& ctList);
   virtual void visit(AstOperator& op);
@@ -41,6 +43,7 @@ private:
   virtual void visit(AstDataDef& dataDef);
   virtual void visit(AstIf& if_);
 
+private:
   friend class TestingIrBuilderAst;
   
   int jitExecFunction(llvm::Function* function);
@@ -65,6 +68,7 @@ private:
   std::stack<llvm::BasicBlock*> m_BasicBlockStack;
   Env& m_env;
   ErrorHandler& m_errorHandler;
+  AstVisitor* m_enclosingVisitor;
 };
 
 #endif

@@ -20,13 +20,15 @@ void IrBuilderAst::staticOneTimeInit() {
   InitializeNativeTarget();
 }
 
-IrBuilderAst::IrBuilderAst(Env& env, ErrorHandler& errorHandler) :
+IrBuilderAst::IrBuilderAst(Env& env, ErrorHandler& errorHandler,
+  AstVisitor* enclosingVisitor) :
   m_builder(getGlobalContext()),
   m_module(new Module("Main", getGlobalContext())),
   m_executionEngine(EngineBuilder(m_module).setErrorStr(&m_errStr).create()),
   m_mainFunction(NULL),
   m_env(env),
-  m_errorHandler(errorHandler) {
+  m_errorHandler(errorHandler),
+  m_enclosingVisitor(enclosingVisitor ? enclosingVisitor : this) {
   assert(m_module);
   assert(m_executionEngine);
 }
@@ -35,8 +37,12 @@ IrBuilderAst::~IrBuilderAst() {
   if (m_executionEngine) { delete m_executionEngine; }
 }
 
+void IrBuilderAst::setEnclosingVisitor(AstVisitor* enclosingVisitor) {
+  m_enclosingVisitor = enclosingVisitor ? enclosingVisitor : this;
+}
+
 void IrBuilderAst::buildModuleNoImplicitMain(AstNode& root) {
-  root.accept(*this);
+  callAcceptOn(root);
 }
 
 /** In contrast to buildModuleNoImplicitMain an implicit main method is put
@@ -115,7 +121,7 @@ int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int ar
 }
 
 llvm::Value* IrBuilderAst::callAcceptOn(AstNode& node) {
-  node.accept(*this);
+  node.accept(*m_enclosingVisitor);
   return node.irValue();
 }
 

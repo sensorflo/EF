@@ -76,4 +76,16 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
     Error::eWriteToReadOnly, spec);
 }
 
+TEST(DriverSystemTest, MAKE_TEST_NAME(
+    a2,
+    b,
+    c)) {
+  string spec = "Assigning to literal";
+  TEST_SATRANSANDIRBUILD_REPORTS_ERROR(
+    new AstOperator('=',
+      new AstNumber(42),
+      new AstNumber(77)),
+    Error::eWriteToReadOnly, spec);
+}
+
 

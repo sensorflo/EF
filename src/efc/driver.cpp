@@ -25,8 +25,11 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_astRoot(NULL),
   m_parserExt(*new ParserExt(m_env, m_errorHandler)),
   m_parser(new Parser(*this, m_parserExt, m_astRoot)),
-  m_semanticAnalizer(*new SemanticAnalizer(m_errorHandler)),
-  m_irBuilderAst(*new IrBuilderAst(m_env, m_errorHandler)) {
+  m_irBuilderAst(*new IrBuilderAst(m_env, m_errorHandler)),
+  m_semanticAnalizer(*new SemanticAnalizer(m_errorHandler, &m_irBuilderAst)) {
+
+  m_irBuilderAst.setEnclosingVisitor(&m_semanticAnalizer);
+
   // Ctor/Dtor must RAII yyin and m_parser
 
   if (m_fileName.empty() || m_fileName == "-") {
@@ -70,11 +73,9 @@ int Driver::scannAndParse(AstNode*& ast) {
 }
 
 void Driver::SaTransformAndIrBuildModule(AstNode* ast) {
-  AstNode* astAfterSa = m_semanticAnalizer.transform(*ast);  
-
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
-  m_irBuilderAst.buildModule(*dynamic_cast<AstValue*>(astAfterSa));
+  m_irBuilderAst.buildModule(*dynamic_cast<AstValue*>(ast));
 }
 
 basic_ostream<char>& Driver::print(const location& loc) {

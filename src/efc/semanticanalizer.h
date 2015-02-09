@@ -1,14 +1,15 @@
 #ifndef SEMANTICANALIZER_H
 #define SEMANTICANALIZER_H
 #include "astvisitor.h"
+#include <cstddef>
+
 class ErrorHandler;
 
-class SemanticAnalizer : private AstVisitor {
+class SemanticAnalizer : public AstVisitor {
 public:
-  SemanticAnalizer(ErrorHandler& errorHandler) /*: m_errorHandler(errorHandler)*/ {};
-  AstNode* transform(AstNode& root);
+  SemanticAnalizer(ErrorHandler& errorHandler, AstVisitor* nextVisitor = NULL);
+  virtual ~SemanticAnalizer();
 
-private:
   virtual void visit(AstCast& cast);
   virtual void visit(AstCtList& ctList);
   virtual void visit(AstOperator& op);
@@ -22,7 +23,10 @@ private:
   virtual void visit(AstDataDef& dataDef);
   virtual void visit(AstIf& if_);
 
+private:
   //ErrorHandler& m_errorHandler;
+  AstVisitor& m_nextVisitor;
+  bool m_ownsNextVisitor;
 };
 
 #endif

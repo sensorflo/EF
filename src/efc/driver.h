@@ -57,8 +57,8 @@ private:
   ParserExt& m_parserExt;
   /** We're the owner. Guaranteed to be non-NULL */
   yy::Parser* m_parser;
-  SemanticAnalizer& m_semanticAnalizer;
   IrBuilderAst& m_irBuilderAst;
+  SemanticAnalizer& m_semanticAnalizer;
 };
   
 #endif
