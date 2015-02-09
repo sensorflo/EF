@@ -237,7 +237,7 @@ primary_expr
   : list_expr                                       { std::swap($$,$1); }
   | NUMBER                                          { $$ = new AstNumber($1.m_value, $1.m_objType); }
   | G_LPAREN standalone_expr_seq RPAREN             { $$ = $2; }
-  | ID                                              { $$ = new AstSymbol(new std::string($1)); }
+  | ID                                              { $$ = new AstSymbol($1); }
   ;
   
 list_expr

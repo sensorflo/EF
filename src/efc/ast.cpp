@@ -18,15 +18,6 @@ ObjType& AstValue::objType() const {
   return ret;
 }
 
-AstSymbol::AstSymbol(const string* name) :
-  m_name(name ? name : new string("<unknown_name>")) {
-  assert(m_name);
-}
-
-AstSymbol::~AstSymbol() {
-  delete m_name;
-}
-
 AstCast::AstCast(AstValue* child, ObjType* objType) :
   m_child(child ? child : new AstNumber(0)),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
@@ -327,7 +318,7 @@ list<AstIf::ConditionActionPair>* AstIf::makeConditionActionPairs(
 }
 
 AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
-  m_address(address ? address : new AstSymbol(NULL)),
+  m_address(address ? address : new AstSymbol("")),
   m_args(args ? args : new AstCtList()) {
   assert(m_address);
   assert(m_args);

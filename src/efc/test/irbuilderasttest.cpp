@@ -531,7 +531,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       pe.mkFunDecl(
         "foo",
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-      new AstSymbol(new string("x"))));
+      new AstSymbol("x")));
 
   // execute
   UUT.buildModuleNoImplicitMain(*ast);
@@ -561,8 +561,8 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstOperator('*',
-        new AstSymbol(new string("x")),
-        new AstSymbol(new string("y")))));
+        new AstSymbol("x"),
+        new AstSymbol("y"))));
 
   // execute
   UUT.buildModuleNoImplicitMain(*ast);
@@ -592,11 +592,11 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstOperator(';',
         new AstOperator('=',
-          new AstSymbol(new string("x")),
+          new AstSymbol("x"),
           new AstOperator('+',
-            new AstSymbol(new string("x")),
+            new AstSymbol("x"),
             new AstNumber(1))),
-        new AstSymbol(new string("x")))));
+        new AstSymbol("x"))));
 
   // execute
   UUT.buildModuleNoImplicitMain(*ast);
@@ -611,12 +611,12 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     buildModule,
     reports_an_eErrUnknownName)) {
   TEST_BUILD_MODULE_REPORTS_ERROR(
-    new AstSymbol(new string("x")),
+    new AstSymbol("x"),
     Error::eUnknownName, "");
 
   // since currently IrBuilderAstT implements AstFunCall specially
   TEST_BUILD_MODULE_REPORTS_ERROR(
-    new AstFunCall(new AstSymbol(new string("foo"))),
+    new AstFunCall(new AstSymbol("foo")),
     Error::eUnknownName, "");
 }
 
@@ -685,7 +685,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       pe.mkFunDef(
         pe.mkFunDecl("foo"),
         new AstNumber(42)),
-      new AstFunCall(new AstSymbol(new string("foo")))),
+      new AstFunCall(new AstSymbol("foo"))),
     42, spec);
 
   spec = "Simple function with one argument which is ignored and a constant is returned";
@@ -694,7 +694,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       pe.mkFunDef(
         pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstNumber(42)),
-      new AstFunCall(new AstSymbol(new string("foo")), new AstCtList(new AstNumber(0)))),
+      new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
     42, spec);
 
   spec = "Simple function with two arguments whichs sum is returned";
@@ -706,9 +706,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstOperator('+',
-          new AstSymbol(new string("x")),
-          new AstSymbol(new string("y")))),
-      new AstFunCall(new AstSymbol(new string("add")),
+          new AstSymbol("x"),
+          new AstSymbol("y"))),
+      new AstFunCall(new AstSymbol("add"),
         new AstCtList(new AstNumber(1), new AstNumber(2)))),
     1+2, spec);
 }
@@ -724,7 +724,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
       pe.mkFunDef(
         pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstNumber(42)),
-      new AstFunCall(new AstSymbol(new string("foo")))),
+      new AstFunCall(new AstSymbol("foo"))),
     spec);
 
   spec = "Function foo expects no args, but one arg was passed on call";
@@ -733,7 +733,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         pe.mkFunDef(
           pe.mkFunDecl("foo"),
           new AstNumber(42)),
-      new AstFunCall(new AstSymbol(new string("foo")), new AstCtList(new AstNumber(0)))),
+      new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
     spec);
 }
 
@@ -758,7 +758,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
           new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstNumber(42)),
         new AstNumber(77)),
-      new AstSymbol(new string("foo"))),
+      new AstSymbol("foo")),
     spec);
 }
 
@@ -796,7 +796,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)),
       new AstOperator('+',
-        new AstSymbol(new string("foo")),
+        new AstSymbol("foo"),
         new AstNumber(77))),
     42+77, spec);
 
@@ -807,7 +807,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)),
       new AstOperator('+',
-        new AstSymbol(new string("foo")),
+        new AstSymbol("foo"),
         new AstNumber(77))),
     42+77, spec);
 }
@@ -824,7 +824,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)),
       new AstOperator('=',
-        new AstSymbol(new string("foo")),
+        new AstSymbol("foo"),
         new AstNumber(77))),
     77, spec);
 
@@ -835,9 +835,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)),
       new AstOperator('=',
-        new AstSymbol(new string("foo")),
+        new AstSymbol("foo"),
         new AstNumber(77)),
-      new AstSymbol(new string("foo"))),
+      new AstSymbol("foo")),
     77, spec);
 }
 
@@ -852,7 +852,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME4(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)),
       new AstOperator('=',
-        new AstSymbol(new string("foo")),
+        new AstSymbol("foo"),
         new AstNumber(77))),
     "");
 }
@@ -895,9 +895,9 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
       pe.mkFunDef(
         pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstOperator('=',
-          new AstSymbol(new string("x")),
+          new AstSymbol("x"),
           new AstNumber(77))),
-      new AstSymbol(new string("x"))),
+      new AstSymbol("x")),
     42, spec);
 
   spec = "variable 'x' local to a function shadows 'global' variable also named 'x'";
@@ -909,7 +909,7 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME2(
         new AstDataDef(
           new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstNumber(77))),
-      new AstSymbol(new string("x"))),
+      new AstSymbol("x")),
     42, spec);
 }
 

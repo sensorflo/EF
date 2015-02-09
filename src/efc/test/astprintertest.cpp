@@ -21,7 +21,7 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
     AstCast(new AstNumber(0), ObjTypeFunda::eBool), spec);
 
   spec = "AstSymbol";
-  EXPECT_TOSTR_EQ( "foo", AstSymbol(new string("foo")), spec);
+  EXPECT_TOSTR_EQ( "foo", AstSymbol("foo"), spec);
 
   spec = "AstOperator";
   EXPECT_TOSTR_EQ( "+(42 77)"  , AstOperator('+'       , new AstNumber(42), new AstNumber(77)), spec);
@@ -36,11 +36,11 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   spec = "AstIf";
   EXPECT_TOSTR_EQ( "if(x 1)",
     AstIf(
-      new AstSymbol(new string("x")),
+      new AstSymbol("x"),
       new AstNumber(1)), spec);
   EXPECT_TOSTR_EQ( "if(x 1 0)",
     AstIf(
-      new AstSymbol(new string("x")),
+      new AstSymbol("x"),
       new AstNumber(1),
       new AstNumber(0)), spec);
 
@@ -69,7 +69,7 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "fun(declfun(foo () int) 42)", AstFunDef(new AstFunDecl("foo"),new AstNumber(42)), spec);
 
   spec = "AstFunCall";
-  EXPECT_TOSTR_EQ( "foo()", AstFunCall(new AstSymbol(new string("foo")), new AstCtList()), spec);
-  EXPECT_TOSTR_EQ( "foo(42 77)", AstFunCall(new AstSymbol(new string("foo")),
+  EXPECT_TOSTR_EQ( "foo()", AstFunCall(new AstSymbol("foo"), new AstCtList()), spec);
+  EXPECT_TOSTR_EQ( "foo(42 77)", AstFunCall(new AstSymbol("foo"),
       new AstCtList(new AstNumber(42), new AstNumber(77))), spec);
 }

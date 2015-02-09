@@ -172,15 +172,14 @@ private:
 
 class AstSymbol : public AstValue {
 public:
-  AstSymbol(const std::string* name);
-  virtual ~AstSymbol();
+  AstSymbol(const std::string& name) : m_name(name) {};
+  virtual ~AstSymbol() {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
-  const std::string& name() const { return *m_name; }
+  const std::string& name() const { return m_name; }
 private:
-  /** We're the owner. Is garanteed to be non-null */
-  const std::string* const m_name;
+  const std::string m_name;
 };
 
 class AstFunCall : public AstValue {
