@@ -47,7 +47,7 @@ void Driver::buildAndRunModule() {
   }
 
   // semantic analysis and transformations
-  SemanticAnalizer semanticAnalizer;
+  SemanticAnalizer semanticAnalizer(m_errorHandler);
   AstNode* astAfterSa = semanticAnalizer.transform(*astAfterParse);  
 
   // generate IR code and JIT execute it

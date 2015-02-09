@@ -2,6 +2,7 @@
 #include "../semanticanalizer.h"
 #include "../ast.h"
 #include "../objtype.h"
+#include "../errorhandler.h"
 #include <memory>
 #include <string>
 using namespace testing;
@@ -9,7 +10,8 @@ using namespace std;
 
 void testTransformThrows(AstNode* ast, const string& spec) {
   ENV_ASSERT_TRUE( ast!=NULL );
-  SemanticAnalizer UUT;
+  ErrorHandler errorHandler;
+  SemanticAnalizer UUT(errorHandler);
   EXPECT_ANY_THROW(UUT.transform(*ast)) << amendSpec(spec) << amendAst(ast);
 }
 
@@ -23,7 +25,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_trivial_AST,
     transform,
     returns_the_same_AST)) {
-  SemanticAnalizer UUT;
+  ErrorHandler errorHandler;
+  SemanticAnalizer UUT(errorHandler);
   AstNode* oldAst = new AstNumber(42);
   AstNode* newAst = UUT.transform(*oldAst);
   EXPECT_EQ(oldAst, newAst) <<

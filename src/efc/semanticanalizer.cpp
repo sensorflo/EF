@@ -1,6 +1,7 @@
 #include "semanticanalizer.h"
 #include "ast.h"
 #include "astdefaultiterator.h"
+#include "errorhandler.h"
 #include <stdexcept>
 using namespace std;
 
