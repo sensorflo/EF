@@ -1,4 +1,5 @@
 #include "driver.h"
+#include "errorhandler.h"
 #include "env.h"
 #include "semanticanalizer.h"
 #include "irbuilderast.h"
@@ -16,12 +17,16 @@ extern void yyinitializeParserLoc(string* filename);
 /** \param osstream caller keeps ownership */
 Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_fileName(fileName),
+  m_errorHandler(*new ErrorHandler),
+  m_env(*new Env),
   m_gotError(false),
   m_gotWarning(false),
   m_ostream(ostream ? *ostream : cerr),
   m_astRoot(NULL),
-  m_parserExt(m_env, m_errorHandler),
-  m_parser(new Parser(*this, m_parserExt, m_astRoot)) {
+  m_parserExt(*new ParserExt(m_env, m_errorHandler)),
+  m_parser(new Parser(*this, m_parserExt, m_astRoot)),
+  m_semanticAnalizer(*new SemanticAnalizer(m_errorHandler)),
+  m_irBuilderAst(*new IrBuilderAst(m_env, m_errorHandler)) {
   // Ctor/Dtor must RAII yyin and m_parser
 
   if (m_fileName.empty() || m_fileName == "-") {
@@ -35,11 +40,15 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
 
 Driver::~Driver() {
   fclose(yyin);
+  delete &m_irBuilderAst;
+  delete &m_semanticAnalizer;
   delete m_parser;
+  delete &m_parserExt;
+  delete &m_env;
+  delete &m_errorHandler;
 }
 
 void Driver::buildAndRunModule() {
-  // scann and parse
   AstNode* astAfterParse = NULL;
   int retParse = scannAndParse(astAfterParse);
   if (retParse) {
@@ -47,14 +56,12 @@ void Driver::buildAndRunModule() {
   }
 
   // semantic analysis and transformations
-  SemanticAnalizer semanticAnalizer(m_errorHandler);
-  AstNode* astAfterSa = semanticAnalizer.transform(*astAfterParse);  
+  AstNode* astAfterSa = m_semanticAnalizer.transform(*astAfterParse);  
 
   // generate IR code and JIT execute it
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
-  IrBuilderAst irBuilderAst(m_env, m_errorHandler);
-  cout << irBuilderAst.buildAndRunModule(*dynamic_cast<AstValue*>(astAfterSa)) << "\n";
+  cout << m_irBuilderAst.buildAndRunModule(*dynamic_cast<AstValue*>(astAfterSa)) << "\n";
 }
 
 int Driver::scannAndParse(AstNode*& ast) {

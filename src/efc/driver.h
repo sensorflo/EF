@@ -1,8 +1,5 @@
 #ifndef DRIVER_H
 #define DRIVER_H
-#include "parserext.h"
-#include "env.h"
-#include "errorhandler.h"
 #include "gensrc/parser.hpp"
 #include <string>
 
@@ -10,6 +7,11 @@ namespace yy {
   class Parser; 
 }
 class AstNode;
+class ErrorHandler;
+class Env;
+class ParserExt;
+class SemanticAnalizer;
+class IrBuilderAst;
 
 #define YY_DECL yy::Parser::symbol_type yylex(Driver& driver)
 YY_DECL;
@@ -24,6 +26,7 @@ public:
   
   void buildAndRunModule();
   int scannAndParse(AstNode*& ast);
+  void SaTransformAndIrBuildModule(AstNode* ast);
 
   // referenced by scanner, parser etc.
   // --------------------------------------------------
@@ -42,16 +45,18 @@ private:
   
   /** The name of the file being parsed */
   std::string m_fileName;
-  ErrorHandler m_errorHandler;
-  Env m_env;
+  ErrorHandler& m_errorHandler;
+  Env& m_env;
   bool m_gotError;
   bool m_gotWarning;
   /** We're _not_ the owner */
   std::basic_ostream<char>& m_ostream;
   AstNode* m_astRoot;
-  ParserExt m_parserExt;
+  ParserExt& m_parserExt;
   /** We're the owner. Guaranteed to be non-NULL */
   yy::Parser* m_parser;
+  SemanticAnalizer& m_semanticAnalizer;
+  IrBuilderAst& m_irBuilderAst;
 };
   
 #endif
