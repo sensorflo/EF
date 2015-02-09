@@ -27,14 +27,16 @@ ObjType& AstValue::objType() const {
 
 AstCast::AstCast(AstValue* child, ObjType* objType) :
   m_child(child ? child : new AstNumber(0)),
-  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
+  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
+  m_irValue(NULL) {
   assert(m_child);
   assert(m_objType);
 }
 
 AstCast::AstCast(AstValue* child, ObjTypeFunda::EType objType) :
   m_child(child ? child : new AstNumber(0)),
-  m_objType(new ObjTypeFunda(objType)) {
+  m_objType(new ObjTypeFunda(objType)),
+  m_irValue(NULL) {
   assert(m_child);
   assert(m_objType);
 }
@@ -46,7 +48,8 @@ AstCast::~AstCast() {
 
 AstFunDef::AstFunDef(AstFunDecl* decl, AstValue* body) :
   m_decl(decl ? decl : new AstFunDecl("<unknown_name>")),
-  m_body(body ? body : new AstNumber(0)) {
+  m_body(body ? body : new AstNumber(0)),
+  m_irFunction(NULL) {
   assert(m_decl);
   assert(m_body);
 }
@@ -61,7 +64,8 @@ AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args,
   m_args(args ? args : new list<AstArgDecl*>()),
   m_objType(NULL),
   m_ownerOfObjType(true),
-  m_stentry(stentry) {
+  m_stentry(stentry),
+  m_irFunction(NULL) {
   assert(m_args);
   initObjType();
 }
@@ -74,7 +78,8 @@ AstFunDecl::AstFunDecl(const string& name, AstArgDecl* arg1,
   m_args(createArgs(arg1, arg2, arg3)),
   m_objType(NULL),
   m_ownerOfObjType(true),
-  m_stentry(NULL) {
+  m_stentry(NULL),
+  m_irFunction(NULL) {
   assert(m_args);
   initObjType();
 }
@@ -132,7 +137,8 @@ AstDataDecl::AstDataDecl(const string& name, ObjType* objType,
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
   m_ownerOfObjType(true),
   m_stentry(stentry),
-  m_access(eRead) {
+  m_access(eRead),
+  m_irValue(NULL) {
 }
 
 AstDataDecl::~AstDataDecl() {
@@ -161,7 +167,8 @@ AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_ctorArgs(initValue ? new AstCtList(initValue) : new AstCtList()),
   m_implicitInitializer(initValue ? NULL : m_decl->objType().createDefaultAstValue()),
-  m_access(eRead) {
+  m_access(eRead),
+  m_irValue(NULL) {
   assert(m_decl);
   assert(m_ctorArgs);
 }
@@ -170,7 +177,8 @@ AstDataDef::AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()),
   m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_decl->objType().createDefaultAstValue()),
-  m_access(eRead) {
+  m_access(eRead),
+  m_irValue(NULL) {
   assert(m_decl);
   assert(m_ctorArgs);
 }
@@ -194,14 +202,16 @@ AstValue& AstDataDef::initValue() const {
 
 AstNumber::AstNumber(int value, ObjType* objType) :
   m_value(value),
-  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)) {
+  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
+  m_irValue(NULL) {
   assert(m_objType);
 }
 
 AstNumber::AstNumber(int value, ObjTypeFunda::EType eType,
   ObjTypeFunda::Qualifier qualifier) :
   m_value(value),
-  m_objType(new ObjTypeFunda(eType, qualifier)) {
+  m_objType(new ObjTypeFunda(eType, qualifier)),
+  m_irValue(NULL) {
   assert(m_objType);
 }
 
@@ -213,40 +223,46 @@ map<string, AstOperator::EOperation> AstOperator::m_opMap;
 
 AstOperator::AstOperator(char op, AstCtList* args) :
   m_op(static_cast<EOperation>(op)),
-  m_args(args ? args : new AstCtList) {
+  m_args(args ? args : new AstCtList),
+  m_irValue(NULL) {
   assert(m_args);
 }
 
 AstOperator::AstOperator(const string& op, AstCtList* args) :
   m_op(toEOperation(op)),
-  m_args(args ? args : new AstCtList) {
+  m_args(args ? args : new AstCtList),
+  m_irValue(NULL) {
   assert(m_args);
 }
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
-  m_args(args ? args : new AstCtList) {
+  m_args(args ? args : new AstCtList),
+  m_irValue(NULL) {
   assert(m_args);
 }
 
 AstOperator::AstOperator(char op, AstValue* operand1, AstValue* operand2,
   AstValue* operand3) :
   m_op(static_cast<EOperation>(op)),
-  m_args(new AstCtList(operand1, operand2, operand3)) {
+  m_args(new AstCtList(operand1, operand2, operand3)),
+  m_irValue(NULL) {
   assert(m_args);
 }
 
 AstOperator::AstOperator(const string& op, AstValue* operand1, AstValue* operand2,
   AstValue* operand3) :
   m_op(toEOperation(op)),
-  m_args(new AstCtList(operand1, operand2, operand3)) {
+  m_args(new AstCtList(operand1, operand2, operand3)),
+  m_irValue(NULL) {
   assert(m_args);
 }
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstValue* operand1, AstValue* operand2,
   AstValue* operand3) :
   m_op(op),
-  m_args(new AstCtList(operand1, operand2, operand3)) {
+  m_args(new AstCtList(operand1, operand2, operand3)),
+  m_irValue(NULL) {
   assert(m_args);
 }
 
@@ -291,7 +307,8 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
 AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstValue* elseAction) :
   m_conditionActionPairs(
     conditionActionPairs ? conditionActionPairs : makeDefaultConditionActionPairs()),
-  m_elseAction(elseAction) {
+  m_elseAction(elseAction),
+  m_irValue(NULL) {
   assert(m_conditionActionPairs);
   assert(!m_conditionActionPairs->empty());
   assert(m_conditionActionPairs->front().m_condition);
@@ -300,7 +317,8 @@ AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstValue* e
 
 AstIf::AstIf(AstValue* cond, AstValue* action, AstValue* elseAction) :
   m_conditionActionPairs(makeConditionActionPairs(cond,action)),
-  m_elseAction(elseAction) {
+  m_elseAction(elseAction),
+  m_irValue(NULL) {
   assert(m_conditionActionPairs);
   assert(!m_conditionActionPairs->empty());
   assert(m_conditionActionPairs->front().m_condition);
@@ -329,7 +347,8 @@ list<AstIf::ConditionActionPair>* AstIf::makeConditionActionPairs(
 
 AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
   m_address(address ? address : new AstSymbol("")),
-  m_args(args ? args : new AstCtList()) {
+  m_args(args ? args : new AstCtList()),
+  m_irValue(NULL) {
   assert(m_address);
   assert(m_args);
 }
@@ -414,15 +433,15 @@ void AstOperator::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCtList::accept(AstVisitor& visitor) { visitor.visit(*this); }
 
-llvm::Value* AstCast::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
-llvm::Function* AstFunDef::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
-llvm::Function* AstFunDecl::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
-llvm::Value* AstDataDecl::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
-llvm::Value* AstDataDef::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
-llvm::Value* AstNumber::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
-llvm::Value* AstSymbol::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
-llvm::Value* AstFunCall::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
-llvm::Value* AstOperator::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
-llvm::Value* AstIf::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
-llvm::Value* AstCtList::accept(IrBuilderAst&) const { return NULL; }
+void AstCast::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
+void AstFunDef::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
+void AstFunDecl::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
+void AstDataDecl::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
+void AstDataDef::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
+void AstNumber::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
+void AstSymbol::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
+void AstFunCall::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
+void AstOperator::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
+void AstIf::accept(IrBuilderAst& visitor) { visitor.visit(*this); }
+void AstCtList::accept(IrBuilderAst&) { }
 

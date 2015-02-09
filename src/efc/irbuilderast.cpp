@@ -35,13 +35,13 @@ IrBuilderAst::~IrBuilderAst() {
   if (m_executionEngine) { delete m_executionEngine; }
 }
 
-void IrBuilderAst::buildModuleNoImplicitMain(const AstNode& root) {
+void IrBuilderAst::buildModuleNoImplicitMain(AstNode& root) {
   root.accept(*this);
 }
 
 /** In contrast to buildModuleNoImplicitMain an implicit main method is put
 around the given AST. */
-void IrBuilderAst::buildModule(const AstValue& root) {
+void IrBuilderAst::buildModule(AstValue& root) {
 
   // protects against double definition of the implicit main method
   assert(!m_mainFunction);
@@ -58,7 +58,7 @@ void IrBuilderAst::buildModule(const AstValue& root) {
 
   // Currently the return type is always int, so ensure the return type of the
   // IR code is also Int32
-  Value* resultIr = root.accept(*this);
+  Value* resultIr = callAcceptOn(root);
   assert(resultIr);
   Value* extResultIr = m_builder.CreateZExt( resultIr, Type::getInt32Ty(getGlobalContext()));
   m_builder.CreateRet(extResultIr);
@@ -66,7 +66,7 @@ void IrBuilderAst::buildModule(const AstValue& root) {
   verifyFunction(*m_mainFunction);
 }
 
-int IrBuilderAst::buildAndRunModule(const AstValue& root) {
+int IrBuilderAst::buildAndRunModule(AstValue& root) {
   buildModule(root);
   return runModule();
 }
@@ -114,11 +114,15 @@ int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int ar
   return functionPtr(arg1, arg2);
 }
 
-Value* IrBuilderAst::visit(const AstCast&) {
-  return NULL;
+llvm::Value* IrBuilderAst::callAcceptOn(AstNode& node) {
+  node.accept(*this);
+  return node.irValue();
 }
 
-Value* IrBuilderAst::visit(const AstOperator& op) {
+void IrBuilderAst::visit(AstCast&) {
+}
+
+void IrBuilderAst::visit(AstOperator& op) {
   const list<AstValue*>& argschilds = op.args().childs();
   list<AstValue*>::const_iterator iter = argschilds.begin();
   Value* resultIr = NULL;
@@ -134,8 +138,8 @@ Value* IrBuilderAst::visit(const AstOperator& op) {
     if (argschilds.size()<=1) {
       resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 0));
     } else {
-      const AstValue& lhsAst = **(iter++);
-      resultIr = lhsAst.accept(*this);
+      AstValue& lhsAst = **(iter++);
+      resultIr = callAcceptOn(lhsAst);
       assert(resultIr);
     }
     break;
@@ -160,13 +164,13 @@ Value* IrBuilderAst::visit(const AstOperator& op) {
     if ( op_==AstOperator::eAssign ) { assert(argschilds.size()==2); }
     if ( op_==AstOperator::eEqualTo ){ assert(argschilds.size()==2); }
     if ( op_==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
-    const AstValue& lhsAst = **(iter++);
+    AstValue& lhsAst = **(iter++);
     if ( op_==AstOperator::eAssign ) {
       // When moved to SementaicAnalizer then the const cast won't be needed
       // anymore. Until then it's not too bad.
-      const_cast<AstValue&>(lhsAst).setAccess(eWrite, m_errorHandler);
+      lhsAst.setAccess(eWrite, m_errorHandler);
     }
-    resultIr = lhsAst.accept(*this);
+    resultIr = callAcceptOn(lhsAst);
     assert(resultIr);
     break;
   }
@@ -176,8 +180,8 @@ Value* IrBuilderAst::visit(const AstOperator& op) {
 
   // Iterate trough all operands
   for (; iter!=argschilds.end(); ++iter) {
-    const AstValue& operandAst = **iter;
-    Value* operandIr = operandAst.accept(*this);
+    AstValue& operandAst = **iter;
+    Value* operandIr = callAcceptOn(operandAst);
     if ( op_!=AstOperator::eSeq ) {
       assert(operandIr);
     }
@@ -199,20 +203,22 @@ Value* IrBuilderAst::visit(const AstOperator& op) {
   }
 
   assert(resultIr);
-  return resultIr;
+  op.setIrValue(resultIr);
 }
 
-Value* IrBuilderAst::visit(const AstNumber& number) {
+void IrBuilderAst::visit(AstNumber& number) {
   if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eInt)) ) {
-    return ConstantInt::get( getGlobalContext(), APInt(32, number.value()));
+    number.setIrValue(ConstantInt::get( getGlobalContext(),
+        APInt(32, number.value())));
   } else if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eBool))) {
-    return ConstantInt::get( getGlobalContext(), APInt(1, number.value()));
+    number.setIrValue(ConstantInt::get( getGlobalContext(),
+        APInt(1, number.value())));
   } else {
     assert(false);
   }
 }
 
-Value* IrBuilderAst::visit(const AstSymbol& symbol) {
+void IrBuilderAst::visit(AstSymbol& symbol) {
   SymbolTableEntry* stentry = m_env.find(symbol.name());
   if (NULL==stentry) {
     m_errorHandler.add(new Error(Error::eUnknownName));
@@ -220,28 +226,29 @@ Value* IrBuilderAst::visit(const AstSymbol& symbol) {
   }
   assert( stentry->valueIr() );
 
-  Value* value = NULL;
+  Value* resultIr = NULL;
   if (stentry->objType().qualifier()&ObjType::eMutable) {
     // stentry->valueIr() is the pointer returned by alloca corresponding to
     // the symbol
     if (symbol.access()==eWrite) {
-      value = stentry->valueIr(); 
+      resultIr = stentry->valueIr(); 
     } else {
-      value = m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str());
+      resultIr = m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str());
     }
   } else {
     if (symbol.access()==eWrite) {
       throw runtime_error::runtime_error("Can't write to value (inmutable data) '"
         + symbol.name() + "'.");
     }
-    // stentry->valueIr() is directly the value of the symbol
-    value = stentry->valueIr();
+    // stentry->valueIr() is directly the llvm::Value of the symbol
+    resultIr = stentry->valueIr();
   }
-  return value;
+  symbol.setIrValue(resultIr);
 }
 
-Function* IrBuilderAst::visit(const AstFunDef& funDef) {
-  Function* functionIr = visit(funDef.decl());
+void IrBuilderAst::visit(AstFunDef& funDef) {
+  visit(funDef.decl());
+  Function* functionIr = funDef.decl().irFunction();
   assert(functionIr);
   SymbolTableEntry*const& stentry = funDef.decl().stentry();
   assert(stentry);
@@ -283,7 +290,7 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
 
   // Currently the return type is always int, so ensure the return type of the
   // IR code is also Int32
-  Value* extResultIr = m_builder.CreateZExt( funDef.body().accept(*this),
+  Value* extResultIr = m_builder.CreateZExt( callAcceptOn(funDef.body()),
     Type::getInt32Ty(getGlobalContext()) );
   m_builder.CreateRet(extResultIr);
 
@@ -295,10 +302,10 @@ Function* IrBuilderAst::visit(const AstFunDef& funDef) {
   }
   m_env.popScope(); 
 
-  return functionIr;
+  funDef.setIrFunction( functionIr );
 }
 
-Function* IrBuilderAst::visit(const AstFunDecl& funDecl) {
+void IrBuilderAst::visit(AstFunDecl& funDecl) {
   // currently rettype and type of args is always int
 
   // It is required that an earlier pass did insert this AstFundDecl into the
@@ -331,18 +338,18 @@ Function* IrBuilderAst::visit(const AstFunDecl& funDecl) {
     }
 
     funDecl.stentry()->valueIr() = functionIr;
-    return functionIr;
+    funDecl.setIrFunction(functionIr);
   }
 
   // An earlier declaration of this function, i.e. one with the same stentry,
   // allready created the empty IR function
   else {
-    return dynamic_cast<Function*>(funDecl.stentry()->valueIr());
+    funDecl.setIrValue(funDecl.stentry()->valueIr());
   }
 }
 
-Value* IrBuilderAst::visit(const AstFunCall& funCall) {
-  Function* callee = dynamic_cast<Function*>(funCall.address().accept(*this));
+void IrBuilderAst::visit(AstFunCall& funCall) {
+  Function* callee = dynamic_cast<Function*>(callAcceptOn(funCall.address()));
   assert(callee);
     
   const list<AstValue*>& argsAst = funCall.args().childs();
@@ -354,15 +361,15 @@ Value* IrBuilderAst::visit(const AstFunCall& funCall) {
   vector<Value*> argsIr;
   for ( list<AstValue*>::const_iterator i = argsAst.begin();
         i != argsAst.end(); ++i ) {
-    Value* argIr = (*i)->accept(*this);
+    Value* argIr = callAcceptOn(**i);
     assert(argIr);
     argsIr.push_back(argIr);
   }
 
-  return m_builder.CreateCall(callee, argsIr, "calltmp");
+  funCall.setIrValue(m_builder.CreateCall(callee, argsIr, "calltmp"));
 }
 
-Value* IrBuilderAst::visit(const AstDataDecl& dataDecl) {
+void IrBuilderAst::visit(AstDataDecl& dataDecl) {
 
   // Add to environment only local data objects. Currently there are only
   // local data objects. Insert new name as a new symbol table entry into the
@@ -391,10 +398,10 @@ Value* IrBuilderAst::visit(const AstDataDecl& dataDecl) {
   // note that since currently there are only local vars, and since local vars
   // can only be defined but not declared-only, we don't have to care about
   // eRead/eWrite access yet.
-  return dataDecl.stentry()->valueIr();
+  dataDecl.setIrValue(dataDecl.stentry()->valueIr());
 }
 
-Value* IrBuilderAst::visit(const AstDataDef& dataDef) {
+void IrBuilderAst::visit(AstDataDef& dataDef) {
   // process data declaration. That ensures an entry in the symbol table
   visit(dataDef.decl());
   SymbolTableEntry*const& stentry = dataDef.decl().stentry();
@@ -408,14 +415,14 @@ Value* IrBuilderAst::visit(const AstDataDef& dataDef) {
 
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.
-  Value* initValue = dataDef.initValue().accept(*this);
+  Value* initValue = callAcceptOn(dataDef.initValue());
   assert(initValue);
   if ( stentry->objType().qualifier()==ObjType::eNoQualifier ) {
     stentry->valueIr() = initValue;
     if ( dataDef.access()!=eRead ) {
       throw runtime_error::runtime_error("Cannot write to an inmutable data object");
     }
-    return initValue;
+    dataDef.setIrValue(initValue);
   }
   else if ( stentry->objType().qualifier()==ObjType::eMutable ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
@@ -425,12 +432,12 @@ Value* IrBuilderAst::visit(const AstDataDef& dataDef) {
     assert(alloca);
     m_builder.CreateStore(initValue, alloca);
     stentry->valueIr() = alloca;
-    return dataDef.access()==eRead ? initValue : alloca;
+    dataDef.setIrValue(dataDef.access()==eRead ? initValue : alloca);
   }
   else { assert(false); }
 }
 
-Value* IrBuilderAst::visit(const AstIf& if_) {
+void IrBuilderAst::visit(AstIf& if_) {
   // misc setup
   const list<AstIf::ConditionActionPair>& capairs = if_.conditionActionPairs();
   assert(!capairs.empty());
@@ -443,7 +450,8 @@ Value* IrBuilderAst::visit(const AstIf& if_) {
   BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "ifmerge");
 
   // IR for evaluate condition
-  Value* condIr = capair.m_condition->accept(*this);
+  assert(capair.m_condition);
+  Value* condIr = callAcceptOn(*capair.m_condition);
   assert(condIr);
   Value* condCmpIr = m_builder.CreateICmpNE(condIr,
     ConstantInt::get(getGlobalContext(), APInt(1, 0)), "ifcond");
@@ -453,7 +461,8 @@ Value* IrBuilderAst::visit(const AstIf& if_) {
 
   // IR for then clause
   m_builder.SetInsertPoint(ThenFirstBB);
-  Value* thenValue = capair.m_action->accept(*this);
+  assert(capair.m_action);
+  Value* thenValue = callAcceptOn(*capair.m_action);
   assert(thenValue);
   m_builder.CreateBr(MergeBB);
   BasicBlock* ThenLastBB = m_builder.GetInsertBlock();
@@ -463,7 +472,7 @@ Value* IrBuilderAst::visit(const AstIf& if_) {
   m_builder.SetInsertPoint(ElseFirstBB);
   Value* elseValue = NULL;
   if ( if_.elseAction() ) {
-    elseValue = if_.elseAction()->accept(*this);
+    elseValue = callAcceptOn(*if_.elseAction());
   } else {
     elseValue = ConstantInt::get( getGlobalContext(), APInt(32, 0));
   }
@@ -479,7 +488,7 @@ Value* IrBuilderAst::visit(const AstIf& if_) {
   assert(phi);
   phi->addIncoming(thenValue, ThenLastBB);
   phi->addIncoming(elseValue, ElseLastBB);
-  return phi;
+  if_.setIrValue(phi);
 }
 
 AllocaInst* IrBuilderAst::createEntryBlockAlloca(Function *functionIr,

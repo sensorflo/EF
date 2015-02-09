@@ -21,10 +21,15 @@ public:
   virtual ~AstNode() {};
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
-  virtual llvm::Value* accept(IrBuilderAst& visitor) const = 0;
+  virtual void accept(IrBuilderAst& visitor) = 0;
   virtual Access access() const { return eRead; }
   virtual void setAccess(Access access, ErrorHandler& errorHandler);
   std::string toStr() const;
+
+  // decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() = 0;
+  virtual void setIrValue(llvm::Value*) = 0;
 };
 
 class AstValue : public AstNode {
@@ -39,7 +44,7 @@ public:
   ~AstCast();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   AstValue& child() const { return *m_child; }
   ObjType& objType() const { return *m_objType; }
 
@@ -48,6 +53,13 @@ private:
   AstValue* m_child;
   /** We're the owner. Is garanteed to be non-null. */
   ObjType* m_objType;
+
+  // decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+public:
+  llvm::Value* m_irValue;
 };
 
 class AstFunDef : public AstValue {
@@ -56,7 +68,7 @@ public:
   virtual ~AstFunDef();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Function* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   virtual AstFunDecl& decl() const { return *m_decl; }
   virtual AstValue& body() const { return *m_body; }
 private:
@@ -64,6 +76,15 @@ private:
   AstFunDecl* const m_decl;
   /** We're the owner. Is garanteed to be non-null */
   AstValue* const m_body;
+
+  // decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { return m_irFunction; }
+  virtual void setIrValue(llvm::Value* value) { m_irFunction = dynamic_cast<llvm::Function*>(value); }
+  virtual llvm::Function* irFunction() { return m_irFunction; }
+  virtual void setIrFunction(llvm::Function* function) { m_irFunction = function; }
+public:
+  llvm::Function* m_irFunction;
 };
 
 class AstFunDecl : public AstValue {
@@ -75,7 +96,7 @@ public:
   ~AstFunDecl();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Function* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   virtual const std::string& name() const { return m_name; }
   virtual std::list<AstArgDecl*>const& args() const { return *m_args; }
   virtual ObjType& objType() const;
@@ -99,6 +120,15 @@ private:
   /** We're _not_ the owner; null means this FunDecl was not yet put into
   the environment */
   SymbolTableEntry* m_stentry;
+
+// decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { return m_irFunction; }
+  virtual void setIrValue(llvm::Value* value) { m_irFunction = dynamic_cast<llvm::Function*>(value); }
+  virtual llvm::Function* irFunction() { return m_irFunction; }
+  virtual void setIrFunction(llvm::Function* function) { m_irFunction = function; }
+public:
+  llvm::Function* m_irFunction;
 };
 
 class AstDataDecl : public AstValue {
@@ -108,7 +138,7 @@ public:
   ~AstDataDecl();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   virtual const std::string& name() const { return m_name; }
   virtual ObjType& objType() const;
   virtual ObjType& objType(bool stealOwnership) const;
@@ -128,6 +158,13 @@ private:
   the environment */
   SymbolTableEntry* m_stentry;
   Access m_access;
+
+// decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+public:
+  llvm::Value* m_irValue;
 };
 
 class AstArgDecl : public AstDataDecl {
@@ -145,7 +182,7 @@ public:
   ~AstDataDef();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   virtual AstDataDecl& decl() const { return *m_decl; }
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   virtual AstValue& initValue() const;
@@ -159,6 +196,13 @@ private:
   /** We're the owner. Is _NOT_ guaranteed to  be non-null. */
   AstValue* m_implicitInitializer;
   Access m_access;
+
+// decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+public:
+  llvm::Value* m_irValue;
 };
 
 /** Literal number */
@@ -170,13 +214,20 @@ public:
   ~AstNumber();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   int value() const { return m_value; }
   virtual ObjType& objType() const { return *m_objType; }
 private:
   const int m_value;
   /** We're the owner. Is garanteed to be non-null. */
   ObjType* m_objType;
+
+// decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+public:
+  llvm::Value* m_irValue;
 };
 
 class AstSymbol : public AstValue {
@@ -186,13 +237,20 @@ public:
   virtual ~AstSymbol() {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   const std::string& name() const { return m_name; }
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
 private:
   const std::string m_name;
   Access m_access;
+
+// decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+public:
+  llvm::Value* m_irValue;
 };
 
 class AstFunCall : public AstValue {
@@ -201,7 +259,7 @@ public:
   virtual ~AstFunCall();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   virtual AstValue& address () const { return *m_address; }
   AstCtList& args () const { return *m_args; }
 private:
@@ -209,6 +267,13 @@ private:
   AstValue* const m_address;
   /** We're the owner. Is garanteed to be non-null */
   AstCtList* const m_args;
+
+// decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+public:
+  llvm::Value* m_irValue;
 };
 
 class AstOperator : public AstValue {
@@ -238,7 +303,7 @@ public:
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
 
@@ -250,6 +315,13 @@ private:
   /** We're the owner. Is garanteed to be non-null */
   AstCtList* const m_args;
   static std::map<std::string, EOperation> m_opMap;
+
+// decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+public:
+  llvm::Value* m_irValue;
 };
 
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
@@ -271,7 +343,7 @@ public:
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
   AstValue* elseAction() const { return m_elseAction; }
 private:
@@ -282,6 +354,13 @@ private:
   std::list<ConditionActionPair>* const m_conditionActionPairs;
   /** We're the owner. Is NOT garanteed to be non-null */
   AstValue* const m_elseAction;
+
+// decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+public:
+  llvm::Value* m_irValue;
 };
 
 class AstCtList : public AstNode {
@@ -292,7 +371,7 @@ public:
   ~AstCtList();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
+  virtual void accept(IrBuilderAst& visitor);
   AstCtList* Add(AstValue* child);
   AstCtList* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   /** The elements are guaranteed to be non-null */
@@ -304,6 +383,11 @@ private:
   /** We're the owner of the list and of the pointees. Pointers are garanteed
   to be non null*/
   std::list<AstValue*>*const m_childs;
+
+  // decorations for IrBuilderAst
+public:
+  virtual llvm::Value* irValue() { static llvm::Value* v = NULL; return v; }
+  virtual void setIrValue(llvm::Value*) { }
 };
 
 #endif

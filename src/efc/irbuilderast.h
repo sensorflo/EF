@@ -21,21 +21,21 @@ public:
   static void staticOneTimeInit();
   IrBuilderAst(Env& env, ErrorHandler& errorHandler);
   virtual ~IrBuilderAst();
-  void buildModuleNoImplicitMain(const AstNode& root);
-  void buildModule(const AstValue& root);
+  void buildModuleNoImplicitMain(AstNode& root);
+  void buildModule(AstValue& root);
   int runModule();
-  int buildAndRunModule(const AstValue& root);
+  int buildAndRunModule(AstValue& root);
   
-  llvm::Value*    visit(const AstCast& cast);
-  llvm::Value*    visit(const AstOperator& op);
-  llvm::Value*    visit(const AstNumber& number);
-  llvm::Value*    visit(const AstSymbol& symbol);
-  llvm::Value*    visit(const AstFunCall& funCall);
-  llvm::Function* visit(const AstFunDef& funDef);
-  llvm::Function* visit(const AstFunDecl& funDecl);
-  llvm::Value*    visit(const AstDataDecl& dataDecl);
-  llvm::Value*    visit(const AstDataDef& dataDef);
-  llvm::Value*    visit(const AstIf& if_);
+  void visit(AstCast& cast);
+  void visit(AstOperator& op);
+  void visit(AstNumber& number);
+  void visit(AstSymbol& symbol);
+  void visit(AstFunCall& funCall);
+  void visit(AstFunDef& funDef);
+  void visit(AstFunDecl& funDecl);
+  void visit(AstDataDecl& dataDecl);
+  void visit(AstDataDef& dataDef);
+  void visit(AstIf& if_);
 
 private:
   friend class TestingIrBuilderAst;
@@ -46,6 +46,8 @@ private:
   int jitExecFunction(const std::string& name);
   int jitExecFunction1Arg(const std::string& name, int arg1);
   int jitExecFunction2Arg(const std::string& name, int arg1, int arg2);
+
+  llvm::Value* callAcceptOn(AstNode&);
 
   llvm::AllocaInst* createEntryBlockAlloca(llvm::Function* functionIr,
     const std::string& varName);
