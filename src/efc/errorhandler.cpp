@@ -7,6 +7,7 @@ const char* toStr(Error::No no) {
   case Error::eUnknownName: return "eUnknownName";
   case Error::eIncompatibleRedaclaration: return "eIncompatibleRedaclaration";
   case Error::eRedefinition: return "eRedefinition";
+  case Error::eWriteToReadOnly: return "eWriteToReadOnly";
   case Error::eCnt: return "<unknown>";
   }
 }

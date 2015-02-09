@@ -107,6 +107,9 @@ out/irbuilderasttest.o: test/irbuilderasttest.cpp $(GEN_HEADERS) *.h test/*.h
 out/astprintertest.o: test/astprintertest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
+out/driversystemtest.o: test/driversystemtest.cpp $(GEN_HEADERS) *.h test/*.h
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
 out/asttest.o: test/asttest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
@@ -119,7 +122,7 @@ out/envtest.o: test/envtest.cpp $(GEN_HEADERS) *.h test/*.h
 out/objtypetest.o: test/objtypetest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/efctest: out/scanner.o out/objtype.o out/astdefaultiterator.o out/ast.o out/errorhandler.o out/env.o out/astprinter.o out/semanticanalizer.o out/irbuilderast.o out/parser.o out/parserext.o out/driver.o out/objtypetest.o out/envtest.o out/asttest.o out/errorhandlertest.o out/parserexttest.o out/scannertest.o out/scannerandparsertest.o out/astprintertest.o out/semanticanalizertest.o out/irbuilderasttest.o out/gtestprinter.o out/test.o out/tutorialstest.o out/efctest.o out/libgtest.a
+out/efctest: out/scanner.o out/objtype.o out/astdefaultiterator.o out/ast.o out/errorhandler.o out/env.o out/astprinter.o out/semanticanalizer.o out/irbuilderast.o out/parser.o out/parserext.o out/driver.o out/objtypetest.o out/envtest.o out/asttest.o out/errorhandlertest.o out/parserexttest.o out/scannertest.o out/scannerandparsertest.o out/astprintertest.o out/driversystemtest.o out/semanticanalizertest.o out/irbuilderasttest.o out/gtestprinter.o out/test.o out/tutorialstest.o out/efctest.o out/libgtest.a
 	$(CXX)  $(LDFLAGS) -pthread -o $@ $^ $(LIBS)
 
 

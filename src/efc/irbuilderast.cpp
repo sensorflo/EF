@@ -114,11 +114,11 @@ int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int ar
   return functionPtr(arg1, arg2);
 }
 
-Value* IrBuilderAst::visit(const AstCast&, Access) {
+Value* IrBuilderAst::visit(const AstCast&) {
   return NULL;
 }
 
-Value* IrBuilderAst::visit(const AstOperator& op, Access) {
+Value* IrBuilderAst::visit(const AstOperator& op) {
   const list<AstValue*>& argschilds = op.args().childs();
   list<AstValue*>::const_iterator iter = argschilds.begin();
   Value* resultIr = NULL;
@@ -161,7 +161,12 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
     if ( op_==AstOperator::eEqualTo ){ assert(argschilds.size()==2); }
     if ( op_==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
     const AstValue& lhsAst = **(iter++);
-    resultIr = lhsAst.accept(*this, op_==AstOperator::eAssign ? eWrite : eRead);
+    if ( op_==AstOperator::eAssign ) {
+      // When moved to SementaicAnalizer then the const cast won't be needed
+      // anymore. Until then it's not too bad.
+      const_cast<AstValue&>(lhsAst).setAccess(eWrite, m_errorHandler);
+    }
+    resultIr = lhsAst.accept(*this);
     assert(resultIr);
     break;
   }
@@ -172,7 +177,7 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
   // Iterate trough all operands
   for (; iter!=argschilds.end(); ++iter) {
     const AstValue& operandAst = **iter;
-    Value* operandIr = operandAst.accept(*this, eRead);
+    Value* operandIr = operandAst.accept(*this);
     if ( op_!=AstOperator::eSeq ) {
       assert(operandIr);
     }
@@ -197,7 +202,7 @@ Value* IrBuilderAst::visit(const AstOperator& op, Access) {
   return resultIr;
 }
 
-Value* IrBuilderAst::visit(const AstNumber& number, Access) {
+Value* IrBuilderAst::visit(const AstNumber& number) {
   if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eInt)) ) {
     return ConstantInt::get( getGlobalContext(), APInt(32, number.value()));
   } else if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eBool))) {
@@ -207,7 +212,7 @@ Value* IrBuilderAst::visit(const AstNumber& number, Access) {
   }
 }
 
-Value* IrBuilderAst::visit(const AstSymbol& symbol, Access access) {
+Value* IrBuilderAst::visit(const AstSymbol& symbol) {
   SymbolTableEntry* stentry = m_env.find(symbol.name());
   if (NULL==stentry) {
     m_errorHandler.add(new Error(Error::eUnknownName));
@@ -219,13 +224,13 @@ Value* IrBuilderAst::visit(const AstSymbol& symbol, Access access) {
   if (stentry->objType().qualifier()&ObjType::eMutable) {
     // stentry->valueIr() is the pointer returned by alloca corresponding to
     // the symbol
-    if (access==eWrite) {
+    if (symbol.access()==eWrite) {
       value = stentry->valueIr(); 
     } else {
       value = m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str());
     }
   } else {
-    if (access==eWrite) {
+    if (symbol.access()==eWrite) {
       throw runtime_error::runtime_error("Can't write to value (inmutable data) '"
         + symbol.name() + "'.");
     }
@@ -336,7 +341,7 @@ Function* IrBuilderAst::visit(const AstFunDecl& funDecl) {
   }
 }
 
-Value* IrBuilderAst::visit(const AstFunCall& funCall, Access access) {
+Value* IrBuilderAst::visit(const AstFunCall& funCall) {
   Function* callee = dynamic_cast<Function*>(funCall.address().accept(*this));
   assert(callee);
     
@@ -357,7 +362,7 @@ Value* IrBuilderAst::visit(const AstFunCall& funCall, Access access) {
   return m_builder.CreateCall(callee, argsIr, "calltmp");
 }
 
-Value* IrBuilderAst::visit(const AstDataDecl& dataDecl, Access) {
+Value* IrBuilderAst::visit(const AstDataDecl& dataDecl) {
 
   // Add to environment only local data objects. Currently there are only
   // local data objects. Insert new name as a new symbol table entry into the
@@ -382,11 +387,14 @@ Value* IrBuilderAst::visit(const AstDataDecl& dataDecl, Access) {
   }
   
   // note that this can be NULL. E.g. when we just created a new symbol table
-  // entry above, or if it was only declared but never defined so far.
+  // entry above, or if it was only declared but never defined so far. Also
+  // note that since currently there are only local vars, and since local vars
+  // can only be defined but not declared-only, we don't have to care about
+  // eRead/eWrite access yet.
   return dataDecl.stentry()->valueIr();
 }
 
-Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access access) {
+Value* IrBuilderAst::visit(const AstDataDef& dataDef) {
   // process data declaration. That ensures an entry in the symbol table
   visit(dataDef.decl());
   SymbolTableEntry*const& stentry = dataDef.decl().stentry();
@@ -404,10 +412,10 @@ Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access access) {
   assert(initValue);
   if ( stentry->objType().qualifier()==ObjType::eNoQualifier ) {
     stentry->valueIr() = initValue;
-    if ( eRead!=access ) {
+    if ( dataDef.access()!=eRead ) {
       throw runtime_error::runtime_error("Cannot write to an inmutable data object");
     }
-    return initValue; 
+    return initValue;
   }
   else if ( stentry->objType().qualifier()==ObjType::eMutable ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
@@ -417,12 +425,12 @@ Value* IrBuilderAst::visit(const AstDataDef& dataDef, Access access) {
     assert(alloca);
     m_builder.CreateStore(initValue, alloca);
     stentry->valueIr() = alloca;
-    return eRead==access ? initValue : alloca;
+    return dataDef.access()==eRead ? initValue : alloca;
   }
   else { assert(false); }
 }
 
-Value* IrBuilderAst::visit(const AstIf& if_, Access access) {
+Value* IrBuilderAst::visit(const AstIf& if_) {
   // misc setup
   const list<AstIf::ConditionActionPair>& capairs = if_.conditionActionPairs();
   assert(!capairs.empty());

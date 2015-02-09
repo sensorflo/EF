@@ -14,13 +14,16 @@ class AstConstVisitor;
 class AstVisitor;
 class IrBuilderAst;
 class SymbolTableEntry;
+class ErrorHandler;
 
 class AstNode {
 public:
   virtual ~AstNode() {};
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const = 0;
+  virtual llvm::Value* accept(IrBuilderAst& visitor) const = 0;
+  virtual Access access() const { return eRead; }
+  virtual void setAccess(Access access, ErrorHandler& errorHandler);
   std::string toStr() const;
 };
 
@@ -36,7 +39,7 @@ public:
   ~AstCast();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
   AstValue& child() const { return *m_child; }
   ObjType& objType() const { return *m_objType; }
 
@@ -53,7 +56,7 @@ public:
   virtual ~AstFunDef();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Function* accept(IrBuilderAst& visitor) const;
   virtual AstFunDecl& decl() const { return *m_decl; }
   virtual AstValue& body() const { return *m_body; }
 private:
@@ -72,7 +75,7 @@ public:
   ~AstFunDecl();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Function* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Function* accept(IrBuilderAst& visitor) const;
   virtual const std::string& name() const { return m_name; }
   virtual std::list<AstArgDecl*>const& args() const { return *m_args; }
   virtual ObjType& objType() const;
@@ -105,12 +108,14 @@ public:
   ~AstDataDecl();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
   virtual const std::string& name() const { return m_name; }
   virtual ObjType& objType() const;
   virtual ObjType& objType(bool stealOwnership) const;
   virtual SymbolTableEntry* stentry() const { return m_stentry; }
   virtual void setStentry(SymbolTableEntry* stentry);
+  virtual Access access() const { return m_access; }
+  virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
   
 private:
   const std::string m_name;
@@ -122,6 +127,7 @@ private:
   /** We're _not_ the owner; null means this DataDecl was not yet put into
   the environment */
   SymbolTableEntry* m_stentry;
+  Access m_access;
 };
 
 class AstArgDecl : public AstDataDecl {
@@ -139,10 +145,12 @@ public:
   ~AstDataDef();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
   virtual AstDataDecl& decl() const { return *m_decl; }
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   virtual AstValue& initValue() const;
+  virtual Access access() const { return m_access; }
+  virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
 private:
   /** We're the owner. Is garanteed to be non-null */
   AstDataDecl* const m_decl;
@@ -150,6 +158,7 @@ private:
   AstCtList* const m_ctorArgs;
   /** We're the owner. Is _NOT_ guaranteed to  be non-null. */
   AstValue* m_implicitInitializer;
+  Access m_access;
 };
 
 /** Literal number */
@@ -161,7 +170,7 @@ public:
   ~AstNumber();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
   int value() const { return m_value; }
   virtual ObjType& objType() const { return *m_objType; }
 private:
@@ -172,14 +181,18 @@ private:
 
 class AstSymbol : public AstValue {
 public:
-  AstSymbol(const std::string& name) : m_name(name) {};
+  AstSymbol(const std::string& name, Access access = eRead) :
+    m_name(name), m_access(access) {};
   virtual ~AstSymbol() {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
   const std::string& name() const { return m_name; }
+  virtual Access access() const { return m_access; }
+  virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
 private:
   const std::string m_name;
+  Access m_access;
 };
 
 class AstFunCall : public AstValue {
@@ -188,7 +201,7 @@ public:
   virtual ~AstFunCall();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
   virtual AstValue& address () const { return *m_address; }
   AstCtList& args () const { return *m_args; }
 private:
@@ -225,7 +238,7 @@ public:
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
 
@@ -258,7 +271,7 @@ public:
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
   std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
   AstValue* elseAction() const { return m_elseAction; }
 private:
@@ -279,7 +292,7 @@ public:
   ~AstCtList();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual llvm::Value* accept(IrBuilderAst& visitor, Access access = eRead) const;
+  virtual llvm::Value* accept(IrBuilderAst& visitor) const;
   AstCtList* Add(AstValue* child);
   AstCtList* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   /** The elements are guaranteed to be non-null */

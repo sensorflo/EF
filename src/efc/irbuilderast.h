@@ -26,16 +26,16 @@ public:
   int runModule();
   int buildAndRunModule(const AstValue& root);
   
-  llvm::Value*    visit(const AstCast& cast, Access access = eRead);
-  llvm::Value*    visit(const AstOperator& op, Access access = eRead);
-  llvm::Value*    visit(const AstNumber& number, Access access = eRead);
-  llvm::Value*    visit(const AstSymbol& symbol, Access access = eRead);
-  llvm::Value*    visit(const AstFunCall& funCall, Access access = eRead);
+  llvm::Value*    visit(const AstCast& cast);
+  llvm::Value*    visit(const AstOperator& op);
+  llvm::Value*    visit(const AstNumber& number);
+  llvm::Value*    visit(const AstSymbol& symbol);
+  llvm::Value*    visit(const AstFunCall& funCall);
   llvm::Function* visit(const AstFunDef& funDef);
   llvm::Function* visit(const AstFunDecl& funDecl);
-  llvm::Value*    visit(const AstDataDecl& dataDecl, Access access = eRead);
-  llvm::Value*    visit(const AstDataDef& dataDef, Access access = eRead);
-  llvm::Value*    visit(const AstIf& if_, Access access = eRead);
+  llvm::Value*    visit(const AstDataDecl& dataDecl);
+  llvm::Value*    visit(const AstDataDef& dataDef);
+  llvm::Value*    visit(const AstIf& if_);
 
 private:
   friend class TestingIrBuilderAst;

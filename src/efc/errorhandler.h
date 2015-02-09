@@ -10,6 +10,7 @@ public:
     eUnknownName,
     eIncompatibleRedaclaration,
     eRedefinition,
+    eWriteToReadOnly,
     eCnt
   };
 

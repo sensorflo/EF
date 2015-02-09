@@ -2,9 +2,16 @@
 #include "irbuilderast.h"
 #include "astvisitor.h"
 #include "astprinter.h"
+#include "errorhandler.h"
 #include <cassert>
 #include <stdexcept>
 using namespace std;
+
+void AstNode::setAccess(Access access, ErrorHandler& errorHandler) {
+  if ( access!=eRead ) {
+    errorHandler.add(new Error(Error::eWriteToReadOnly));
+  }
+}
 
 string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
@@ -124,7 +131,8 @@ AstDataDecl::AstDataDecl(const string& name, ObjType* objType,
   m_name(name),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
   m_ownerOfObjType(true),
-  m_stentry(stentry) {
+  m_stentry(stentry),
+  m_access(eRead) {
 }
 
 AstDataDecl::~AstDataDecl() {
@@ -152,7 +160,8 @@ void AstDataDecl::setStentry(SymbolTableEntry* stentry) {
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_ctorArgs(initValue ? new AstCtList(initValue) : new AstCtList()),
-  m_implicitInitializer(initValue ? NULL : m_decl->objType().createDefaultAstValue()) {
+  m_implicitInitializer(initValue ? NULL : m_decl->objType().createDefaultAstValue()),
+  m_access(eRead) {
   assert(m_decl);
   assert(m_ctorArgs);
 }
@@ -160,7 +169,8 @@ AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
 AstDataDef::AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()),
-  m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_decl->objType().createDefaultAstValue()) {
+  m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_decl->objType().createDefaultAstValue()),
+  m_access(eRead) {
   assert(m_decl);
   assert(m_ctorArgs);
 }
@@ -404,15 +414,15 @@ void AstOperator::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCtList::accept(AstVisitor& visitor) { visitor.visit(*this); }
 
-llvm::Value* AstCast::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
-llvm::Function* AstFunDef::accept(IrBuilderAst& visitor, Access) const { return visitor.visit(*this); }
-llvm::Function* AstFunDecl::accept(IrBuilderAst& visitor, Access) const { return visitor.visit(*this); }
-llvm::Value* AstDataDecl::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
-llvm::Value* AstDataDef::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
-llvm::Value* AstNumber::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
-llvm::Value* AstSymbol::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
-llvm::Value* AstFunCall::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
-llvm::Value* AstOperator::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
-llvm::Value* AstIf::accept(IrBuilderAst& visitor, Access access) const { return visitor.visit(*this, access); }
-llvm::Value* AstCtList::accept(IrBuilderAst&, Access) const { return NULL; }
+llvm::Value* AstCast::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
+llvm::Function* AstFunDef::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
+llvm::Function* AstFunDecl::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
+llvm::Value* AstDataDecl::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
+llvm::Value* AstDataDef::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
+llvm::Value* AstNumber::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
+llvm::Value* AstSymbol::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
+llvm::Value* AstFunCall::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
+llvm::Value* AstOperator::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
+llvm::Value* AstIf::accept(IrBuilderAst& visitor) const { return visitor.visit(*this); }
+llvm::Value* AstCtList::accept(IrBuilderAst&) const { return NULL; }
 

@@ -41,6 +41,8 @@ public:
   bool gotWarning() const { return m_gotWarning; }
 
 private:
+  friend class TestingDriver;
+
   std::basic_ostream<char>& print(const yy::location& loc);
   
   /** The name of the file being parsed */
