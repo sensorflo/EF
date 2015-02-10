@@ -455,7 +455,7 @@ void IrBuilderAst::visit(AstDataDef& dataDef) {
 void IrBuilderAst::visit(AstIf& if_) {
   // misc setup
   const list<AstIf::ConditionActionPair>& capairs = if_.conditionActionPairs();
-  assert(!capairs.empty());
+  assert(capairs.size()==1); // curently size>=2 is not yet supported
   const AstIf::ConditionActionPair& capair = capairs.front(); 
 
   // setup needed basic blocks
