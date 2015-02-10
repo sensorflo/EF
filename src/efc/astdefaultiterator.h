@@ -3,8 +3,8 @@
 #include "astvisitor.h"
 
 
-/** Pre-order traverses AST, invoking the given visitor's visit method for
-each node. */
+/** Traverses AST: at each node, call its accept method and pass the vistor
+given in the ctor. */
 class AstDefaultIterator : public AstVisitor {
 
 public:
