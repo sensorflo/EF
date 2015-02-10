@@ -96,7 +96,9 @@ void testbuilModuleReportsError(TestingIrBuilderAst& UUT, AstValue* astRoot,
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
   auto_ptr<AstValue> ast(astRoot);
+  bool anyThrow = false;
   bool didThrowBuildError = false;
+  string excptionwhat;
 
   // execute
   try {
@@ -118,8 +120,23 @@ void testbuilModuleReportsError(TestingIrBuilderAst& UUT, AstValue* astRoot,
     EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
       amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
   }
+  catch (exception& e) {
+    anyThrow = true;
+    excptionwhat = e.what();
+  }
+  catch (exception* e) {
+    anyThrow = true;
+    if ( e ) {
+      excptionwhat = e->what();
+    }
+  }
+  catch (...) {
+    anyThrow = true;
+  }
   EXPECT_TRUE(didThrowBuildError) <<
-    amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
+    amendSpec(spec) << amendAst(astRoot) << amend(*UUT.m_errorHandler) <<
+    "\nanyThrow: " << anyThrow <<
+    "\nexceptionwhat: " << excptionwhat;
 }
 
 #define TEST_BUILD_MODULE_REPORTS_ERROR(astRoot, expectedErrorNo, spec) \
