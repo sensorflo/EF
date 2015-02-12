@@ -510,6 +510,6 @@ AllocaInst* IrBuilderAst::createEntryBlockAlloca(Function *functionIr,
   const string &varName) {
   IRBuilder<> irBuilder(&functionIr->getEntryBlock(),
     functionIr->getEntryBlock().begin());
-  return m_builder.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0,
+  return irBuilder.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0,
     (varName + "__alloca").c_str());
 }
