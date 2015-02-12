@@ -284,7 +284,7 @@ void IrBuilderAst::visit(AstFunDef& funDef) {
     // blindly assumes that ObjType::Qualifier is eMutable since currently
     // that is always the case
     const string& argName = (*iterAst)->name();
-    AllocaInst *alloca = createEntryBlockAlloca(functionIr, argName);
+    AllocaInst* alloca = createAllocaInEntryBlock(functionIr, argName);
     m_builder.CreateStore(iterIr, alloca);
     SymbolTableEntry* stentry = new SymbolTableEntry( alloca,
       new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), true);
@@ -443,7 +443,7 @@ void IrBuilderAst::visit(AstDataDef& dataDef) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
     assert(functionIr);
     AllocaInst* alloca =
-      createEntryBlockAlloca(functionIr, dataDef.decl().name());
+      createAllocaInEntryBlock(functionIr, dataDef.decl().name());
     assert(alloca);
     m_builder.CreateStore(initValue, alloca);
     stentry->valueIr() = alloca;
@@ -506,10 +506,11 @@ void IrBuilderAst::visit(AstIf& if_) {
   if_.setIrValue(phi);
 }
 
-AllocaInst* IrBuilderAst::createEntryBlockAlloca(Function *functionIr,
+/** We want allocas in the entry block to facilitate llvm's mem2reg pass.*/
+AllocaInst* IrBuilderAst::createAllocaInEntryBlock(Function* functionIr,
   const string &varName) {
   IRBuilder<> irBuilder(&functionIr->getEntryBlock(),
     functionIr->getEntryBlock().begin());
   return irBuilder.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0,
-    (varName + "__alloca").c_str());
+    varName.c_str());
 }
