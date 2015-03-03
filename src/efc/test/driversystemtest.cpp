@@ -18,8 +18,7 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstValue* astRoot,
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
   auto_ptr<AstValue> astRootAp(astRoot);
-  bool anyThrow = false;
-  bool didThrowBuildError = false;
+  bool foreignExceptionThrown = false;
   string excptionwhat;
 
   // execute
@@ -29,32 +28,31 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstValue* astRoot,
 
   // verify
   catch (BuildError& buildError) {
-    didThrowBuildError = true;
-
-    const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();
-    EXPECT_EQ(1, errors.size()) <<
-      "Expecting exactly one error\n" << 
-      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(astRoot);
-    EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
-      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(astRoot);
+    // nop
   }
   catch (exception& e) {
-    anyThrow = true;
+    foreignExceptionThrown = true;
     excptionwhat = e.what();
   }
   catch (exception* e) {
-    anyThrow = true;
+    foreignExceptionThrown = true;
     if ( e ) {
       excptionwhat = e->what();
     }
   }
   catch (...) {
-    anyThrow = true;
+    foreignExceptionThrown = true;
   }
-  EXPECT_TRUE(!didThrowBuildError) <<
+  EXPECT_FALSE(foreignExceptionThrown) <<
+    "Expecting either no exceptions or BuildError exception\n" <<
     amendSpec(spec) << amendAst(astRoot) << amend(UUT.m_errorHandler) <<
-    "\nanyThrow: " << anyThrow <<
     "\nexceptionwhat: " << excptionwhat;
+  const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();
+  EXPECT_EQ(1, errors.size()) <<
+    "Expecting exactly one error\n" << 
+    amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(astRoot);
+  EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
+    amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(astRoot);
 }
 
 #define TEST_SATRANSANDIRBUILD_REPORTS_ERROR(astRoot, expectedErrorNo, spec) \
