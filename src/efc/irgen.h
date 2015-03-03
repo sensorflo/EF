@@ -1,5 +1,5 @@
-#ifndef IR_BUILDER_AST_H
-#define IR_BUILDER_AST_H
+#ifndef IR_GEN_H
+#define IR_GEN_H
 #include "objtype.h"
 #include "access.h"
 #include "astvisitor.h"
@@ -17,11 +17,13 @@ class SymbolTableEntry;
 class ErrorHandler;
 
 
-class IrBuilderAst : public AstVisitor  {
+/** IR Generator -- Generates (aka build) LLVM's intermediate representation
+from a given AST. */
+class IrGen : public AstVisitor  {
 public:
   static void staticOneTimeInit();
-  IrBuilderAst(Env& env, ErrorHandler& errorHandler, AstVisitor* enclosingVisitor = NULL);
-  virtual ~IrBuilderAst();
+  IrGen(Env& env, ErrorHandler& errorHandler, AstVisitor* enclosingVisitor = NULL);
+  virtual ~IrGen();
 
   void setEnclosingVisitor(AstVisitor* enclosingVisitor);
 
@@ -44,7 +46,7 @@ public:
   virtual void visit(AstIf& if_);
 
 private:
-  friend class TestingIrBuilderAst;
+  friend class TestingIrGen;
   
   int jitExecFunction(llvm::Function* function);
   int jitExecFunction1Arg(llvm::Function* function, int arg1);

@@ -1,4 +1,4 @@
-#include "irbuilderast.h"
+#include "irgen.h"
 #include "ast.h"
 #include "env.h"
 #include "errorhandler.h"
@@ -16,11 +16,11 @@
 using namespace std;
 using namespace llvm;
 
-void IrBuilderAst::staticOneTimeInit() {
+void IrGen::staticOneTimeInit() {
   InitializeNativeTarget();
 }
 
-IrBuilderAst::IrBuilderAst(Env& env, ErrorHandler& errorHandler,
+IrGen::IrGen(Env& env, ErrorHandler& errorHandler,
   AstVisitor* enclosingVisitor) :
   m_builder(getGlobalContext()),
   m_module(new Module("Main", getGlobalContext())),
@@ -33,21 +33,23 @@ IrBuilderAst::IrBuilderAst(Env& env, ErrorHandler& errorHandler,
   assert(m_executionEngine);
 }
 
-IrBuilderAst::~IrBuilderAst() {
+IrGen::~IrGen() {
   if (m_executionEngine) { delete m_executionEngine; }
 }
 
-void IrBuilderAst::setEnclosingVisitor(AstVisitor* enclosingVisitor) {
+void IrGen::setEnclosingVisitor(AstVisitor* enclosingVisitor) {
   m_enclosingVisitor = enclosingVisitor ? enclosingVisitor : this;
 }
 
-void IrBuilderAst::buildModuleNoImplicitMain(AstNode& root) {
+/** Builds an LLVM IR module out of the given AST, which includes whatever
+the enclosing visitor does. */
+void IrGen::buildModuleNoImplicitMain(AstNode& root) {
   callAcceptOn(root);
 }
 
 /** In contrast to buildModuleNoImplicitMain an implicit main method is put
 around the given AST. */
-void IrBuilderAst::buildModule(AstValue& root) {
+void IrGen::buildModule(AstValue& root) {
 
   // protects against double definition of the implicit main method
   assert(!m_mainFunction);
@@ -72,28 +74,28 @@ void IrBuilderAst::buildModule(AstValue& root) {
   verifyFunction(*m_mainFunction);
 }
 
-int IrBuilderAst::buildAndRunModule(AstValue& root) {
+int IrGen::buildAndRunModule(AstValue& root) {
   buildModule(root);
   return runModule();
 }
 
-int IrBuilderAst::runModule() {
+int IrGen::runModule() {
   return jitExecFunction(m_mainFunction);
 }
 
-int IrBuilderAst::jitExecFunction(const string& name) {
+int IrGen::jitExecFunction(const string& name) {
   return jitExecFunction(m_module->getFunction(name));
 }
 
-int IrBuilderAst::jitExecFunction1Arg(const string& name, int arg1) {
+int IrGen::jitExecFunction1Arg(const string& name, int arg1) {
   return jitExecFunction1Arg(m_module->getFunction(name), arg1);
 }
 
-int IrBuilderAst::jitExecFunction2Arg(const string& name, int arg1, int arg2) {
+int IrGen::jitExecFunction2Arg(const string& name, int arg1, int arg2) {
   return jitExecFunction2Arg(m_module->getFunction(name), arg1, arg2);
 }
 
-int IrBuilderAst::jitExecFunction(llvm::Function* function) {
+int IrGen::jitExecFunction(llvm::Function* function) {
   void* functionVoidPtr =
     m_executionEngine->getPointerToFunction(function);
   assert(functionVoidPtr);
@@ -102,7 +104,7 @@ int IrBuilderAst::jitExecFunction(llvm::Function* function) {
   return functionPtr();
 }
 
-int IrBuilderAst::jitExecFunction1Arg(llvm::Function* function, int arg1) {
+int IrGen::jitExecFunction1Arg(llvm::Function* function, int arg1) {
   void* functionVoidPtr =
     m_executionEngine->getPointerToFunction(function);
   assert(functionVoidPtr);
@@ -111,7 +113,7 @@ int IrBuilderAst::jitExecFunction1Arg(llvm::Function* function, int arg1) {
   return functionPtr(arg1);
 }
 
-int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2) {
+int IrGen::jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2) {
   void* functionVoidPtr =
     m_executionEngine->getPointerToFunction(function);
   assert(functionVoidPtr);
@@ -120,20 +122,20 @@ int IrBuilderAst::jitExecFunction2Arg(llvm::Function* function, int arg1, int ar
   return functionPtr(arg1, arg2);
 }
 
-llvm::Value* IrBuilderAst::callAcceptOn(AstNode& node) {
+llvm::Value* IrGen::callAcceptOn(AstNode& node) {
   node.accept(*m_enclosingVisitor);
   return node.irValue();
 }
 
-void IrBuilderAst::visit(AstCast& cast) {
+void IrGen::visit(AstCast& cast) {
   cast.setIrValue(NULL);
 }
 
-void IrBuilderAst::visit(AstCtList&) {
+void IrGen::visit(AstCtList&) {
   assert(false); // parent of AstCtList shall not decent run accept on AstCtList
 }
 
-void IrBuilderAst::visit(AstOperator& op) {
+void IrGen::visit(AstOperator& op) {
   const list<AstValue*>& argschilds = op.args().childs();
   list<AstValue*>::const_iterator iter = argschilds.begin();
   Value* resultIr = NULL;
@@ -217,7 +219,7 @@ void IrBuilderAst::visit(AstOperator& op) {
   op.setIrValue(resultIr);
 }
 
-void IrBuilderAst::visit(AstNumber& number) {
+void IrGen::visit(AstNumber& number) {
   if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eInt)) ) {
     number.setIrValue(ConstantInt::get( getGlobalContext(),
         APInt(32, number.value())));
@@ -229,7 +231,7 @@ void IrBuilderAst::visit(AstNumber& number) {
   }
 }
 
-void IrBuilderAst::visit(AstSymbol& symbol) {
+void IrGen::visit(AstSymbol& symbol) {
   SymbolTableEntry* stentry = m_env.find(symbol.name());
   if (NULL==stentry) {
     m_errorHandler.add(new Error(Error::eUnknownName));
@@ -257,7 +259,7 @@ void IrBuilderAst::visit(AstSymbol& symbol) {
   symbol.setIrValue(resultIr);
 }
 
-void IrBuilderAst::visit(AstFunDef& funDef) {
+void IrGen::visit(AstFunDef& funDef) {
   visit(funDef.decl());
   Function* functionIr = funDef.decl().irFunction();
   assert(functionIr);
@@ -316,7 +318,7 @@ void IrBuilderAst::visit(AstFunDef& funDef) {
   funDef.setIrFunction( functionIr );
 }
 
-void IrBuilderAst::visit(AstFunDecl& funDecl) {
+void IrGen::visit(AstFunDecl& funDecl) {
   // currently rettype and type of args is always int
 
   // It is required that an earlier pass did insert this AstFundDecl into the
@@ -359,7 +361,7 @@ void IrBuilderAst::visit(AstFunDecl& funDecl) {
   }
 }
 
-void IrBuilderAst::visit(AstFunCall& funCall) {
+void IrGen::visit(AstFunCall& funCall) {
   Function* callee = dynamic_cast<Function*>(callAcceptOn(funCall.address()));
   assert(callee);
     
@@ -380,7 +382,7 @@ void IrBuilderAst::visit(AstFunCall& funCall) {
   funCall.setIrValue(m_builder.CreateCall(callee, argsIr, "calltmp"));
 }
 
-void IrBuilderAst::visit(AstDataDecl& dataDecl) {
+void IrGen::visit(AstDataDecl& dataDecl) {
 
   // Add to environment only local data objects. Currently there are only
   // local data objects. Insert new name as a new symbol table entry into the
@@ -412,11 +414,11 @@ void IrBuilderAst::visit(AstDataDecl& dataDecl) {
   dataDecl.setIrValue(dataDecl.stentry()->valueIr());
 }
 
-void IrBuilderAst::visit(AstArgDecl& argDecl) {
+void IrGen::visit(AstArgDecl& argDecl) {
   visit( dynamic_cast<AstDataDecl&>(argDecl));
 }
 
-void IrBuilderAst::visit(AstDataDef& dataDef) {
+void IrGen::visit(AstDataDef& dataDef) {
   // process data declaration. That ensures an entry in the symbol table
   visit(dataDef.decl());
   SymbolTableEntry*const& stentry = dataDef.decl().stentry();
@@ -452,7 +454,7 @@ void IrBuilderAst::visit(AstDataDef& dataDef) {
   else { assert(false); }
 }
 
-void IrBuilderAst::visit(AstIf& if_) {
+void IrGen::visit(AstIf& if_) {
   // misc setup
   const list<AstIf::ConditionActionPair>& capairs = if_.conditionActionPairs();
   assert(capairs.size()==1); // curently size>=2 is not yet supported
@@ -507,7 +509,7 @@ void IrBuilderAst::visit(AstIf& if_) {
 }
 
 /** We want allocas in the entry block to facilitate llvm's mem2reg pass.*/
-AllocaInst* IrBuilderAst::createAllocaInEntryBlock(Function* functionIr,
+AllocaInst* IrGen::createAllocaInEntryBlock(Function* functionIr,
   const string &varName) {
   IRBuilder<> irBuilder(&functionIr->getEntryBlock(),
     functionIr->getEntryBlock().begin());

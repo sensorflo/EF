@@ -24,7 +24,7 @@ public:
   virtual void setAccess(Access access, ErrorHandler& errorHandler);
   std::string toStr() const;
 
-  // decorations for IrBuilderAst
+  // decorations for IrGen
 public:
   virtual llvm::Value* irValue() = 0;
   virtual void setIrValue(llvm::Value*) = 0;
@@ -51,7 +51,7 @@ private:
   /** We're the owner. Is garanteed to be non-null. */
   ObjType* m_objType;
 
-  // decorations for IrBuilderAst
+  // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
   virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
@@ -73,7 +73,7 @@ private:
   /** We're the owner. Is garanteed to be non-null */
   AstValue* const m_body;
 
-  // decorations for IrBuilderAst
+  // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irFunction; }
   virtual void setIrValue(llvm::Value* value) { m_irFunction = dynamic_cast<llvm::Function*>(value); }
@@ -116,7 +116,7 @@ private:
   the environment */
   SymbolTableEntry* m_stentry;
 
-// decorations for IrBuilderAst
+// decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irFunction; }
   virtual void setIrValue(llvm::Value* value) { m_irFunction = dynamic_cast<llvm::Function*>(value); }
@@ -153,7 +153,7 @@ private:
   SymbolTableEntry* m_stentry;
   Access m_access;
 
-// decorations for IrBuilderAst
+// decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
   virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
@@ -190,7 +190,7 @@ private:
   AstValue* m_implicitInitializer;
   Access m_access;
 
-// decorations for IrBuilderAst
+// decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
   virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
@@ -214,7 +214,7 @@ private:
   /** We're the owner. Is garanteed to be non-null. */
   ObjType* m_objType;
 
-// decorations for IrBuilderAst
+// decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
   virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
@@ -236,7 +236,7 @@ private:
   const std::string m_name;
   Access m_access;
 
-// decorations for IrBuilderAst
+// decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
   virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
@@ -258,7 +258,7 @@ private:
   /** We're the owner. Is garanteed to be non-null */
   AstCtList* const m_args;
 
-// decorations for IrBuilderAst
+// decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
   virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
@@ -305,7 +305,7 @@ private:
   AstCtList* const m_args;
   static std::map<std::string, EOperation> m_opMap;
 
-// decorations for IrBuilderAst
+// decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
   virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
@@ -343,7 +343,7 @@ private:
   /** We're the owner. Is NOT garanteed to be non-null */
   AstValue* const m_elseAction;
 
-// decorations for IrBuilderAst
+// decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
   virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
@@ -371,7 +371,7 @@ private:
   to be non null*/
   std::list<AstValue*>*const m_childs;
 
-  // decorations for IrBuilderAst
+  // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { static llvm::Value* v = NULL; return v; }
   virtual void setIrValue(llvm::Value*) { }

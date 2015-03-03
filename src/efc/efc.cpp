@@ -1,4 +1,4 @@
-#include "irbuilderast.h"
+#include "irgen.h"
 #include "driver.h"
 #include <iostream>
 #include <stdexcept>
@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
     exit(1);
   }
   try {
-    IrBuilderAst::staticOneTimeInit();
+    IrGen::staticOneTimeInit();
     Driver driver(argv[1]);
     driver.buildAndRunModule();
   }

@@ -11,7 +11,7 @@ class ErrorHandler;
 class Env;
 class ParserExt;
 class SemanticAnalizer;
-class IrBuilderAst;
+class IrGen;
 
 #define YY_DECL yy::Parser::symbol_type yylex(Driver& driver)
 YY_DECL;
@@ -57,7 +57,7 @@ private:
   ParserExt& m_parserExt;
   /** We're the owner. Guaranteed to be non-NULL */
   yy::Parser* m_parser;
-  IrBuilderAst& m_irBuilderAst;
+  IrGen& m_irGen;
   SemanticAnalizer& m_semanticAnalizer;
 };
   

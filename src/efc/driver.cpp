@@ -2,7 +2,7 @@
 #include "errorhandler.h"
 #include "env.h"
 #include "semanticanalizer.h"
-#include "irbuilderast.h"
+#include "irgen.h"
 #include "gensrc/parser.hpp"
 #include <stdio.h>
 #include <errno.h>
@@ -25,10 +25,10 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_astRoot(NULL),
   m_parserExt(*new ParserExt(m_env, m_errorHandler)),
   m_parser(new Parser(*this, m_parserExt, m_astRoot)),
-  m_irBuilderAst(*new IrBuilderAst(m_env, m_errorHandler)),
-  m_semanticAnalizer(*new SemanticAnalizer(m_errorHandler, &m_irBuilderAst)) {
+  m_irGen(*new IrGen(m_env, m_errorHandler)),
+  m_semanticAnalizer(*new SemanticAnalizer(m_errorHandler, &m_irGen)) {
 
-  m_irBuilderAst.setEnclosingVisitor(&m_semanticAnalizer);
+  m_irGen.setEnclosingVisitor(&m_semanticAnalizer);
 
   // Ctor/Dtor must RAII yyin and m_parser
 
@@ -43,7 +43,7 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
 
 Driver::~Driver() {
   fclose(yyin);
-  delete &m_irBuilderAst;
+  delete &m_irGen;
   delete &m_semanticAnalizer;
   delete m_parser;
   delete &m_parserExt;
@@ -61,7 +61,7 @@ void Driver::buildAndRunModule() {
   SaTransformAndIrBuildModule(astAfterParse);
 
   if ( m_errorHandler.errors().empty() ) {
-    cout << m_irBuilderAst.runModule() << "\n";
+    cout << m_irGen.runModule() << "\n";
   }
 }
 
@@ -75,7 +75,7 @@ int Driver::scannAndParse(AstNode*& ast) {
 void Driver::SaTransformAndIrBuildModule(AstNode* ast) {
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
-  m_irBuilderAst.buildModule(*dynamic_cast<AstValue*>(ast));
+  m_irGen.buildModule(*dynamic_cast<AstValue*>(ast));
 }
 
 basic_ostream<char>& Driver::print(const location& loc) {
