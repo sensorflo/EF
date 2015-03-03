@@ -42,14 +42,15 @@ void IrGen::setEnclosingVisitor(AstVisitor* enclosingVisitor) {
 }
 
 /** Using the given AST, generates LLVM IR code, appending it to the one
-implict LLVM module associated with this IrGen object. */
-void IrGen::buildModuleNoImplicitMain(AstNode& root) {
+implict LLVM module associated with this IrGen object.  At the top level of
+the AST, only declarations or definitions are allowed. */
+void IrGen::genIr(AstNode& root) {
   callAcceptOn(root);
 }
 
-/** In contrast to buildModuleNoImplicitMain an implicit main method is put
-around the given AST. */
-void IrGen::buildModule(AstValue& root) {
+/** As genIr, but interpret the given AST as the body of a "fun main:()int"
+function definition. */
+void IrGen::genIrInImplicitMain(AstValue& root) {
 
   // protects against double definition of the implicit main method
   assert(!m_mainFunction);

@@ -72,7 +72,7 @@ int Driver::scannAndParse(AstNode*& ast) {
 void Driver::doSemanticAnalysisAndGenIR(AstNode* ast) {
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
-  m_irGen.buildModule(*dynamic_cast<AstValue*>(ast));
+  m_irGen.genIrInImplicitMain(*dynamic_cast<AstValue*>(ast));
 }
 
 int Driver::jitExecMain() {

@@ -35,8 +35,8 @@ public:
 
   void setEnclosingVisitor(AstVisitor* enclosingVisitor);
 
-  void buildModuleNoImplicitMain(AstNode& root);
-  void buildModule(AstValue& root);
+  void genIr(AstNode& root);
+  void genIrInImplicitMain(AstValue& root);
   int jitExecMain();
   
   virtual void visit(AstCast& cast);
