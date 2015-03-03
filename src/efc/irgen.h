@@ -30,15 +30,13 @@ enclosed visitor is intended to be the semantic analyzer. */
 class IrGen : public AstVisitor  {
 public:
   static void staticOneTimeInit();
-  IrGen(Env& env, ErrorHandler& errorHandler, AstVisitor* enclosingVisitor = NULL);
+  IrGen(Env& env, ErrorHandler& errorHandler);
   virtual ~IrGen();
 
-  void setEnclosingVisitor(AstVisitor* enclosingVisitor);
-
-  void genIr(AstNode& root);
-  void genIrInImplicitMain(AstValue& root);
+  void genIr(AstNode& root, AstVisitor* enclosingVisitor = NULL);
+  void genIrInImplicitMain(AstValue& root, AstVisitor* enclosingVisitor = NULL);
   int jitExecMain();
-  
+
   virtual void visit(AstCast& cast);
   virtual void visit(AstCtList& ctList);
   virtual void visit(AstOperator& op);
@@ -55,6 +53,8 @@ public:
 private:
   friend class TestingIrGen;
   
+  llvm::Value* genIrInternal(AstNode& root, AstVisitor* enclosingVisitor = NULL);
+
   int jitExecFunction(llvm::Function* function);
   int jitExecFunction1Arg(llvm::Function* function, int arg1);
   int jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2);
@@ -77,6 +77,7 @@ private:
   std::stack<llvm::BasicBlock*> m_BasicBlockStack;
   Env& m_env;
   ErrorHandler& m_errorHandler;
+  /** We're not the owner, guaranteed to be non-null. */
   AstVisitor* m_enclosingVisitor;
 };
 

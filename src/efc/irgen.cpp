@@ -20,15 +20,14 @@ void IrGen::staticOneTimeInit() {
   InitializeNativeTarget();
 }
 
-IrGen::IrGen(Env& env, ErrorHandler& errorHandler,
-  AstVisitor* enclosingVisitor) :
+IrGen::IrGen(Env& env, ErrorHandler& errorHandler) :
   m_builder(getGlobalContext()),
   m_module(new Module("Main", getGlobalContext())),
   m_executionEngine(EngineBuilder(m_module).setErrorStr(&m_errStr).create()),
   m_mainFunction(NULL),
   m_env(env),
   m_errorHandler(errorHandler),
-  m_enclosingVisitor(enclosingVisitor ? enclosingVisitor : this) {
+  m_enclosingVisitor(this) {
   assert(m_module);
   assert(m_executionEngine);
 }
@@ -37,21 +36,17 @@ IrGen::~IrGen() {
   if (m_executionEngine) { delete m_executionEngine; }
 }
 
-void IrGen::setEnclosingVisitor(AstVisitor* enclosingVisitor) {
-  m_enclosingVisitor = enclosingVisitor ? enclosingVisitor : this;
-}
-
 /** Using the given AST, generates LLVM IR code, appending it to the one
 implict LLVM module associated with this IrGen object.  At the top level of
-the AST, only declarations or definitions are allowed. */
-void IrGen::genIr(AstNode& root) {
-  callAcceptOn(root);
+the AST, only declarations or definitions are allowed.  Regarding
+enclosingVisitor, see class method if IrGen. */
+void IrGen::genIr(AstNode& root, AstVisitor* enclosingVisitor) {
+  genIrInternal(root, enclosingVisitor);
 }
 
 /** As genIr, but interpret the given AST as the body of a "fun main:()int"
 function definition. */
-void IrGen::genIrInImplicitMain(AstValue& root) {
-
+void IrGen::genIrInImplicitMain(AstValue& root, AstVisitor* enclosingVisitor) {
   // protects against double definition of the implicit main method
   assert(!m_mainFunction);
 
@@ -67,12 +62,18 @@ void IrGen::genIrInImplicitMain(AstValue& root) {
 
   // Currently the return type is always int, so ensure the return type of the
   // IR code is also Int32
-  Value* resultIr = callAcceptOn(root);
+  Value* resultIr = genIrInternal(root, enclosingVisitor);
   assert(resultIr);
   Value* extResultIr = m_builder.CreateZExt( resultIr, Type::getInt32Ty(getGlobalContext()));
   m_builder.CreateRet(extResultIr);
 
   verifyFunction(*m_mainFunction);
+}
+
+/** As genIr, only that it additionaly returns the associated llvm::Value*  */
+llvm::Value* IrGen::genIrInternal(AstNode& root, AstVisitor* enclosingVisitor) {
+  m_enclosingVisitor = enclosingVisitor ? enclosingVisitor : this;
+  return callAcceptOn(root);
 }
 
 int IrGen::jitExecMain() {

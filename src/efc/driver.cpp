@@ -28,8 +28,6 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_irGen(*new IrGen(m_env, m_errorHandler)),
   m_semanticAnalizer(*new SemanticAnalizer(m_errorHandler, &m_irGen)) {
 
-  m_irGen.setEnclosingVisitor(&m_semanticAnalizer);
-
   // Ctor/Dtor must RAII yyin and m_parser
 
   if (m_fileName.empty() || m_fileName == "-") {
@@ -72,7 +70,7 @@ int Driver::scannAndParse(AstNode*& ast) {
 void Driver::doSemanticAnalysisAndGenIR(AstNode* ast) {
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
-  m_irGen.genIrInImplicitMain(*dynamic_cast<AstValue*>(ast));
+  m_irGen.genIrInImplicitMain(*dynamic_cast<AstValue*>(ast), &m_semanticAnalizer);
 }
 
 int Driver::jitExecMain() {
