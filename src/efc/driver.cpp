@@ -51,18 +51,15 @@ Driver::~Driver() {
   delete &m_errorHandler;
 }
 
-void Driver::buildAndRunModule() {
+/** Compile = scann & parse & do semantic analysis & generate IR. */
+void Driver::compile() {
   AstNode* astAfterParse = NULL;
   int retParse = scannAndParse(astAfterParse);
   if (retParse) {
     throw runtime_error::runtime_error("parse failed");
   }
 
-  SaTransformAndIrBuildModule(astAfterParse);
-
-  if ( m_errorHandler.errors().empty() ) {
-    cout << m_irGen.runModule() << "\n";
-  }
+  doSemanticAnalysisAndGenIR(astAfterParse);
 }
 
 int Driver::scannAndParse(AstNode*& ast) {
@@ -72,10 +69,14 @@ int Driver::scannAndParse(AstNode*& ast) {
   return ret;
 }
 
-void Driver::SaTransformAndIrBuildModule(AstNode* ast) {
+void Driver::doSemanticAnalysisAndGenIR(AstNode* ast) {
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
   m_irGen.buildModule(*dynamic_cast<AstValue*>(ast));
+}
+
+int Driver::jitExecMain() {
+  return m_irGen.jitExecMain();
 }
 
 basic_ostream<char>& Driver::print(const location& loc) {

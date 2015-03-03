@@ -37,8 +37,7 @@ public:
 
   void buildModuleNoImplicitMain(AstNode& root);
   void buildModule(AstValue& root);
-  int runModule();
-  int buildAndRunModule(AstValue& root);
+  int jitExecMain();
   
   virtual void visit(AstCast& cast);
   virtual void visit(AstCtList& ctList);

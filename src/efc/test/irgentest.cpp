@@ -24,7 +24,7 @@ public:
   ErrorHandler* m_errorHandler;
 };
 
-void testbuilAndRunModule(TestingIrGen& UUT, AstValue* astRoot,
+void testbuilAndJitExecMain(TestingIrGen& UUT, AstValue* astRoot,
   int expectedResult, const string& spec = "") {
 
   // setup
@@ -32,21 +32,22 @@ void testbuilAndRunModule(TestingIrGen& UUT, AstValue* astRoot,
   auto_ptr<AstValue> astRootAp(astRoot);
 
   // execute
-  int result = UUT.buildAndRunModule(*astRoot);
+  UUT.buildModule(*astRoot);
+  int result = UUT.jitExecMain();
 
   // verify
   EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot);
 }
 
-#define TEST_BUILD_AND_RUN_MODULE(astRoot, expectedResult, spec)        \
+#define TEST_BUILD_AND_JIT_EXEC_MAIN(astRoot, expectedResult, spec)        \
   {                                                                     \
-    SCOPED_TRACE("testbuilAndRunModule called from here (via TEST_BUILD_AND_RUN_MODULE)"); \
+    SCOPED_TRACE("testbuilAndJitExecMain called from here (via TEST_BUILD_AND_JIT_EXEC_MAIN)"); \
     TestingIrGen UUT;                                            \
     ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);                      \
-    testbuilAndRunModule(UUT, astRoot, expectedResult, spec);           \
+    testbuilAndJitExecMain(UUT, astRoot, expectedResult, spec);           \
   }
 
-void testbuilAndRunModuleThrows(TestingIrGen& UUT, AstValue* astRoot,
+void testbuilAndJitExecMainThrows(TestingIrGen& UUT, AstValue* astRoot,
   const string& spec = "") {
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
@@ -56,7 +57,7 @@ void testbuilAndRunModuleThrows(TestingIrGen& UUT, AstValue* astRoot,
 
   // execute
   try {
-    UUT.buildAndRunModule(*ast.get());
+    UUT.buildModule(*ast.get());
   }
 
   // verify
@@ -82,12 +83,12 @@ void testbuilAndRunModuleThrows(TestingIrGen& UUT, AstValue* astRoot,
     amendSpec(spec) << amendAst(ast.get());
 }
 
-#define TEST_BUILD_AND_RUN_MODULE_THROWS(astRoot, spec)                 \
+#define TEST_BUILD_AND_JIT_EXEC_MAIN_THROWS(astRoot, spec)                 \
   {                                                                     \
-    SCOPED_TRACE("testbuilAndRunModuleThrows called from here (via TEST_BUILD_AND_RUN_MODULE_THROWS)"); \
+    SCOPED_TRACE("testbuilAndJitExecMainThrows called from here (via TEST_BUILD_AND_JIT_EXEC_MAIN_THROWS)"); \
     TestingIrGen UUT;                                            \
     ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);                      \
-    testbuilAndRunModuleThrows(UUT, astRoot, spec);                     \
+    testbuilAndJitExecMainThrows(UUT, astRoot, spec);                     \
   }
 
 void testbuilModuleReportsError(TestingIrGen& UUT, AstValue* astRoot,
@@ -157,103 +158,103 @@ void testbuilModuleReportsError(TestingIrGen& UUT, AstValue* astRoot,
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_single_literal,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_the_literal_s_value)) {
-  TEST_BUILD_AND_RUN_MODULE(new AstNumber(42), 42, "");
+  TEST_BUILD_AND_JIT_EXEC_MAIN(new AstNumber(42), 42, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     an_operator,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_the_result_of_that_operator)) {
 
   // ; aka sequence
   string spec = "The sequence operator evaluates all arguments and returns the last";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';', new AstNumber(42)), 42, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';', new AstNumber(11), new AstNumber(22)), 22, "");
 
   // not
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eNot,
       new AstNumber(0, ObjTypeFunda::eBool)),
     !false, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eNot,
       new AstNumber(1, ObjTypeFunda::eBool)),
     !true, "");
 
   // and
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eAnd,
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(0, ObjTypeFunda::eBool)),
     false && false, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eAnd,
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(1, ObjTypeFunda::eBool)),
     false && true, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eAnd,
       new AstNumber(1, ObjTypeFunda::eBool),
       new AstNumber(0, ObjTypeFunda::eBool)),
     true && false, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eAnd,
       new AstNumber(1, ObjTypeFunda::eBool),
       new AstNumber(1, ObjTypeFunda::eBool)),
     true && true, "");
 
   // or
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eOr,
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(0, ObjTypeFunda::eBool)),
     false || false, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eOr,
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(1, ObjTypeFunda::eBool)),
     false || true, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eOr,
       new AstNumber(1, ObjTypeFunda::eBool),
       new AstNumber(0, ObjTypeFunda::eBool)),
     true || false, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eOr,
       new AstNumber(1, ObjTypeFunda::eBool),
       new AstNumber(1, ObjTypeFunda::eBool)),
     true || true, "");
 
   // ==
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eEqualTo, new AstNumber(2), new AstNumber(2)),
     2==2, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eEqualTo, new AstNumber(1), new AstNumber(2)),
     1==2, "");
 
   // + - * /
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('+', new AstNumber(1), new AstNumber(2)),
     1+2, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('-', new AstNumber(1), new AstNumber(2)),
     1-2, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('*', new AstNumber(1), new AstNumber(2)),
     1*2, "");
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('/', new AstNumber(6), new AstNumber(3)),
     6/3, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     an_AstOperator_like_it_results_from_op_call_syntax_constructs,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_the_correct_result)) {
 
   // such operators are
@@ -261,23 +262,23 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
   //null-ary not "!()" is invalid 
   string spec = "null-ary or: or() = false";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eOr),
     false, spec);
   spec = "null-ary and: and() = true";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eAnd),
     true, spec);
   spec = "null-ary minus: -() = 0";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('-'),
     0, spec);
   spec = "null-ary minus: +() = 0";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('+'),
     0, spec);
   spec = "null-ary mult: *() = 1";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('*'),
     1, spec);
   //null-ary div "/()" is invalid
@@ -285,39 +286,39 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
   // unary not "!(x)" is the normal case and has been tested above
   spec = "unary seq: ;(x) = x";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';', new AstNumber(2)),
     2, spec);
   spec = "unary or: or(x) = bool(x)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eOr, new AstNumber(1, ObjTypeFunda::eBool)),
     true, spec);
   spec = "unary and: and(x) = bool(x)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eAnd, new AstNumber(1, ObjTypeFunda::eBool)),
     true, spec);
   spec = "unary minus: -(x)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('-', new AstNumber(1)),
     -1, spec);
   spec = "unary plus: +(x) = x";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('+', new AstNumber(1)),
     +1, spec);
   spec = "spec = unary mult: *(x) = x";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('*', new AstNumber(1)),
     1, spec);
   // unary div "/(x)" is invalid
 
   spec = "binary equal-to: ==(1,1)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eEqualTo,
       new AstNumber(1),
       new AstNumber(1)),
     1==1, spec);
   spec = "binary equal-to: ==(1,2)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(AstOperator::eEqualTo,
       new AstNumber(1),
       new AstNumber(2)),
@@ -325,35 +326,35 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
   // n-ary not "!(x y z)" is invalid
   spec = "n-ary seq: ;(1,2,3)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       new AstNumber(1),
       new AstNumber(2),
       new AstNumber(3)),
     3, spec);
   spec = "n-ary plus: +(1,2,3)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('+',
       new AstNumber(1),
       new AstNumber(2),
       new AstNumber(3)),
     1+2+3, spec);
   spec = "n-ary minus: -(1,2,3)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('-',
       new AstNumber(1),
       new AstNumber(2),
       new AstNumber(3)),
     1-2-3, spec);
   spec = "n-ary mult: *(1,2,3)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('*',
       new AstNumber(1),
       new AstNumber(2),
       new AstNumber(3)),
     1*2*3, spec);
   spec = "n-ary div: /(24,4,3)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('/',
       new AstNumber(24),
       new AstNumber(4),
@@ -363,10 +364,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_seq_with_some_expressions_not_having_a_value_but_the_last_having_a_value,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_the_result_of_the_last_expression)) {
   string spec = "Sequence containing a function declaration";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       pe.mkFunDecl("foo"),
       new AstNumber(42)),
@@ -653,10 +654,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_function_definition_in_a_function_body,
-    buildAndRunModule,
+    buildAndJitExecMain,
     succeeds)) {
   
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       pe.mkFunDef(pe.mkFunDecl("foo"),
         new AstOperator(';',
@@ -668,7 +669,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     re_declaration_of_an_identifier_with_different_type,
-    buildAndRunModule,
+    buildAndJitExecMain,
     reports_an_eIncompatibleRedaclaration)) {
   string spec = "First function type, then fundamental type";
   TEST_BUILD_MODULE_REPORTS_ERROR(
@@ -694,11 +695,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_function_call_to_an_defined_function,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_result_of_that_function_call)) {
 
   string spec = "Trivial function with zero arguments returning a constant";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       pe.mkFunDef(
         pe.mkFunDecl("foo"),
@@ -707,7 +708,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     42, spec);
 
   spec = "Simple function with one argument which is ignored and a constant is returned";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       pe.mkFunDef(
         pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
@@ -716,7 +717,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     42, spec);
 
   spec = "Simple function with two arguments whichs sum is returned";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       pe.mkFunDef(
         pe.mkFunDecl(
@@ -733,11 +734,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_function_call_to_an_defined_function_WITH_incorrect_number_of_arguments,
-    buildAndRunModule,
+    buildAndJitExecMain,
     throws)) {
 
   string spec = "Function foo expects one arg, but zero where passed on call";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
+  TEST_BUILD_AND_JIT_EXEC_MAIN_THROWS(
     new AstOperator(';',
       pe.mkFunDef(
         pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
@@ -746,7 +747,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     spec);
 
   spec = "Function foo expects no args, but one arg was passed on call";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
+  TEST_BUILD_AND_JIT_EXEC_MAIN_THROWS(
     new AstOperator(';',
         pe.mkFunDef(
           pe.mkFunDecl("foo"),
@@ -757,11 +758,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_inmutable_data_object_definition_of_foo_being_initialized_with_x,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_x_rvalue)) {
 
   string spec = "Value of definition expression should equal initializer's value";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstDataDef(
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstNumber(42)),
@@ -769,7 +770,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
   spec = "Value of definition expression is an rvalue and thus _not_ "
     "assignable to";
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
+  TEST_BUILD_AND_JIT_EXEC_MAIN_THROWS(
     new AstOperator(';',
       new AstOperator('=',
         new AstDataDef(
@@ -782,18 +783,18 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_mutable_data_object_definition_of_foo_being_initialized_with_x,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_x_lvalue)) {
 
   string spec = "Value of definition expression should equal initializer's value";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstDataDef(
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       new AstNumber(42)),
     42, spec);
 
   spec = "Definition expresssion is an lvalue which concequently is assignable to";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator('=',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -804,11 +805,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     foo_defined_as_data_object_followed_by_a_simple_expression_referencing_foo,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_result_of_that_expression)) {
 
   string spec = "value (aka immutable (aka const) data obj)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
@@ -819,7 +820,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     42+77, spec);
 
   spec = "variable (aka mutable data obj)";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -832,11 +833,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     foo_defined_as_variable_initialized_with_x_followed_by_assigning_y_to_foo,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_y)) {
 
   string spec = "Example: Assignement 'foo=77' being last expression in sequence"; 
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -847,7 +848,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     77, spec);
 
   spec = "Example: After assignment 'foo=77', there is a further 'foo' expression"; 
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -861,10 +862,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME4(
     foo_defined_as_value_followed_by_assigning_to_foo,
-    buildAndRunModule,
+    buildAndJitExecMain,
     throws,
     BECAUSE_values_are_immutable_data_objects)) {
-  TEST_BUILD_AND_RUN_MODULE_THROWS(
+  TEST_BUILD_AND_JIT_EXEC_MAIN_THROWS(
     new AstOperator(';',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
@@ -877,9 +878,9 @@ TEST(IrGenTest, MAKE_TEST_NAME4(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_value_definition_of_foo_with_no_explicit_initializer,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_the_default_which_is_zero)) {
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstDataDef(
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
     0, "");
@@ -887,7 +888,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     multiple_identical_data_object_declaration_of_x,
-    buildAndRunModule,
+    buildAndJitExecMain,
     succeeds)) {
   TestingIrGen UUT;
   ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
@@ -907,7 +908,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   // the implicit main method. 
 
   string spec = "function argument named 'x' shadows 'global' variable also named 'x'";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       pe.mkFunDef(
@@ -919,7 +920,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     42, spec);
 
   spec = "variable 'x' local to a function shadows 'global' variable also named 'x'";
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       pe.mkFunDef(
@@ -971,9 +972,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 // Temporary test while introducing types
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_seq_containing_a_bool_literal,
-    buildAndRunModule,
+    buildAndJitExecMain,
     succeeds)) {
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstOperator(';',
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(1, ObjTypeFunda::eBool)),
@@ -982,9 +983,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     an_if_else_expression_WITH_a_condition_evaluating_to_true,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_the_value_of_the_then_clause)) {
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstIf(
       new AstNumber(1, ObjTypeFunda::eBool), // condition
       new AstNumber(2), // then clause
@@ -994,9 +995,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     an_if_else_expression_WITH_a_condition_evaluating_to_false,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_the_value_of_the_else_clause)) {
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstIf(
       new AstNumber(0, ObjTypeFunda::eBool), // condition
       new AstNumber(2), // then clause
@@ -1006,9 +1007,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     an_if_expression_without_else_WITH_a_condition_evaluating_to_false,
-    buildAndRunModule,
+    buildAndJitExecMain,
     returns_default_value_of_expressions_type)) {
-  TEST_BUILD_AND_RUN_MODULE(
+  TEST_BUILD_AND_JIT_EXEC_MAIN(
     new AstIf(
       new AstNumber(0, ObjTypeFunda::eBool), // condition
       new AstNumber(2)), // then clause

@@ -23,7 +23,7 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstValue* astRoot,
 
   // execute
   try {
-    UUT.SaTransformAndIrBuildModule(astRoot);
+    UUT.doSemanticAnalysisAndGenIR(astRoot);
   }
 
   // verify

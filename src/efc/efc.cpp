@@ -12,7 +12,8 @@ int main(int argc, char** argv) {
   try {
     IrGen::staticOneTimeInit();
     Driver driver(argv[1]);
-    driver.buildAndRunModule();
+    driver.compile();
+    cout << driver.jitExecMain() << "\n";
   }
   catch (const exception& e) {
     cerr << e.what() << endl;

@@ -24,9 +24,10 @@ public:
   Driver(const std::string& fileName, std::basic_ostream<char>* ostream = NULL);
   virtual ~Driver();
   
-  void buildAndRunModule();
+  void compile();
   int scannAndParse(AstNode*& ast);
-  void SaTransformAndIrBuildModule(AstNode* ast);
+  void doSemanticAnalysisAndGenIR(AstNode* ast);
+  int jitExecMain();
 
   // referenced by scanner, parser etc.
   // --------------------------------------------------

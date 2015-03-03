@@ -41,8 +41,8 @@ void IrGen::setEnclosingVisitor(AstVisitor* enclosingVisitor) {
   m_enclosingVisitor = enclosingVisitor ? enclosingVisitor : this;
 }
 
-/** Builds an LLVM IR module out of the given AST, which includes whatever
-the enclosing visitor does. */
+/** Using the given AST, generates LLVM IR code, appending it to the one
+implict LLVM module associated with this IrGen object. */
 void IrGen::buildModuleNoImplicitMain(AstNode& root) {
   callAcceptOn(root);
 }
@@ -74,12 +74,7 @@ void IrGen::buildModule(AstValue& root) {
   verifyFunction(*m_mainFunction);
 }
 
-int IrGen::buildAndRunModule(AstValue& root) {
-  buildModule(root);
-  return runModule();
-}
-
-int IrGen::runModule() {
+int IrGen::jitExecMain() {
   return jitExecFunction(m_mainFunction);
 }
 
