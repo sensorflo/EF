@@ -18,7 +18,15 @@ class ErrorHandler;
 
 
 /** IR Generator -- Generates (aka build) LLVM's intermediate representation
-from a given AST. */
+from a given AST.
+
+Is implemented using the vistor pattern.  Processing an AST node is in general
+an interleaved mixture between generating IR code for the current node and
+recursively descending into all child nodes.  Descinding to a child node works
+by calling accept (visitor pattern) on the child note and passing the
+'enclosed visitor'.  The enclosed visitor can process the (child) node first
+and is then obliged to forward the call to IrGen.  For production, the
+enclosed visitor is intended to be the semantic analyzer. */
 class IrGen : public AstVisitor  {
 public:
   static void staticOneTimeInit();
