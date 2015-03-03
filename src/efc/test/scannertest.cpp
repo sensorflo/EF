@@ -97,8 +97,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_number_WITH_an_unknown_suffix,
     yylex,
     returns_TOK_NUMBER_AND_fails)) {
-  stringstream ss;
-  DriverOnTmpFile driver( "42if", &ss);
+  DriverOnTmpFile driver( "42if" );
   EXPECT_EQ(Parser::token::TOK_NUMBER, yylex(driver).token() );
   EXPECT_TRUE( driver.d().gotError() );
   EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
