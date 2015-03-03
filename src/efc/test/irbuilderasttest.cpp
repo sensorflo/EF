@@ -624,20 +624,6 @@ TEST(IrBuilderAstTest, MAKE_TEST_NAME(
 }
 
 TEST(IrBuilderAstTest, MAKE_TEST_NAME(
-    a_reference_to_an_unknown_name,
-    buildModule,
-    reports_an_eErrUnknownName)) {
-  TEST_BUILD_MODULE_REPORTS_ERROR(
-    new AstSymbol("x"),
-    Error::eUnknownName, "");
-
-  // since currently IrBuilderAstT implements AstFunCall specially
-  TEST_BUILD_MODULE_REPORTS_ERROR(
-    new AstFunCall(new AstSymbol("foo")),
-    Error::eUnknownName, "");
-}
-
-TEST(IrBuilderAstTest, MAKE_TEST_NAME(
     multiple_identical_function_declarations,
     buildModuleNoImplicitMain,
     succeeds)) {

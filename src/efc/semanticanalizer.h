@@ -24,7 +24,9 @@ public:
   virtual void visit(AstIf& if_);
 
 private:
-  //ErrorHandler& m_errorHandler;
+  friend class TestingSemanticAnalizer;
+
+  ErrorHandler& m_errorHandler;
   AstVisitor& m_nextVisitor;
   bool m_ownsNextVisitor;
 };

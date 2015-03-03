@@ -9,17 +9,74 @@
 using namespace testing;
 using namespace std;
 
-void testTransformThrows(AstNode* ast, const string& spec) {
+class TestingSemanticAnalizer : public SemanticAnalizer {
+public:
+  TestingSemanticAnalizer(ErrorHandler& errorHandler) :
+    SemanticAnalizer(errorHandler) {};
+  using SemanticAnalizer::m_errorHandler;
+};
+
+void testAstTraversalThrows(AstNode* ast, const string& spec) {
   ENV_ASSERT_TRUE( ast!=NULL );
   ErrorHandler errorHandler;
-  SemanticAnalizer UUT(errorHandler);
+  TestingSemanticAnalizer UUT(errorHandler);
   EXPECT_ANY_THROW( ast->accept(UUT) ) << amendSpec(spec) << amendAst(ast);
 }
 
-#define TEST_TRANSFORM_THROWS(ast, spec)                                \
+#define TEST_ASTTRAVERSAL_THROWS(ast, spec)                                \
   {                                                                     \
-    SCOPED_TRACE("transform called from here (via TEST_TRANSFORM_THROWS)"); \
-    testTransformThrows(ast, spec);                                     \
+    SCOPED_TRACE("transform called from here (via TEST_ASTTRAVERSAL_THROWS)"); \
+    testAstTraversalThrows(ast, spec);                                     \
+  }
+
+void testAstTraversalReportsError(AstNode* ast, Error::No expectedErrorNo, const string& spec) {
+  // setup
+  ENV_ASSERT_TRUE( ast!=NULL );
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(errorHandler);
+  bool anyThrow = false;
+  bool didThrowBuildError = false;
+  string excptionwhat;
+
+  // exercise
+  try {
+    ast->accept(UUT);
+  }
+
+  // verify
+  catch (BuildError& buildError) {
+    didThrowBuildError = true;
+
+    const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();
+    EXPECT_EQ(1, errors.size()) <<
+      "Expecting exactly one error\n" << 
+      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+    EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
+      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+  }
+  catch (exception& e) {
+    anyThrow = true;
+    excptionwhat = e.what();
+  }
+  catch (exception* e) {
+    anyThrow = true;
+    if ( e ) {
+      excptionwhat = e->what();
+    }
+  }
+  catch (...) {
+    anyThrow = true;
+  }
+  EXPECT_TRUE(!didThrowBuildError) <<
+    amendSpec(spec) << amendAst(ast) << amend(UUT.m_errorHandler) <<
+    "\nanyThrow: " << anyThrow <<
+    "\nexceptionwhat: " << excptionwhat;
+}
+
+#define TEST_ASTTRAVERSAL_REPORTS_ERROR(ast, expectedErrorNo, spec)        \
+  {                                                                     \
+    SCOPED_TRACE("transform called from here (via TEST_ASTTRAVERSAL_REPORTS_ERROR)"); \
+    testAstTraversalReportsError(ast, expectedErrorNo, spec);                     \
   }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -27,7 +84,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     transform,
     throws,
     BECAUSE_there_are_no_narrowing_implicit_conversions)) {
-  TEST_TRANSFORM_THROWS(
+  TEST_ASTTRAVERSAL_THROWS(
     new AstDataDef(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool)),
       new AstNumber(42, ObjTypeFunda::eInt)),
@@ -39,7 +96,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     transform,
     throws,
     BECAUSE_currently_there_are_no_implicit_widening_conversions)) {
-  TEST_TRANSFORM_THROWS(
+  TEST_ASTTRAVERSAL_THROWS(
     new AstDataDef(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstNumber(0, ObjTypeFunda::eBool)),
@@ -51,6 +108,21 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     transform,
     throws,
     BECAUSE_currently_there_is_no_NOP_operation)) {
-  TEST_TRANSFORM_THROWS(new AstOperator(';'), "");
+  TEST_ASTTRAVERSAL_THROWS(new AstOperator(';'), "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_reference_to_an_unknown_name,
+    transform,
+    reports_an_eErrUnknownName)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstSymbol("x"),
+    Error::eUnknownName, "");
+
+  // separate test for symbol and funcal since currently the two do sadly not
+  // share a common implementation
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstFunCall(new AstSymbol("foo")),
+    Error::eUnknownName, "");
 }
 

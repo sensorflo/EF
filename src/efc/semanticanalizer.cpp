@@ -7,6 +7,7 @@ using namespace std;
 
 SemanticAnalizer::SemanticAnalizer(ErrorHandler& errorHandler,
   AstVisitor* nextVisitor) :
+  m_errorHandler(errorHandler),
   m_nextVisitor(nextVisitor ? *nextVisitor : *new AstDefaultIterator(*this)),
   m_ownsNextVisitor(nextVisitor==NULL) {
 }
