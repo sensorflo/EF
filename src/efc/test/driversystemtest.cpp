@@ -1,4 +1,5 @@
 #include "test.h"
+#include "driverontmpfile.h"
 #include "../driver.h"
 #include "../errorhandler.h"
 using namespace testing;
@@ -86,4 +87,44 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
     Error::eWriteToReadOnly, spec);
 }
 
+TEST(DriverSystemTest, MAKE_TEST_NAME(
+    an_well_formed_EF_program,
+    compile,
+    writes_nothing_to_its_error_ostream)) {
 
+  // setup
+  string well_formed_ef_program = "42";
+  stringstream errorMsgFromDriver;
+  DriverOnTmpFile driverOnTmpFile( well_formed_ef_program, &errorMsgFromDriver);
+  Driver& UUT = driverOnTmpFile;
+
+  // execute
+  UUT.compile();
+
+  // verify
+  EXPECT_EQ( 0, errorMsgFromDriver.str().length() ) <<
+    "\n" <<
+    "errorMsgFromDriver: \"" << errorMsgFromDriver.str() << "\"\n" <<
+    "EF program: \"" << well_formed_ef_program << "\"\n";
+}
+
+TEST(DriverSystemTest, MAKE_TEST_NAME(
+    an_EF_program_containing_an_error,
+    compile,
+    writes_an_error_to_its_error_ostream)) {
+
+  // setup
+  string ef_program_with_error = "42 = 77";
+  stringstream errorMsgFromDriver;
+  DriverOnTmpFile driverOnTmpFile( ef_program_with_error, &errorMsgFromDriver);
+  Driver& UUT = driverOnTmpFile;
+
+  // execute
+  UUT.compile();
+
+  // verify
+  EXPECT_EQ( 0, errorMsgFromDriver.str().find("Build error(s):")) <<
+    "\n" <<
+    "errorMsgFromDriver: \"" << errorMsgFromDriver.str() << "\"\n" <<
+    "EF program: \"" << ef_program_with_error << "\"\n";
+}

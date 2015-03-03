@@ -51,13 +51,21 @@ Driver::~Driver() {
 
 /** Compile = scann & parse & do semantic analysis & generate IR. */
 void Driver::compile() {
-  AstNode* astAfterParse = NULL;
-  int retParse = scannAndParse(astAfterParse);
-  if (retParse) {
-    throw runtime_error::runtime_error("parse failed");
-  }
+  try {
+    AstNode* astAfterParse = NULL;
+    int retParse = scannAndParse(astAfterParse);
+    if (retParse) {
+      throw runtime_error::runtime_error("parse failed");
+    }
 
-  doSemanticAnalysisAndGenIR(astAfterParse);
+    doSemanticAnalysisAndGenIR(astAfterParse);
+  }
+  catch (BuildError&) {
+    // nop -- BuildError exception is handled below by printing any errors
+  }
+  if (!m_errorHandler.errors().empty()) {
+    m_ostream << "Build error(s): " << m_errorHandler << "\n";
+  }
 }
 
 int Driver::scannAndParse(AstNode*& ast) {
