@@ -26,7 +26,7 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_parserExt(*new ParserExt(m_env, m_errorHandler)),
   m_parser(new Parser(*this, m_parserExt, m_astRoot)),
   m_irGen(*new IrGen(m_env, m_errorHandler)),
-  m_semanticAnalizer(*new SemanticAnalizer(m_errorHandler, &m_irGen)) {
+  m_semanticAnalizer(*new SemanticAnalizer(m_env, m_errorHandler, &m_irGen)) {
 
   // Ctor/Dtor must RAII yyin and m_parser
 

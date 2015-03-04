@@ -3,6 +3,7 @@
 #include "astvisitor.h"
 #include <cstddef>
 
+class Env;
 class ErrorHandler;
 
 /** Does semenatic analysis by inserting AST nodes where needed or reporting
@@ -14,7 +15,7 @@ responsible to descent down to child nodes, i.e. call accept on child nodes.
 For production, the next visitor is intended to be an IR generator. */
 class SemanticAnalizer : public AstVisitor {
 public:
-  SemanticAnalizer(ErrorHandler& errorHandler, AstVisitor* nextVisitor = NULL);
+  SemanticAnalizer(Env& env, ErrorHandler& errorHandler, AstVisitor* nextVisitor = NULL);
   virtual ~SemanticAnalizer();
 
   virtual void visit(AstCast& cast);
@@ -33,6 +34,7 @@ public:
 private:
   friend class TestingSemanticAnalizer;
 
+  Env& m_env;
   ErrorHandler& m_errorHandler;
   AstVisitor& m_nextVisitor;
   bool m_ownsNextVisitor;

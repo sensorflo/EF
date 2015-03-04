@@ -230,11 +230,7 @@ void IrGen::visit(AstNumber& number) {
 
 void IrGen::visit(AstSymbol& symbol) {
   SymbolTableEntry* stentry = m_env.find(symbol.name());
-  if (NULL==stentry) {
-    m_errorHandler.add(new Error(Error::eUnknownName));
-    throw BuildError();
-  }
-  assert( stentry->valueIr() );
+  assert( stentry && stentry->valueIr() );
 
   Value* resultIr = NULL;
   if (stentry->objType().qualifier()&ObjType::eMutable) {
@@ -323,7 +319,7 @@ void IrGen::visit(AstFunDecl& funDecl) {
   assert(funDecl.stentry());
 
   // If there is not yet an empty IR function associated to the stentry, to it
-  // now. 
+  // now.
   if ( ! funDecl.stentry()->valueIr() ) {
     // create IR function with given name and signature
     vector<Type*> argsIr(funDecl.args().size(),

@@ -2,6 +2,7 @@
 #include "../semanticanalizer.h"
 #include "../ast.h"
 #include "../objtype.h"
+#include "../env.h"
 #include "../errorhandler.h"
 #include "../astdefaultiterator.h"
 #include <memory>
@@ -11,15 +12,16 @@ using namespace std;
 
 class TestingSemanticAnalizer : public SemanticAnalizer {
 public:
-  TestingSemanticAnalizer(ErrorHandler& errorHandler) :
-    SemanticAnalizer(errorHandler) {};
+  TestingSemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
+    SemanticAnalizer(env, errorHandler) {};
   using SemanticAnalizer::m_errorHandler;
 };
 
 void testAstTraversalThrows(AstNode* ast, const string& spec) {
   ENV_ASSERT_TRUE( ast!=NULL );
+  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(errorHandler);
+  TestingSemanticAnalizer UUT(env, errorHandler);
   EXPECT_ANY_THROW( ast->accept(UUT) ) << amendSpec(spec) << amendAst(ast);
 }
 
@@ -32,10 +34,10 @@ void testAstTraversalThrows(AstNode* ast, const string& spec) {
 void testAstTraversalReportsError(AstNode* ast, Error::No expectedErrorNo, const string& spec) {
   // setup
   ENV_ASSERT_TRUE( ast!=NULL );
+  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(errorHandler);
-  bool anyThrow = false;
-  bool didThrowBuildError = false;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  bool foreignThrow = false;
   string excptionwhat;
 
   // exercise
@@ -43,34 +45,26 @@ void testAstTraversalReportsError(AstNode* ast, Error::No expectedErrorNo, const
     ast->accept(UUT);
   }
 
-  // verify
-  catch (BuildError& buildError) {
-    didThrowBuildError = true;
+  // verify that ...
 
-    const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();
-    EXPECT_EQ(1, errors.size()) <<
-      "Expecting exactly one error\n" << 
-      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
-    EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
-      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
-  }
-  catch (exception& e) {
-    anyThrow = true;
-    excptionwhat = e.what();
-  }
-  catch (exception* e) {
-    anyThrow = true;
-    if ( e ) {
-      excptionwhat = e->what();
-    }
-  }
-  catch (...) {
-    anyThrow = true;
-  }
-  EXPECT_TRUE(!didThrowBuildError) <<
+  // ... no foreign exception is thrown
+  catch (BuildError& ) { /* nop */  }
+  catch (exception& e) { foreignThrow = true; excptionwhat = e.what(); }
+  catch (exception* e) { foreignThrow = true; if ( e ) { excptionwhat = e->what(); } }
+  catch (...)          { foreignThrow = true; }
+  EXPECT_FALSE( foreignThrow ) <<
     amendSpec(spec) << amendAst(ast) << amend(UUT.m_errorHandler) <<
-    "\nanyThrow: " << anyThrow <<
     "\nexceptionwhat: " << excptionwhat;
+
+  // ... only exactly one error is reported
+  const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();
+  EXPECT_EQ(1, errors.size()) <<
+    "Expecting exactly one error\n" <<
+    amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+
+  // ... and that that one error has the expected ErrorNo
+  EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
+    amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
 }
 
 #define TEST_ASTTRAVERSAL_REPORTS_ERROR(ast, expectedErrorNo, spec)        \

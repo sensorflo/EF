@@ -1,12 +1,14 @@
 #include "semanticanalizer.h"
 #include "ast.h"
 #include "astdefaultiterator.h"
+#include "env.h"
 #include "errorhandler.h"
 #include <stdexcept>
 using namespace std;
 
-SemanticAnalizer::SemanticAnalizer(ErrorHandler& errorHandler,
+SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler,
   AstVisitor* nextVisitor) :
+  m_env(env),
   m_errorHandler(errorHandler),
   m_nextVisitor(nextVisitor ? *nextVisitor : *new AstDefaultIterator(*this)),
   m_ownsNextVisitor(nextVisitor==NULL) {
@@ -45,6 +47,11 @@ void SemanticAnalizer::visit(AstNumber& number) {
 }
 
 void SemanticAnalizer::visit(AstSymbol& symbol) {
+  SymbolTableEntry* stentry = m_env.find(symbol.name());
+  if (NULL==stentry) {
+    m_errorHandler.add(new Error(Error::eUnknownName));
+    throw BuildError();
+  }
   m_nextVisitor.visit(symbol);
 }
 
