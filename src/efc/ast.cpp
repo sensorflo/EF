@@ -104,14 +104,12 @@ void AstFunDecl::initObjType() {
 }
 
 ObjType& AstFunDecl::objType() const {
-  return objType(false);
+  return *m_objType;
 }
 
-ObjType& AstFunDecl::objType(bool stealOwnership) const {
-  if (stealOwnership) {
-    assert(m_ownerOfObjType);
-    m_ownerOfObjType = false;
-  }
+ObjType& AstFunDecl::objTypeStealOwnership() const {
+  assert(m_ownerOfObjType);
+  m_ownerOfObjType = false;
   return *m_objType;
 }
 
@@ -145,14 +143,12 @@ AstDataDecl::~AstDataDecl() {
 }
 
 ObjType& AstDataDecl::objType() const {
-  return objType(false);
+  return *m_objType;
 }
 
-ObjType& AstDataDecl::objType(bool stealOwnership) const {
-  if (stealOwnership) {
-    assert(m_ownerOfObjType);
-    m_ownerOfObjType = false;
-  }
+ObjType& AstDataDecl::objTypeStealOwnership() const {
+  assert(m_ownerOfObjType);
+  m_ownerOfObjType = false;
   return *m_objType;
 }
 

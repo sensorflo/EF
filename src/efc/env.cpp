@@ -5,13 +5,7 @@ using namespace std;
 using namespace llvm;
 
 SymbolTableEntry::~SymbolTableEntry() {
-  delete m_objType;
-}
-
-void SymbolTableEntry::setObjType(ObjType* objType) {
-  delete m_objType;
-  assert(objType);
-  m_objType = objType;
+  delete &m_objType;
 }
 
 SymbolTable::~SymbolTable() {

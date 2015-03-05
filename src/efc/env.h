@@ -4,31 +4,34 @@
 #include <string>
 #include <map>
 #include <list>
+#include <cassert>
 namespace llvm {
   class Value;
 }
 
 class SymbolTableEntry {
 public:
-  SymbolTableEntry() :
-    m_valueIr(NULL), m_objType(new ObjTypeFunda(ObjTypeFunda::eInt)), m_isDefined(false) {}
-  SymbolTableEntry(llvm::Value* valueIr, ObjType* objType, bool isDefined = false) :
-    m_valueIr(valueIr),
-    m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
-    m_isDefined(isDefined) {}
+  SymbolTableEntry(ObjType* objType) :
+    m_objType( (assert(objType), *objType) ),
+    m_isDefined(false),
+    m_valueIr(NULL) {}
   ~SymbolTableEntry();
 
-  llvm::Value*& valueIr() { return m_valueIr; }
-  ObjType& objType() { return *m_objType; }
-  void setObjType(ObjType* objType);
-  bool& isDefined() { return m_isDefined; }
+  ObjType& objType() { return m_objType; }
+  bool isDefined() { return m_isDefined; }
+  void markAsDefined() { m_isDefined = true; }
 
 private:
-  llvm::Value* m_valueIr;
-  /** We're the owner. Is garanteed to be non-null */
-  ObjType* m_objType;
+  /** We're the owner. */
+  ObjType& m_objType;
   /** Opposed to only declared */
   bool m_isDefined;
+
+  // decorations for IrGen
+public:
+  llvm::Value*& valueIr() { return m_valueIr; }
+private:
+  llvm::Value* m_valueIr;
 };
 
 class SymbolTable : public std::map<std::string,SymbolTableEntry*> {

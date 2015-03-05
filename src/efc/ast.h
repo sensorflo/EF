@@ -95,7 +95,7 @@ public:
   virtual const std::string& name() const { return m_name; }
   virtual std::list<AstArgDecl*>const& args() const { return *m_args; }
   virtual ObjType& objType() const;
-  virtual ObjType& objType(bool stealOwnership) const;
+  virtual ObjType& objTypeStealOwnership() const;
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   virtual SymbolTableEntry* stentry() const { return m_stentry; }
@@ -135,7 +135,7 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
   virtual ObjType& objType() const;
-  virtual ObjType& objType(bool stealOwnership) const;
+  virtual ObjType& objTypeStealOwnership() const;
   virtual SymbolTableEntry* stentry() const { return m_stentry; }
   virtual void setStentry(SymbolTableEntry* stentry);
   virtual Access access() const { return m_access; }

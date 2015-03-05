@@ -264,7 +264,7 @@ void IrGen::visit(AstFunDef& funDef) {
     m_errorHandler.add(new Error(Error::eRedefinition));
     throw BuildError();
   }
-  stentry->isDefined() = true;
+  stentry->markAsDefined();
 
   m_env.pushScope(); 
   if ( m_builder.GetInsertBlock() ) {
@@ -282,8 +282,10 @@ void IrGen::visit(AstFunDef& funDef) {
     const string& argName = (*iterAst)->name();
     AllocaInst* alloca = createAllocaInEntryBlock(functionIr, argName);
     m_builder.CreateStore(iterIr, alloca);
-    SymbolTableEntry* stentry = new SymbolTableEntry( alloca,
-      new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), true);
+    SymbolTableEntry* stentry = new SymbolTableEntry(
+      new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable));
+    stentry->markAsDefined();
+    stentry->valueIr() = alloca;
     Env::InsertRet insertRet = m_env.insert(argName, stentry);
 
     // if name is already in environment, then it must be another argument
@@ -386,7 +388,7 @@ void IrGen::visit(AstDataDecl& dataDecl) {
     Env::InsertRet insertRet = m_env.insert( dataDecl.name(), NULL);
     SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
     if (insertRet.second) {
-      envs_stentry_ptr = new SymbolTableEntry(NULL, &dataDecl.objType(true));
+      envs_stentry_ptr = new SymbolTableEntry(&dataDecl.objTypeStealOwnership());
     } else {
       assert(envs_stentry_ptr);
       if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(dataDecl.objType()) ) {
@@ -422,7 +424,7 @@ void IrGen::visit(AstDataDef& dataDef) {
     m_errorHandler.add(new Error(Error::eRedefinition));
     throw BuildError();
   }
-  stentry->isDefined() = true;
+  stentry->markAsDefined();
 
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.

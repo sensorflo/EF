@@ -40,7 +40,7 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   list<AstArgDecl*>::const_iterator iterArgs = args->begin();
   list<ObjType*>* argsObjType = new list<ObjType*>;
   for (/*nop*/; iterArgs!=args->end(); ++iterArgs) {
-    argsObjType->push_back( &((*iterArgs)->objType(true)) );
+    argsObjType->push_back( &((*iterArgs)->objTypeStealOwnership()) );
   }
   ObjTypeFun* objTypeFun = new ObjTypeFun(
     argsObjType, new ObjTypeFunda(ObjTypeFunda::eInt));
@@ -51,7 +51,7 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   SymbolTableEntry*& stIterStEntry = stIter->second;
   bool wasAlreadyInMap = !insertRet.second;
   if (!wasAlreadyInMap) {
-    stIterStEntry = new SymbolTableEntry(NULL, objTypeFun);
+    stIterStEntry = new SymbolTableEntry(objTypeFun);
   } else {
     assert(stIterStEntry);
     if ( ObjType::eFullMatch != stIterStEntry->objType().match(*objTypeFun) ) {
