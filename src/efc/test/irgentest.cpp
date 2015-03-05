@@ -1,5 +1,6 @@
 #include "test.h"
 #include "../irgen.h"
+#include "../semanticanalizer.h"
 #include "../parserext.h"
 #include "../ast.h"
 #include "../env.h"
@@ -12,9 +13,11 @@ using namespace llvm;
 
 class TestingIrGen : public IrGen {
 public:
-  TestingIrGen() : IrGen(
-    *(m_env = new Env()),
-    *(m_errorHandler = new ErrorHandler()) ) {};
+  TestingIrGen() :
+    IrGen(
+      *(m_env = new Env()),
+      *(m_errorHandler = new ErrorHandler()) ),
+    m_semanticAnalizer(*m_env, *m_errorHandler, this) {};
   ~TestingIrGen() { delete m_env; delete m_errorHandler; };
   using IrGen::jitExecFunction;
   using IrGen::jitExecFunction1Arg;
@@ -22,6 +25,7 @@ public:
   using IrGen::m_module;
   Env* m_env;
   ErrorHandler* m_errorHandler;
+  SemanticAnalizer m_semanticAnalizer;
 };
 
 void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
@@ -30,9 +34,10 @@ void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
   auto_ptr<AstValue> astRootAp(astRoot);
+  SemanticAnalizer semanticAnalizer(*UUT.m_env, *UUT.m_errorHandler, &UUT);
 
   // execute
-  UUT.genIrInImplicitMain(*astRoot);
+  UUT.genIrInImplicitMain(*astRoot, &semanticAnalizer);
   int result = UUT.jitExecMain();
 
   // verify
@@ -54,10 +59,11 @@ void testgenIrInImplicitMainThrows(TestingIrGen& UUT, AstValue* astRoot,
   auto_ptr<AstValue> ast(astRoot);
   bool anyThrow = false;
   string excptionwhat;
+  SemanticAnalizer semanticAnalizer(*UUT.m_env, *UUT.m_errorHandler, &UUT);
 
   // execute
   try {
-    UUT.genIrInImplicitMain(*ast.get());
+    UUT.genIrInImplicitMain(*ast.get(), &semanticAnalizer);
   }
 
   // verify
@@ -100,13 +106,14 @@ void testgenIrReportsError(TestingIrGen& UUT, AstValue* astRoot,
   bool anyThrow = false;
   bool didThrowBuildError = false;
   string excptionwhat;
+  SemanticAnalizer semanticAnalizer(*UUT.m_env, *UUT.m_errorHandler, &UUT);
 
   // execute
   try {
     if (bInImplicitMain) {
-      UUT.genIrInImplicitMain(*astRoot);
+      UUT.genIrInImplicitMain(*astRoot, &semanticAnalizer);
     } else {
-      UUT.genIr(*astRoot);
+      UUT.genIr(*astRoot, &semanticAnalizer);
     }
   }
 
@@ -552,7 +559,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstSymbol("x")));
 
   // execute
-  UUT.genIr(*ast);
+  UUT.genIr(*ast, &UUT.m_semanticAnalizer);
 
   // verify
   int x = 256;
@@ -583,7 +590,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         new AstSymbol("y"))));
 
   // execute
-  UUT.genIr(*ast);
+  UUT.genIr(*ast, &UUT.m_semanticAnalizer);
 
   // verify
   int x = 2;
@@ -617,7 +624,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         new AstSymbol("x"))));
 
   // execute
-  UUT.genIr(*ast);
+  UUT.genIr(*ast, &UUT.m_semanticAnalizer);
 
   // verify
   int x = 2;

@@ -225,16 +225,19 @@ public:
 class AstSymbol : public AstValue {
 public:
   AstSymbol(const std::string& name, Access access = eRead) :
-    m_name(name), m_access(access) {};
+    m_name(name), m_access(access), m_stentry(NULL) {};
   virtual ~AstSymbol() {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   const std::string& name() const { return m_name; }
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
+  virtual SymbolTableEntry*& stentry() { return m_stentry; }
 private:
   const std::string m_name;
   Access m_access;
+  /** We're not the owner, can be NULL */
+  SymbolTableEntry* m_stentry;
 
 // decorations for IrGen
 public:

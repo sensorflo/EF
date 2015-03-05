@@ -229,8 +229,9 @@ void IrGen::visit(AstNumber& number) {
 }
 
 void IrGen::visit(AstSymbol& symbol) {
-  SymbolTableEntry* stentry = m_env.find(symbol.name());
-  assert( stentry && stentry->valueIr() );
+  SymbolTableEntry*const stentry = symbol.stentry();
+  assert( stentry );
+  assert( stentry->valueIr() );
 
   Value* resultIr = NULL;
   if (stentry->objType().qualifier()&ObjType::eMutable) {
