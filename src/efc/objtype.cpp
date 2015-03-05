@@ -44,7 +44,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
   };
-  if (eMutable==m_qualifier) {
+  if (eMutable & m_qualifier) {
     os << "-mut";
   }
   return os;

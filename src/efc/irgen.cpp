@@ -234,7 +234,7 @@ void IrGen::visit(AstSymbol& symbol) {
   assert( stentry->valueIr() );
 
   Value* resultIr = NULL;
-  if (stentry->objType().qualifier()&ObjType::eMutable) {
+  if (stentry->objType().qualifier() & ObjType::eMutable) {
     // stentry->valueIr() is the pointer returned by alloca corresponding to
     // the symbol
     if (symbol.access()==eWrite) {
@@ -405,14 +405,7 @@ void IrGen::visit(AstDataDef& dataDef) {
   // trivial. For variables aka allocas first an alloca has to be created.
   Value* initValue = callAcceptOn(dataDef.initValue());
   assert(initValue);
-  if ( stentry->objType().qualifier()==ObjType::eNoQualifier ) {
-    stentry->valueIr() = initValue;
-    if ( dataDef.access()!=eRead ) {
-      throw runtime_error::runtime_error("Cannot write to an inmutable data object");
-    }
-    dataDef.setIrValue(initValue);
-  }
-  else if ( stentry->objType().qualifier()==ObjType::eMutable ) {
+  if ( stentry->objType().qualifier() & ObjType::eMutable ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
     assert(functionIr);
     AllocaInst* alloca =
@@ -421,8 +414,13 @@ void IrGen::visit(AstDataDef& dataDef) {
     m_builder.CreateStore(initValue, alloca);
     stentry->valueIr() = alloca;
     dataDef.setIrValue(dataDef.access()==eRead ? initValue : alloca);
+  } else {
+    stentry->valueIr() = initValue;
+    if ( dataDef.access()!=eRead ) {
+      throw runtime_error::runtime_error("Cannot write to an inmutable data object");
+    }
+    dataDef.setIrValue(initValue);
   }
-  else { assert(false); }
 }
 
 void IrGen::visit(AstIf& if_) {
