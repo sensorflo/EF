@@ -691,13 +691,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       pe.mkFunDecl("foo")),
     Error::eIncompatibleRedaclaration, spec);
-
-  spec = "One mutable, the other inmutable";
-  TEST_GEN_IR_REPORTS_ERROR(
-    new AstOperator(';',
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eNoQualifier)),
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
-    Error::eIncompatibleRedaclaration, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -891,19 +884,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstDataDef(
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
     0, "");
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
-    multiple_identical_data_object_declaration_of_x,
-    genIrInImplicitMain,
-    succeeds)) {
-  TestingIrGen UUT;
-  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
-  EXPECT_NO_THROW(
-    new AstOperator(';',
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))));
-  EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(

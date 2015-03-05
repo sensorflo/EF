@@ -70,6 +70,30 @@ void SemanticAnalizer::visit(AstFunDecl& funDecl) {
 }
 
 void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
+
+  // let dataDecl.stentry() point either to a newly created symbol table entry
+  // or to an allready existing one declaring the same data object
+  {
+    Env::InsertRet insertRet = m_env.insert( dataDecl.name(), NULL);
+    SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
+
+    // name is not yet in env, thus insert new symbol table entry
+    if (insertRet.second) {
+      envs_stentry_ptr = new SymbolTableEntry(&dataDecl.objTypeStealOwnership());
+    }
+
+    // name is already in env: unless the type matches that is an error
+    else {
+      assert(envs_stentry_ptr);
+      if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(dataDecl.objType()) ) {
+        m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
+        throw BuildError();
+      }
+    }
+
+    dataDecl.setStentry(envs_stentry_ptr);
+  }
+
   m_nextVisitor.visit(dataDecl);
 }
 

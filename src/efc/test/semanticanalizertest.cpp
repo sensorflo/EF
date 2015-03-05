@@ -106,6 +106,66 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_simple_AstDataDecl,
+    transform,
+    inserts_an_appropriate_SymbolTableEntry_into_Env)) {
+
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  auto_ptr<AstNode> ast(
+    new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
+
+  // exercise
+  ast->accept(UUT);
+
+  // verify
+  SymbolTableEntry* stentry = env.find("x");
+  EXPECT_TRUE( stentry ) << amendAst(ast.get());
+  EXPECT_EQ( ObjType::eFullMatch,
+    stentry->objType().match( ObjTypeFunda(ObjTypeFunda::eInt)));
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_data_redeclaration_with_matching_type,
+    transform,
+    succeeds_AND_inserts_an_appropriate_SymbolTableEntry_into_Env_once)) {
+
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  AstNode* ast =
+    new AstOperator(';',
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
+
+  // exercise
+  ast->accept(UUT);
+
+  // verify
+  SymbolTableEntry* stentry = env.find("x");
+  EXPECT_TRUE( stentry ) << amendAst(ast);
+  EXPECT_EQ( ObjType::eFullMatch,
+    stentry->objType().match( ObjTypeFunda(ObjTypeFunda::eInt)));
+
+  // tear down
+  delete ast;
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_redeclaration_with_non_matching_type,
+    transform,
+    reports_eIncompatibleRedaclaration)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
+    Error::eIncompatibleRedaclaration, "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_reference_to_an_unknown_name,
     transform,
     reports_an_eErrUnknownName)) {

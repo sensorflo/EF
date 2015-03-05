@@ -379,34 +379,9 @@ void IrGen::visit(AstFunCall& funCall) {
 }
 
 void IrGen::visit(AstDataDecl& dataDecl) {
-
-  // Add to environment only local data objects. Currently there are only
-  // local data objects. Insert new name as a new symbol table entry into the
-  // environment, with NULL as ValueIr field. If the name is allready in the
-  // environment, verify the type matches.
-  if (!dataDecl.stentry()) {
-    Env::InsertRet insertRet = m_env.insert( dataDecl.name(), NULL);
-    SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
-    if (insertRet.second) {
-      envs_stentry_ptr = new SymbolTableEntry(&dataDecl.objTypeStealOwnership());
-    } else {
-      assert(envs_stentry_ptr);
-      if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(dataDecl.objType()) ) {
-        m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
-        throw BuildError();
-      }
-    }
-
-    // Since later the non-IR generating part will be extracted, a temporary
-    // const cast is not too bad
-    const_cast<AstDataDecl&>(dataDecl).setStentry(envs_stentry_ptr);
-  }
-  
-  // note that this can be NULL. E.g. when we just created a new symbol table
-  // entry above, or if it was only declared but never defined so far. Also
-  // note that since currently there are only local vars, and since local vars
-  // can only be defined but not declared-only, we don't have to care about
-  // eRead/eWrite access yet.
+  // Note that this can be NULL. E.g. when it was only declared but never
+  // defined so far.
+  assert(dataDecl.stentry());
   dataDecl.setIrValue(dataDecl.stentry()->valueIr());
 }
 
@@ -416,7 +391,7 @@ void IrGen::visit(AstArgDecl& argDecl) {
 
 void IrGen::visit(AstDataDef& dataDef) {
   // process data declaration. That ensures an entry in the symbol table
-  visit(dataDef.decl());
+  callAcceptOn(dataDef.decl());
   SymbolTableEntry*const& stentry = dataDef.decl().stentry();
   assert(stentry);
 
