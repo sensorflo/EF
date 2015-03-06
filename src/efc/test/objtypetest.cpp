@@ -53,18 +53,18 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
-    addQualifier)) {
+    addQualifiers)) {
   EXPECT_EQ(
-    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifier(),
-    ObjTypeFunda(ObjTypeFunda::eInt).addQualifier(ObjType::eMutable).qualifier());
+    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifiers(),
+    ObjTypeFunda(ObjTypeFunda::eInt).addQualifiers(ObjType::eMutable).qualifiers());
 
   EXPECT_EQ(
-    ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable).qualifier(),
-    ObjTypeFunda(ObjTypeFunda::eBool).addQualifier(ObjType::eMutable).qualifier());
+    ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable).qualifiers(),
+    ObjTypeFunda(ObjTypeFunda::eBool).addQualifiers(ObjType::eMutable).qualifiers());
 
   EXPECT_EQ(
-    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifier(),
-    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).addQualifier(ObjType::eMutable).qualifier());
+    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifiers(),
+    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).addQualifiers(ObjType::eMutable).qualifiers());
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(

@@ -32,9 +32,9 @@ public:
   ParserExt(Env& env, ErrorHandler& errorHandler) : m_env(env),
     m_errorHandler(errorHandler) {}
 
-  AstDataDecl* mkDataDecl(ObjType::Qualifier qualifier,
+  AstDataDecl* mkDataDecl(ObjType::Qualifiers qualifiers,
     RawAstDataDecl*& rawAstDataDecl);
-  AstDataDef* mkDataDef(ObjType::Qualifier qualifier,
+  AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,
     RawAstDataDef*& rawAstDataDef);
 
   AstFunDecl* mkFunDecl(const std::string name, std::list<AstArgDecl*>* args = NULL);

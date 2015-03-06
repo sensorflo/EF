@@ -12,7 +12,7 @@ class AstValue;
 class ObjType {
 public:
   // works as bit flags
-  enum Qualifier {
+  enum Qualifiers {
     eNoQualifier = 0,
     eMutable = 1 
     // later: eVolatile = 1<<1
@@ -25,7 +25,7 @@ public:
   };
   virtual ~ObjType() {};
 
-  ObjType& addQualifier(Qualifier qualifier);
+  ObjType& addQualifiers(Qualifiers qualifiers);
 
   virtual MatchType match(const ObjType& other) const = 0;
   virtual MatchType match2(const ObjTypeFunda& other) const { return eNoMatch; }
@@ -33,14 +33,14 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const = 0;
   std::string toStr() const;
 
-  Qualifier qualifier() const { return m_qualifier; }
+  Qualifiers qualifiers() const { return m_qualifiers; }
 
   virtual AstValue* createDefaultAstValue() const = 0;
 
 protected:
-  ObjType(Qualifier qualifier) : m_qualifier(qualifier) {};
+  ObjType(Qualifiers qualifiers) : m_qualifiers(qualifiers) {};
 
-  Qualifier m_qualifier;
+  Qualifiers m_qualifiers;
 };
 
 inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
@@ -49,7 +49,7 @@ inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
 }
 
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  ObjType::Qualifier qualifier);
+  ObjType::Qualifiers qualifiers);
 
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   ObjType::MatchType mt);
@@ -64,8 +64,8 @@ public:
     // later: double etc
   };
 
-  ObjTypeFunda(EType type, Qualifier qualifier = eNoQualifier) :
-    ObjType(qualifier), m_type(type) {};
+  ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier) :
+    ObjType(qualifiers), m_type(type) {};
 
   virtual MatchType match(const ObjType& other) const { return other.match2(*this); }
   virtual MatchType match2(const ObjTypeFunda& other) const;

@@ -164,7 +164,7 @@ public:
 class AstArgDecl : public AstDataDecl {
 public:
   AstArgDecl(const std::string& name, ObjType* objType) :
-    AstDataDecl(name, &objType->addQualifier(ObjType::eMutable)) {};
+    AstDataDecl(name, &objType->addQualifiers(ObjType::eMutable)) {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 };
@@ -203,7 +203,7 @@ class AstNumber : public AstValue {
 public:
   AstNumber(int value, ObjType* objType = NULL);
   AstNumber(int value, ObjTypeFunda::EType eType,
-    ObjTypeFunda::Qualifier qualifier = ObjTypeFunda::eNoQualifier);
+    ObjTypeFunda::Qualifiers qualifiers = ObjTypeFunda::eNoQualifier);
   ~AstNumber();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;

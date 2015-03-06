@@ -106,7 +106,7 @@
 %type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
 %type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
 %type <AstArgDecl*> param_decl
-%type <ObjType::Qualifier> valvar
+%type <ObjType::Qualifiers> valvar
 %type <RawAstDataDecl*> naked_data_decl
 %type <RawAstDataDef*> naked_data_def
 %type <AstFunDecl*> naked_fun_decl
@@ -177,7 +177,7 @@ pure_naked_param_ct_list
   ;
 
 param_decl
-  : ID COLON type                                   { $$ = new AstArgDecl($1, &(($3)->addQualifier(ObjType::eMutable))); }
+  : ID COLON type                                   { $$ = new AstArgDecl($1, &(($3)->addQualifiers(ObjType::eMutable))); }
   ;
   
 type

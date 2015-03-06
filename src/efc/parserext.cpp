@@ -6,7 +6,7 @@
 #include <stdexcept>
 using namespace std;
 
-AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifier qualifier,
+AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifiers qualifiers,
   RawAstDataDecl*& rawAstDataDecl) {
   assert(rawAstDataDecl);
   assert(rawAstDataDecl->m_objType);
@@ -16,17 +16,17 @@ AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifier qualifier,
 
   AstDataDecl* astDataDecl = new AstDataDecl(
     rawAstDataDecl->m_name,
-    &(rawAstDataDecl->m_objType->addQualifier(qualifier)));
+    &(rawAstDataDecl->m_objType->addQualifiers(qualifiers)));
   delete rawAstDataDecl;
   rawAstDataDecl = NULL;
   return astDataDecl;
 }
 
-AstDataDef* ParserExt::mkDataDef(ObjType::Qualifier qualifier,
+AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
   RawAstDataDef*& rawAstDataDef) {
   assert(rawAstDataDef);
   AstDataDef* astDataDef = new AstDataDef(
-    mkDataDecl(qualifier, rawAstDataDef->m_decl),
+    mkDataDecl(qualifiers, rawAstDataDef->m_decl),
     rawAstDataDef->m_ctorArgs);
   delete rawAstDataDef;
   rawAstDataDef = NULL;

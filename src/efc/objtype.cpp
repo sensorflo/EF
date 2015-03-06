@@ -4,8 +4,8 @@
 #include <sstream>
 using namespace std;
 
-ObjType& ObjType::addQualifier(Qualifier qualifier) {
-  m_qualifier = static_cast<Qualifier>(m_qualifier | qualifier);
+ObjType& ObjType::addQualifiers(Qualifiers qualifiers) {
+  m_qualifiers = static_cast<Qualifiers>(m_qualifiers | qualifiers);
   return *this;
 }
 
@@ -15,12 +15,12 @@ string ObjType::toStr() const {
   return ss.str();
 }
 
-basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::Qualifier qualifier) {
-  if (ObjType::eNoQualifier==qualifier) {
+basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::Qualifiers qualifiers) {
+  if (ObjType::eNoQualifier==qualifiers) {
     return os << "no-qualifier";
   }
 
-  if (qualifier & ObjType::eMutable) { os << "mut"; }
+  if (qualifiers & ObjType::eMutable) { os << "mut"; }
   return os;
 }
 
@@ -35,7 +35,7 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::MatchType mt) 
 
 ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& other) const {
   if (m_type!=other.m_type) { return eNoMatch; }
-  if (m_qualifier!=other.m_qualifier) { return eOnlyQualifierMismatches; }
+  if (m_qualifiers!=other.m_qualifiers) { return eOnlyQualifierMismatches; }
   return eFullMatch;
 }
 
@@ -44,7 +44,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
   };
-  if (eMutable & m_qualifier) {
+  if (eMutable & m_qualifiers) {
     os << "-mut";
   }
   return os;

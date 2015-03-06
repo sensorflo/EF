@@ -203,9 +203,9 @@ AstNumber::AstNumber(int value, ObjType* objType) :
 }
 
 AstNumber::AstNumber(int value, ObjTypeFunda::EType eType,
-  ObjTypeFunda::Qualifier qualifier) :
+  ObjTypeFunda::Qualifiers qualifiers) :
   m_value(value),
-  m_objType(new ObjTypeFunda(eType, qualifier)),
+  m_objType(new ObjTypeFunda(eType, qualifiers)),
   m_irValue(NULL) {
   assert(m_objType);
 }

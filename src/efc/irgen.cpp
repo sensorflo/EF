@@ -234,7 +234,7 @@ void IrGen::visit(AstSymbol& symbol) {
   assert( stentry->valueIr() );
 
   Value* resultIr = NULL;
-  if (stentry->objType().qualifier() & ObjType::eMutable) {
+  if (stentry->objType().qualifiers() & ObjType::eMutable) {
     // stentry->valueIr() is the pointer returned by alloca corresponding to
     // the symbol
     if (symbol.access()==eWrite) {
@@ -277,7 +277,7 @@ void IrGen::visit(AstFunDef& funDef) {
   Function::arg_iterator iterIr = functionIr->arg_begin();
   list<AstArgDecl*>::const_iterator iterAst = funDef.decl().args().begin();
   for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
-    // blindly assumes that ObjType::Qualifier is eMutable since currently
+    // blindly assumes that ObjType::Qualifiers is eMutable since currently
     // that is always the case
     const string& argName = (*iterAst)->name();
     AllocaInst* alloca = createAllocaInEntryBlock(functionIr, argName);
@@ -405,7 +405,7 @@ void IrGen::visit(AstDataDef& dataDef) {
   // trivial. For variables aka allocas first an alloca has to be created.
   Value* initValue = callAcceptOn(dataDef.initValue());
   assert(initValue);
-  if ( stentry->objType().qualifier() & ObjType::eMutable ) {
+  if ( stentry->objType().qualifiers() & ObjType::eMutable ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
     assert(functionIr);
     AllocaInst* alloca =
