@@ -54,7 +54,7 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
     stIterStEntry = new SymbolTableEntry(objTypeFun);
   } else {
     assert(stIterStEntry);
-    if ( ObjType::eFullMatch != stIterStEntry->objType().match(*objTypeFun) ) {
+    if ( !stIterStEntry->objType().matchesFully(*objTypeFun) ) {
       m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
       throw BuildError();
     }

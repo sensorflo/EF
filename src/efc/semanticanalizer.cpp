@@ -85,7 +85,7 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
     // name is already in env: unless the type matches that is an error
     else {
       assert(envs_stentry_ptr);
-      if ( ObjType::eFullMatch != envs_stentry_ptr->objType().match(dataDecl.objType()) ) {
+      if ( !envs_stentry_ptr->objType().matchesFully(dataDecl.objType()) ) {
         m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
         throw BuildError();
       }
@@ -103,8 +103,7 @@ void SemanticAnalizer::visit(AstArgDecl& argDecl) {
 
 void SemanticAnalizer::visit(AstDataDef& dataDef) {
   // initializer must be of same type. Currently there are no implicit conversions
-  if ( ObjType::eNoMatch ==
-    dataDef.decl().objType().match(dataDef.initValue().objType()) ) {
+  if ( dataDef.decl().objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
     throw runtime_error("Object type missmatch");
   }
   m_nextVisitor.visit(dataDef);

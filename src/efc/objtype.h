@@ -27,9 +27,11 @@ public:
 
   ObjType& addQualifiers(Qualifiers qualifiers);
 
+  bool matchesFully(const ObjType& other) const;
   virtual MatchType match(const ObjType& other) const = 0;
   virtual MatchType match2(const ObjTypeFunda& other) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypeFun& other) const { return eNoMatch; }
+
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const = 0;
   std::string toStr() const;
 

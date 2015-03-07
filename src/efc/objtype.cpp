@@ -15,6 +15,10 @@ string ObjType::toStr() const {
   return ss.str();
 }
 
+bool ObjType::matchesFully(const ObjType& other) const {
+  return eFullMatch == this->match(other);
+}
+
 basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::Qualifiers qualifiers) {
   if (ObjType::eNoQualifier==qualifiers) {
     return os << "no-qualifier";
@@ -77,9 +81,9 @@ ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& other) const {
   for (list<ObjType*>::const_iterator i=m_args->begin(), iother=other.m_args->begin();
        i!=m_args->end();
        ++i, ++iother) {
-    if (eFullMatch!=(*i)->match(**iother)) return eNoMatch;
+    if ((*i)->match(**iother) != eFullMatch) return eNoMatch;
   }
-  if (eFullMatch!=m_ret->match(*other.m_ret)) return eNoMatch;
+  if (m_ret->match(*other.m_ret) != eFullMatch) return eNoMatch;
   return eFullMatch;
 }
 
