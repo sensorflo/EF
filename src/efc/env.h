@@ -29,7 +29,8 @@ private:
 
   // decorations for IrGen
 public:
-  llvm::Value*& valueIr() { return m_valueIr; }
+  llvm::Value* valueIr() const;
+  void setValueIr(llvm::Value* valueIr);
 private:
   llvm::Value* m_valueIr;
 };

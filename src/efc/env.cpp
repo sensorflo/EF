@@ -16,6 +16,15 @@ SymbolTable::~SymbolTable() {
   }
 }
 
+llvm::Value* SymbolTableEntry::valueIr() const {
+  return m_valueIr;
+}
+
+void SymbolTableEntry::setValueIr(llvm::Value* valueIr) {
+  assert(valueIr);
+  m_valueIr = valueIr;
+}
+
 Env::Env() {
   m_ststack.push_front(SymbolTable());
 }

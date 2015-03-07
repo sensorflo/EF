@@ -285,7 +285,7 @@ void IrGen::visit(AstFunDef& funDef) {
     SymbolTableEntry* stentry = new SymbolTableEntry(
       new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable));
     stentry->markAsDefined();
-    stentry->valueIr() = alloca;
+    stentry->setValueIr(alloca);
     Env::InsertRet insertRet = m_env.insert(argName, stentry);
 
     // if name is already in environment, then it must be another argument
@@ -346,7 +346,7 @@ void IrGen::visit(AstFunDecl& funDecl) {
       iterArgsIr->setName((*iterArgsAst)->name());
     }
 
-    funDecl.stentry()->valueIr() = functionIr;
+    funDecl.stentry()->setValueIr(functionIr);
     funDecl.setIrFunction(functionIr);
   }
 
@@ -379,10 +379,8 @@ void IrGen::visit(AstFunCall& funCall) {
 }
 
 void IrGen::visit(AstDataDecl& dataDecl) {
-  // Note that this can be NULL. E.g. when it was only declared but never
-  // defined so far.
-  assert(dataDecl.stentry());
-  dataDecl.setIrValue(dataDecl.stentry()->valueIr());
+  // nop -- dataDecl.valueIr() internally allready refers to
+  // llvm::Value* of its associated symbol table entry
 }
 
 void IrGen::visit(AstArgDecl& argDecl) {
@@ -412,10 +410,10 @@ void IrGen::visit(AstDataDef& dataDef) {
       createAllocaInEntryBlock(functionIr, dataDef.decl().name());
     assert(alloca);
     m_builder.CreateStore(initValue, alloca);
-    stentry->valueIr() = alloca;
+    stentry->setValueIr(alloca);
     dataDef.setIrValue(dataDef.access()==eRead ? initValue : alloca);
   } else {
-    stentry->valueIr() = initValue;
+    stentry->setValueIr(initValue);
     if ( dataDef.access()!=eRead ) {
       throw runtime_error::runtime_error("Cannot write to an inmutable data object");
     }
