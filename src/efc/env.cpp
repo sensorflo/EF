@@ -22,6 +22,7 @@ llvm::Value* SymbolTableEntry::valueIr() const {
 
 void SymbolTableEntry::setValueIr(llvm::Value* valueIr) {
   assert(valueIr);
+  assert(!m_valueIr); // It doesn't make sense to set it twice
   m_valueIr = valueIr;
 }
 

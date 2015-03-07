@@ -54,7 +54,7 @@ private:
   // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
-  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+  virtual void setIrValue(llvm::Value* value);
 public:
   llvm::Value* m_irValue;
 };
@@ -76,9 +76,9 @@ private:
   // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irFunction; }
-  virtual void setIrValue(llvm::Value* value) { m_irFunction = dynamic_cast<llvm::Function*>(value); }
+  virtual void setIrValue(llvm::Value* value);
   virtual llvm::Function* irFunction() { return m_irFunction; }
-  virtual void setIrFunction(llvm::Function* function) { m_irFunction = function; }
+  virtual void setIrFunction(llvm::Function* function);
 public:
   llvm::Function* m_irFunction;
 };
@@ -119,9 +119,9 @@ private:
 // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irFunction; }
-  virtual void setIrValue(llvm::Value* value) { m_irFunction = dynamic_cast<llvm::Function*>(value); }
+  virtual void setIrValue(llvm::Value* value);
   virtual llvm::Function* irFunction() { return m_irFunction; }
-  virtual void setIrFunction(llvm::Function* function) { m_irFunction = function; }
+  virtual void setIrFunction(llvm::Function* function);
 public:
   llvm::Function* m_irFunction;
 };
@@ -156,7 +156,7 @@ private:
 // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
-  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+  virtual void setIrValue(llvm::Value* value);
 public:
   llvm::Value* m_irValue;
 };
@@ -193,7 +193,7 @@ private:
 // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
-  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+  virtual void setIrValue(llvm::Value* value);
 public:
   llvm::Value* m_irValue;
 };
@@ -217,7 +217,7 @@ private:
 // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
-  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+  virtual void setIrValue(llvm::Value* value);
 public:
   llvm::Value* m_irValue;
 };
@@ -225,7 +225,7 @@ public:
 class AstSymbol : public AstValue {
 public:
   AstSymbol(const std::string& name, Access access = eRead) :
-    m_name(name), m_access(access), m_stentry(NULL) {};
+    m_name(name), m_access(access), m_stentry(NULL), m_irValue(NULL) {};
   virtual ~AstSymbol() {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
@@ -242,7 +242,7 @@ private:
 // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
-  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+  virtual void setIrValue(llvm::Value* value);
 public:
   llvm::Value* m_irValue;
 };
@@ -264,7 +264,7 @@ private:
 // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
-  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+  virtual void setIrValue(llvm::Value* value);
 public:
   llvm::Value* m_irValue;
 };
@@ -311,7 +311,7 @@ private:
 // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
-  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+  virtual void setIrValue(llvm::Value* value);
 public:
   llvm::Value* m_irValue;
 };
@@ -349,7 +349,7 @@ private:
 // decorations for IrGen
 public:
   virtual llvm::Value* irValue() { return m_irValue; }
-  virtual void setIrValue(llvm::Value* value) { m_irValue = value; }
+  virtual void setIrValue(llvm::Value* value);
 public:
   llvm::Value* m_irValue;
 };

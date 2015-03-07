@@ -45,6 +45,12 @@ AstCast::~AstCast() {
   delete m_objType;
 }
 
+void AstCast::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
+}
+
 AstFunDef::AstFunDef(AstFunDecl* decl, AstValue* body) :
   m_decl(decl ? decl : new AstFunDecl("<unknown_name>")),
   m_body(body ? body : new AstNumber(0)),
@@ -55,6 +61,18 @@ AstFunDef::AstFunDef(AstFunDecl* decl, AstValue* body) :
 
 AstFunDef::~AstFunDef() {
   delete m_body;
+}
+
+void AstFunDef::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irFunction); // it doesnt make sense to set it twice
+  m_irFunction = dynamic_cast<llvm::Function*>(value);
+}
+
+void AstFunDef::setIrFunction(llvm::Function* function) {
+  assert(function);
+  assert(!m_irFunction); // it doesnt make sense to set it twice
+  m_irFunction = function;
 }
 
 AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args,
@@ -128,6 +146,18 @@ void AstFunDecl::setStentry(SymbolTableEntry* stentry) {
   m_stentry = stentry;
 }
 
+void AstFunDecl::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irFunction);  // it doesnt make sense to set it twice
+  m_irFunction = dynamic_cast<llvm::Function*>(value);
+}
+
+void AstFunDecl::setIrFunction(llvm::Function* function) {
+  assert(function);
+  assert(!m_irFunction);  // it doesnt make sense to set it twice
+  m_irFunction = function;
+}
+
 AstDataDecl::AstDataDecl(const string& name, ObjType* objType,
   SymbolTableEntry* stentry) :
   m_name(name),
@@ -156,6 +186,12 @@ void AstDataDecl::setStentry(SymbolTableEntry* stentry) {
   assert(stentry);
   assert(!m_stentry); // it makes no sense to set it twice
   m_stentry = stentry;
+}
+
+void AstDataDecl::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
@@ -195,6 +231,12 @@ AstValue& AstDataDef::initValue() const {
   }
 }
 
+void AstDataDef::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
+}
+
 AstNumber::AstNumber(int value, ObjType* objType) :
   m_value(value),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
@@ -212,6 +254,12 @@ AstNumber::AstNumber(int value, ObjTypeFunda::EType eType,
 
 AstNumber::~AstNumber() {
   delete m_objType;
+}
+
+void AstNumber::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
 }
 
 map<string, AstOperator::EOperation> AstOperator::m_opMap;
@@ -283,6 +331,12 @@ AstOperator::EOperation AstOperator::toEOperation(const string& op) {
   }
 }
 
+void AstOperator::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
+}
+
 basic_ostream<char>& operator<<(basic_ostream<char>& os,
   AstOperator::EOperation op) {
   switch (op) {
@@ -327,6 +381,12 @@ AstIf::~AstIf() {
   if (m_elseAction) { delete m_elseAction; }
 }
 
+void AstIf::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
+}
+
 list<AstIf::ConditionActionPair>* AstIf::makeDefaultConditionActionPairs() {
   list<ConditionActionPair>* tmp = new list<AstIf::ConditionActionPair>();
   tmp->push_back(ConditionActionPair(new AstNumber(0),new AstNumber(0)));
@@ -340,6 +400,12 @@ list<AstIf::ConditionActionPair>* AstIf::makeConditionActionPairs(
   return tmp;
 }
 
+void AstSymbol::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
+}
+
 AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
   m_address(address ? address : new AstSymbol("")),
   m_args(args ? args : new AstCtList()),
@@ -351,6 +417,12 @@ AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
 AstFunCall::~AstFunCall() {
   delete m_args;
   delete m_address;
+}
+
+void AstFunCall::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
 }
 
 /** The list's elements must be non-null */
