@@ -1,5 +1,6 @@
 #include "gtestprinter.h"
 #include <stdio.h>
+#include <cstdarg>
 using namespace testing;
 using namespace testing::internal;
 using namespace std;

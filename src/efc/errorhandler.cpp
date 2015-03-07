@@ -10,6 +10,7 @@ const char* toStr(Error::No no) {
   case Error::eWriteToReadOnly: return "eWriteToReadOnly";
   case Error::eCnt: return "<unknown>";
   }
+  return "<unknown>";
 }
 
 ostream& operator<<(ostream& os, Error::No no) {

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdexcept>
 using namespace std;
 using namespace yy;
 
@@ -55,7 +56,7 @@ void Driver::compile() {
     AstNode* astAfterParse = NULL;
     int retParse = scannAndParse(astAfterParse);
     if (retParse) {
-      throw runtime_error::runtime_error("parse failed");
+      throw runtime_error("parse failed");
     }
 
     doSemanticAnalysisAndGenIR(astAfterParse);

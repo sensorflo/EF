@@ -244,7 +244,7 @@ void IrGen::visit(AstSymbol& symbol) {
     }
   } else {
     if (symbol.access()==eWrite) {
-      throw runtime_error::runtime_error("Can't write to value (inmutable data) '"
+      throw runtime_error("Can't write to value (inmutable data) '"
         + symbol.name() + "'.");
     }
     // stentry->valueIr() is directly the llvm::Value of the symbol
@@ -364,7 +364,7 @@ void IrGen::visit(AstFunCall& funCall) {
   const list<AstValue*>& argsAst = funCall.args().childs();
 
   if (callee->arg_size() != argsAst.size()) {
-    throw runtime_error::runtime_error("Number of arguments do not match");
+    throw runtime_error("Number of arguments do not match");
   }
 
   vector<Value*> argsIr;
@@ -415,7 +415,7 @@ void IrGen::visit(AstDataDef& dataDef) {
   } else {
     stentry->setValueIr(initValue);
     if ( dataDef.access()!=eRead ) {
-      throw runtime_error::runtime_error("Cannot write to an inmutable data object");
+      throw runtime_error("Cannot write to an inmutable data object");
     }
     dataDef.setIrValue(initValue);
   }

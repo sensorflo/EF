@@ -33,7 +33,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   switch (op.op()) {
   case AstOperator::eSeq:
     if (argschilds.empty()) {
-      throw runtime_error::runtime_error("Empty sequence not allowed (yet)");
+      throw runtime_error("Empty sequence not allowed (yet)");
     }
     break;
   default:
@@ -105,7 +105,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
   // initializer must be of same type. Currently there are no implicit conversions
   if ( ObjType::eNoMatch ==
     dataDef.decl().objType().match(dataDef.initValue().objType()) ) {
-    throw runtime_error::runtime_error("Object type missmatch");
+    throw runtime_error("Object type missmatch");
   }
   m_nextVisitor.visit(dataDef);
 }

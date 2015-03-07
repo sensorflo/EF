@@ -68,6 +68,7 @@ public:
     ObjType(qualifiers), m_type(type) {};
 
   virtual MatchType match(const ObjType& other) const { return other.match2(*this); }
+  using ObjType::match2;
   virtual MatchType match2(const ObjTypeFunda& other) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
 
@@ -88,6 +89,7 @@ public:
     ObjType* arg3 = NULL);
 
   virtual MatchType match(const ObjType& other) const { return other.match2(*this); }
+  using ObjType::match2;
   virtual MatchType match2(const ObjTypeFun& other) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
   virtual AstValue* createDefaultAstValue() const;
