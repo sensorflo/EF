@@ -13,19 +13,19 @@ namespace llvm {
 
 class SymbolTableEntry {
 public:
-  SymbolTableEntry(ObjType* objType) :
+  SymbolTableEntry(const ObjType* objType) :
     m_objType( (assert(objType), *objType) ),
     m_isDefined(false),
     m_valueIr(NULL) {}
   ~SymbolTableEntry();
 
-  ObjType& objType() { return m_objType; }
-  bool isDefined() { return m_isDefined; }
+  const ObjType& objType() const { return m_objType; }
+  bool isDefined() const { return m_isDefined; }
   void markAsDefined(ErrorHandler& errorHandler);
 
 private:
   /** We're the owner. */
-  ObjType& m_objType;
+  const ObjType& m_objType;
   /** Opposed to only declared */
   bool m_isDefined;
 

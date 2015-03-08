@@ -85,10 +85,10 @@ private:
 /** Compound-type/function */
 class ObjTypeFun : public ObjType {
 public:
-  ObjTypeFun(std::list<ObjType*>* args, ObjType* ret);
+  ObjTypeFun(std::list<const ObjType*>* args, const ObjType* ret);
   virtual ~ObjTypeFun();
-  static std::list<ObjType*>* createArgs(ObjType* arg1 = NULL, ObjType* arg2 = NULL,
-    ObjType* arg3 = NULL);
+  static std::list<const ObjType*>* createArgs(const ObjType* arg1 = NULL,
+    const ObjType* arg2 = NULL, const ObjType* arg3 = NULL);
 
   virtual MatchType match(const ObjType& other) const { return other.match2(*this); }
   using ObjType::match2;
@@ -100,7 +100,7 @@ private:
   /** We're the owner of the container object and the objects pointed to by
   the members of the container. m_args itself and the pointers in the
   cointainer are garanteed to be non-null. */
-  const std::list<ObjType*>* const m_args;
+  const std::list<const ObjType*>* const m_args;
   /** */
   const ObjType* const m_ret;
 };

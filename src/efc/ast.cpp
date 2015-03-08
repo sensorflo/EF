@@ -2,6 +2,7 @@
 #include "astvisitor.h"
 #include "astprinter.h"
 #include "errorhandler.h"
+#include "env.h"
 #include <cassert>
 #include <stdexcept>
 using namespace std;
@@ -14,14 +15,6 @@ void AstNode::setAccess(Access access, ErrorHandler& errorHandler) {
 
 string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
-}
-
-ObjType& AstValue::objType() const {
-  // KLUDGE: Currently wrongly too much depends on that nearly all expressions
-  // are of type int, so for now the default has to be int opposed to an
-  // assertion, because here the type really isn't known.
-  static ObjTypeFunda ret(ObjTypeFunda::eInt);
-  return ret;
 }
 
 AstCast::AstCast(AstValue* child, ObjType* objType) :
@@ -75,6 +68,10 @@ void AstFunDef::setIrFunction(llvm::Function* function) {
   m_irFunction = function;
 }
 
+const ObjType& AstFunDef::objType() const {
+  return decl().objType();
+}
+
 AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args,
   SymbolTableEntry* stentry) :
   m_name(name),
@@ -111,21 +108,21 @@ AstFunDecl::~AstFunDecl() {
 }
 
 void AstFunDecl::initObjType() {
-  list<ObjType*>* argtypes = new list<ObjType*>;
+  list<const ObjType*>* argtypes = new list<const ObjType*>;
   for (list<AstArgDecl*>::iterator i = m_args->begin(); i!=m_args->end(); ++i) {
     // for simplicity, currently only args of type ObjTypeFunda are allowed
-    ObjTypeFunda* argtype_src = dynamic_cast<ObjTypeFunda*>(&(*i)->objType());
+    const ObjTypeFunda* argtype_src = dynamic_cast<const ObjTypeFunda*>(&(*i)->objType());
     assert(argtype_src);
     argtypes->push_back(new ObjTypeFunda(*argtype_src));
   }
   m_objType = new ObjTypeFun(argtypes, new ObjTypeFunda(ObjTypeFunda::eInt));
 }
 
-ObjType& AstFunDecl::objType() const {
+const ObjType& AstFunDecl::objType() const {
   return *m_objType;
 }
 
-ObjType& AstFunDecl::objTypeStealOwnership() const {
+const ObjType& AstFunDecl::objTypeStealOwnership() const {
   assert(m_ownerOfObjType);
   m_ownerOfObjType = false;
   return *m_objType;
@@ -172,11 +169,11 @@ AstDataDecl::~AstDataDecl() {
   if (m_ownerOfObjType) { delete m_objType; }
 }
 
-ObjType& AstDataDecl::objType() const {
+const ObjType& AstDataDecl::objType() const {
   return *m_objType;
 }
 
-ObjType& AstDataDecl::objTypeStealOwnership() const {
+const ObjType& AstDataDecl::objTypeStealOwnership() const {
   assert(m_ownerOfObjType);
   m_ownerOfObjType = false;
   return *m_objType;
@@ -229,6 +226,10 @@ AstValue& AstDataDef::initValue() const {
     assert(m_implicitInitializer);
     return *m_implicitInitializer;
   }
+}
+
+const ObjType& AstDataDef::objType() const {
+  return decl().objType();
 }
 
 void AstDataDef::setIrValue(llvm::Value* value) {
@@ -337,6 +338,14 @@ void AstOperator::setIrValue(llvm::Value* value) {
   m_irValue = value;
 }
 
+const ObjType& AstOperator::objType() const {
+  // KLUDGE: Currently wrongly too much depends on that nearly all expressions
+  // are of type int, so for now the default has to be int opposed to an
+  // assertion, because here the type really isn't known.
+  static ObjTypeFunda ret(ObjTypeFunda::eInt);
+  return ret;
+}
+
 basic_ostream<char>& operator<<(basic_ostream<char>& os,
   AstOperator::EOperation op) {
   switch (op) {
@@ -400,10 +409,23 @@ list<AstIf::ConditionActionPair>* AstIf::makeConditionActionPairs(
   return tmp;
 }
 
+const ObjType& AstIf::objType() const {
+  // KLUDGE: Currently wrongly too much depends on that nearly all expressions
+  // are of type int, so for now the default has to be int opposed to an
+  // assertion, because here the type really isn't known.
+  static ObjTypeFunda ret(ObjTypeFunda::eInt);
+  return ret;
+}
+
 void AstSymbol::setIrValue(llvm::Value* value) {
   assert(value);
   assert(!m_irValue); // it doesnt make sense to set it twice
   m_irValue = value;
+}
+
+const ObjType& AstSymbol::objType() const {
+  assert(m_stentry);
+  return m_stentry->objType();
 }
 
 AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
@@ -423,6 +445,14 @@ void AstFunCall::setIrValue(llvm::Value* value) {
   assert(value);
   assert(!m_irValue); // it doesnt make sense to set it twice
   m_irValue = value;
+}
+
+const ObjType& AstFunCall::objType() const {
+  // KLUDGE: Currently wrongly too much depends on that nearly all expressions
+  // are of type int, so for now the default has to be int opposed to an
+  // assertion, because here the type really isn't known.
+  static ObjTypeFunda ret(ObjTypeFunda::eInt);
+  return ret;
 }
 
 /** The list's elements must be non-null */
@@ -471,6 +501,12 @@ AstCtList* AstCtList::Add(AstValue* child1, AstValue* child2, AstValue* child3) 
   Add(child2);
   Add(child3);
   return this;
+}
+
+const ObjType& AstCtList::objType() const {
+  // AstCtList is never the operand of an expression, thus it doesn't has an
+  // ObjType
+  assert(false); 
 }
 
 

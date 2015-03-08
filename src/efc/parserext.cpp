@@ -38,7 +38,7 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   // create ObjTypeFun object
   args = args ? args : new list<AstArgDecl*>();
   list<AstArgDecl*>::const_iterator iterArgs = args->begin();
-  list<ObjType*>* argsObjType = new list<ObjType*>;
+  list<const ObjType*>* argsObjType = new list<const ObjType*>;
   for (/*nop*/; iterArgs!=args->end(); ++iterArgs) {
     argsObjType->push_back( &((*iterArgs)->objTypeStealOwnership()) );
   }

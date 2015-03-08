@@ -32,7 +32,7 @@ public:
 
 class AstValue : public AstNode {
 public:
-  virtual ObjType& objType() const;
+  virtual const ObjType& objType() const =0;
 };
 
 class AstCast : public AstValue {
@@ -43,13 +43,13 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   AstValue& child() const { return *m_child; }
-  ObjType& objType() const { return *m_objType; }
+  virtual const ObjType& objType() const { return *m_objType; }
 
 private:
   /** We're the owner. Is guaranteed to be non-null */
   AstValue* m_child;
   /** We're the owner. Is garanteed to be non-null. */
-  ObjType* m_objType;
+  const ObjType*const m_objType;
 
   // decorations for IrGen
 public:
@@ -67,6 +67,8 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
   virtual AstFunDecl& decl() const { return *m_decl; }
   virtual AstValue& body() const { return *m_body; }
+  virtual const ObjType& objType() const;
+
 private:
   /** We're the owner. Is garanteed to be non-null */
   AstFunDecl* const m_decl;
@@ -94,8 +96,8 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
   virtual std::list<AstArgDecl*>const& args() const { return *m_args; }
-  virtual ObjType& objType() const;
-  virtual ObjType& objTypeStealOwnership() const;
+  virtual const ObjType& objType() const;
+  virtual const ObjType& objTypeStealOwnership() const;
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   virtual SymbolTableEntry* stentry() const { return m_stentry; }
@@ -109,7 +111,7 @@ private:
   std::list<AstArgDecl*>* const m_args;
   /** If m_ownerOfObjType is true, we're the owner. Is garanteed to be
   non-null. */
-  ObjType* m_objType;
+  const ObjType* m_objType;
   /** See m_objType */
   mutable bool m_ownerOfObjType;
   /** We're _not_ the owner; null means this FunDecl was not yet put into
@@ -134,8 +136,8 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
-  virtual ObjType& objType() const;
-  virtual ObjType& objTypeStealOwnership() const;
+  virtual const ObjType& objType() const;
+  virtual const ObjType& objTypeStealOwnership() const;
   virtual SymbolTableEntry* stentry() const { return m_stentry; }
   virtual void setStentry(SymbolTableEntry* stentry);
   virtual Access access() const { return m_access; }
@@ -145,7 +147,7 @@ private:
   const std::string m_name;
   /** If m_ownerOfObjType is true, we're the owner. Is garanteed to be
   non-null. */
-  ObjType* m_objType;
+  const ObjType*const m_objType;
   /** See m_objType */
   mutable bool m_ownerOfObjType;
   /** We're _not_ the owner; null means this DataDecl was not yet put into
@@ -179,6 +181,7 @@ public:
   virtual AstDataDecl& decl() const { return *m_decl; }
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   virtual AstValue& initValue() const;
+  virtual const ObjType& objType() const;
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
 private:
@@ -208,11 +211,11 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   int value() const { return m_value; }
-  virtual ObjType& objType() const { return *m_objType; }
+  virtual const ObjType& objType() const { return *m_objType; }
 private:
   const int m_value;
   /** We're the owner. Is garanteed to be non-null. */
-  ObjType* m_objType;
+  const ObjType*const m_objType;
 
 // decorations for IrGen
 public:
@@ -230,6 +233,7 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   const std::string& name() const { return m_name; }
+  virtual const ObjType& objType() const;
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
   virtual SymbolTableEntry*& stentry() { return m_stentry; }
@@ -255,6 +259,7 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
   virtual AstValue& address () const { return *m_address; }
   AstCtList& args () const { return *m_args; }
+  virtual const ObjType& objType() const;
 private:
   /** We're the owner. Is garanteed to be non-null */
   AstValue* const m_address;
@@ -298,6 +303,7 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
+  virtual const ObjType& objType() const;
 
 private:
   static EOperation toEOperation(const std::string& op);
@@ -337,6 +343,8 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
   std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
   AstValue* elseAction() const { return m_elseAction; }
+  virtual const ObjType& objType() const;
+
 private:
   static std::list<ConditionActionPair>* makeDefaultConditionActionPairs();
   static std::list<ConditionActionPair>* makeConditionActionPairs(
@@ -366,6 +374,8 @@ public:
   AstCtList* Add(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   /** The elements are guaranteed to be non-null */
   std::list<AstValue*>& childs() const { return *m_childs; }
+  virtual const ObjType& objType() const;
+
 private:
   AstCtList(const AstCtList&);
   AstCtList& operator=(const AstCtList&);

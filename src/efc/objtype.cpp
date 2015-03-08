@@ -58,19 +58,19 @@ AstValue* ObjTypeFunda::createDefaultAstValue() const {
   return new AstNumber(0, new ObjTypeFunda(m_type));
 }
 
-ObjTypeFun::ObjTypeFun(list<ObjType*>* args, ObjType* ret) :
+ObjTypeFun::ObjTypeFun(list<const ObjType*>* args, const ObjType* ret) :
   ObjType(eNoQualifier),
-  m_args( args ? args : new list<ObjType*>),
+  m_args( args ? args : new list<const ObjType*>),
   m_ret( ret ? ret : new ObjTypeFunda(ObjTypeFunda::eInt) ){
   assert(m_args);
   assert(m_ret);
-  for (list<ObjType*>::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
+  for (list<const ObjType*>::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
     assert(*i);
   }
 }
 
 ObjTypeFun::~ObjTypeFun() {
-  for (list<ObjType*>::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
+  for (list<const ObjType*>::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
     delete *i;
   }
   delete m_ret;
@@ -78,7 +78,7 @@ ObjTypeFun::~ObjTypeFun() {
 
 ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& other) const {
   if (m_args->size() != other.m_args->size()) return eNoMatch;
-  for (list<ObjType*>::const_iterator i=m_args->begin(), iother=other.m_args->begin();
+  for (list<const ObjType*>::const_iterator i=m_args->begin(), iother=other.m_args->begin();
        i!=m_args->end();
        ++i, ++iother) {
     if ((*i)->match(**iother) != eFullMatch) return eNoMatch;
@@ -89,7 +89,7 @@ ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& other) const {
 
 basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {
   os << "fun((";
-  for (list<ObjType*>::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
+  for (list<const ObjType*>::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
     if (i!=m_args->begin()) { os << ", "; }
     os << **i;
   }
@@ -99,9 +99,9 @@ basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-list<ObjType*>* ObjTypeFun::createArgs(ObjType* arg1, ObjType* arg2,
-  ObjType* arg3) {
-  list<ObjType*>* l = new list<ObjType*>;
+list<const ObjType*>* ObjTypeFun::createArgs(const ObjType* arg1, const ObjType* arg2,
+  const ObjType* arg3) {
+  list<const ObjType*>* l = new list<const ObjType*>;
   if (arg1) { l->push_back(arg1); }
   if (arg2) { l->push_back(arg2); }
   if (arg3) { l->push_back(arg3); }
