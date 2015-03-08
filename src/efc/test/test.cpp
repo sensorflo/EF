@@ -27,6 +27,10 @@ string amendAst(const auto_ptr<AstValue>& ast) {
   return amendAst(ast.get());
 }
 
+string amendAst(const unique_ptr<AstValue>& ast) {
+  return amendAst(ast.get());
+}
+
 string amend(const ErrorHandler& errorHandler) {
   stringstream ss;
   ss << string("\nErrorHanlder's errors:");

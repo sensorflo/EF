@@ -102,7 +102,7 @@ out/semanticanalizertest.o: test/semanticanalizertest.cpp $(GEN_HEADERS) *.h tes
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 out/irgentest.o: test/irgentest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated-declarations -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 out/astprintertest.o: test/astprintertest.cpp $(GEN_HEADERS) *.h test/*.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<

@@ -33,7 +33,7 @@ void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
 
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
-  auto_ptr<AstValue> astRootAp(astRoot);
+  unique_ptr<AstValue> astRootAp(astRoot);
   SemanticAnalizer semanticAnalizer(*UUT.m_env, *UUT.m_errorHandler, &UUT);
 
   // execute
@@ -56,7 +56,7 @@ void testgenIrInImplicitMainThrows(TestingIrGen& UUT, AstValue* astRoot,
   const string& spec = "") {
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
-  auto_ptr<AstValue> ast(astRoot);
+  unique_ptr<AstValue> ast(astRoot);
   bool anyThrow = false;
   string excptionwhat;
   SemanticAnalizer semanticAnalizer(*UUT.m_env, *UUT.m_errorHandler, &UUT);
@@ -102,7 +102,7 @@ void testgenIrReportsError(TestingIrGen& UUT, AstValue* astRoot,
 
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
-  auto_ptr<AstValue> ast(astRoot);
+  unique_ptr<AstValue> ast(astRoot);
   bool anyThrow = false;
   bool didThrowBuildError = false;
   string excptionwhat;
@@ -393,7 +393,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
     ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
-    auto_ptr<AstValue> ast(
+    unique_ptr<AstValue> ast(
       pe.mkFunDecl("foo"));
 
     // execute
@@ -416,7 +416,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
     ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
-    auto_ptr<AstValue> ast(
+    unique_ptr<AstValue> ast(
       pe.mkFunDecl(
         "foo",
         new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
@@ -448,7 +448,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
     ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
-    auto_ptr<AstValue> ast(
+    unique_ptr<AstValue> ast(
       pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)));
 
     // execute
@@ -474,7 +474,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     list<string>* args = new list<string>();
     args->push_back("arg1");
     args->push_back("arg2");
-    auto_ptr<AstValue> ast(
+    unique_ptr<AstValue> ast(
       pe.mkFunDef(
         pe.mkFunDecl(
           "foo",
@@ -508,7 +508,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
     ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
-    auto_ptr<AstValue> ast(
+    unique_ptr<AstValue> ast(
       pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)));
 
     // execute
@@ -526,7 +526,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
     ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
-    auto_ptr<AstValue> ast(
+    unique_ptr<AstValue> ast(
       pe.mkFunDef(
         pe.mkFunDecl(
           "foo",
@@ -551,7 +551,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // the end of a seq, thus provide one altought not needed for this test
   TestingIrGen UUT;
   ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
-  auto_ptr<AstValue> ast(
+  unique_ptr<AstValue> ast(
     pe.mkFunDef(
       pe.mkFunDecl(
         "foo",
@@ -579,7 +579,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // the end of a seq, thus provide one altought not needed for this test
   TestingIrGen UUT;
   ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
-  auto_ptr<AstValue> ast(
+  unique_ptr<AstValue> ast(
     pe.mkFunDef(
       pe.mkFunDecl(
         "foo",
@@ -610,7 +610,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // the end of a seq, thus provide one altought not needed for this test
   TestingIrGen UUT;
   ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
-  auto_ptr<AstValue> ast(
+  unique_ptr<AstValue> ast(
     pe.mkFunDef(
       pe.mkFunDecl(
         "foo",
