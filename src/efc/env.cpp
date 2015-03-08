@@ -1,4 +1,5 @@
 #include "env.h"
+#include "errorhandler.h"
 #include "llvm/IR/Value.h"
 #include <cassert>
 using namespace std;
@@ -6,6 +7,14 @@ using namespace llvm;
 
 SymbolTableEntry::~SymbolTableEntry() {
   delete &m_objType;
+}
+
+void SymbolTableEntry::markAsDefined(ErrorHandler& errorHandler) {
+  if (m_isDefined) {
+    errorHandler.add(new Error(Error::eRedefinition));
+    throw BuildError();
+  }
+  m_isDefined = true;
 }
 
 SymbolTable::~SymbolTable() {

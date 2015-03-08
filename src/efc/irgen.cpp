@@ -260,11 +260,7 @@ void IrGen::visit(AstFunDef& funDef) {
   SymbolTableEntry*const& stentry = funDef.decl().stentry();
   assert(stentry);
 
-  if (stentry->isDefined()) {
-    m_errorHandler.add(new Error(Error::eRedefinition));
-    throw BuildError();
-  }
-  stentry->markAsDefined();
+  stentry->markAsDefined(m_errorHandler);
 
   m_env.pushScope(); 
   if ( m_builder.GetInsertBlock() ) {
@@ -284,7 +280,7 @@ void IrGen::visit(AstFunDef& funDef) {
     m_builder.CreateStore(iterIr, alloca);
     SymbolTableEntry* stentry = new SymbolTableEntry(
       new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable));
-    stentry->markAsDefined();
+    stentry->markAsDefined(m_errorHandler);
     stentry->setValueIr(alloca);
     Env::InsertRet insertRet = m_env.insert(argName, stentry);
 
@@ -393,11 +389,7 @@ void IrGen::visit(AstDataDef& dataDef) {
   SymbolTableEntry*const& stentry = dataDef.decl().stentry();
   assert(stentry);
 
-  if (stentry->isDefined()) {
-    m_errorHandler.add(new Error(Error::eRedefinition));
-    throw BuildError();
-  }
-  stentry->markAsDefined();
+  stentry->markAsDefined(m_errorHandler);
 
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.

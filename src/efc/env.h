@@ -5,6 +5,8 @@
 #include <map>
 #include <list>
 #include <cassert>
+
+class ErrorHandler;
 namespace llvm {
   class Value;
 }
@@ -19,7 +21,7 @@ public:
 
   ObjType& objType() { return m_objType; }
   bool isDefined() { return m_isDefined; }
-  void markAsDefined() { m_isDefined = true; }
+  void markAsDefined(ErrorHandler& errorHandler);
 
 private:
   /** We're the owner. */
