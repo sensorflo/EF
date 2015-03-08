@@ -9,128 +9,81 @@ BISON_DATA_DIR := $(shell bison --print-datadir)
 
 all: out gensrc out/efc
 
-
-
 out gensrc:
 	mkdir -p $@
 
 
+# efc
+# ----------------------------------------------------------------------
+
 GEN_HEADERS:=gensrc/parser.hpp gensrc/stack.hh gensrc/position.hh gensrc/location.hh
+
+EFC_SRCS = driver.cpp parserext.cpp ast.cpp errorhandler.cpp objtype.cpp \
+  astdefaultiterator.cpp env.cpp semanticanalizer.cpp irgen.cpp astprinter.cpp \
+  efc.cpp
+
+EFC_OBJS = out/parser.o out/scanner.o $(patsubst %.cpp, out/%.o, $(EFC_SRCS))
 
 efc: out/efc
 
-gensrc/parser.cpp $(GEN_HEADERS): ef.yy *.h
+gensrc/parser.cpp $(GEN_HEADERS): ef.yy ast.h objtype.h parserext.h driver.h access.h astforwards.h
 	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $<;\
     yaccexitstatus=$$?;\
     xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml;\
     exit $$yaccexitstatus
 
-gensrc/scanner.cpp: ef.l $(GEN_HEADERS) *.h
+gensrc/scanner.cpp: ef.l driver.h gensrc/parser.hpp
 	$(LEX) $(LFLAGS) -o $@ $<
 
-out/parser.o: gensrc/parser.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
-out/scanner.o: gensrc/scanner.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -Wno-deprecated-register -c -o $@ $<
+out/%.o: gensrc/%.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
+	@cp out/$*.d out/$*.P; \
+		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+		-e '/^$$/ d' -e 's/$$/ :/' < out/$*.d >> out/$*.P;
 
-out/parserext.o: parserext.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+out/%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
+	@cp out/$*.d out/$*.P; \
+		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+		-e '/^$$/ d' -e 's/$$/ :/' < out/$*.d >> out/$*.P;
 
-out/driver.o: driver.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/ast.o: ast.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/errorhandler.o: errorhandler.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/env.o: env.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/objtype.o: objtype.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/astdefaultiterator.o: astdefaultiterator.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/semanticanalizer.o: semanticanalizer.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/irgen.o: irgen.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/astprinter.o: astprinter.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/efc.o: efc.cpp $(GEN_HEADERS) *.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/efc: out/parser.o out/scanner.o out/parserext.o out/driver.o out/ast.o out/errorhandler.o out/objtype.o out/astdefaultiterator.o out/env.o out/semanticanalizer.o out/irgen.o out/astprinter.o out/efc.o
+out/efc: $(EFC_OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 
+
+# efctest
+# ----------------------------------------------------------------------
+
+EFCTEST_SRCS = errorhandlertest.cpp parserexttest.cpp scannertest.cpp \
+  scannerandparsertest.cpp astprintertest.cpp driversystemtest.cpp \
+  semanticanalizertest.cpp irgentest.cpp gtestprinter.cpp test.cpp \
+  tutorialstest.cpp efctest.cpp
+
+EFCTEST_OBJS = $(patsubst %.cpp, out/%.o, $(EFCTEST_SRCS))
 
 test efctest: out/efctest
 
 runtest runefctest: out/efctest
 	$<
 
-out/efctest.o: test/efctest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/tutorialstest.o: test/tutorialstest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/test.o: test/test.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/gtestprinter.o: test/gtestprinter.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/scannertest.o: test/scannertest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/parserexttest.o: test/parserexttest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/scannerandparsertest.o: test/scannerandparsertest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/semanticanalizertest.o: test/semanticanalizertest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/irgentest.o: test/irgentest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/astprintertest.o: test/astprintertest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/driversystemtest.o: test/driversystemtest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/asttest.o: test/asttest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/errorhandlertest.o: test/errorhandlertest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/envtest.o: test/envtest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/objtypetest.o: test/objtypetest.cpp $(GEN_HEADERS) *.h test/*.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-
-out/efctest: out/scanner.o out/objtype.o out/astdefaultiterator.o out/ast.o out/errorhandler.o out/env.o out/astprinter.o out/semanticanalizer.o out/irgen.o out/parser.o out/parserext.o out/driver.o out/objtypetest.o out/envtest.o out/asttest.o out/errorhandlertest.o out/parserexttest.o out/scannertest.o out/scannerandparsertest.o out/astprintertest.o out/driversystemtest.o out/semanticanalizertest.o out/irgentest.o out/gtestprinter.o out/test.o out/tutorialstest.o out/efctest.o out/libgtest.a
-	$(CXX)  $(LDFLAGS) -pthread -o $@ $^ $(LIBS)
-
-
+out/%.o: test/%.cpp
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
+	@cp out/$*.d out/$*.P; \
+		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+		-e '/^$$/ d' -e 's/$$/ :/' < out/$*.d >> out/$*.P;
 
 out/libgtest.a: ${GTEST_DIR}/src/gtest-all.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c -o out/gtest-all.o $<
 	$(AR) $(ARFLAGS) $@ out/gtest-all.o
 
+out/efctest: $(filter-out out/efc.o, $(EFC_OBJS)) $(EFCTEST_OBJS) out/libgtest.a
+	$(CXX)  $(LDFLAGS) -pthread -o $@ $^ $(LIBS)
+
+
+# doc
+# ----------------------------------------------------------------------
 
 doc: out/specs.html
 
@@ -144,8 +97,15 @@ out/specs.html: test/*.cpp
 	fi
 
 
+# other
+# ----------------------------------------------------------------------
+
 clean:
 	rm -rf out/*
 	rm -rf gensrc/*
 
 .PHONY: all efc test efctest runtest runefctest
+
+-include $(EFC_SRCS:%.cpp=out/%.P)
+-include $(EFCTEST_SRCS:%.cpp=out/%.P)
+
