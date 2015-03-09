@@ -5,6 +5,7 @@
 #include <map>
 #include <list>
 #include <cassert>
+#include <memory>
 
 class ErrorHandler;
 namespace llvm {
@@ -13,19 +14,15 @@ namespace llvm {
 
 class SymbolTableEntry {
 public:
-  SymbolTableEntry(const ObjType* objType) :
-    m_objType( (assert(objType), *objType) ),
-    m_isDefined(false),
-    m_valueIr(NULL) {}
-  ~SymbolTableEntry();
+  SymbolTableEntry(std::shared_ptr<const ObjType> objType);
 
-  const ObjType& objType() const { return m_objType; }
+  const ObjType& objType() const { return *m_objType.get(); }
   bool isDefined() const { return m_isDefined; }
   void markAsDefined(ErrorHandler& errorHandler);
 
 private:
-  /** We're the owner. */
-  const ObjType& m_objType;
+  /** Is guaranteed to be non-null */
+  const std::shared_ptr<const ObjType> m_objType;
   /** Opposed to only declared */
   bool m_isDefined;
 

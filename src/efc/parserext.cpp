@@ -4,6 +4,7 @@
 #include "errorhandler.h"
 #include <cassert>
 #include <stdexcept>
+#include "memoryext.h"
 using namespace std;
 
 AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifiers qualifiers,
@@ -42,7 +43,7 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   for (/*nop*/; iterArgs!=args->end(); ++iterArgs) {
     argsObjType->push_back( &((*iterArgs)->objTypeStealOwnership()) );
   }
-  ObjTypeFun* objTypeFun = new ObjTypeFun(
+  auto objTypeFun = make_shared<const ObjTypeFun>(
     argsObjType, new ObjTypeFunda(ObjTypeFunda::eInt));
 
   // ensure function is in environment
@@ -51,14 +52,13 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   SymbolTableEntry*& stIterStEntry = stIter->second;
   bool wasAlreadyInMap = !insertRet.second;
   if (!wasAlreadyInMap) {
-    stIterStEntry = new SymbolTableEntry(objTypeFun);
+    stIterStEntry = new SymbolTableEntry(move(objTypeFun));
   } else {
     assert(stIterStEntry);
     if ( !stIterStEntry->objType().matchesFully(*objTypeFun) ) {
       m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
       throw BuildError();
     }
-    delete objTypeFun;
   }
 
   return new AstFunDecl(name, args ? args : new list<AstArgDecl*>, stIterStEntry);

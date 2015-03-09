@@ -279,7 +279,7 @@ void IrGen::visit(AstFunDef& funDef) {
     AllocaInst* alloca = createAllocaInEntryBlock(functionIr, argName);
     m_builder.CreateStore(iterIr, alloca);
     SymbolTableEntry* stentry = new SymbolTableEntry(
-      new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable));
+      make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable));
     stentry->markAsDefined(m_errorHandler);
     stentry->setValueIr(alloca);
     Env::InsertRet insertRet = m_env.insert(argName, stentry);

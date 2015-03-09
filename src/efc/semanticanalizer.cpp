@@ -79,7 +79,8 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
 
     // name is not yet in env, thus insert new symbol table entry
     if (insertRet.second) {
-      envs_stentry_ptr = new SymbolTableEntry(&dataDecl.objTypeStealOwnership());
+      envs_stentry_ptr = new SymbolTableEntry(
+        shared_ptr<const ObjType>(&dataDecl.objTypeStealOwnership()));
     }
 
     // name is already in env: unless the type matches that is an error

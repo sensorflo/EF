@@ -1,11 +1,13 @@
 #include "test.h"
 #include "../env.h"
 #include <string>
+#include "../memoryext.h"
 using namespace testing;
 using namespace std;
 
 SymbolTableEntry* createASymbolTableEntry() {
-  return new SymbolTableEntry(new ObjTypeFunda(ObjTypeFunda::eInt));
+  return new SymbolTableEntry(
+    make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt));
 }
 
 TEST(EnvTest, MAKE_TEST_NAME2(

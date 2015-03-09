@@ -5,9 +5,10 @@
 using namespace std;
 using namespace llvm;
 
-SymbolTableEntry::~SymbolTableEntry() {
-  delete &m_objType;
-}
+SymbolTableEntry::SymbolTableEntry(shared_ptr<const ObjType> objType) :
+  m_objType( (assert(objType.get()), move(objType))),
+  m_isDefined(false),
+  m_valueIr(NULL) {}
 
 void SymbolTableEntry::markAsDefined(ErrorHandler& errorHandler) {
   if (m_isDefined) {
