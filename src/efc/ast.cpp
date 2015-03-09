@@ -122,12 +122,6 @@ const ObjType& AstFunDecl::objType() const {
   return *m_objType;
 }
 
-const ObjType& AstFunDecl::objTypeStealOwnership() const {
-  assert(m_ownerOfObjType);
-  m_ownerOfObjType = false;
-  return *m_objType;
-}
-
 list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
   AstArgDecl* arg2, AstArgDecl* arg3) {
   list<AstArgDecl*>* args = new list<AstArgDecl*>;

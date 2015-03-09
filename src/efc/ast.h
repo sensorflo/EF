@@ -97,7 +97,6 @@ public:
   virtual const std::string& name() const { return m_name; }
   virtual std::list<AstArgDecl*>const& args() const { return *m_args; }
   virtual const ObjType& objType() const;
-  virtual const ObjType& objTypeStealOwnership() const;
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   virtual SymbolTableEntry* stentry() const { return m_stentry; }
