@@ -3,6 +3,7 @@
 #include <string>
 #include <list>
 #include <iostream>
+#include <memory>
 
 class ObjTypeFunda;
 class ObjTypeFun;
@@ -85,9 +86,9 @@ private:
 /** Compound-type/function */
 class ObjTypeFun : public ObjType {
 public:
-  ObjTypeFun(std::list<const ObjType*>* args, const ObjType* ret);
+  ObjTypeFun(std::list<std::shared_ptr<const ObjType> >* args, const ObjType* ret);
   virtual ~ObjTypeFun();
-  static std::list<const ObjType*>* createArgs(const ObjType* arg1 = NULL,
+  static std::list<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = NULL,
     const ObjType* arg2 = NULL, const ObjType* arg3 = NULL);
 
   virtual MatchType match(const ObjType& other) const { return other.match2(*this); }
@@ -97,10 +98,9 @@ public:
   virtual AstValue* createDefaultAstValue() const;
 
 private:
-  /** We're the owner of the container object and the objects pointed to by
-  the members of the container. m_args itself and the pointers in the
-  cointainer are garanteed to be non-null. */
-  const std::list<const ObjType*>* const m_args;
+  /** We're the owner of the container object. m_args itself and the pointers
+  in the cointainer are garanteed to be non-null. */
+  const std::list<std::shared_ptr<const ObjType> >* const m_args;
   /** */
   const ObjType* const m_ret;
 };

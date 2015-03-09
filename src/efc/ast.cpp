@@ -76,12 +76,8 @@ AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args,
   SymbolTableEntry* stentry) :
   m_name(name),
   m_args(args ? args : new list<AstArgDecl*>()),
-  m_objType(NULL),
-  m_ownerOfObjType(true),
   m_stentry(stentry),
   m_irFunction(NULL) {
-  assert(m_args);
-  initObjType();
 }
 
 /** Same as overloaded ctor for convenience; it's easier to pass short
@@ -90,12 +86,8 @@ AstFunDecl::AstFunDecl(const string& name, AstArgDecl* arg1,
   AstArgDecl* arg2, AstArgDecl* arg3) :
   m_name(name),
   m_args(createArgs(arg1, arg2, arg3)),
-  m_objType(NULL),
-  m_ownerOfObjType(true),
   m_stentry(NULL),
   m_irFunction(NULL) {
-  assert(m_args);
-  initObjType();
 }
 
 AstFunDecl::~AstFunDecl() {
@@ -104,22 +96,11 @@ AstFunDecl::~AstFunDecl() {
     delete *i;
   }
   delete m_args;
-  if (m_ownerOfObjType) { delete m_objType; }
-}
-
-void AstFunDecl::initObjType() {
-  list<const ObjType*>* argtypes = new list<const ObjType*>;
-  for (list<AstArgDecl*>::iterator i = m_args->begin(); i!=m_args->end(); ++i) {
-    // for simplicity, currently only args of type ObjTypeFunda are allowed
-    const ObjTypeFunda* argtype_src = dynamic_cast<const ObjTypeFunda*>(&(*i)->objType());
-    assert(argtype_src);
-    argtypes->push_back(new ObjTypeFunda(*argtype_src));
-  }
-  m_objType = new ObjTypeFun(argtypes, new ObjTypeFunda(ObjTypeFunda::eInt));
 }
 
 const ObjType& AstFunDecl::objType() const {
-  return *m_objType;
+  assert(m_stentry);
+  return m_stentry->objType();
 }
 
 list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
@@ -152,25 +133,19 @@ void AstFunDecl::setIrFunction(llvm::Function* function) {
 AstDataDecl::AstDataDecl(const string& name, ObjType* objType,
   SymbolTableEntry* stentry) :
   m_name(name),
-  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
-  m_ownerOfObjType(true),
+  m_objType(objType ? shared_ptr<ObjType>(objType) :
+    make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
   m_stentry(stentry),
   m_access(eRead),
   m_irValue(NULL) {
 }
 
-AstDataDecl::~AstDataDecl() {
-  if (m_ownerOfObjType) { delete m_objType; }
-}
-
 const ObjType& AstDataDecl::objType() const {
-  return *m_objType;
+  return *m_objType.get();
 }
 
-const ObjType& AstDataDecl::objTypeStealOwnership() const {
-  assert(m_ownerOfObjType);
-  m_ownerOfObjType = false;
-  return *m_objType;
+shared_ptr<const ObjType>& AstDataDecl::objTypeShareOwnership() {
+  return m_objType;
 }
 
 void AstDataDecl::setStentry(SymbolTableEntry* stentry) {

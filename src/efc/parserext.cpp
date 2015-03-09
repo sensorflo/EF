@@ -39,9 +39,9 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   // create ObjTypeFun object
   args = args ? args : new list<AstArgDecl*>();
   list<AstArgDecl*>::const_iterator iterArgs = args->begin();
-  list<const ObjType*>* argsObjType = new list<const ObjType*>;
+  list<shared_ptr<const ObjType> >* argsObjType = new list<shared_ptr<const ObjType> >;
   for (/*nop*/; iterArgs!=args->end(); ++iterArgs) {
-    argsObjType->push_back( &((*iterArgs)->objTypeStealOwnership()) );
+    argsObjType->push_back( (*iterArgs)->objTypeShareOwnership() );
   }
   auto objTypeFun = make_shared<const ObjTypeFun>(
     argsObjType, new ObjTypeFunda(ObjTypeFunda::eInt));

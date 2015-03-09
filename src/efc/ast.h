@@ -8,6 +8,7 @@
 #include <list>
 #include <iostream>
 #include <map>
+#include <memory>
 
 #include "astforwards.h"
 class AstConstVisitor;
@@ -104,15 +105,10 @@ public:
 
 private:
   void initObjType();
-  
+
   const std::string m_name;
   /** We're the owner. Is garanteed to be non-null */
   std::list<AstArgDecl*>* const m_args;
-  /** If m_ownerOfObjType is true, we're the owner. Is garanteed to be
-  non-null. */
-  const ObjType* m_objType;
-  /** See m_objType */
-  mutable bool m_ownerOfObjType;
   /** We're _not_ the owner; null means this FunDecl was not yet put into
   the environment */
   SymbolTableEntry* m_stentry;
@@ -131,12 +127,11 @@ class AstDataDecl : public AstValue {
 public:
   AstDataDecl(const std::string& name, ObjType* objType,
     SymbolTableEntry* stentry = NULL);
-  ~AstDataDecl();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
   virtual const ObjType& objType() const;
-  virtual const ObjType& objTypeStealOwnership() const;
+  virtual std::shared_ptr<const ObjType>& objTypeShareOwnership();
   virtual SymbolTableEntry* stentry() const { return m_stentry; }
   virtual void setStentry(SymbolTableEntry* stentry);
   virtual Access access() const { return m_access; }
@@ -144,11 +139,8 @@ public:
   
 private:
   const std::string m_name;
-  /** If m_ownerOfObjType is true, we're the owner. Is garanteed to be
-  non-null. */
-  const ObjType*const m_objType;
-  /** See m_objType */
-  mutable bool m_ownerOfObjType;
+  /** Guaranteed to be non-null */
+  std::shared_ptr<const ObjType> m_objType;
   /** We're _not_ the owner; null means this DataDecl was not yet put into
   the environment */
   SymbolTableEntry* m_stentry;
