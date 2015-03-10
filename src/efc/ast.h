@@ -101,7 +101,6 @@ public:
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   virtual SymbolTableEntry* stentry() const { return m_stentry; }
-  virtual void setStentry(SymbolTableEntry* stentry);
 
 private:
   void initObjType();

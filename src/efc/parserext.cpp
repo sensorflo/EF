@@ -46,7 +46,9 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   auto objTypeFun = make_shared<const ObjTypeFun>(
     argsObjType, new ObjTypeFunda(ObjTypeFunda::eInt));
 
-  // ensure function is in environment
+  // ensure function is in environment. Note that currently there is a flat
+  // namespace regarding function names; i.e. also nested functions are
+  // nevertheless in the flat global namespace.
   Env::InsertRet insertRet = m_env.insert( name, NULL);
   SymbolTable::iterator& stIter = insertRet.first;
   SymbolTableEntry*& stIterStEntry = stIter->second;

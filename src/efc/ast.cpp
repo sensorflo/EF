@@ -112,12 +112,6 @@ list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
   return args;
 }
 
-void AstFunDecl::setStentry(SymbolTableEntry* stentry) {
-  assert(stentry);
-  assert(!m_stentry); // it makes no sense to set it twice
-  m_stentry = stentry;
-}
-
 void AstFunDecl::setIrValue(llvm::Value* value) {
   assert(value);
   assert(!m_irFunction);  // it doesnt make sense to set it twice
