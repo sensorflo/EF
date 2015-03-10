@@ -227,7 +227,9 @@ public:
   virtual const ObjType& objType() const;
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
-  virtual SymbolTableEntry*& stentry() { return m_stentry; }
+  virtual SymbolTableEntry* stentry() { return m_stentry; }
+  virtual void setStentry(SymbolTableEntry* stentry);
+
 private:
   const std::string m_name;
   Access m_access;

@@ -397,6 +397,12 @@ const ObjType& AstSymbol::objType() const {
   return m_stentry->objType();
 }
 
+void AstSymbol::setStentry(SymbolTableEntry* stentry) {
+  assert(stentry);
+  assert(!m_stentry); // it makes no sense to set it twice
+  m_stentry = stentry;
+}
+
 AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
   m_address(address ? address : new AstSymbol("")),
   m_args(args ? args : new AstCtList()),

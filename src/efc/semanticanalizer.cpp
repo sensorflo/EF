@@ -47,13 +47,12 @@ void SemanticAnalizer::visit(AstNumber& number) {
 }
 
 void SemanticAnalizer::visit(AstSymbol& symbol) {
-  SymbolTableEntry*& stentry = symbol.stentry();
-  assert(NULL==stentry); // it's not possible that stentry is already assigned
-  stentry = m_env.find(symbol.name());
+  SymbolTableEntry* stentry = m_env.find(symbol.name());
   if (NULL==stentry) {
     m_errorHandler.add(new Error(Error::eUnknownName));
     throw BuildError();
   }
+  symbol.setStentry(stentry);
   m_nextVisitor.visit(symbol);
 }
 

@@ -257,10 +257,9 @@ void IrGen::visit(AstFunDef& funDef) {
   visit(funDef.decl());
   Function* functionIr = funDef.decl().irFunction();
   assert(functionIr);
-  SymbolTableEntry*const& stentry = funDef.decl().stentry();
-  assert(stentry);
-
-  stentry->markAsDefined(m_errorHandler);
+  SymbolTableEntry*const funStentry = funDef.decl().stentry();
+  assert(funStentry);
+  funStentry->markAsDefined(m_errorHandler);
 
   m_env.pushScope(); 
   if ( m_builder.GetInsertBlock() ) {
@@ -278,16 +277,16 @@ void IrGen::visit(AstFunDef& funDef) {
     const string& argName = (*iterAst)->name();
     AllocaInst* alloca = createAllocaInEntryBlock(functionIr, argName);
     m_builder.CreateStore(iterIr, alloca);
-    SymbolTableEntry* stentry = new SymbolTableEntry(
+    SymbolTableEntry* argStentry = new SymbolTableEntry(
       make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable));
-    stentry->markAsDefined(m_errorHandler);
-    stentry->setValueIr(alloca);
-    Env::InsertRet insertRet = m_env.insert(argName, stentry);
+    argStentry->markAsDefined(m_errorHandler);
+    argStentry->setValueIr(alloca);
+    Env::InsertRet insertRet = m_env.insert(argName, argStentry);
 
     // if name is already in environment, then it must be another argument
     // since we just pushed a new scope. 
     if ( !insertRet.second ) {
-      delete stentry;
+      delete argStentry;
       m_errorHandler.add(new Error(Error::eRedefinition));
       throw BuildError();
     }
@@ -386,7 +385,7 @@ void IrGen::visit(AstArgDecl& argDecl) {
 void IrGen::visit(AstDataDef& dataDef) {
   // process data declaration. That ensures an entry in the symbol table
   callAcceptOn(dataDef.decl());
-  SymbolTableEntry*const& stentry = dataDef.decl().stentry();
+  SymbolTableEntry*const stentry = dataDef.decl().stentry();
   assert(stentry);
 
   stentry->markAsDefined(m_errorHandler);
