@@ -34,11 +34,9 @@ private:
   llvm::Value* m_valueIr;
 };
 
-class SymbolTable : public std::map<std::string,SymbolTableEntry*> {
+class SymbolTable : public std::map<std::string, std::shared_ptr<SymbolTableEntry> > {
 public:
   typedef value_type KeyValue;
-  virtual ~SymbolTable();
-  // we're the owner of the SymbolTableEntry objects pointet to
 };
 
 class Env {
@@ -46,9 +44,9 @@ public:
   typedef std::pair<SymbolTable::iterator,bool> InsertRet;
 
   Env();
-  InsertRet insert(const std::string& name, SymbolTableEntry* stentry); 
-  InsertRet insert(const SymbolTable::KeyValue& keyValue); 
-  SymbolTableEntry* find(const std::string& name); 
+  InsertRet insert(const std::string& name, std::shared_ptr<SymbolTableEntry> stentry);
+  InsertRet insert(const SymbolTable::KeyValue& keyValue);
+  void find(const std::string& name, std::shared_ptr<SymbolTableEntry>& stentry);
   void pushScope();
   void popScope();
 

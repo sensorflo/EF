@@ -73,10 +73,10 @@ const ObjType& AstFunDef::objType() const {
 }
 
 AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args,
-  SymbolTableEntry* stentry) :
+  shared_ptr<SymbolTableEntry> stentry) :
   m_name(name),
   m_args(args ? args : new list<AstArgDecl*>()),
-  m_stentry(stentry),
+  m_stentry(move(stentry)),
   m_irFunction(NULL) {
 }
 
@@ -125,11 +125,11 @@ void AstFunDecl::setIrFunction(llvm::Function* function) {
 }
 
 AstDataDecl::AstDataDecl(const string& name, ObjType* objType,
-  SymbolTableEntry* stentry) :
+  shared_ptr<SymbolTableEntry> stentry) :
   m_name(name),
   m_objType(objType ? shared_ptr<ObjType>(objType) :
     make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
-  m_stentry(stentry),
+  m_stentry(move(stentry)),
   m_access(eRead),
   m_irValue(NULL) {
 }
@@ -142,10 +142,10 @@ shared_ptr<const ObjType>& AstDataDecl::objTypeShareOwnership() {
   return m_objType;
 }
 
-void AstDataDecl::setStentry(SymbolTableEntry* stentry) {
-  assert(stentry);
+void AstDataDecl::setStentry(shared_ptr<SymbolTableEntry> stentry) {
+  assert(stentry.get());
   assert(!m_stentry); // it makes no sense to set it twice
-  m_stentry = stentry;
+  m_stentry = move(stentry);
 }
 
 void AstDataDecl::setIrValue(llvm::Value* value) {
@@ -391,10 +391,10 @@ const ObjType& AstSymbol::objType() const {
   return m_stentry->objType();
 }
 
-void AstSymbol::setStentry(SymbolTableEntry* stentry) {
+void AstSymbol::setStentry(shared_ptr<SymbolTableEntry> stentry) {
   assert(stentry);
-  assert(!m_stentry); // it makes no sense to set it twice
-  m_stentry = stentry;
+  assert(!m_stentry.get()); // it makes no sense to set it twice
+  m_stentry = move(stentry);
 }
 
 AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :

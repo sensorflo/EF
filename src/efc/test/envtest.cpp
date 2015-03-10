@@ -53,7 +53,8 @@ TEST(EnvTest, MAKE_TEST_NAME(
 
   // exercise
   UUT.insert(name, stEntry);
-  SymbolTableEntry* returnedStEntry = UUT.find(name);
+  shared_ptr<SymbolTableEntry> returnedStEntry;
+  UUT.find(name, returnedStEntry);
 
   // verify
   EXPECT_TRUE( NULL!=returnedStEntry );

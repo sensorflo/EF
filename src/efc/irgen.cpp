@@ -277,16 +277,15 @@ void IrGen::visit(AstFunDef& funDef) {
     const string& argName = (*iterAst)->name();
     AllocaInst* alloca = createAllocaInEntryBlock(functionIr, argName);
     m_builder.CreateStore(iterIr, alloca);
-    SymbolTableEntry* argStentry = new SymbolTableEntry(
+    shared_ptr<SymbolTableEntry> argStentry = make_shared<SymbolTableEntry>(
       make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable));
     argStentry->markAsDefined(m_errorHandler);
     argStentry->setValueIr(alloca);
-    Env::InsertRet insertRet = m_env.insert(argName, argStentry);
+    Env::InsertRet insertRet = m_env.insert(argName, move(argStentry));
 
     // if name is already in environment, then it must be another argument
     // since we just pushed a new scope. 
     if ( !insertRet.second ) {
-      delete argStentry;
       m_errorHandler.add(new Error(Error::eRedefinition));
       throw BuildError();
     }
@@ -394,7 +393,7 @@ void IrGen::visit(AstDataDef& dataDef) {
   // trivial. For variables aka allocas first an alloca has to be created.
   Value* initValue = callAcceptOn(dataDef.initValue());
   assert(initValue);
-  if ( stentry->objType().qualifiers() & ObjType::eMutable ) {
+  if ( dataDef.objType().qualifiers() & ObjType::eMutable ) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
     assert(functionIr);
     AllocaInst* alloca =

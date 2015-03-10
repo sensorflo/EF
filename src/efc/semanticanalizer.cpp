@@ -47,7 +47,8 @@ void SemanticAnalizer::visit(AstNumber& number) {
 }
 
 void SemanticAnalizer::visit(AstSymbol& symbol) {
-  SymbolTableEntry* stentry = m_env.find(symbol.name());
+  shared_ptr<SymbolTableEntry> stentry;
+  m_env.find(symbol.name(), stentry);
   if (NULL==stentry) {
     m_errorHandler.add(new Error(Error::eUnknownName));
     throw BuildError();
@@ -73,17 +74,18 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
   // let dataDecl.stentry() point either to a newly created symbol table entry
   // or to an allready existing one declaring the same data object
   {
-    Env::InsertRet insertRet = m_env.insert( dataDecl.name(), NULL);
-    SymbolTableEntry*& envs_stentry_ptr = insertRet.first->second;
+    Env::InsertRet insertRet = m_env.insert( dataDecl.name(), nullptr );
+    shared_ptr<SymbolTableEntry>& envs_stentry_ptr = insertRet.first->second;
 
     // name is not yet in env, thus insert new symbol table entry
     if (insertRet.second) {
-      envs_stentry_ptr = new SymbolTableEntry(dataDecl.objTypeShareOwnership());
+      envs_stentry_ptr = make_shared<SymbolTableEntry>(
+        dataDecl.objTypeShareOwnership());
     }
 
     // name is already in env: unless the type matches that is an error
     else {
-      assert(envs_stentry_ptr);
+      assert(envs_stentry_ptr.get());
       if ( !envs_stentry_ptr->objType().matchesFully(dataDecl.objType()) ) {
         m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
         throw BuildError();

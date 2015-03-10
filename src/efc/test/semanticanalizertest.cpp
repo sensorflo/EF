@@ -121,8 +121,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   ast->accept(UUT);
 
   // verify
-  SymbolTableEntry* stentry = env.find("x");
-  EXPECT_TRUE( stentry ) << amendAst(ast.get());
+  shared_ptr<SymbolTableEntry> stentry;
+  env.find("x", stentry);
+  EXPECT_TRUE( stentry.get() ) << amendAst(ast.get());
   EXPECT_EQ( ObjType::eFullMatch,
     stentry->objType().match( ObjTypeFunda(ObjTypeFunda::eInt)));
 }
@@ -145,8 +146,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   ast->accept(UUT);
 
   // verify
-  SymbolTableEntry* stentry = env.find("x");
-  EXPECT_TRUE( stentry ) << amendAst(ast);
+  shared_ptr<SymbolTableEntry> stentry;
+  env.find("x", stentry);
+  EXPECT_TRUE( stentry.get() ) << amendAst(ast);
   EXPECT_EQ( ObjType::eFullMatch,
     stentry->objType().match( ObjTypeFunda(ObjTypeFunda::eInt)));
 

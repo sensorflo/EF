@@ -51,19 +51,19 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   // nevertheless in the flat global namespace.
   Env::InsertRet insertRet = m_env.insert( name, NULL);
   SymbolTable::iterator& stIter = insertRet.first;
-  SymbolTableEntry*& stIterStEntry = stIter->second;
+  shared_ptr<SymbolTableEntry>& stIterStEntry = stIter->second;
   bool wasAlreadyInMap = !insertRet.second;
   if (!wasAlreadyInMap) {
-    stIterStEntry = new SymbolTableEntry(move(objTypeFun));
+    stIterStEntry = make_shared<SymbolTableEntry>(move(objTypeFun));
   } else {
-    assert(stIterStEntry);
+    assert(stIterStEntry.get());
     if ( !stIterStEntry->objType().matchesFully(*objTypeFun) ) {
       m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
       throw BuildError();
     }
   }
 
-  return new AstFunDecl(name, args ? args : new list<AstArgDecl*>, stIterStEntry);
+  return new AstFunDecl(name, args, stIterStEntry);
 }
 
 AstFunDecl* ParserExt::mkFunDecl(const string name, AstArgDecl* arg1,

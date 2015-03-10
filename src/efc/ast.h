@@ -89,7 +89,7 @@ public:
 class AstFunDecl : public AstValue {
 public:
   AstFunDecl(const std::string& name, std::list<AstArgDecl*>* args = NULL,
-    SymbolTableEntry* stentry = NULL);
+    std::shared_ptr<SymbolTableEntry> stentry = nullptr);
   AstFunDecl(const std::string& name, AstArgDecl* arg1,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   ~AstFunDecl();
@@ -100,7 +100,7 @@ public:
   virtual const ObjType& objType() const;
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
-  virtual SymbolTableEntry* stentry() const { return m_stentry; }
+  virtual SymbolTableEntry* stentry() const { return m_stentry.get(); }
 
 private:
   void initObjType();
@@ -108,9 +108,7 @@ private:
   const std::string m_name;
   /** We're the owner. Is garanteed to be non-null */
   std::list<AstArgDecl*>* const m_args;
-  /** We're _not_ the owner; null means this FunDecl was not yet put into
-  the environment */
-  SymbolTableEntry* m_stentry;
+  const std::shared_ptr<SymbolTableEntry> m_stentry;
 
 // decorations for IrGen
 public:
@@ -125,14 +123,14 @@ public:
 class AstDataDecl : public AstValue {
 public:
   AstDataDecl(const std::string& name, ObjType* objType,
-    SymbolTableEntry* stentry = NULL);
+    std::shared_ptr<SymbolTableEntry> stentry = nullptr);
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
   virtual const ObjType& objType() const;
   virtual std::shared_ptr<const ObjType>& objTypeShareOwnership();
-  virtual SymbolTableEntry* stentry() const { return m_stentry; }
-  virtual void setStentry(SymbolTableEntry* stentry);
+  virtual SymbolTableEntry* stentry() const { return m_stentry.get(); }
+  virtual void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
   
@@ -140,9 +138,8 @@ private:
   const std::string m_name;
   /** Guaranteed to be non-null */
   std::shared_ptr<const ObjType> m_objType;
-  /** We're _not_ the owner; null means this DataDecl was not yet put into
-  the environment */
-  SymbolTableEntry* m_stentry;
+  /** NULL means this DataDecl was not yet put into the environment */
+  std::shared_ptr<SymbolTableEntry> m_stentry;
   Access m_access;
 
 // decorations for IrGen
@@ -226,14 +223,14 @@ public:
   virtual const ObjType& objType() const;
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
-  virtual SymbolTableEntry* stentry() { return m_stentry; }
-  virtual void setStentry(SymbolTableEntry* stentry);
+  virtual SymbolTableEntry* stentry() { return m_stentry.get(); }
+  virtual void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
 
 private:
   const std::string m_name;
   Access m_access;
   /** We're not the owner, can be NULL */
-  SymbolTableEntry* m_stentry;
+  std::shared_ptr<SymbolTableEntry> m_stentry;
 
 // decorations for IrGen
 public:

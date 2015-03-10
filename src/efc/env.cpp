@@ -18,14 +18,6 @@ void SymbolTableEntry::markAsDefined(ErrorHandler& errorHandler) {
   m_isDefined = true;
 }
 
-SymbolTable::~SymbolTable() {
-  map<string,SymbolTableEntry*>::iterator i = begin();
-  for ( ; i!=end(); ++i ) {
-    SymbolTableEntry* stentry = i->second;
-    if (stentry) { delete stentry; }
-  }
-}
-
 llvm::Value* SymbolTableEntry::valueIr() const {
   return m_valueIr;
 }
@@ -40,25 +32,25 @@ Env::Env() {
   m_ststack.push_front(SymbolTable());
 }
 
-/** Upon _successfull_ insertion, the symbol table takes ownership of stentry. A null
-stentry is not allowed. */
-Env::InsertRet Env::insert(const string& name, SymbolTableEntry* stentry) {
-  return insert(make_pair(name, stentry));
+Env::InsertRet Env::insert(const string& name, shared_ptr<SymbolTableEntry> stentry) {
+  return insert(make_pair(move(name), move(stentry)));
 }
 
 /** \overload */
 Env::InsertRet Env::insert(const SymbolTable::KeyValue& keyValue) {
-  return m_ststack.front().insert(keyValue);
+  return m_ststack.front().insert(move(keyValue));
 }
 
-SymbolTableEntry* Env::find(const string& name) {
+void Env::find(const string& name, shared_ptr<SymbolTableEntry>& stentry) {
   list<SymbolTable>::iterator iter = m_ststack.begin();
   for ( /*nop*/; iter!=m_ststack.end(); ++iter ) {
     SymbolTable& symbolTable = *iter;
     SymbolTable::iterator i = symbolTable.find(name);
-    if (i!=symbolTable.end()) { return i->second; }
+    if (i!=symbolTable.end()) {
+      stentry = i->second;
+      return;
+    }
   }
-  return NULL;
 }
 
 void Env::pushScope() {
