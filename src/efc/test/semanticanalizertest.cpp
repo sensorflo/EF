@@ -273,5 +273,41 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eRedefinition, spec);
 }
 
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+    a_nested_function_definition,
+    transform,
+    succeeds_AND_inserts_both_function_names_in_the_global_namespace,
+    BECAUSE_currently_for_simplicity_there_are_no_nested_namespaces)) {
 
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  ParserExt pe(env, errorHandler);
+  AstNode* ast =
+    pe.mkFunDef( pe.mkFunDecl("outer"),
+      new AstOperator(';',
+        pe.mkFunDef( pe.mkFunDecl("inner"), new AstNumber(42)),
+        new AstNumber(42)));
 
+  // exercise
+  UUT.analyze(*ast);
+
+  // verify
+  EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
+
+  ObjTypeFun funType{ ObjTypeFun::createArgs(), new ObjTypeFunda(ObjTypeFunda::eInt)};
+
+  shared_ptr<SymbolTableEntry> stentryOuter;
+  env.find("outer", stentryOuter);
+  EXPECT_TRUE( stentryOuter.get() ) << amendAst(ast);
+  EXPECT_TRUE( stentryOuter->objType().matchesFully(funType) );
+
+  shared_ptr<SymbolTableEntry> stentryInner;
+  env.find("inner", stentryInner);
+  EXPECT_TRUE( stentryInner.get() ) << amendAst(ast);
+  EXPECT_TRUE( stentryInner->objType().matchesFully(funType) );
+
+  // tear down
+  delete ast;
+}
