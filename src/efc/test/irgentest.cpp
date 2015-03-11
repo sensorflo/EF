@@ -643,20 +643,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
-    multiple_identical_function_declarations,
-    genIr,
-    succeeds)) {
-  TestingIrGen UUT;
-  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-  EXPECT_NO_THROW(
-    UUT.genIr(
-      *new AstOperator(';',
-        pe.mkFunDecl("foo"),
-        pe.mkFunDecl("foo"))));
-  EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
     a_function_declaration_and_a_matching_function_definition,
     genIr,
     succeeds)) {

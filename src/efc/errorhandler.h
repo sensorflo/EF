@@ -36,6 +36,7 @@ public:
   /** Errorhandler overtakes ownership */
   void add(Error* error) { m_errors.push_back(error); }
   const Container& errors() const { return m_errors; }
+  bool hasNoErrors() const { return m_errors.empty(); }
 
 private:
   /** We're the owner of the pointees */

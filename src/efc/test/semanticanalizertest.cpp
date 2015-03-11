@@ -150,11 +150,45 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*ast);
 
   // verify
+  EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
   shared_ptr<SymbolTableEntry> stentry;
   env.find("x", stentry);
   EXPECT_TRUE( stentry.get() ) << amendAst(ast);
   EXPECT_EQ( ObjType::eFullMatch,
     stentry->objType().match( ObjTypeFunda(ObjTypeFunda::eInt)));
+
+  // tear down
+  delete ast;
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_function_redeclaration_with_matching_type,
+    transform,
+    succeeds_AND_inserts_an_appropriate_SymbolTableEntry_into_Env_once)) {
+
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  ParserExt pe(env, errorHandler);
+  AstNode* ast =
+    new AstOperator(';',
+      pe.mkFunDecl("foo"),
+      pe.mkFunDecl("foo"));
+
+  // exercise
+  UUT.analyze(*ast);
+
+  // verify
+  EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
+  shared_ptr<SymbolTableEntry> stentry;
+  env.find("foo", stentry);
+  EXPECT_TRUE( stentry.get() ) << amendAst(ast);
+  EXPECT_EQ( ObjType::eFullMatch,
+    stentry->objType().match(
+      ObjTypeFun(
+        ObjTypeFun::createArgs(),
+        new ObjTypeFunda(ObjTypeFunda::eInt))));
 
   // tear down
   delete ast;
@@ -238,4 +272,6 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42))),
     Error::eRedefinition, spec);
 }
+
+
 
