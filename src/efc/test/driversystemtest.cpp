@@ -73,7 +73,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
     new AstOperator('=',
       new AstNumber(42),
       new AstNumber(77)),
-    Error::eWriteToReadOnly, spec);
+    Error::eWriteToImmutable, spec);
 }
 
 TEST(DriverSystemTest, MAKE_TEST_NAME(
@@ -85,7 +85,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
     new AstOperator('=',
       new AstNumber(42),
       new AstNumber(77)),
-    Error::eWriteToReadOnly, spec);
+    Error::eWriteToImmutable, spec);
 }
 
 TEST(DriverSystemTest, MAKE_TEST_NAME(

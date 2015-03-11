@@ -58,7 +58,7 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
   symbol.setStentry(move(stentry));
   if (symbol.access()==eWrite &&
     !(symbol.objType().qualifiers() & ObjType::eMutable)) {
-    m_errorHandler.add(new Error(Error::eWriteToReadOnly));
+    m_errorHandler.add(new Error(Error::eWriteToImmutable));
     throw BuildError();
   }
 }

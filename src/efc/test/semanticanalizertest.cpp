@@ -315,7 +315,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_assignment_to_an_immutable_data_object,
     transform,
-    reports_an_eWriteToReadOnly)) {
+    reports_an_eWriteToImmutable)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
       new AstDataDef(
@@ -324,5 +324,5 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       new AstOperator('=',
         new AstSymbol("foo"),
         new AstNumber(77))),
-    Error::eWriteToReadOnly, "");
+    Error::eWriteToImmutable, "");
 }
