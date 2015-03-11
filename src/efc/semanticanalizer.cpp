@@ -27,12 +27,19 @@ void SemanticAnalizer::visit(AstCtList& ctList) {
 
 void SemanticAnalizer::visit(AstOperator& op) {
   const list<AstValue*>& argschilds = op.args().childs();
+
   switch (op.op()) {
-  case AstOperator::eSeq:
+  case AstOperator::eSeq: {
     if (argschilds.empty()) {
       throw runtime_error("Empty sequence not allowed (yet)");
     }
     break;
+  }
+  case AstOperator::eAssign: {
+    assert( !argschilds.empty() );
+    argschilds.front()->setAccess(eWrite, m_errorHandler);
+    break;
+  }
   default:
     break;
   }
@@ -49,6 +56,11 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
     throw BuildError();
   }
   symbol.setStentry(move(stentry));
+  if (symbol.access()==eWrite &&
+    !(symbol.objType().qualifiers() & ObjType::eMutable)) {
+    m_errorHandler.add(new Error(Error::eWriteToReadOnly));
+    throw BuildError();
+  }
 }
 
 void SemanticAnalizer::visit(AstFunCall& funCall) {

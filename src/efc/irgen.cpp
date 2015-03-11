@@ -128,7 +128,7 @@ void IrGen::visit(AstOperator& op) {
   const list<AstValue*>& argschilds = op.args().childs();
   list<AstValue*>::const_iterator iter = argschilds.begin();
   Value* resultIr = NULL;
-  AstOperator::EOperation op_ = op.op();
+  const AstOperator::EOperation op_ = op.op();
 
   // Determine initial value of chain. Some operators start with constants,
   // other already need to read in one or two operands.
@@ -167,11 +167,6 @@ void IrGen::visit(AstOperator& op) {
     if ( op_==AstOperator::eEqualTo ){ assert(argschilds.size()==2); }
     if ( op_==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
     AstValue& lhsAst = **(iter++);
-    if ( op_==AstOperator::eAssign ) {
-      // When moved to SementaicAnalizer then the const cast won't be needed
-      // anymore. Until then it's not too bad.
-      lhsAst.setAccess(eWrite, m_errorHandler);
-    }
     resultIr = callAcceptOn(lhsAst);
     assert(resultIr);
     break;
@@ -235,10 +230,6 @@ void IrGen::visit(AstSymbol& symbol) {
       resultIr = m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str());
     }
   } else {
-    if (symbol.access()==eWrite) {
-      throw runtime_error("Can't write to value (inmutable data) '"
-        + symbol.name() + "'.");
-    }
     // stentry->valueIr() is directly the llvm::Value of the symbol
     resultIr = stentry->valueIr();
   }

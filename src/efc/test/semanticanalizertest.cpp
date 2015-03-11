@@ -311,3 +311,18 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   // tear down
   delete ast;
 }
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_assignment_to_an_immutable_data_object,
+    transform,
+    reports_an_eWriteToReadOnly)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstDataDef(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstNumber(42)),
+      new AstOperator('=',
+        new AstSymbol("foo"),
+        new AstNumber(77))),
+    Error::eWriteToReadOnly, "");
+}

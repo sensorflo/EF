@@ -838,22 +838,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     77, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME4(
-    foo_defined_as_value_followed_by_assigning_to_foo,
-    genIrInImplicitMain,
-    throws,
-    BECAUSE_values_are_immutable_data_objects)) {
-  TEST_GEN_IR_IMPLICIT_MAIN_THROWS(
-    new AstOperator(';',
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstNumber(42)),
-      new AstOperator('=',
-        new AstSymbol("foo"),
-        new AstNumber(77))),
-    "");
-}
-
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_value_definition_of_foo_with_no_explicit_initializer,
     genIrInImplicitMain,
