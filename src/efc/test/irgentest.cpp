@@ -15,15 +15,14 @@ class TestingIrGen : public IrGen {
 public:
   TestingIrGen() :
     IrGen(
-      *(m_env = new Env()),
       *(m_errorHandler = new ErrorHandler()) ),
-    m_semanticAnalizer(*m_env, *m_errorHandler, this) {};
-  ~TestingIrGen() { delete m_env; delete m_errorHandler; };
+    m_semanticAnalizer(m_env, *m_errorHandler) {};
+  ~TestingIrGen() { delete m_errorHandler; };
   using IrGen::jitExecFunction;
   using IrGen::jitExecFunction1Arg;
   using IrGen::jitExecFunction2Arg;
   using IrGen::m_module;
-  Env* m_env;
+  Env m_env;
   ErrorHandler* m_errorHandler;
   SemanticAnalizer m_semanticAnalizer;
 };
@@ -34,10 +33,11 @@ void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
   unique_ptr<AstValue> astRootAp(astRoot);
-  SemanticAnalizer semanticAnalizer(*UUT.m_env, *UUT.m_errorHandler, &UUT);
+  SemanticAnalizer semanticAnalizer(UUT.m_env, *UUT.m_errorHandler);
+  semanticAnalizer.analyze(*astRoot);
 
   // execute
-  UUT.genIrInImplicitMain(*astRoot, &semanticAnalizer);
+  UUT.genIrInImplicitMain(*astRoot);
   int result = UUT.jitExecMain();
 
   // verify
@@ -48,7 +48,7 @@ void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
   {                                                                     \
     SCOPED_TRACE("testgenIrInImplicitMain called from here (via TEST_GEN_IR_IN_IMPLICIT_MAIN)"); \
     TestingIrGen UUT;                                            \
-    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);                      \
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
     testgenIrInImplicitMain(UUT, astRoot, expectedResult, spec);           \
   }
 
@@ -59,11 +59,12 @@ void testgenIrInImplicitMainThrows(TestingIrGen& UUT, AstValue* astRoot,
   unique_ptr<AstValue> ast(astRoot);
   bool anyThrow = false;
   string excptionwhat;
-  SemanticAnalizer semanticAnalizer(*UUT.m_env, *UUT.m_errorHandler, &UUT);
-
+  SemanticAnalizer semanticAnalizer(UUT.m_env, *UUT.m_errorHandler);
+  semanticAnalizer.analyze(*astRoot);
+  
   // execute
   try {
-    UUT.genIrInImplicitMain(*ast.get(), &semanticAnalizer);
+    UUT.genIrInImplicitMain(*ast.get());
   }
 
   // verify
@@ -93,7 +94,7 @@ void testgenIrInImplicitMainThrows(TestingIrGen& UUT, AstValue* astRoot,
   {                                                                     \
     SCOPED_TRACE("testgenIrInImplicitMainThrows called from here (via TEST_GEN_IR_IMPLICIT_MAIN_THROWS)"); \
     TestingIrGen UUT;                                            \
-    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);                      \
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                      \
     testgenIrInImplicitMainThrows(UUT, astRoot, spec);                     \
   }
 
@@ -106,14 +107,15 @@ void testgenIrReportsError(TestingIrGen& UUT, AstValue* astRoot,
   bool anyThrow = false;
   bool didThrowBuildError = false;
   string excptionwhat;
-  SemanticAnalizer semanticAnalizer(*UUT.m_env, *UUT.m_errorHandler, &UUT);
+  SemanticAnalizer semanticAnalizer(UUT.m_env, *UUT.m_errorHandler);
+  semanticAnalizer.analyze(*astRoot);
 
   // execute
   try {
     if (bInImplicitMain) {
-      UUT.genIrInImplicitMain(*astRoot, &semanticAnalizer);
+      UUT.genIrInImplicitMain(*astRoot);
     } else {
-      UUT.genIr(*astRoot, &semanticAnalizer);
+      UUT.genIr(*astRoot);
     }
   }
 
@@ -151,7 +153,7 @@ void testgenIrReportsError(TestingIrGen& UUT, AstValue* astRoot,
   {                                                                     \
     SCOPED_TRACE("testgenIrReportsError called from here (via TEST_GEN_IR_REPORTS_ERROR)"); \
     TestingIrGen UUT;                                            \
-    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);                      \
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                      \
     testgenIrReportsError(UUT, astRoot, expectedErrorNo, false, spec); \
   }
 
@@ -159,7 +161,7 @@ void testgenIrReportsError(TestingIrGen& UUT, AstValue* astRoot,
   {                                                                     \
     SCOPED_TRACE("testgenIrReportsError called from here (via TEST_GEN_MODULE_IN_IMPLICIT_MAIN_REPORTS_ERROR)"); \
     TestingIrGen UUT;                                            \
-    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);                      \
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                      \
     testgenIrReportsError(UUT, astRoot, expectedErrorNo, true, spec); \
   }
 
@@ -392,9 +394,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
-    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
       pe.mkFunDecl("foo"));
+    UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
     UUT.genIr(*ast);
@@ -415,12 +418,13 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
-    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
       pe.mkFunDecl(
         "foo",
         new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))));
+    UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
     UUT.genIr(*ast);
@@ -447,9 +451,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
-    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
       pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)));
+    UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
     UUT.genIr(*ast);
@@ -470,7 +475,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
-    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     list<string>* args = new list<string>();
     args->push_back("arg1");
     args->push_back("arg2");
@@ -481,6 +486,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
           new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstNumber(77)));
+    UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
     UUT.genIr(*ast);
@@ -507,9 +513,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
-    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
       pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)));
+    UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
     UUT.genIr(*ast);
@@ -525,13 +532,14 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
-    ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
       pe.mkFunDef(
         pe.mkFunDecl(
           "foo",
           new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstNumber(42)));
+    UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
     UUT.genIr(*ast);
@@ -550,16 +558,17 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // IrGen is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
   TestingIrGen UUT;
-  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
   unique_ptr<AstValue> ast(
     pe.mkFunDef(
       pe.mkFunDecl(
         "foo",
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstSymbol("x")));
+  UUT.m_semanticAnalizer.analyze(*ast);
 
   // execute
-  UUT.genIr(*ast, &UUT.m_semanticAnalizer);
+  UUT.genIr(*ast);
 
   // verify
   int x = 256;
@@ -578,7 +587,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // IrGen is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
   TestingIrGen UUT;
-  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
   unique_ptr<AstValue> ast(
     pe.mkFunDef(
       pe.mkFunDecl(
@@ -588,9 +597,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstOperator('*',
         new AstSymbol("x"),
         new AstSymbol("y"))));
+  UUT.m_semanticAnalizer.analyze(*ast);
 
   // execute
-  UUT.genIr(*ast, &UUT.m_semanticAnalizer);
+  UUT.genIr(*ast);
 
   // verify
   int x = 2;
@@ -609,7 +619,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // IrGen is currently dumb and expects an expression having a value at
   // the end of a seq, thus provide one altought not needed for this test
   TestingIrGen UUT;
-  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
   unique_ptr<AstValue> ast(
     pe.mkFunDef(
       pe.mkFunDecl(
@@ -622,9 +632,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
             new AstSymbol("x"),
             new AstNumber(1))),
         new AstSymbol("x"))));
+  UUT.m_semanticAnalizer.analyze(*ast);
 
   // execute
-  UUT.genIr(*ast, &UUT.m_semanticAnalizer);
+  UUT.genIr(*ast);
 
   // verify
   int x = 2;
@@ -636,7 +647,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     genIr,
     succeeds)) {
   TestingIrGen UUT;
-  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
   EXPECT_NO_THROW(
     UUT.genIr(
       *new AstOperator(';',
@@ -650,7 +661,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     genIr,
     succeeds)) {
   TestingIrGen UUT;
-  ParserExt pe(*UUT.m_env, *UUT.m_errorHandler);
+  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
   EXPECT_NO_THROW(
     UUT.genIr(
       *new AstOperator(';',
@@ -672,25 +683,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
           new AstFunCall(new AstSymbol("bar")))),
       new AstFunCall(new AstSymbol("foo"))),
     42, "");
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
-    re_declaration_of_an_identifier_with_different_type,
-    genIr,
-    reports_an_eIncompatibleRedaclaration)) {
-  string spec = "First function type, then fundamental type";
-  TEST_GEN_IR_REPORTS_ERROR(
-    new AstOperator(';',
-      pe.mkFunDecl("foo"),
-      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))),
-    Error::eIncompatibleRedaclaration, spec);
-
-  spec = "First fundamental type, then function type";
-  TEST_GEN_IR_REPORTS_ERROR(
-    new AstOperator(';',
-      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      pe.mkFunDecl("foo")),
-    Error::eIncompatibleRedaclaration, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -917,43 +909,6 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
           new AstNumber(77))),
       new AstSymbol("x")),
     42, spec);
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
-    redefinition_of_an_object_which_means_same_name_and_same_type,
-    genIr,
-    reports_an_eRedefinition)) {
-
-  string spec = "Example: two local variables in implicit main method";
-  TEST_GEN_MODULE_IN_IMPLICIT_MAIN_REPORTS_ERROR(
-    new AstOperator(';',
-      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
-    Error::eRedefinition, spec);
-
-  spec = "Example: two parameters";
-  TEST_GEN_MODULE_IN_IMPLICIT_MAIN_REPORTS_ERROR(
-    pe.mkFunDef(
-      pe.mkFunDecl(
-        "foo",
-        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-      new AstNumber(42)),
-    Error::eRedefinition, spec);
-
-  spec = "Example: a parameter and a local variable in the function's body";
-  TEST_GEN_MODULE_IN_IMPLICIT_MAIN_REPORTS_ERROR(
-    pe.mkFunDef(
-      pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)))),
-    Error::eRedefinition, spec);
-
-  spec = "Example: two functions";
-  TEST_GEN_MODULE_IN_IMPLICIT_MAIN_REPORTS_ERROR(
-    new AstOperator(';',
-      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42)),
-      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42))),
-    Error::eRedefinition, spec);
 }
 
 // Temporary test while introducing types

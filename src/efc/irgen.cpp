@@ -20,14 +20,12 @@ void IrGen::staticOneTimeInit() {
   InitializeNativeTarget();
 }
 
-IrGen::IrGen(Env& env, ErrorHandler& errorHandler) :
+IrGen::IrGen(ErrorHandler& errorHandler) :
   m_builder(getGlobalContext()),
   m_module(new Module("Main", getGlobalContext())),
   m_executionEngine(EngineBuilder(m_module).setErrorStr(&m_errStr).create()),
   m_mainFunction(NULL),
-  m_env(env),
-  m_errorHandler(errorHandler),
-  m_enclosingVisitor(this) {
+  m_errorHandler(errorHandler) {
   assert(m_module);
   assert(m_executionEngine);
 }
@@ -38,15 +36,15 @@ IrGen::~IrGen() {
 
 /** Using the given AST, generates LLVM IR code, appending it to the one
 implict LLVM module associated with this IrGen object.  At the top level of
-the AST, only declarations or definitions are allowed.  Regarding
-enclosingVisitor, see class method if IrGen. */
-void IrGen::genIr(AstNode& root, AstVisitor* enclosingVisitor) {
-  genIrInternal(root, enclosingVisitor);
+the AST, only declarations or definitions are allowed.
+\pre SemanticAnalizer must have massaged the AST and the Env */
+void IrGen::genIr(AstNode& root) {
+  callAcceptOn(root);
 }
 
 /** As genIr, but interpret the given AST as the body of a "fun main:()int"
 function definition. */
-void IrGen::genIrInImplicitMain(AstValue& root, AstVisitor* enclosingVisitor) {
+void IrGen::genIrInImplicitMain(AstValue& root) {
   // protects against double definition of the implicit main method
   assert(!m_mainFunction);
 
@@ -62,18 +60,12 @@ void IrGen::genIrInImplicitMain(AstValue& root, AstVisitor* enclosingVisitor) {
 
   // Currently the return type is always int, so ensure the return type of the
   // IR code is also Int32
-  Value* resultIr = genIrInternal(root, enclosingVisitor);
+  Value* resultIr = callAcceptOn(root);
   assert(resultIr);
   Value* extResultIr = m_builder.CreateZExt( resultIr, Type::getInt32Ty(getGlobalContext()));
   m_builder.CreateRet(extResultIr);
 
   verifyFunction(*m_mainFunction);
-}
-
-/** As genIr, only that it additionaly returns the associated llvm::Value*  */
-llvm::Value* IrGen::genIrInternal(AstNode& root, AstVisitor* enclosingVisitor) {
-  m_enclosingVisitor = enclosingVisitor ? enclosingVisitor : this;
-  return callAcceptOn(root);
 }
 
 int IrGen::jitExecMain() {
@@ -120,7 +112,7 @@ int IrGen::jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2) {
 }
 
 llvm::Value* IrGen::callAcceptOn(AstNode& node) {
-  node.accept(*m_enclosingVisitor);
+  node.accept(*this);
   return node.irValue();
 }
 
@@ -257,11 +249,7 @@ void IrGen::visit(AstFunDef& funDef) {
   visit(funDef.decl());
   Function* functionIr = funDef.decl().irFunction();
   assert(functionIr);
-  SymbolTableEntry*const funStentry = funDef.decl().stentry();
-  assert(funStentry);
-  funStentry->markAsDefined(m_errorHandler);
 
-  m_env.pushScope(); 
   if ( m_builder.GetInsertBlock() ) {
     m_BasicBlockStack.push(m_builder.GetInsertBlock());
   }
@@ -272,23 +260,9 @@ void IrGen::visit(AstFunDef& funDef) {
   Function::arg_iterator iterIr = functionIr->arg_begin();
   list<AstArgDecl*>::const_iterator iterAst = funDef.decl().args().begin();
   for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
-    // blindly assumes that ObjType::Qualifiers is eMutable since currently
-    // that is always the case
-    const string& argName = (*iterAst)->name();
-    AllocaInst* alloca = createAllocaInEntryBlock(functionIr, argName);
+    AllocaInst* alloca = createAllocaInEntryBlock(functionIr, (*iterAst)->name());
     m_builder.CreateStore(iterIr, alloca);
-    shared_ptr<SymbolTableEntry> argStentry = make_shared<SymbolTableEntry>(
-      make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable));
-    argStentry->markAsDefined(m_errorHandler);
-    argStentry->setValueIr(alloca);
-    Env::InsertRet insertRet = m_env.insert(argName, move(argStentry));
-
-    // if name is already in environment, then it must be another argument
-    // since we just pushed a new scope. 
-    if ( !insertRet.second ) {
-      m_errorHandler.add(new Error(Error::eRedefinition));
-      throw BuildError();
-    }
+    (*iterAst)->stentry()->setValueIr(alloca);
   }
 
   // Currently the return type is always int, so ensure the return type of the
@@ -303,7 +277,6 @@ void IrGen::visit(AstFunDef& funDef) {
     m_builder.SetInsertPoint(m_BasicBlockStack.top());
     m_BasicBlockStack.pop();
   }
-  m_env.popScope(); 
 
   funDef.setIrFunction( functionIr );
 }
@@ -386,8 +359,6 @@ void IrGen::visit(AstDataDef& dataDef) {
   callAcceptOn(dataDef.decl());
   SymbolTableEntry*const stentry = dataDef.decl().stentry();
   assert(stentry);
-
-  stentry->markAsDefined(m_errorHandler);
 
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.

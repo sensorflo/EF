@@ -24,7 +24,8 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstValue* astRoot,
 
   // execute
   try {
-    UUT.doSemanticAnalysisAndGenIR(astRoot);
+    UUT.doSemanticAnalysis(*astRoot);
+    UUT.generateIr(*astRoot);
   }
 
   // verify

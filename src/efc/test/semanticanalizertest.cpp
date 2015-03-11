@@ -5,6 +5,7 @@
 #include "../env.h"
 #include "../errorhandler.h"
 #include "../astdefaultiterator.h"
+#include "../parserext.h"
 #include <memory>
 #include <string>
 using namespace testing;
@@ -15,6 +16,7 @@ public:
   TestingSemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
     SemanticAnalizer(env, errorHandler) {};
   using SemanticAnalizer::m_errorHandler;
+  using SemanticAnalizer::m_env;
 };
 
 void testAstTraversalThrows(AstNode* ast, const string& spec) {
@@ -22,7 +24,7 @@ void testAstTraversalThrows(AstNode* ast, const string& spec) {
   Env env;
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
-  EXPECT_ANY_THROW( ast->accept(UUT) ) << amendSpec(spec) << amendAst(ast);
+  EXPECT_ANY_THROW( UUT.analyze(*ast) ) << amendSpec(spec) << amendAst(ast);
 }
 
 #define TEST_ASTTRAVERSAL_THROWS(ast, spec)                                \
@@ -31,18 +33,16 @@ void testAstTraversalThrows(AstNode* ast, const string& spec) {
     testAstTraversalThrows(ast, spec);                                     \
   }
 
-void testAstTraversalReportsError(AstNode* ast, Error::No expectedErrorNo, const string& spec) {
+void testAstTraversalReportsError(TestingSemanticAnalizer& UUT, AstNode* ast,
+  Error::No expectedErrorNo, const string& spec) {
   // setup
   ENV_ASSERT_TRUE( ast!=NULL );
-  Env env;
-  ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
   bool foreignThrow = false;
   string excptionwhat;
 
   // exercise
   try {
-    ast->accept(UUT);
+    UUT.analyze(*ast);
   }
 
   // verify that ...
@@ -67,10 +67,14 @@ void testAstTraversalReportsError(AstNode* ast, Error::No expectedErrorNo, const
     amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
 }
 
-#define TEST_ASTTRAVERSAL_REPORTS_ERROR(ast, expectedErrorNo, spec)        \
+#define TEST_ASTTRAVERSAL_REPORTS_ERROR(ast, expectedErrorNo, spec)     \
   {                                                                     \
     SCOPED_TRACE("transform called from here (via TEST_ASTTRAVERSAL_REPORTS_ERROR)"); \
-    testAstTraversalReportsError(ast, expectedErrorNo, spec);                     \
+    Env env;                                                            \
+    ErrorHandler errorHandler;                                          \
+    TestingSemanticAnalizer UUT(env, errorHandler);                     \
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);                        \
+    testAstTraversalReportsError(UUT, ast, expectedErrorNo, spec);      \
   }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -118,7 +122,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
 
   // exercise
-  ast->accept(UUT);
+  UUT.analyze(*ast);
 
   // verify
   shared_ptr<SymbolTableEntry> stentry;
@@ -143,7 +147,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
 
   // exercise
-  ast->accept(UUT);
+  UUT.analyze(*ast);
 
   // verify
   shared_ptr<SymbolTableEntry> stentry;
@@ -160,11 +164,27 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_redeclaration_with_non_matching_type,
     transform,
     reports_eIncompatibleRedaclaration)) {
+
+  string spec = "Example: two different fundamental types";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
     Error::eIncompatibleRedaclaration, "");
+
+  spec = "Example: first function type, then fundamental type";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDecl("foo"),
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))),
+    Error::eIncompatibleRedaclaration, spec);
+
+  spec = "Example: First fundamental type, then function type";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDecl("foo")),
+    Error::eIncompatibleRedaclaration, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -180,5 +200,42 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstFunCall(new AstSymbol("foo")),
     Error::eUnknownName, "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    redefinition_of_an_object_which_means_same_name_and_same_type,
+    transform,
+    reports_an_eRedefinition)) {
+
+  string spec = "Example: two local variables in implicit main method";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
+    Error::eRedefinition, spec);
+
+  spec = "Example: two parameters";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef(
+      pe.mkFunDecl(
+        "foo",
+        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new AstNumber(42)),
+    Error::eRedefinition, spec);
+
+  spec = "Example: a parameter and a local variable in the function's body";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef(
+      pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)))),
+    Error::eRedefinition, spec);
+
+  spec = "Example: two functions";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42)),
+      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42))),
+    Error::eRedefinition, spec);
 }
 

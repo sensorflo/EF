@@ -18,24 +18,19 @@ class ErrorHandler;
 
 
 /** IR Generator -- Generates (aka build) LLVM's intermediate representation
-from a given AST.
-
-Is implemented using the vistor pattern.  Processing an AST node is in general
-an interleaved mixture between generating IR code for the current node and
-recursively descending into all child nodes.  Descinding to a child node works
-by calling accept (visitor pattern) on the child note and passing the
-'enclosed visitor'.  The enclosed visitor can process the (child) node first
-and is then obliged to forward the call to IrGen.  For production, the
-enclosed visitor is intended to be the semantic analyzer. */
-class IrGen : public AstVisitor  {
+from a given AST.*/
+class IrGen : private AstVisitor  {
 public:
   static void staticOneTimeInit();
-  IrGen(Env& env, ErrorHandler& errorHandler);
+  IrGen(ErrorHandler& errorHandler);
   virtual ~IrGen();
 
-  void genIr(AstNode& root, AstVisitor* enclosingVisitor = NULL);
-  void genIrInImplicitMain(AstValue& root, AstVisitor* enclosingVisitor = NULL);
+  void genIr(AstNode& root);
+  void genIrInImplicitMain(AstValue& root);
   int jitExecMain();
+
+private:
+  friend class TestingIrGen;
 
   virtual void visit(AstCast& cast);
   virtual void visit(AstCtList& ctList);
@@ -49,11 +44,6 @@ public:
   virtual void visit(AstArgDecl& argDecl);
   virtual void visit(AstDataDef& dataDef);
   virtual void visit(AstIf& if_);
-
-private:
-  friend class TestingIrGen;
-  
-  llvm::Value* genIrInternal(AstNode& root, AstVisitor* enclosingVisitor = NULL);
 
   int jitExecFunction(llvm::Function* function);
   int jitExecFunction1Arg(llvm::Function* function, int arg1);
@@ -75,7 +65,6 @@ private:
   llvm::ExecutionEngine* m_executionEngine;
   llvm::Function* m_mainFunction;
   std::stack<llvm::BasicBlock*> m_BasicBlockStack;
-  Env& m_env;
   ErrorHandler& m_errorHandler;
   /** We're not the owner, guaranteed to be non-null. */
   AstVisitor* m_enclosingVisitor;

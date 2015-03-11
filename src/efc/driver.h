@@ -26,7 +26,8 @@ public:
   
   void compile();
   int scannAndParse(AstNode*& ast);
-  void doSemanticAnalysisAndGenIR(AstNode* ast);
+  void doSemanticAnalysis(AstNode& ast);
+  void generateIr(AstNode& ast);
   int jitExecMain();
 
   // referenced by scanner, parser etc.

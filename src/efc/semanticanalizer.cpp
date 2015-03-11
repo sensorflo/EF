@@ -6,26 +6,23 @@
 #include <stdexcept>
 using namespace std;
 
-SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler,
-  AstVisitor* nextVisitor) :
+SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
   m_env(env),
-  m_errorHandler(errorHandler),
-  m_nextVisitor(nextVisitor ? *nextVisitor : *new AstDefaultIterator(*this)),
-  m_ownsNextVisitor(nextVisitor==NULL) {
+  m_errorHandler(errorHandler) {
 }
 
-SemanticAnalizer::~SemanticAnalizer() {
-  if (m_ownsNextVisitor) {
-    delete &m_nextVisitor;
-  }
+void SemanticAnalizer::analyze(AstNode& root) {
+  root.accept(*this);
 }
 
-void SemanticAnalizer::visit(AstCast& cast) {
-  m_nextVisitor.visit(cast);
-}
+void SemanticAnalizer::visit(AstCast& cast) { }
 
 void SemanticAnalizer::visit(AstCtList& ctList) {
-  m_nextVisitor.visit(ctList);
+  list<AstValue*>& childs = ctList.childs();
+  for (list<AstValue*>::const_iterator i=childs.begin();
+       i!=childs.end(); ++i) {
+    (*i)->accept(*this);
+  }
 }
 
 void SemanticAnalizer::visit(AstOperator& op) {
@@ -39,12 +36,10 @@ void SemanticAnalizer::visit(AstOperator& op) {
   default:
     break;
   }
-  m_nextVisitor.visit(op);
+  op.args().accept(*this);
 }
 
-void SemanticAnalizer::visit(AstNumber& number) {
-  m_nextVisitor.visit(number);
-}
+void SemanticAnalizer::visit(AstNumber& number) { }
 
 void SemanticAnalizer::visit(AstSymbol& symbol) {
   shared_ptr<SymbolTableEntry> stentry;
@@ -53,20 +48,36 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
     m_errorHandler.add(new Error(Error::eUnknownName));
     throw BuildError();
   }
-  symbol.setStentry(stentry);
-  m_nextVisitor.visit(symbol);
+  symbol.setStentry(move(stentry));
 }
 
 void SemanticAnalizer::visit(AstFunCall& funCall) {
-  m_nextVisitor.visit(funCall);
+  funCall.address().accept(*this);
+  funCall.args().accept(*this);
 }
 
 void SemanticAnalizer::visit(AstFunDef& funDef) {
-  m_nextVisitor.visit(funDef);
+  funDef.decl().accept(*this);
+
+  funDef.decl().stentry()->markAsDefined(m_errorHandler);
+
+  m_env.pushScope();
+
+  list<AstArgDecl*>::const_iterator argDeclIter = funDef.decl().args().begin();
+  list<AstArgDecl*>::const_iterator end = funDef.decl().args().end();
+  for ( ; argDeclIter!=end; ++argDeclIter) {
+    (*argDeclIter)->accept(*this);
+    (*argDeclIter)->stentry()->markAsDefined(m_errorHandler);
+  }
+
+  funDef.body().accept(*this);
+
+  m_env.popScope();
 }
 
 void SemanticAnalizer::visit(AstFunDecl& funDecl) {
-  m_nextVisitor.visit(funDecl);
+  // Note that visit(AstFundDef) does all of the work for the case AstFunDecl
+  // is a child of AstFundDef.
 }
 
 void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
@@ -94,22 +105,28 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
 
     dataDecl.setStentry(envs_stentry_ptr);
   }
-
-  m_nextVisitor.visit(dataDecl);
 }
 
 void SemanticAnalizer::visit(AstArgDecl& argDecl) {
-  m_nextVisitor.visit(argDecl);
+  visit( dynamic_cast<AstDataDecl&>(argDecl));
 }
 
 void SemanticAnalizer::visit(AstDataDef& dataDef) {
-  // initializer must be of same type. Currently there are no implicit conversions
+  dataDef.decl().accept(*this);
+  dataDef.decl().stentry()->markAsDefined(m_errorHandler);
+  dataDef.ctorArgs().accept(*this);
   if ( dataDef.decl().objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
     throw runtime_error("Object type missmatch");
   }
-  m_nextVisitor.visit(dataDef);
 }
 
 void SemanticAnalizer::visit(AstIf& if_) {
-  m_nextVisitor.visit(if_);
+  list<AstIf::ConditionActionPair>::iterator i = if_.conditionActionPairs().begin();
+  for ( /*nop*/; i!=if_.conditionActionPairs().end(); ++i ) {
+    i->m_condition->accept(*this);
+    i->m_action->accept(*this);
+  }
+  if (if_.elseAction()) {
+    if_.elseAction()->accept(*this);
+  }
 }

@@ -7,17 +7,13 @@ class Env;
 class ErrorHandler;
 
 /** Does semenatic analysis by inserting AST nodes where needed or reporting
-errors via the ErrorHandler.
-
-Is implemented via the visitor pattern.  Additionaly, after visiting each
-node, forwards the visit call to the 'next visitor'.  That next visitor is
-responsible to descent down to child nodes, i.e. call accept on child nodes.
-For production, the next visitor is intended to be an IR generator. */
-class SemanticAnalizer : public AstVisitor {
+errors via the ErrorHandler.*/
+class SemanticAnalizer : private AstVisitor {
 public:
-  SemanticAnalizer(Env& env, ErrorHandler& errorHandler, AstVisitor* nextVisitor = NULL);
-  virtual ~SemanticAnalizer();
+  SemanticAnalizer(Env& env, ErrorHandler& errorHandler);
+  void analyze(AstNode& root);
 
+private:
   virtual void visit(AstCast& cast);
   virtual void visit(AstCtList& ctList);
   virtual void visit(AstOperator& op);
@@ -31,13 +27,10 @@ public:
   virtual void visit(AstDataDef& dataDef);
   virtual void visit(AstIf& if_);
 
-private:
   friend class TestingSemanticAnalizer;
 
   Env& m_env;
   ErrorHandler& m_errorHandler;
-  AstVisitor& m_nextVisitor;
-  bool m_ownsNextVisitor;
 };
 
 #endif

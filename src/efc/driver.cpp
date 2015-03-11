@@ -26,8 +26,8 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_astRoot(NULL),
   m_parserExt(*new ParserExt(m_env, m_errorHandler)),
   m_parser(new Parser(*this, m_parserExt, m_astRoot)),
-  m_irGen(*new IrGen(m_env, m_errorHandler)),
-  m_semanticAnalizer(*new SemanticAnalizer(m_env, m_errorHandler, &m_irGen)) {
+  m_irGen(*new IrGen(m_errorHandler)),
+  m_semanticAnalizer(*new SemanticAnalizer(m_env, m_errorHandler)) {
 
   // Ctor/Dtor must RAII yyin and m_parser
 
@@ -58,8 +58,9 @@ void Driver::compile() {
     if (retParse) {
       throw runtime_error("parse failed");
     }
-
-    doSemanticAnalysisAndGenIR(astAfterParse);
+    assert(astAfterParse);
+    doSemanticAnalysis(*astAfterParse);
+    generateIr(*astAfterParse);
   }
   catch (BuildError&) {
     // nop -- BuildError exception is handled below by printing any errors
@@ -76,10 +77,14 @@ int Driver::scannAndParse(AstNode*& ast) {
   return ret;
 }
 
-void Driver::doSemanticAnalysisAndGenIR(AstNode* ast) {
+void Driver::doSemanticAnalysis(AstNode& ast) {
+  m_semanticAnalizer.analyze(ast);
+}
+
+void Driver::generateIr(AstNode& ast) {
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
-  m_irGen.genIrInImplicitMain(*dynamic_cast<AstValue*>(ast), &m_semanticAnalizer);
+  m_irGen.genIrInImplicitMain(dynamic_cast<AstValue&>(ast));
 }
 
 int Driver::jitExecMain() {
