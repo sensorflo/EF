@@ -60,14 +60,3 @@ if   x: y else z end if$
 // operator syntax       call syntax
   x+y                   +(x,y)
 
-// For most operators any amount of arguments can be passed in the call
-// syntax. E.g '*(u,v,w,x,y,z)'. For zero and one argument the following
-// definitions apply:
-  0                     +()
-  0                     -()
-  1                     *()
-                    //  /() is invalid, / needs at least two operands
-  x                     +(x)
-  0-x                   -(x) // "-x" for unary minus is invalid in EF
-  x                     *(x)
-                    //  /(x) is invalid, / needs at leat two operands

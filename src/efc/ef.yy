@@ -149,7 +149,7 @@ block_expr
 i.e. it does not build an expression sequence */
 standalone_expr_seq
   : standalone_expr seq_operator                    { std::swap($$,$1); }
-  | pure2_standalone_expr_seq seq_operator          { $$ = new AstOperator(AstOperator::eSeq, $1); }
+  | pure2_standalone_expr_seq seq_operator          { $$ = parserExt.mkOperatorTree(";", $1); }
   ;
 
 pure2_standalone_expr_seq
@@ -245,7 +245,7 @@ list_expr
   | DECL kwao FUN naked_fun_decl kwac               { $$ = $4; }
   | FUN kwao naked_fun_def kwac                     { $$ = $3; }
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
-  | OP_LPAREN ct_list RPAREN                        { $$ = new AstOperator($1, $2); }
+  | OP_LPAREN ct_list RPAREN                        { $$ = parserExt.mkOperatorTree($1, $2); }
   | RAW_NEW kwao type initializer kwac              { $$ = NULL; }
   | RAW_DELETE kwao sub_expr kwac                   { $$ = NULL; }
   ;

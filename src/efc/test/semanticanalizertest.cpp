@@ -103,14 +103,6 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     Error::eNoImplicitConversion, "");
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
-    a_sequence_with_zero_args,
-    transform,
-    throws,
-    BECAUSE_currently_there_is_no_NOP_operation)) {
-  TEST_ASTTRAVERSAL_THROWS(new AstOperator(';'), "");
-}
-
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_simple_AstDataDecl,
     transform,

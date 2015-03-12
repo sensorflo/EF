@@ -229,49 +229,27 @@ void AstNumber::setIrValue(llvm::Value* value) {
 map<string, AstOperator::EOperation> AstOperator::m_opMap;
 
 AstOperator::AstOperator(char op, AstCtList* args) :
-  m_op(static_cast<EOperation>(op)),
-  m_args(args ? args : new AstCtList),
-  m_irValue(NULL) {
-  assert(m_args);
-}
+  AstOperator(static_cast<EOperation>(op), args) {};
 
 AstOperator::AstOperator(const string& op, AstCtList* args) :
-  m_op(toEOperation(op)),
-  m_args(args ? args : new AstCtList),
-  m_irValue(NULL) {
-  assert(m_args);
-}
+  AstOperator(toEOperation(op), args) {};
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
   m_args(args ? args : new AstCtList),
   m_irValue(NULL) {
-  assert(m_args);
+  const size_t required_arity = op == eNot ? 1 : 2;
+  assert( args->childs().size() == required_arity );
 }
 
-AstOperator::AstOperator(char op, AstValue* operand1, AstValue* operand2,
-  AstValue* operand3) :
-  m_op(static_cast<EOperation>(op)),
-  m_args(new AstCtList(operand1, operand2, operand3)),
-  m_irValue(NULL) {
-  assert(m_args);
-}
+AstOperator::AstOperator(char op, AstValue* operand1, AstValue* operand2) :
+  AstOperator(static_cast<EOperation>(op), operand1, operand2) {};
 
-AstOperator::AstOperator(const string& op, AstValue* operand1, AstValue* operand2,
-  AstValue* operand3) :
-  m_op(toEOperation(op)),
-  m_args(new AstCtList(operand1, operand2, operand3)),
-  m_irValue(NULL) {
-  assert(m_args);
-}
+AstOperator::AstOperator(const string& op, AstValue* operand1, AstValue* operand2) :
+  AstOperator(toEOperation(op), operand1, operand2) {};
 
-AstOperator::AstOperator(AstOperator::EOperation op, AstValue* operand1, AstValue* operand2,
-  AstValue* operand3) :
-  m_op(op),
-  m_args(new AstCtList(operand1, operand2, operand3)),
-  m_irValue(NULL) {
-  assert(m_args);
-}
+AstOperator::AstOperator(AstOperator::EOperation op, AstValue* operand1, AstValue* operand2) :
+  AstOperator(op, new AstCtList(operand1, operand2)) {};
 
 AstOperator::~AstOperator() {
   delete m_args;

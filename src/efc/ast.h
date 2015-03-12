@@ -281,12 +281,9 @@ public:
   AstOperator(char op, AstCtList* args);
   AstOperator(const std::string& op, AstCtList* args);
   AstOperator(EOperation op, AstCtList* args);
-  AstOperator(char op, AstValue* operand1 = NULL, AstValue* operand2 = NULL,
-    AstValue* operand3 = NULL);
-  AstOperator(const std::string& op, AstValue* operand1 = NULL, AstValue* operand2 = NULL,
-    AstValue* operand3 = NULL);
-  AstOperator(EOperation op, AstValue* operand1 = NULL, AstValue* operand2 = NULL,
-    AstValue* operand3 = NULL);
+  AstOperator(char op, AstValue* operand1 = NULL, AstValue* operand2 = NULL);
+  AstOperator(const std::string& op, AstValue* operand1 = NULL, AstValue* operand2 = NULL);
+  AstOperator(EOperation op, AstValue* operand1 = NULL, AstValue* operand2 = NULL);
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;

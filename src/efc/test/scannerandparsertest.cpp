@@ -205,10 +205,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   // precedence level group: binary sequence operator (; or adjancted standalone expression)
   spec = "sequence operator (; or adjancted standalone expression) is left associative";
-  TEST_PARSE( "a;b;c", ";(a b c)", spec);
-  TEST_PARSE( "a;b c", ";(a b c)", spec);
-  TEST_PARSE( "a b;c", ";(a b c)", spec);
-  TEST_PARSE( "a b c", ";(a b c)", spec);
+  TEST_PARSE( "a;b;c", ";(;(a b) c)", spec);
+  TEST_PARSE( "a;b c", ";(;(a b) c)", spec);
+  TEST_PARSE( "a b;c", ";(;(a b) c)", spec);
+  TEST_PARSE( "a b c", ";(;(a b) c)", spec);
 
   spec = "sequence operator (; or adjancted standalone expression) has lower precedence than =";
   TEST_PARSE( "a ; b = c", ";(a =(b c))", spec);
@@ -233,17 +233,23 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_operator_in_call_syntax,
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
+  // unary
   TEST_PARSE( "!(x)", "not(x)", "");
   TEST_PARSE( "not(x)", "not(x)", "");
-  TEST_PARSE( "and(x,y,z)", "and(x y z)", "");
-  TEST_PARSE( "&&(x,y,z)", "and(x y z)", "");
-  TEST_PARSE( "or(x,y,z)", "or(x y z)", "");
-  TEST_PARSE( "||(x,y,z)", "or(x y z)", "");
+
+  // binary
+  TEST_PARSE( "and(x,y)", "and(x y)", "");
+  TEST_PARSE( "&&(x,y)", "and(x y)", "");
+  TEST_PARSE( "or(x,y)", "or(x y)", "");
+  TEST_PARSE( "||(x,y)", "or(x y)", "");
   TEST_PARSE( "==(1,1)", "==(1 1)", "");
-  TEST_PARSE( "+()", "+()", "");
-  TEST_PARSE( "-(1)", "-(1)", "");
   TEST_PARSE( "*(1,2)", "*(1 2)", "");
-  TEST_PARSE( "/(1,2,3)", "/(1 2 3)", "");
+  TEST_PARSE( "/(1,2)", "/(1 2)", "");
+  TEST_PARSE( "+(1,2)", "+(1 2)", "");
+  TEST_PARSE( "-(1,2)", "-(1 2)", "");
+
+  // binary with more than two args result in a tree
+  TEST_PARSE( "+(1,2,3)", "+(+(1 2) 3)", ""); // left associative
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

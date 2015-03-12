@@ -180,8 +180,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // ; aka sequence
   string spec = "The sequence operator evaluates all arguments and returns the last";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(';', new AstNumber(42)), 42, "");
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';', new AstNumber(11), new AstNumber(22)), 22, "");
 
   // not
@@ -259,116 +257,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator('/', new AstNumber(6), new AstNumber(3)),
     6/3, "");
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
-    an_AstOperator_like_it_results_from_op_call_syntax_constructs,
-    genIrInImplicitMain,
-    returns_the_correct_result)) {
-
-  // such operators are
-  // - n-ary
-
-  //null-ary not "!()" is invalid 
-  string spec = "null-ary or: or() = false";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(AstOperator::eOr),
-    false, spec);
-  spec = "null-ary and: and() = true";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(AstOperator::eAnd),
-    true, spec);
-  spec = "null-ary minus: -() = 0";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('-'),
-    0, spec);
-  spec = "null-ary minus: +() = 0";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('+'),
-    0, spec);
-  spec = "null-ary mult: *() = 1";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('*'),
-    1, spec);
-  //null-ary div "/()" is invalid
-
-
-  // unary not "!(x)" is the normal case and has been tested above
-  spec = "unary seq: ;(x) = x";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(';', new AstNumber(2)),
-    2, spec);
-  spec = "unary or: or(x) = bool(x)";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(AstOperator::eOr, new AstNumber(1, ObjTypeFunda::eBool)),
-    true, spec);
-  spec = "unary and: and(x) = bool(x)";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(AstOperator::eAnd, new AstNumber(1, ObjTypeFunda::eBool)),
-    true, spec);
-  spec = "unary minus: -(x)";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('-', new AstNumber(1)),
-    -1, spec);
-  spec = "unary plus: +(x) = x";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('+', new AstNumber(1)),
-    +1, spec);
-  spec = "spec = unary mult: *(x) = x";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('*', new AstNumber(1)),
-    1, spec);
-  // unary div "/(x)" is invalid
-
-  spec = "binary equal-to: ==(1,1)";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(AstOperator::eEqualTo,
-      new AstNumber(1),
-      new AstNumber(1)),
-    1==1, spec);
-  spec = "binary equal-to: ==(1,2)";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(AstOperator::eEqualTo,
-      new AstNumber(1),
-      new AstNumber(2)),
-    1==2, spec);
-
-  // n-ary not "!(x y z)" is invalid
-  spec = "n-ary seq: ;(1,2,3)";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(';',
-      new AstNumber(1),
-      new AstNumber(2),
-      new AstNumber(3)),
-    3, spec);
-  spec = "n-ary plus: +(1,2,3)";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('+',
-      new AstNumber(1),
-      new AstNumber(2),
-      new AstNumber(3)),
-    1+2+3, spec);
-  spec = "n-ary minus: -(1,2,3)";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('-',
-      new AstNumber(1),
-      new AstNumber(2),
-      new AstNumber(3)),
-    1-2-3, spec);
-  spec = "n-ary mult: *(1,2,3)";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('*',
-      new AstNumber(1),
-      new AstNumber(2),
-      new AstNumber(3)),
-    1*2*3, spec);
-  spec = "n-ary div: /(24,4,3)";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('/',
-      new AstNumber(24),
-      new AstNumber(4),
-      new AstNumber(3)),
-    24/4/3, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -827,7 +715,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
   spec = "Example: After assignment 'foo=77', there is a further 'foo' expression"; 
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(';',
+    pe.mkOperatorTree(";",
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)),
@@ -858,7 +746,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 
   string spec = "function argument named 'x' shadows 'global' variable also named 'x'";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(';',
+    pe.mkOperatorTree(";",
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       pe.mkFunDef(
         pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
@@ -870,7 +758,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 
   spec = "variable 'x' local to a function shadows 'global' variable also named 'x'";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(';',
+    pe.mkOperatorTree(";",
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       pe.mkFunDef(
         pe.mkFunDecl("foo"),
