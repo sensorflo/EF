@@ -7,6 +7,49 @@
 #include "memoryext.h"
 using namespace std;
 
+AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args) {
+  assert(args);
+  args->releaseOwnership();
+  const AstOperator::EOperation op = AstOperator::toEOperation(op_as_str);
+
+  // unary operator
+  if (op == '!') {
+    assert(args->childs().size() == 1);
+    return new AstOperator(op, args->childs().front());
+  }
+
+  // right associative binary operator
+  else if ( op == '=' ) {
+    assert(args->childs().size() >= 2);
+    reverse_iterator<list<AstValue*>::iterator> ri = args->childs().rbegin();
+    AstValue* last = *ri;
+    AstValue* beforelast = *(++ri);
+    auto tree = new AstOperator(op, beforelast, last);
+    for ( ++ri; ri!=args->childs().rend(); ++ri ) {
+      tree = new AstOperator(op, *ri, tree);
+    }
+    return tree;
+  }
+
+  // left associative binary operator
+  else {
+    assert(args->childs().size() >= 2);
+    list<AstValue*>::iterator i = args->childs().begin();
+    AstValue* first = *i;
+    AstValue* second = *(++i);
+    auto tree = new AstOperator(op, first, second);
+    for ( ++i; i!=args->childs().end(); ++i ) {
+      tree = new AstOperator(op, tree, *i);
+    }
+    return tree;
+  }
+}
+
+AstOperator* ParserExt::mkOperatorTree(const string& op, AstValue* child1,
+  AstValue* child2, AstValue* child3) {
+  return mkOperatorTree(op, new AstCtList(child1, child2, child3));
+}
+
 AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifiers qualifiers,
   RawAstDataDecl*& rawAstDataDecl) {
   assert(rawAstDataDecl);

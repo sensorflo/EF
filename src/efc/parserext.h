@@ -32,6 +32,10 @@ public:
   ParserExt(Env& env, ErrorHandler& errorHandler) : m_env(env),
     m_errorHandler(errorHandler) {}
 
+  AstOperator* mkOperatorTree(const std::string& op, AstCtList* args);
+  AstOperator* mkOperatorTree(const std::string& op, AstValue* child1,
+    AstValue* child2, AstValue* child3 = NULL);
+
   AstDataDecl* mkDataDecl(ObjType::Qualifiers qualifiers,
     RawAstDataDecl*& rawAstDataDecl);
   AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,

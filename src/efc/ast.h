@@ -293,9 +293,9 @@ public:
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
   virtual const ObjType& objType() const;
+  static EOperation toEOperation(const std::string& op);
 
 private:
-  static EOperation toEOperation(const std::string& op);
   AstOperator(const AstOperator&);
   AstOperator& operator=(const AstOperator&);
   const EOperation m_op;
@@ -357,6 +357,7 @@ public:
   AstCtList(AstValue* child1 = NULL);
   AstCtList(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
   ~AstCtList();
+  void releaseOwnership();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   AstCtList* Add(AstValue* child);
@@ -372,6 +373,7 @@ private:
   /** We're the owner of the list and of the pointees. Pointers are garanteed
   to be non null*/
   std::list<AstValue*>*const m_childs;
+  bool m_owner = true;
 
   // decorations for IrGen
 public:

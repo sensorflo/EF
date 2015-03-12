@@ -452,10 +452,16 @@ AstCtList::AstCtList(AstValue* child1, AstValue* child2, AstValue* child3) :
 }
 
 AstCtList::~AstCtList() {
-  for (list<AstValue*>::iterator i=m_childs->begin(); i!=m_childs->end(); ++i) {
-    delete (*i);
+  if ( m_owner ) {
+    for (list<AstValue*>::iterator i=m_childs->begin(); i!=m_childs->end(); ++i) {
+      delete (*i);
+    }
   }
   delete m_childs;
+}
+
+void AstCtList::releaseOwnership() {
+  m_owner = false;
 }
 
 /** When child is NULL it is ignored */
