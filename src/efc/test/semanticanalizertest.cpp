@@ -78,27 +78,29 @@ void testAstTraversalReportsError(TestingSemanticAnalizer& UUT, AstNode* ast,
   }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
-    an_data_obj_def_WITH_an_initializer_of_a_larger_type,
+    an_node_whose_childs_need_an_implicit_type_conversion_AND_the_rhs_is_of_larger_type,
     transform,
-    throws,
+    reports_eNoImplicitConversion,
     BECAUSE_there_are_no_narrowing_implicit_conversions)) {
-  TEST_ASTTRAVERSAL_THROWS(
+  string spec = "Example: Data object definition";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstDataDef(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool)),
       new AstNumber(42, ObjTypeFunda::eInt)),
-    "");
+    Error::eNoImplicitConversion, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
-    an_data_obj_def_WITH_an_initializer_of_a_smaller_type,
+    an_node_whose_childs_need_an_implicit_type_conversion_AND_the_rhs_is_of_smaller_type,
     transform,
-    throws,
+    reports_eNoImplicitConversion,
     BECAUSE_currently_there_are_no_implicit_widening_conversions)) {
-  TEST_ASTTRAVERSAL_THROWS(
+  string spec = "Example: Data object definition";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstDataDef(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstNumber(0, ObjTypeFunda::eBool)),
-    "");
+    Error::eNoImplicitConversion, "");
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -326,3 +328,4 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstNumber(77))),
     Error::eWriteToImmutable, "");
 }
+

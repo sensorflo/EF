@@ -11,6 +11,7 @@ public:
     eIncompatibleRedaclaration,
     eRedefinition,
     eWriteToImmutable,
+    eNoImplicitConversion,
     eCnt
   };
 

@@ -128,7 +128,8 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
   dataDef.decl().stentry()->markAsDefined(m_errorHandler);
   dataDef.ctorArgs().accept(*this);
   if ( dataDef.decl().objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
-    throw runtime_error("Object type missmatch");
+    m_errorHandler.add(new Error(Error::eNoImplicitConversion));
+    throw BuildError();
   }
 }
 

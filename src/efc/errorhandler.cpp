@@ -8,6 +8,7 @@ const char* toStr(Error::No no) {
   case Error::eIncompatibleRedaclaration: return "eIncompatibleRedaclaration";
   case Error::eRedefinition: return "eRedefinition";
   case Error::eWriteToImmutable: return "eWriteToImmutable";
+  case Error::eNoImplicitConversion: return "eNoImplicitConversion";
   case Error::eCnt: return "<unknown>";
   }
   return "<unknown>";
