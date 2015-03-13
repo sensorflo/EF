@@ -362,9 +362,6 @@ void IrGen::visit(AstDataDef& dataDef) {
     dataDef.setIrValue(dataDef.access()==eRead ? initValue : alloca);
   } else {
     stentry->setValueIr(initValue);
-    if ( dataDef.access()!=eRead ) {
-      throw runtime_error("Cannot write to an inmutable data object");
-    }
     dataDef.setIrValue(initValue);
   }
 }

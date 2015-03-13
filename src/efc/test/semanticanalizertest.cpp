@@ -333,6 +333,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstSymbol("foo"),
         new AstNumber(77))),
     Error::eWriteToImmutable, "");
+
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator('=',
+      new AstDataDef(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstNumber(42)),
+      new AstNumber(77)),
+    Error::eWriteToImmutable, "");
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -426,3 +434,4 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendSpec(spec) << amendAst(ast);
   }
 }
+

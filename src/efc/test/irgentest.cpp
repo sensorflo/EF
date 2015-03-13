@@ -602,25 +602,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     a_inmutable_data_object_definition_of_foo_being_initialized_with_x,
     genIrInImplicitMain,
     returns_x_rvalue)) {
-
-  string spec = "Value of definition expression should equal initializer's value";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstDataDef(
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstNumber(42)),
-    42, spec);
-
-  spec = "Value of definition expression is an rvalue and thus _not_ "
-    "assignable to";
-  TEST_GEN_IR_IMPLICIT_MAIN_THROWS(
-    new AstOperator(';',
-      new AstOperator('=',
-        new AstDataDef(
-          new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          new AstNumber(42)),
-        new AstNumber(77)),
-      new AstSymbol("foo")),
-    spec);
+    42, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
