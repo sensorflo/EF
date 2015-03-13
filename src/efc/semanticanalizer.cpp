@@ -59,7 +59,12 @@ void SemanticAnalizer::visit(AstOperator& op) {
   }
 }
 
-void SemanticAnalizer::visit(AstNumber& number) { }
+void SemanticAnalizer::visit(AstNumber& number) {
+  // should allready have been caught by scanner, thus assert.
+  // Intended to catch errors when AST is build by hand instead
+  // by parser, e.g. in tests.
+  assert( number.objType().isValueInRange( number.value()));
+}
 
 void SemanticAnalizer::visit(AstSymbol& symbol) {
   shared_ptr<SymbolTableEntry> stentry;

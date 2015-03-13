@@ -79,6 +79,8 @@ public:
   EType type() const { return m_type; }
   virtual AstValue* createDefaultAstValue() const;
 
+  bool isValueInRange(int val) const;
+
 private:
   EType m_type;
 };

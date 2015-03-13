@@ -20,9 +20,9 @@
   class ObjType;
   struct NumberToken {
     NumberToken() : m_value(0), m_objType(NULL) {}
-    NumberToken(int value, ObjType* objType) : m_value(value), m_objType(objType) {}
+    NumberToken(int value, ObjTypeFunda* objType) : m_value(value), m_objType(objType) {}
     int m_value;
-    ObjType* m_objType;
+    ObjTypeFunda* m_objType;
   };
 }
 

@@ -63,6 +63,15 @@ AstValue* ObjTypeFunda::createDefaultAstValue() const {
   return new AstNumber(0, new ObjTypeFunda(m_type));
 }
 
+bool ObjTypeFunda::isValueInRange(int val) const {
+  switch (m_type) {
+  case eInt: return true;
+  case eBool: return val==0 || val==1;
+  };
+  assert(false);
+  return false;
+}
+
 ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType> >* args, const ObjType* ret) :
   ObjType(eNoQualifier),
   m_args( args ? args : new list<shared_ptr<const ObjType> >),

@@ -191,18 +191,18 @@ public:
 /** Literal number */
 class AstNumber : public AstValue {
 public:
-  AstNumber(int value, ObjType* objType = NULL);
+  AstNumber(int value, ObjTypeFunda* objType = NULL);
   AstNumber(int value, ObjTypeFunda::EType eType,
     ObjTypeFunda::Qualifiers qualifiers = ObjTypeFunda::eNoQualifier);
   ~AstNumber();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   int value() const { return m_value; }
-  virtual const ObjType& objType() const { return *m_objType; }
+  virtual const ObjTypeFunda& objType() const { return *m_objType; }
 private:
   const int m_value;
   /** We're the owner. Is garanteed to be non-null. */
-  const ObjType*const m_objType;
+  const ObjTypeFunda*const m_objType;
 
 // decorations for IrGen
 public:

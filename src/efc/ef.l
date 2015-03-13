@@ -89,7 +89,7 @@ bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool
     number = number<INT_MIN ? INT_MIN : INT_MAX;
     driver.error(loc, "Numeric literal to big");
   }
-  ObjType* objType = new ObjTypeFunda(ObjTypeFunda::eInt);
+  ObjTypeFunda* objType = new ObjTypeFunda(ObjTypeFunda::eInt);
   return yy::Parser::make_NUMBER(NumberToken(number, objType), loc);
 }
 

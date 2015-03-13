@@ -201,7 +201,7 @@ void AstDataDef::setIrValue(llvm::Value* value) {
   m_irValue = value;
 }
 
-AstNumber::AstNumber(int value, ObjType* objType) :
+AstNumber::AstNumber(int value, ObjTypeFunda* objType) :
   m_value(value),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
   m_irValue(NULL) {

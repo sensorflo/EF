@@ -112,8 +112,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   spec = "Example: Binary math operator";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator('+',
-      new AstNumber(1, ObjTypeFunda::eInt),
-      new AstNumber(77, ObjTypeFunda::eBool)),
+      new AstNumber(42, ObjTypeFunda::eInt),
+      new AstNumber(1, ObjTypeFunda::eBool)),
     Error::eNoImplicitConversion, spec);
 }
 
