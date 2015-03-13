@@ -44,6 +44,19 @@ void SemanticAnalizer::visit(AstOperator& op) {
     break;
   }
   op.args().accept(*this);
+
+  if ( argschilds.size()==2 ) {
+    if ( op.class_() != AstOperator::eOther ) {
+      auto& lhs = argschilds.front()->objType();
+      auto& rhs = argschilds.back()->objType();
+      if ( !lhs.matchesSaufQualifiers(rhs) ) {
+        m_errorHandler.add(new Error(Error::eNoImplicitConversion));
+        throw BuildError();
+      }
+    }
+  } else {
+    assert(argschilds.size()==1);
+  }
 }
 
 void SemanticAnalizer::visit(AstNumber& number) { }

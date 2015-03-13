@@ -7,15 +7,19 @@
 #include "memoryext.h"
 using namespace std;
 
+/** Turns the AstCtList in an AstOperator tree with at most two childs per
+node.  The AstCtList object is deleted, its ex-childs are now owned by their
+respective AstOperator parent. */
 AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args) {
   assert(args);
   args->releaseOwnership();
   const AstOperator::EOperation op = AstOperator::toEOperation(op_as_str);
+  AstOperator* tree = NULL;
 
   // unary operator
   if (op == '!') {
     assert(args->childs().size() == 1);
-    return new AstOperator(op, args->childs().front());
+    tree = new AstOperator(op, args->childs().front());
   }
 
   // right associative binary operator
@@ -24,11 +28,10 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
     reverse_iterator<list<AstValue*>::iterator> ri = args->childs().rbegin();
     AstValue* last = *ri;
     AstValue* beforelast = *(++ri);
-    auto tree = new AstOperator(op, beforelast, last);
+    tree = new AstOperator(op, beforelast, last);
     for ( ++ri; ri!=args->childs().rend(); ++ri ) {
       tree = new AstOperator(op, *ri, tree);
     }
-    return tree;
   }
 
   // left associative binary operator
@@ -37,12 +40,15 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
     list<AstValue*>::iterator i = args->childs().begin();
     AstValue* first = *i;
     AstValue* second = *(++i);
-    auto tree = new AstOperator(op, first, second);
+    tree = new AstOperator(op, first, second);
     for ( ++i; i!=args->childs().end(); ++i ) {
       tree = new AstOperator(op, tree, *i);
     }
-    return tree;
   }
+
+  delete args;
+  assert(tree);
+  return tree;
 }
 
 AstOperator* ParserExt::mkOperatorTree(const string& op, AstValue* child1,

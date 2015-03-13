@@ -271,12 +271,18 @@ public:
     eSub = '-',
     eMul = '*',
     eDiv = '/',
-    ePlus = '+',
     eNot = '!',
     eSeq = ';',
     eAnd = 128,
     eOr,
     eEqualTo
+  };
+  enum EClass {
+    eAssignment,
+    eArithmetic,
+    eLogical,
+    eComparison,
+    eOther
   };
   AstOperator(char op, AstCtList* args);
   AstOperator(const std::string& op, AstCtList* args);
@@ -290,6 +296,8 @@ public:
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
   virtual const ObjType& objType() const;
+  EClass class_() const;
+  static EClass classOf(AstOperator::EOperation op);
   static EOperation toEOperation(const std::string& op);
 
 private:

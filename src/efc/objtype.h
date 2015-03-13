@@ -29,6 +29,7 @@ public:
   ObjType& addQualifiers(Qualifiers qualifiers);
 
   bool matchesFully(const ObjType& other) const;
+  bool matchesSaufQualifiers(const ObjType& other) const;
   virtual MatchType match(const ObjType& other) const = 0;
   virtual MatchType match2(const ObjTypeFunda& other) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypeFun& other) const { return eNoMatch; }

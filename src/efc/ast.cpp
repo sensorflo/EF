@@ -255,6 +255,36 @@ AstOperator::~AstOperator() {
   delete m_args;
 }
 
+AstOperator::EClass AstOperator::class_() const {
+  return classOf(m_op);
+}
+
+AstOperator::EClass AstOperator::classOf(AstOperator::EOperation op) {
+  switch (op) {
+  case eAssign:
+    return eAssignment;
+
+  case eAdd:
+  case eSub:
+  case eMul:
+  case eDiv:
+    return eArithmetic;
+
+  case eNot:
+  case eAnd:
+  case eOr:
+    return eLogical;
+
+  case eEqualTo:
+    return eComparison;
+
+  case eSeq:
+    return eOther;
+  }
+  assert(false);
+  return eOther;
+}
+
 AstOperator::EOperation AstOperator::toEOperation(const string& op) {
   if (op.size()==1) {
     return static_cast<EOperation>(op[0]);

@@ -19,6 +19,11 @@ bool ObjType::matchesFully(const ObjType& other) const {
   return eFullMatch == this->match(other);
 }
 
+bool ObjType::matchesSaufQualifiers(const ObjType& other) const {
+  auto m = this->match(other);
+  return (m == eOnlyQualifierMismatches) || (m == eFullMatch);
+}
+
 basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::Qualifiers qualifiers) {
   if (ObjType::eNoQualifier==qualifiers) {
     return os << "no-qualifier";

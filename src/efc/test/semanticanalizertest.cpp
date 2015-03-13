@@ -88,6 +88,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool)),
       new AstNumber(42, ObjTypeFunda::eInt)),
     Error::eNoImplicitConversion, spec);
+
+  spec = "Example: Binary math operator";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator('+',
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(77, ObjTypeFunda::eInt)),
+    Error::eNoImplicitConversion, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -101,6 +108,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstNumber(0, ObjTypeFunda::eBool)),
     Error::eNoImplicitConversion, "");
+
+  spec = "Example: Binary math operator";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator('+',
+      new AstNumber(1, ObjTypeFunda::eInt),
+      new AstNumber(77, ObjTypeFunda::eBool)),
+    Error::eNoImplicitConversion, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
