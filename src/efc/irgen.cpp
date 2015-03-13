@@ -321,10 +321,6 @@ void IrGen::visit(AstFunCall& funCall) {
     
   const list<AstValue*>& argsAst = funCall.args().childs();
 
-  if (callee->arg_size() != argsAst.size()) {
-    throw runtime_error("Number of arguments do not match");
-  }
-
   vector<Value*> argsIr;
   for ( list<AstValue*>::const_iterator i = argsAst.begin();
         i != argsAst.end(); ++i ) {

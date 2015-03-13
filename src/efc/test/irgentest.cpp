@@ -599,30 +599,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
-    a_function_call_to_an_defined_function_WITH_incorrect_number_of_arguments,
-    genIrInImplicitMain,
-    throws)) {
-
-  string spec = "Function foo expects one arg, but zero where passed on call";
-  TEST_GEN_IR_IMPLICIT_MAIN_THROWS(
-    new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstNumber(42)),
-      new AstFunCall(new AstSymbol("foo"))),
-    spec);
-
-  spec = "Function foo expects no args, but one arg was passed on call";
-  TEST_GEN_IR_IMPLICIT_MAIN_THROWS(
-    new AstOperator(';',
-        pe.mkFunDef(
-          pe.mkFunDecl("foo"),
-          new AstNumber(42)),
-      new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
-    spec);
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
     a_inmutable_data_object_definition_of_foo_being_initialized_with_x,
     genIrInImplicitMain,
     returns_x_rvalue)) {

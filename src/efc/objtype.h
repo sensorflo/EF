@@ -100,6 +100,8 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
   virtual AstValue* createDefaultAstValue() const;
 
+  const std::list<std::shared_ptr<const ObjType> >& args() const { return *m_args; }
+
 private:
   /** We're the owner of the container object. m_args itself and the pointers
   in the cointainer are garanteed to be non-null. */

@@ -84,6 +84,23 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
 void SemanticAnalizer::visit(AstFunCall& funCall) {
   funCall.address().accept(*this);
   funCall.args().accept(*this);
+
+  const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(funCall.address().objType());
+  const auto& argsCall = funCall.args().childs();
+  const auto& argsCallee = objTypeFun.args();
+  if ( argsCall.size() != argsCallee.size() ) {
+    m_errorHandler.add(new Error(Error::eInvalidArguments));
+    throw BuildError();
+  }
+  auto argCallIter = argsCall.begin();
+  auto argCallEnd = argsCall.end();
+  auto argCalleeIter = argsCallee.begin();
+  for ( ; argCallIter!=argCallEnd; ++argCallIter, ++argCalleeIter) {
+    if ( ! (*argCallIter)->objType().matchesSaufQualifiers(**argCalleeIter) ) {
+      m_errorHandler.add(new Error(Error::eInvalidArguments));
+      throw BuildError();
+    }
+  }
 }
 
 void SemanticAnalizer::visit(AstFunDef& funDef) {

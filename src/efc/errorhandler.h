@@ -12,6 +12,7 @@ public:
     eRedefinition,
     eWriteToImmutable,
     eNoImplicitConversion,
+    eInvalidArguments,
     eCnt
   };
 

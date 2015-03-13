@@ -335,3 +335,94 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eWriteToImmutable, "");
 }
 
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_function_call_to_an_defined_function_WITH_incorrect_an_argument_count_or_incorrect_argument_type,
+    transform,
+    reports_an_eInvalidArguments)) {
+
+  string spec = "Function foo expects one arg, but zero where passed on call";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDef(
+        pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstNumber(42)),
+      new AstFunCall(new AstSymbol("foo"))),
+    Error::eInvalidArguments, spec);
+
+  spec = "Function foo expects no args, but one arg was passed on call";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDef(
+        pe.mkFunDecl("foo"),
+        new AstNumber(42)),
+      new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
+    Error::eInvalidArguments, spec);
+
+  spec = "Function foo expects one bool arg, but one int is passed";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDef(
+        pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
+        new AstNumber(1, ObjTypeFunda::eBool)),
+      new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0, ObjTypeFunda::eInt)))),
+    Error::eInvalidArguments, spec);
+
+  spec = "Function foo expects one int arg, but one bool is passed";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDef(
+        pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstNumber(42)),
+      new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0, ObjTypeFunda::eBool)))),
+    Error::eInvalidArguments, spec);
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_function_call_to_an_defined_function_WITH_correct_number_of_arguments_and_types,
+    transform,
+    succeeds)) {
+
+  string spec = "Parameter is immutable, argument is mutable";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        pe.mkFunDef(
+          pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+          new AstNumber(42)),
+        new AstFunCall(new AstSymbol("foo"),
+          new AstCtList(new AstNumber(0, ObjTypeFunda::eInt, ObjType::eMutable))))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendSpec(spec) << amendAst(ast);
+  }
+
+  spec = "Parameter is mutable, argument is immutable";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        pe.mkFunDef(
+          pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+          new AstNumber(42)),
+        new AstFunCall(new AstSymbol("foo"),
+          new AstCtList(new AstNumber(0, ObjTypeFunda::eInt))))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendSpec(spec) << amendAst(ast);
+  }
+}
