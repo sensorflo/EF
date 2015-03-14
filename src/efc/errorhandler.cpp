@@ -10,6 +10,7 @@ const char* toStr(Error::No no) {
   case Error::eWriteToImmutable: return "eWriteToImmutable";
   case Error::eNoImplicitConversion: return "eNoImplicitConversion";
   case Error::eInvalidArguments: return "eInvalidArguments";
+  case Error::eNoSuchMember: return "eNoSuchMember";
   case Error::eCnt: return "<unknown>";
   }
   return "<unknown>";

@@ -13,6 +13,7 @@ public:
     eWriteToImmutable,
     eNoImplicitConversion,
     eInvalidArguments,
+    eNoSuchMember,
     eCnt
   };
 

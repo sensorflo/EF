@@ -54,6 +54,13 @@ void SemanticAnalizer::visit(AstOperator& op) {
     // implementation is missing.
     assert(argschilds.size()==1);
   }
+
+  // Verify that the first argument has the operator as member function.
+  if ( op.op()!=AstOperator::eSeq // eSeq is a global operator, not a member function
+    && !argschilds.front()->objType().hasMember(op.op())) {
+    m_errorHandler.add(new Error(Error::eNoSuchMember));
+    throw BuildError();
+  }
 }
 
 void SemanticAnalizer::visit(AstNumber& number) {

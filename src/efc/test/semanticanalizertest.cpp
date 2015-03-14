@@ -435,3 +435,46 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_operator_WITH_an_argument_whose_obj_type_does_not_have_that_operator_as_member,
+    transform,
+    reports_eNoSuchMember)) {
+  // Note that after introducing implicit casts, the objec types of the
+  // operands always match sauf qualifiers. That is specified by other
+  // tests.
+
+  // Also note that operators are semantically always really member method
+  // calls, also for builtin types.
+
+  string spec = "Example: Arithemtic operator (+) with argument not being of arithmetic class (here bool)";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator('+',
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    Error::eNoSuchMember, spec);
+
+  spec = "Example: Arithemtic operator (+) with argument not being of arithmetic class (here function)";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDecl("foo"),
+      new AstOperator('+',
+        new AstSymbol("foo"),
+        new AstSymbol("foo"))),
+    Error::eNoSuchMember, spec);
+
+  spec = "Example: Logic operator (&&) with argument not being bool (here int)";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator("&&",
+      new AstNumber(0, ObjTypeFunda::eInt),
+      new AstNumber(0, ObjTypeFunda::eInt)),
+    Error::eNoSuchMember, spec);
+
+  spec = "Example: Comparision operator (==) with argument not being of scalar class (here function)";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDecl("foo"),
+      new AstOperator("==",
+        new AstSymbol("foo"),
+        new AstSymbol("foo"))),
+    Error::eNoSuchMember, spec);
+}
