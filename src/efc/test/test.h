@@ -50,4 +50,10 @@ std::string amendAst(const std::auto_ptr<AstValue>& ast);
 std::string amendAst(const std::unique_ptr<AstValue>& ast);
 std::string amend(const ErrorHandler& errorHandler);
 
+#define EXPECT_MATCHES_FULLY( expected_obj_type, actual_obj_type ) \
+  EXPECT_PRED2( ObjType::matchesFully_, expected_obj_type, actual_obj_type )
+
+#define EXPECT_MATCHES_SAUF_QUALIFIERS( expected_obj_type, actual_obj_type )      \
+  EXPECT_PRED2( ObjType::matchesSaufQualifiers_, expected_obj_type, actual_obj_type )
+
 #endif

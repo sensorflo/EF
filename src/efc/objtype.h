@@ -41,6 +41,9 @@ public:
 
   virtual AstValue* createDefaultAstValue() const = 0;
 
+  static bool matchesFully_(const ObjType& rhs, const ObjType& lhs);
+  static bool matchesSaufQualifiers_(const ObjType& rhs, const ObjType& lhs);
+
 protected:
   ObjType(Qualifiers qualifiers) : m_qualifiers(qualifiers) {};
 

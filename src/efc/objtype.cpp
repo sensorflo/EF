@@ -72,6 +72,14 @@ bool ObjTypeFunda::isValueInRange(int val) const {
   return false;
 }
 
+bool ObjType::matchesFully_(const ObjType& rhs, const ObjType& lhs) {
+  return rhs.matchesFully(lhs);
+}
+
+bool ObjType::matchesSaufQualifiers_(const ObjType& rhs, const ObjType& lhs) {
+  return rhs.matchesSaufQualifiers(lhs);
+}
+
 ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType> >* args, const ObjType* ret) :
   ObjType(eNoQualifier),
   m_args( args ? args : new list<shared_ptr<const ObjType> >),
