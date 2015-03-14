@@ -35,6 +35,8 @@ public:
   virtual MatchType match2(const ObjTypeFunda& other) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypeFun& other) const { return eNoMatch; }
 
+  virtual ObjType* clone() const = 0;
+
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const = 0;
   std::string toStr() const;
 
@@ -52,6 +54,7 @@ public:
 
 protected:
   ObjType(Qualifiers qualifiers) : m_qualifiers(qualifiers) {};
+  ObjType(const ObjType& rhs) : m_qualifiers(rhs.m_qualifiers) {};
 
   Qualifiers m_qualifiers;
 };
@@ -79,11 +82,15 @@ public:
 
   ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier) :
     ObjType(qualifiers), m_type(type) {};
+  ObjTypeFunda(const ObjTypeFunda& rhs) :
+    ObjType(rhs), m_type{rhs.m_type} {};
 
   virtual MatchType match(const ObjType& other) const { return other.match2(*this); }
   using ObjType::match2;
   virtual MatchType match2(const ObjTypeFunda& other) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
+
+  virtual ObjTypeFunda* clone() const;
 
   EType type() const { return m_type; }
   virtual AstValue* createDefaultAstValue() const;
@@ -111,6 +118,8 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
   virtual AstValue* createDefaultAstValue() const;
   virtual bool hasMember(int) const { return false; }
+
+  virtual ObjTypeFun* clone() const;
 
   const std::list<std::shared_ptr<const ObjType> >& args() const { return *m_args; }
 

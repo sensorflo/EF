@@ -84,6 +84,10 @@ bool ObjTypeFunda::isValueInRange(int val) const {
   return false;
 }
 
+ObjTypeFunda* ObjTypeFunda::clone() const {
+  return new ObjTypeFunda(*this);
+}
+
 bool ObjType::matchesFully_(const ObjType& rhs, const ObjType& lhs) {
   return rhs.matchesFully(lhs);
 }
@@ -116,6 +120,11 @@ ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& other) const {
   }
   if (m_ret->match(*other.m_ret) != eFullMatch) return eNoMatch;
   return eFullMatch;
+}
+
+ObjTypeFun* ObjTypeFun::clone() const {
+  return NULL; // not yet implemented, but called without evaluating the
+               // return value
 }
 
 basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {

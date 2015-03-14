@@ -1,6 +1,7 @@
 #include "test.h"
 #include "../objtype.h"
 #include <string>
+#include <memory>
 using namespace testing;
 using namespace std;
 
@@ -114,3 +115,20 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       new ObjTypeFunda(ObjTypeFunda::eInt)));
 }
+
+TEST(ObjTypeTest, MAKE_TEST_NAME1(
+    clone)) {
+
+  {
+    ObjTypeFunda src{ ObjTypeFunda::eInt };
+    unique_ptr<ObjType> clone{src.clone()};
+    EXPECT_MATCHES_FULLY( src, *clone );
+  }
+
+  {
+    ObjTypeFunda src{ ObjTypeFunda::eBool, ObjType::eMutable };
+    unique_ptr<ObjType> clone{src.clone()};
+    EXPECT_MATCHES_FULLY( src, *clone );
+  }
+}
+
