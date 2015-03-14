@@ -63,6 +63,18 @@ AstValue* ObjTypeFunda::createDefaultAstValue() const {
   return new AstNumber(0, new ObjTypeFunda(m_type));
 }
 
+bool ObjTypeFunda::hasMember(int op) const {
+  switch (AstOperator::classOf(static_cast<AstOperator::EOperation>(op))) {
+  case AstOperator::eAssignment: return true;
+  case AstOperator::eArithmetic: return m_type == eInt; // arithmetic types
+  case AstOperator::eLogical: return m_type == eBool;
+  case AstOperator::eComparison: return true; // scalar types
+  case AstOperator::eOther: return true;
+  default: assert(false);
+  }
+  return false;
+}
+
 bool ObjTypeFunda::isValueInRange(int val) const {
   switch (m_type) {
   case eInt: return true;

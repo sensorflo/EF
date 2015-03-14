@@ -8,6 +8,7 @@
 class ObjTypeFunda;
 class ObjTypeFun;
 class AstValue;
+class AstOperator;
 
 /** Abstract base class for all object types */
 class ObjType {
@@ -40,6 +41,11 @@ public:
   Qualifiers qualifiers() const { return m_qualifiers; }
 
   virtual AstValue* createDefaultAstValue() const = 0;
+
+  /** Returns true if this type has the given operator as member function.
+  Assumes that the operands are of the same type. The argument may not be
+  eSeq, since that operator is never a member. */
+  virtual bool hasMember(int op) const = 0;
 
   static bool matchesFully_(const ObjType& rhs, const ObjType& lhs);
   static bool matchesSaufQualifiers_(const ObjType& rhs, const ObjType& lhs);
@@ -82,6 +88,8 @@ public:
   EType type() const { return m_type; }
   virtual AstValue* createDefaultAstValue() const;
 
+  virtual bool hasMember(int op) const;
+
   bool isValueInRange(int val) const;
 
 private:
@@ -102,6 +110,7 @@ public:
   virtual MatchType match2(const ObjTypeFun& other) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
   virtual AstValue* createDefaultAstValue() const;
+  virtual bool hasMember(int) const { return false; }
 
   const std::list<std::shared_ptr<const ObjType> >& args() const { return *m_args; }
 
