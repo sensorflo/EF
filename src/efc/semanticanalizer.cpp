@@ -28,23 +28,17 @@ void SemanticAnalizer::visit(AstCtList& ctList) {
 void SemanticAnalizer::visit(AstOperator& op) {
   const list<AstValue*>& argschilds = op.args().childs();
 
-  switch (op.op()) {
-  case AstOperator::eSeq: {
-    if (argschilds.empty()) {
-      throw runtime_error("Empty sequence not allowed (yet)");
-    }
-    break;
-  }
-  case AstOperator::eAssign: {
-    assert( !argschilds.empty() );
+  // Note that orrect number of arguments was already handled in AstOperator's
+  // ctor; we're allowed to count on that.
+
+  if (AstOperator::eAssign == op.op()) {
     argschilds.front()->setAccess(eWrite, m_errorHandler);
-    break;
   }
-  default:
-    break;
-  }
+
   op.args().accept(*this);
 
+  // Check that all operands are of the same obj type, sauf
+  // qualifiers. Currently there are no implicit conversions
   if ( argschilds.size()==2 ) {
     if ( op.class_() != AstOperator::eOther ) {
       auto& lhs = argschilds.front()->objType();
@@ -55,6 +49,9 @@ void SemanticAnalizer::visit(AstOperator& op) {
       }
     }
   } else {
+    // In case there is only one arg, that arg's type can't missmatch
+    // anything, so it's implicitely ok. If there are more than two args, the
+    // implementation is missing.
     assert(argschilds.size()==1);
   }
 }
