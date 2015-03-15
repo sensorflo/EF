@@ -2,7 +2,11 @@
 #define ERRORHANDLER_H
 #include <list>
 #include <ostream>
+#include <stdexcept>
 
+class ErrorHandler;
+
+/** See also BuildError */
 class Error {
 public:
   enum No {
@@ -17,10 +21,13 @@ public:
     eCnt
   };
 
-  Error(No no) : m_no(no) {}
+  /** Adds a new Error to ErrorHandler and throws an according BuildError. */
+  [[noreturn]] static void throwError(ErrorHandler& errorHandler, No no);
+
   No no() const { return m_no; }
 
 private:
+  Error(No no);
   No m_no;
 };
 
@@ -48,7 +55,23 @@ private:
 
 std::ostream& operator<<(std::ostream& os, const ErrorHandler& errorHandler);
 
-/** ErrorHandler contains the details. */
-class BuildError {};
+/** Class used to throw by value via Error::throwError and be catched by
+reference. The 'what' description is redundant to the associated Error
+instance and is only intended to be used if an instance of BuildError is
+catched at an wide outside safety net catch, i.e. at a place where controlled
+error handling with proper counter actions is no longer possible and the only
+option is to print as mutch info as we can and then probably die.
+
+Rational for not throwing Error directly but inventing a new class which is
+used to throw: Exceptions should be thrown by value, thus can't be owned by
+anybode. But ErrorHandler owns its exceptions. We could throw pointers to
+Error instances, but that does not work well together with gtest in the case
+of an test throwing unexpectetly. gtest writes the .what of an unexpected
+exception only if it is thrown by value. */
+class BuildError : public std::logic_error {
+private:
+  friend class Error;
+  BuildError(const std::string& what);
+};
 
 #endif

@@ -44,8 +44,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
       auto& lhs = argschilds.front()->objType();
       auto& rhs = argschilds.back()->objType();
       if ( !lhs.matchesSaufQualifiers(rhs) ) {
-        m_errorHandler.add(new Error(Error::eNoImplicitConversion));
-        throw BuildError();
+        Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
       }
     }
   } else {
@@ -58,8 +57,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // Verify that the first argument has the operator as member function.
   if ( op.op()!=AstOperator::eSeq // eSeq is a global operator, not a member function
     && !argschilds.front()->objType().hasMember(op.op())) {
-    m_errorHandler.add(new Error(Error::eNoSuchMember));
-    throw BuildError();
+    Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 }
 
@@ -74,14 +72,12 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
   shared_ptr<SymbolTableEntry> stentry;
   m_env.find(symbol.name(), stentry);
   if (NULL==stentry) {
-    m_errorHandler.add(new Error(Error::eUnknownName));
-    throw BuildError();
+    Error::throwError(m_errorHandler, Error::eUnknownName);
   }
   symbol.setStentry(move(stentry));
   if (symbol.access()==eWrite &&
     !(symbol.objType().qualifiers() & ObjType::eMutable)) {
-    m_errorHandler.add(new Error(Error::eWriteToImmutable));
-    throw BuildError();
+    Error::throwError(m_errorHandler, Error::eWriteToImmutable);
   }
 }
 
@@ -93,16 +89,14 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
   const auto& argsCall = funCall.args().childs();
   const auto& argsCallee = objTypeFun.args();
   if ( argsCall.size() != argsCallee.size() ) {
-    m_errorHandler.add(new Error(Error::eInvalidArguments));
-    throw BuildError();
+    Error::throwError(m_errorHandler, Error::eInvalidArguments);
   }
   auto argCallIter = argsCall.begin();
   auto argCallEnd = argsCall.end();
   auto argCalleeIter = argsCallee.begin();
   for ( ; argCallIter!=argCallEnd; ++argCallIter, ++argCalleeIter) {
     if ( ! (*argCallIter)->objType().matchesSaufQualifiers(**argCalleeIter) ) {
-      m_errorHandler.add(new Error(Error::eInvalidArguments));
-      throw BuildError();
+      Error::throwError(m_errorHandler, Error::eInvalidArguments);
     }
   }
 }
@@ -149,8 +143,7 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
     else {
       assert(envs_stentry_ptr.get());
       if ( !envs_stentry_ptr->objType().matchesFully(dataDecl.objType()) ) {
-        m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
-        throw BuildError();
+        Error::throwError(m_errorHandler, Error::eIncompatibleRedaclaration);
       }
     }
 
@@ -168,12 +161,10 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
   dataDef.ctorArgs().accept(*this);
   if ( dataDef.access()==eWrite &&
     !(dataDef.objType().qualifiers() & ObjType::eMutable)) {
-    m_errorHandler.add(new Error(Error::eWriteToImmutable));
-    throw BuildError();
+    Error::throwError(m_errorHandler, Error::eWriteToImmutable);
   }
   if ( dataDef.decl().objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
-    m_errorHandler.add(new Error(Error::eNoImplicitConversion));
-    throw BuildError();
+    Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 }
 

@@ -1,5 +1,18 @@
 #include "errorhandler.h"
+#include <sstream>
 using namespace std;
+
+Error::Error(Error::No no) :
+  m_no(no) {
+}
+
+void Error::throwError(ErrorHandler& errorHandler, No no) {
+  auto error = new Error(no);
+  errorHandler.add(error);
+  stringstream ss;
+  ss << *error;
+  throw BuildError(ss.str());
+}
 
 const char* toStr(Error::No no) {
   switch (no) {
@@ -38,4 +51,8 @@ ostream& operator<<(ostream& os, const ErrorHandler& errorHandler) {
     os << (*i)->no();
   }
   return os << "}";
+}
+
+BuildError::BuildError(const string& what) :
+  logic_error(what){
 }

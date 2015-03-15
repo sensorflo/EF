@@ -68,7 +68,7 @@ void testgenIrInImplicitMainThrows(TestingIrGen& UUT, AstValue* astRoot,
   }
 
   // verify
-  catch (BuildError& buildError) {
+  catch (BuildError&) {
     ADD_FAILURE() << "Write the test not using the general ...Throws but the "
       "more specific ...ReportsError\n" <<
       amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(ast.get());
@@ -120,7 +120,7 @@ void testgenIrReportsError(TestingIrGen& UUT, AstValue* astRoot,
   }
 
   // verify
-  catch (BuildError& buildError) {
+  catch (BuildError&) {
     didThrowBuildError = true;
 
     const ErrorHandler::Container& errors = UUT.m_errorHandler->errors();

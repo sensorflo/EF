@@ -9,7 +9,7 @@ using namespace std;
 
 void AstNode::setAccess(Access access, ErrorHandler& errorHandler) {
   if ( access!=eRead ) {
-    errorHandler.add(new Error(Error::eWriteToImmutable));
+    Error::throwError(errorHandler, Error::eWriteToImmutable);
   }
 }
 

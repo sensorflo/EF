@@ -29,7 +29,7 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstValue* astRoot,
   }
 
   // verify
-  catch (BuildError& buildError) {
+  catch (BuildError&) {
     // nop
   }
   catch (exception& e) {
@@ -46,7 +46,7 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstValue* astRoot,
     foreignExceptionThrown = true;
   }
   EXPECT_FALSE(foreignExceptionThrown) <<
-    "Expecting either no exceptions or BuildError exception\n" <<
+    "Expecting either no exceptions or Error exception\n" <<
     amendSpec(spec) << amendAst(astRoot) << amend(UUT.m_errorHandler) <<
     "\nexceptionwhat: " << excptionwhat;
   const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();

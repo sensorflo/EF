@@ -107,8 +107,7 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   } else {
     assert(stIterStEntry.get());
     if ( !stIterStEntry->objType().matchesFully(*objTypeFun) ) {
-      m_errorHandler.add(new Error(Error::eIncompatibleRedaclaration));
-      throw BuildError();
+      Error::throwError(m_errorHandler, Error::eIncompatibleRedaclaration);
     }
   }
 

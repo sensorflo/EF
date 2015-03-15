@@ -12,8 +12,7 @@ SymbolTableEntry::SymbolTableEntry(shared_ptr<const ObjType> objType) :
 
 void SymbolTableEntry::markAsDefined(ErrorHandler& errorHandler) {
   if (m_isDefined) {
-    errorHandler.add(new Error(Error::eRedefinition));
-    throw BuildError();
+    Error::throwError(errorHandler, Error::eRedefinition);
   }
   m_isDefined = true;
 }
