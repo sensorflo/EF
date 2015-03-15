@@ -398,12 +398,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     unique_ptr<AstValue> ast{
-      new AstOperator(';',
+      pe.mkOperatorTree(";",
         pe.mkFunDef(
           pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
           new AstNumber(42)),
+        new AstDataDef(
+          new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
         new AstFunCall(new AstSymbol("foo"),
-          new AstCtList(new AstNumber(0, ObjTypeFunda::eInt, ObjType::eMutable))))};
+          new AstCtList(new AstSymbol("x"))))};
 
     // exercise
     UUT.analyze(*ast.get());

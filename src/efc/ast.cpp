@@ -206,14 +206,13 @@ AstNumber::AstNumber(int value, ObjTypeFunda* objType) :
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
   m_irValue(NULL) {
   assert(m_objType);
+  // A mutable literal makes no sense.
+  assert(!(m_objType->qualifiers() & ObjType::eMutable));
 }
 
 AstNumber::AstNumber(int value, ObjTypeFunda::EType eType,
   ObjTypeFunda::Qualifiers qualifiers) :
-  m_value(value),
-  m_objType(new ObjTypeFunda(eType, qualifiers)),
-  m_irValue(NULL) {
-  assert(m_objType);
+  AstNumber(value, new ObjTypeFunda(eType, qualifiers)) {
 }
 
 AstNumber::~AstNumber() {
