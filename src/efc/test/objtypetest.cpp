@@ -36,20 +36,20 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
 
   // function type
   EXPECT_EQ("fun((), int)",
-    ObjTypeFun(ObjTypeFun::createArgs(), new ObjTypeFunda(ObjTypeFunda::eInt)).toStr());
+    ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
   EXPECT_EQ("fun((int, int), int)",
     ObjTypeFun(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new ObjTypeFunda(ObjTypeFunda::eInt)
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)
       ).toStr());
   EXPECT_EQ("fun((bool, int), bool)",
     ObjTypeFun(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eBool),
         new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new ObjTypeFunda(ObjTypeFunda::eBool)
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)
       ).toStr());
 }
 
@@ -96,35 +96,39 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 
   TEST_MATCH( "", ObjType::eNoMatch,
     ObjTypeFunda(ObjTypeFunda::eInt),
-    ObjTypeFun(ObjTypeFun::createArgs(), new ObjTypeFunda(ObjTypeFunda::eInt)));
+    ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
   TEST_MATCH( "", ObjType::eFullMatch,
-    ObjTypeFun(ObjTypeFun::createArgs(), new ObjTypeFunda(ObjTypeFunda::eInt)),
-    ObjTypeFun(ObjTypeFun::createArgs(), new ObjTypeFunda(ObjTypeFunda::eInt)));
+    ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+    ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
   TEST_MATCH( "", ObjType::eNoMatch,
-    ObjTypeFun(ObjTypeFun::createArgs(new ObjTypeFunda(ObjTypeFunda::eInt)), new ObjTypeFunda(ObjTypeFunda::eInt)),
-    ObjTypeFun(ObjTypeFun::createArgs(), new ObjTypeFunda(ObjTypeFunda::eInt)));
+    ObjTypeFun(
+      ObjTypeFun::createArgs(new ObjTypeFunda(ObjTypeFunda::eInt)),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+    ObjTypeFun(
+      ObjTypeFun::createArgs(),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
   TEST_MATCH( "Only one argument differs in type", ObjType::eNoMatch,
     ObjTypeFun(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eBool)),
-      new ObjTypeFunda(ObjTypeFunda::eInt)),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     ObjTypeFun(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new ObjTypeFunda(ObjTypeFunda::eInt)));
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
   TEST_MATCH( "Only return type differs", ObjType::eNoMatch,
     ObjTypeFun(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new ObjTypeFunda(ObjTypeFunda::eBool)),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)),
     ObjTypeFun(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new ObjTypeFunda(ObjTypeFunda::eInt)));
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
@@ -143,7 +147,9 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   }
 
   {
-    ObjTypeFun src{ ObjTypeFun::createArgs(), new ObjTypeFunda(ObjTypeFunda::eInt) };
+    ObjTypeFun src{
+      ObjTypeFun::createArgs(),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt) };
     unique_ptr<ObjType> clone{src.clone()};
     EXPECT_MATCHES_FULLY( src, *clone );
   }
@@ -153,7 +159,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new ObjTypeFunda(ObjTypeFunda::eBool)),
-      new ObjTypeFunda(ObjTypeFunda::eInt) };
+        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt) };
     unique_ptr<ObjType> clone{src.clone()};
     EXPECT_MATCHES_FULLY( src, *clone );
   }

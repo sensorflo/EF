@@ -108,8 +108,8 @@ private:
 /** Compound-type/function */
 class ObjTypeFun : public ObjType {
 public:
-  ObjTypeFun(std::list<std::shared_ptr<const ObjType> >* args, const ObjType* ret);
-  virtual ~ObjTypeFun();
+  ObjTypeFun(std::list<std::shared_ptr<const ObjType> >* args,
+    std::shared_ptr<const ObjType> ret = std::shared_ptr<const ObjType>());
   static std::list<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = NULL,
     const ObjType* arg2 = NULL, const ObjType* arg3 = NULL);
 
@@ -128,8 +128,7 @@ private:
   /** We're the owner of the container object. m_args itself and the pointers
   in the cointainer are garanteed to be non-null. */
   const std::list<std::shared_ptr<const ObjType> >* const m_args;
-  /** */
-  const ObjType* const m_ret;
+  const std::shared_ptr<const ObjType> m_ret;
 };
 
 #endif

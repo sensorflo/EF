@@ -79,7 +79,7 @@ void AstPrinter::visit(const AstFunDecl& funDecl) {
     (*i)->accept(*this);
   }
   m_os << ") ";
-  m_os << ObjTypeFunda(ObjTypeFunda::eInt);
+  m_os << funDecl.retObjType();
   m_os << ")";
 }
 

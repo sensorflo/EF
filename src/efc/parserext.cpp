@@ -92,8 +92,8 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   for (/*nop*/; iterArgs!=args->end(); ++iterArgs) {
     argsObjType->push_back( (*iterArgs)->objTypeShareOwnership() );
   }
-  auto objTypeFun = make_shared<const ObjTypeFun>(
-    argsObjType, new ObjTypeFunda(ObjTypeFunda::eInt));
+  auto objTypeRet = make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt);
+  auto objTypeFun = make_shared<const ObjTypeFun>( argsObjType, objTypeRet);
 
   // ensure function is in environment. Note that currently there is a flat
   // namespace regarding function names; i.e. also nested functions are
@@ -111,7 +111,7 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
     }
   }
 
-  return new AstFunDecl(name, args, stIterStEntry);
+  return new AstFunDecl(name, args, objTypeRet, stIterStEntry);
 }
 
 AstFunDecl* ParserExt::mkFunDecl(const string name, AstArgDecl* arg1,

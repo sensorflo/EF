@@ -196,7 +196,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     stentry->objType().match(
       ObjTypeFun(
         ObjTypeFun::createArgs(),
-        new ObjTypeFunda(ObjTypeFunda::eInt))));
+        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))));
 
   // tear down
   delete ast;
@@ -304,7 +304,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   // verify
   EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
 
-  ObjTypeFun funType{ ObjTypeFun::createArgs(), new ObjTypeFunda(ObjTypeFunda::eInt)};
+  ObjTypeFun funType{ ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
 
   shared_ptr<SymbolTableEntry> stentryOuter;
   env.find("outer", stentryOuter);

@@ -72,10 +72,13 @@ const ObjType& AstFunDef::objType() const {
   return decl().objType();
 }
 
-AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args,
+AstFunDecl::AstFunDecl(const string& name,
+  list<AstArgDecl*>* args,
+  shared_ptr<const ObjType> ret,
   shared_ptr<SymbolTableEntry> stentry) :
   m_name(name),
   m_args(args ? args : new list<AstArgDecl*>()),
+  m_ret(ret ? move(ret) : make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
   m_stentry(move(stentry)),
   m_irFunction(NULL) {
 }
@@ -84,11 +87,7 @@ AstFunDecl::AstFunDecl(const string& name, list<AstArgDecl*>* args,
 argument lists. An empty string means 'no argument'. */
 AstFunDecl::AstFunDecl(const string& name, AstArgDecl* arg1,
   AstArgDecl* arg2, AstArgDecl* arg3) :
-  m_name(name),
-  m_args(createArgs(arg1, arg2, arg3)),
-  m_stentry(NULL),
-  m_irFunction(NULL) {
-}
+  AstFunDecl(name, createArgs(arg1, arg2, arg3)) {}
 
 AstFunDecl::~AstFunDecl() {
   for (list<AstArgDecl*>::const_iterator i=m_args->begin();
@@ -96,6 +95,11 @@ AstFunDecl::~AstFunDecl() {
     delete *i;
   }
   delete m_args;
+}
+
+const ObjType& AstFunDecl::retObjType() const {
+  assert(m_ret);
+  return *m_ret;
 }
 
 const ObjType& AstFunDecl::objType() const {

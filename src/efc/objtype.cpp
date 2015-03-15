@@ -101,19 +101,15 @@ bool ObjType::matchesSaufQualifiers_(const ObjType& rhs, const ObjType& lhs) {
   return rhs.matchesSaufQualifiers(lhs);
 }
 
-ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType> >* args, const ObjType* ret) :
+ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType> >* args, shared_ptr<const ObjType> ret) :
   ObjType(eNoQualifier),
   m_args( args ? args : new list<shared_ptr<const ObjType> >),
-  m_ret( ret ? ret : new ObjTypeFunda(ObjTypeFunda::eInt) ){
+  m_ret( ret ? move(ret) : make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt) ){
   assert(m_args);
   assert(m_ret);
   for (list<shared_ptr<const ObjType> >::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
     assert(*i);
   }
-}
-
-ObjTypeFun::~ObjTypeFun() {
-  delete m_ret;
 }
 
 ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& other) const {
@@ -133,7 +129,7 @@ ObjTypeFun* ObjTypeFun::clone() const {
   for ( const auto& srcArg : *m_args  ) {
     dstArgs->push_back(shared_ptr<ObjType>{srcArg->clone()});
   }
-  return new ObjTypeFun( dstArgs, m_ret->clone() );
+  return new ObjTypeFun( dstArgs, shared_ptr<const ObjType>(m_ret->clone()));
 }
 
 basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {

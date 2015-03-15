@@ -62,6 +62,7 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   spec = "AstFunDecl";
   EXPECT_TOSTR_EQ( "declfun(foo () int)", AstFunDecl("foo"), spec);
   EXPECT_TOSTR_EQ( "declfun(foo () int)", AstFunDecl("foo", new list<AstArgDecl*>()), spec);
+  EXPECT_TOSTR_EQ( "declfun(foo () bool)", AstFunDecl("foo", new list<AstArgDecl*>(), make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)), spec);
   EXPECT_TOSTR_EQ( "declfun(foo ((arg1 int-mut)) int)", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))), spec);
   EXPECT_TOSTR_EQ( "declfun(foo ((arg1 int-mut) (arg2 int-mut)) int)", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))), spec);
 
