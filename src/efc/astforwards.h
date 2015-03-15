@@ -2,6 +2,7 @@
 #define ASTFORWARDS_H
 
 class AstNode;
+class AstValue;
 class AstNumber;
 class AstSymbol;
 class AstFunCall;

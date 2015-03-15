@@ -296,6 +296,7 @@ public:
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
   virtual const ObjType& objType() const;
+  void setObjType(std::unique_ptr<ObjType> objType);
   EClass class_() const;
   static EClass classOf(AstOperator::EOperation op);
   static EOperation toEOperation(const std::string& op);
@@ -306,6 +307,7 @@ private:
   const EOperation m_op;
   /** We're the owner. Is garanteed to be non-null */
   AstCtList* const m_args;
+  std::unique_ptr<ObjType> m_objType;
   static std::map<std::string, EOperation> m_opMap;
 
 // decorations for IrGen

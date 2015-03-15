@@ -320,6 +320,103 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   delete ast;
 }
 
+// aka temporary objects are immutable
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_operator,
+    transform,
+    sets_the_objectType_of_the_AstOperator_node_to_the_type_of_the_two_operands_however_with_an_immutable_qualifier)) {
+
+  // this specification only looks at operands with identical types. Other
+  // specifications specify how to introduce implicit conversions when the
+  // type of the operands don't match
+
+  string spec = "Example: Arithmetic operator (+) with operands of type int -> "
+    "result temporary object must be of type int";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstOperator('+',
+        new AstNumber(0, ObjTypeFunda::eInt),
+        new AstNumber(0, ObjTypeFunda::eInt))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+      amendAst(ast) << amendSpec(spec);
+  }
+
+  spec = "Example: Logical operator (&&) with operands of type bool -> "
+    "result temporary object must be of type bool";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstOperator("&&",
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstNumber(0, ObjTypeFunda::eBool))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+      amendAst(ast) << amendSpec(spec);
+  }
+
+  spec = "Example: two muttable operands -> result temporary object is still immutable";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        new AstDataDef(
+          new AstDataDecl("x",
+            new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+        new AstOperator('+',
+          new AstSymbol("x"),
+          new AstSymbol("x")))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+      amendAst(ast) << amendSpec(spec);
+  }
+
+  spec = "Example: Sequence operator (;) ignores the type of the lhs operand";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        new AstNumber(0, ObjTypeFunda::eInt),
+        new AstNumber(0, ObjTypeFunda::eBool))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+      amendAst(ast) << amendSpec(spec);
+  }
+}
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_assignment_to_an_immutable_data_object,
     transform,

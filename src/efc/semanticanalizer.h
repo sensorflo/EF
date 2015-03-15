@@ -27,6 +27,8 @@ private:
   virtual void visit(AstDataDef& dataDef);
   virtual void visit(AstIf& if_);
 
+  void postConditionCheck(const AstValue& node);
+
   friend class TestingSemanticAnalizer;
 
   Env& m_env;

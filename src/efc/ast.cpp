@@ -309,11 +309,13 @@ void AstOperator::setIrValue(llvm::Value* value) {
 }
 
 const ObjType& AstOperator::objType() const {
-  // KLUDGE: Currently wrongly too much depends on that nearly all expressions
-  // are of type int, so for now the default has to be int opposed to an
-  // assertion, because here the type really isn't known.
-  static ObjTypeFunda ret(ObjTypeFunda::eInt);
-  return ret;
+  assert(m_objType);
+  return *m_objType.get();
+}
+
+void AstOperator::setObjType(unique_ptr<ObjType> objType) {
+  assert(!m_objType); // it doesn't make sense to set it twice
+  m_objType = move(objType);
 }
 
 basic_ostream<char>& operator<<(basic_ostream<char>& os,

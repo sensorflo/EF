@@ -59,6 +59,16 @@ void SemanticAnalizer::visit(AstOperator& op) {
     && !argschilds.front()->objType().hasMember(op.op())) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
+
+  // Set the obj type of this AstOperator node. It is a temporary object which
+  // is always immutable. For the sequence operator this is the type of the
+  // rhs. For the other operators, now that we know the two operands have the
+  // same obj type, either operand's obj type can be taken.
+  auto objType = unique_ptr<ObjType>(argschilds.back()->objType().clone());
+  objType->removeQualifiers(ObjType::eMutable);
+  op.setObjType(move(objType));
+
+  postConditionCheck(op);
 }
 
 void SemanticAnalizer::visit(AstNumber& number) {
@@ -177,4 +187,8 @@ void SemanticAnalizer::visit(AstIf& if_) {
   if (if_.elseAction()) {
     if_.elseAction()->accept(*this);
   }
+}
+
+void SemanticAnalizer::postConditionCheck(const AstValue& node) {
+  assert((node.objType(),true)); // asserts internally if not defined
 }
