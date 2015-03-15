@@ -282,17 +282,17 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "decl(fun foo:(arg1:int, arg2:int) int)", "declfun(foo ((arg1 int-mut) (arg2 int-mut)) int)", spec);
 
   spec = "example with implicit return type";
-  //Toggling 1) zero vs one parameter
+  //Toggling 1) zero (int two variants) vs one parameter
   //Toggling 2) 'keyword...;' vs 'keyword(...)' syntax
-  TEST_PARSE( "decl fun foo:          $", "declfun(foo () int)", spec);
-  TEST_PARSE( "decl fun foo:(arg1:int)$", "declfun(foo ((arg1 int-mut)) int)", spec);
-  TEST_PARSE( "decl(fun foo:          )", "declfun(foo () int)", spec);
-  TEST_PARSE( "decl(fun foo:(arg1:int))", "declfun(foo ((arg1 int-mut)) int)", spec);
+  TEST_PARSE( "decl fun foo:           int$", "declfun(foo () int)", spec);
+  TEST_PARSE( "decl fun foo:()         int$", "declfun(foo () int)", spec);
+  TEST_PARSE( "decl fun foo:(arg1:int) int$", "declfun(foo ((arg1 int-mut)) int)", spec);
+  TEST_PARSE( "decl(fun foo:           int)", "declfun(foo () int)", spec);
+  TEST_PARSE( "decl(fun foo:()         int)", "declfun(foo () int)", spec);
+  TEST_PARSE( "decl(fun foo:(arg1:int) int)", "declfun(foo ((arg1 int-mut)) int)", spec);
 
   spec = "should allow trailing comma in argument list";
-  //Toggling 1) optional return type
   TEST_PARSE( "decl fun foo:(arg1:int,) int$", "declfun(foo ((arg1 int-mut)) int)", spec);
-  TEST_PARSE( "decl fun foo:(arg1:int,)    $", "declfun(foo ((arg1 int-mut)) int)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -309,31 +309,22 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "example with zero arguments and trivial body";
-  TEST_PARSE( "fun foo:        = 42$"        , "fun(declfun(foo () int) 42)", spec);
-  TEST_PARSE( "fun foo: ()     = 42$"        , "fun(declfun(foo () int) 42)", spec);
   TEST_PARSE( "fun foo: () int = 42$"        , "fun(declfun(foo () int) 42)", spec);
   TEST_PARSE( "fun(foo: () int = 42)"        , "fun(declfun(foo () int) 42)", spec);
   TEST_PARSE( "fun foo: () int = 42 end foo$", "fun(declfun(foo () int) 42)", spec);
 
   spec = "example with zero arguments and simple but not trivial body";
-  TEST_PARSE( "fun foo:        = 42 1+2$", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
-  TEST_PARSE( "fun foo: ()     = 42 1+2$", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
   TEST_PARSE( "fun foo: () int = 42 1+2$", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
   TEST_PARSE( "fun(foo: () int = 42 1+2)", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
 
   spec = "example with one argument and trivial body";
-  TEST_PARSE( "fun foo: (arg1:int)     = 42$", "fun(declfun(foo ((arg1 int-mut)) int) 42)", spec);
-  TEST_PARSE( "fun foo: (arg1:int)     = 42$", "fun(declfun(foo ((arg1 int-mut)) int) 42)", spec);
   TEST_PARSE( "fun foo: (arg1:int) int = 42$", "fun(declfun(foo ((arg1 int-mut)) int) 42)", spec);
   TEST_PARSE( "fun(foo: (arg1:int) int = 42)", "fun(declfun(foo ((arg1 int-mut)) int) 42)", spec);
 
   spec = "should allow trailing comma in argument list";
-  TEST_PARSE( "fun foo: (arg1:int,)        = 42$", "fun(declfun(foo ((arg1 int-mut)) int) 42)", spec);
-  TEST_PARSE( "fun foo: (arg1:int,)        = 42$", "fun(declfun(foo ((arg1 int-mut)) int) 42)", spec);
+  TEST_PARSE( "fun foo: (arg1:int,) int = 42$", "fun(declfun(foo ((arg1 int-mut)) int) 42)", spec);
 
   spec = "example with two arguments and trivial body";
-  TEST_PARSE( "fun foo: (arg1:int, arg2:int)     = 42$", "fun(declfun(foo ((arg1 int-mut) (arg2 int-mut)) int) 42)", spec);
-  TEST_PARSE( "fun foo: (arg1:int, arg2:int)     = 42$", "fun(declfun(foo ((arg1 int-mut) (arg2 int-mut)) int) 42)", spec);
   TEST_PARSE( "fun foo: (arg1:int, arg2:int) int = 42$", "fun(declfun(foo ((arg1 int-mut) (arg2 int-mut)) int) 42)", spec);
 }
 

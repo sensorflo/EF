@@ -111,7 +111,7 @@
 %type <RawAstDataDef*> naked_data_def
 %type <AstFunDecl*> naked_fun_decl
 %type <AstFunDef*> naked_fun_def
-%type <ObjType*> type opt_colon_type
+%type <ObjType*> type opt_colon_type opt_ret_type
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -293,8 +293,8 @@ naked_fun_decl
   ;
 
 opt_ret_type
-  : %empty
-  | type
+  : %empty                                                           { assert(false); } // intended for a future auto type
+  | type                                                             { swap($$,$1); }
   ;
 
 initializer
