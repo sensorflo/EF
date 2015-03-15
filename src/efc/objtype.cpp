@@ -9,6 +9,11 @@ ObjType& ObjType::addQualifiers(Qualifiers qualifiers) {
   return *this;
 }
 
+ObjType& ObjType::removeQualifiers(Qualifiers qualifiers) {
+  m_qualifiers = static_cast<Qualifiers>(m_qualifiers & ~qualifiers);
+  return *this;
+}
+
 string ObjType::toStr() const {
   ostringstream ss;
   ss << *this;

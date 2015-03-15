@@ -69,6 +69,17 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
+    removeQualifiers)) {
+  EXPECT_EQ(
+    ObjTypeFunda(ObjTypeFunda::eInt).qualifiers(),
+    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).removeQualifiers(ObjType::eMutable).qualifiers());
+
+  EXPECT_EQ(
+    ObjTypeFunda(ObjTypeFunda::eInt).qualifiers(),
+    ObjTypeFunda(ObjTypeFunda::eInt).removeQualifiers(ObjType::eMutable).qualifiers());
+}
+
+TEST(ObjTypeTest, MAKE_TEST_NAME1(
     match)) {
 
   TEST_MATCH( "", ObjType::eFullMatch,

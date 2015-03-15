@@ -28,6 +28,7 @@ public:
   virtual ~ObjType() {};
 
   ObjType& addQualifiers(Qualifiers qualifiers);
+  ObjType& removeQualifiers(Qualifiers qualifiers);
 
   bool matchesFully(const ObjType& other) const;
   bool matchesSaufQualifiers(const ObjType& other) const;
