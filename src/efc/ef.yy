@@ -287,8 +287,7 @@ naked_fun_def
   ;
   
 naked_fun_decl
-  : ID                                                        opt_ret_type  { $$ = parserExt.mkFunDecl($1); }
-  | ID COLON                                                  opt_ret_type  { $$ = parserExt.mkFunDecl($1); }
+  : ID COLON                                                  opt_ret_type  { $$ = parserExt.mkFunDecl($1); }
   | ID COLON LPAREN                                    RPAREN opt_ret_type  { $$ = parserExt.mkFunDecl($1); }
   | ID COLON LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type  { $$ = parserExt.mkFunDecl($1, $4); }
   ;

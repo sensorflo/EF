@@ -289,9 +289,6 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "decl(fun foo:          )", "declfun(foo () int)", spec);
   TEST_PARSE( "decl(fun foo:(arg1:int))", "declfun(foo ((arg1 int-mut)) int)", spec);
 
-  spec = "example with zero arguments, no parantheses around (empty) arg list and implicit return type";
-  TEST_PARSE( "decl fun foo$", "declfun(foo () int)", spec);
-
   spec = "should allow trailing comma in argument list";
   //Toggling 1) optional return type
   TEST_PARSE( "decl fun foo:(arg1:int,) int$", "declfun(foo ((arg1 int-mut)) int)", spec);
