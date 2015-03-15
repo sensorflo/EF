@@ -128,8 +128,12 @@ ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& other) const {
 }
 
 ObjTypeFun* ObjTypeFun::clone() const {
-  return NULL; // not yet implemented, but called without evaluating the
-               // return value
+  std::list<std::shared_ptr<const ObjType> >* dstArgs =
+    new list<shared_ptr<const ObjType> >;
+  for ( const auto& srcArg : *m_args  ) {
+    dstArgs->push_back(shared_ptr<ObjType>{srcArg->clone()});
+  }
+  return new ObjTypeFun( dstArgs, m_ret->clone() );
 }
 
 basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {

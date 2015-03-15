@@ -141,5 +141,21 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     unique_ptr<ObjType> clone{src.clone()};
     EXPECT_MATCHES_FULLY( src, *clone );
   }
+
+  {
+    ObjTypeFun src{ ObjTypeFun::createArgs(), new ObjTypeFunda(ObjTypeFunda::eInt) };
+    unique_ptr<ObjType> clone{src.clone()};
+    EXPECT_MATCHES_FULLY( src, *clone );
+  }
+
+  {
+    ObjTypeFun src{
+      ObjTypeFun::createArgs(
+        new ObjTypeFunda(ObjTypeFunda::eInt),
+        new ObjTypeFunda(ObjTypeFunda::eBool)),
+      new ObjTypeFunda(ObjTypeFunda::eInt) };
+    unique_ptr<ObjType> clone{src.clone()};
+    EXPECT_MATCHES_FULLY( src, *clone );
+  }
 }
 
