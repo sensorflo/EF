@@ -41,9 +41,10 @@ public:
   AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,
     RawAstDataDef*& rawAstDataDef);
 
-  AstFunDecl* mkFunDecl(const std::string name, std::list<AstArgDecl*>* args = NULL);
-  AstFunDecl* mkFunDecl(const std::string name, AstArgDecl* arg1,
-    AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
+  AstFunDecl* mkFunDecl(const std::string name, const ObjType* ret,
+    std::list<AstArgDecl*>* args = NULL);
+  AstFunDecl* mkFunDecl(const std::string name, const ObjType* ret,
+    AstArgDecl* arg1, AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   AstFunDef* mkFunDef(AstFunDecl* decl, AstValue* body);
   ErrorHandler& errorHandler() { return m_errorHandler; }
 

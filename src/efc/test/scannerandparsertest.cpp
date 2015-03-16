@@ -310,6 +310,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   string spec = "example with zero arguments and trivial body";
   TEST_PARSE( "fun foo: () int = 42$"        , "fun(declfun(foo () int) 42)", spec);
+  TEST_PARSE( "fun foo: () bool= true$"      , "fun(declfun(foo () bool) 1bool)", spec);
   TEST_PARSE( "fun(foo: () int = 42)"        , "fun(declfun(foo () int) 42)", spec);
   TEST_PARSE( "fun foo: () int = 42 end foo$", "fun(declfun(foo () int) 42)", spec);
 

@@ -266,7 +266,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   string spec = "Sequence containing a function declaration";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      pe.mkFunDecl("foo"),
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstNumber(42)),
     42, spec);
 }
@@ -284,7 +284,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
-      pe.mkFunDecl("foo"));
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
@@ -310,6 +310,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     unique_ptr<AstValue> ast(
       pe.mkFunDecl(
         "foo",
+        new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))));
     UUT.m_semanticAnalizer.analyze(*ast.get());
@@ -341,7 +342,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
-      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)));
+      pe.mkFunDef(
+        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstNumber(77)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
@@ -371,6 +374,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       pe.mkFunDef(
         pe.mkFunDecl(
           "foo",
+          new ObjTypeFunda(ObjTypeFunda::eInt),
           new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstNumber(77)));
@@ -403,7 +407,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
-      pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(77)));
+      pe.mkFunDef(
+        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstNumber(77)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
@@ -425,6 +431,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       pe.mkFunDef(
         pe.mkFunDecl(
           "foo",
+          new ObjTypeFunda(ObjTypeFunda::eInt),
           new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstNumber(42)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
@@ -451,6 +458,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     pe.mkFunDef(
       pe.mkFunDecl(
         "foo",
+        new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstSymbol("x")));
   UUT.m_semanticAnalizer.analyze(*ast);
@@ -480,6 +488,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     pe.mkFunDef(
       pe.mkFunDecl(
         "foo",
+        new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstOperator('*',
@@ -512,6 +521,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     pe.mkFunDef(
       pe.mkFunDecl(
         "foo",
+        new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstOperator(';',
         new AstOperator('=',
@@ -539,8 +549,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   EXPECT_NO_THROW(
     UUT.genIr(
       *new AstOperator(';',
-        pe.mkFunDecl("foo"),
-        pe.mkFunDef(pe.mkFunDecl("foo"), new AstNumber(42)))));
+        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        pe.mkFunDef(
+          pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstNumber(42)))));
   EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
 }
 
@@ -551,9 +563,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      pe.mkFunDef(pe.mkFunDecl("foo"),
+      pe.mkFunDef(pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstOperator(';',
-          pe.mkFunDef(pe.mkFunDecl("bar"), new AstNumber(42)),
+          pe.mkFunDef(
+            pe.mkFunDecl("bar", new ObjTypeFunda(ObjTypeFunda::eInt)),
+            new AstNumber(42)),
           new AstFunCall(new AstSymbol("bar")))),
       new AstFunCall(new AstSymbol("foo"))),
     42, "");
@@ -568,7 +582,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
       pe.mkFunDef(
-        pe.mkFunDecl("foo"),
+        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"))),
     42, spec);
@@ -577,7 +591,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
       pe.mkFunDef(
-        pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        pe.mkFunDecl(
+          "foo",
+          new ObjTypeFunda(ObjTypeFunda::eInt),
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
     42, spec);
@@ -588,6 +605,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       pe.mkFunDef(
         pe.mkFunDecl(
           "add",
+          new ObjTypeFunda(ObjTypeFunda::eInt),
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstOperator('+',
@@ -711,7 +729,10 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     pe.mkOperatorTree(";",
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       pe.mkFunDef(
-        pe.mkFunDecl("foo", new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        pe.mkFunDecl(
+          "foo",
+          new ObjTypeFunda(ObjTypeFunda::eInt),
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new AstOperator('=',
           new AstSymbol("x"),
           new AstNumber(77))),
@@ -723,7 +744,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     pe.mkOperatorTree(";",
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
       pe.mkFunDef(
-        pe.mkFunDecl("foo"),
+        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstDataDef(
           new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstNumber(77))),

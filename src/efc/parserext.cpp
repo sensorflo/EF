@@ -83,7 +83,8 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
   return astDataDef;
 }
 
-AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
+AstFunDecl* ParserExt::mkFunDecl(const string name, const ObjType* ret,
+  list<AstArgDecl*>* args) {
 
   // create ObjTypeFun object
   args = args ? args : new list<AstArgDecl*>();
@@ -92,7 +93,7 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   for (/*nop*/; iterArgs!=args->end(); ++iterArgs) {
     argsObjType->push_back( (*iterArgs)->objTypeShareOwnership() );
   }
-  auto objTypeRet = make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt);
+  auto objTypeRet = shared_ptr<const ObjType>(ret);
   auto objTypeFun = make_shared<const ObjTypeFun>( argsObjType, objTypeRet);
 
   // ensure function is in environment. Note that currently there is a flat
@@ -114,9 +115,9 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, list<AstArgDecl*>* args) {
   return new AstFunDecl(name, args, objTypeRet, stIterStEntry);
 }
 
-AstFunDecl* ParserExt::mkFunDecl(const string name, AstArgDecl* arg1,
-  AstArgDecl* arg2, AstArgDecl* arg3) {
-  return mkFunDecl(name, AstFunDecl::createArgs(arg1, arg2, arg3));
+AstFunDecl* ParserExt::mkFunDecl(const string name, const ObjType* ret,
+  AstArgDecl* arg1, AstArgDecl* arg2, AstArgDecl* arg3) {
+  return mkFunDecl(name, ret, AstFunDecl::createArgs(arg1, arg2, arg3));
 }
 
 AstFunDef* ParserExt::mkFunDef(AstFunDecl* decl, AstValue* body) {
