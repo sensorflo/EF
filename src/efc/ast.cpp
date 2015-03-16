@@ -17,25 +17,25 @@ string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
-AstCast::AstCast(AstValue* child, ObjType* objType) :
-  m_child(child ? child : new AstNumber(0)),
+AstCast::AstCast(ObjType* objType, AstValue* child) :
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
+  m_child(child ? child : new AstNumber(0)),
   m_irValue(NULL) {
   assert(m_child);
   assert(m_objType);
 }
 
-AstCast::AstCast(AstValue* child, ObjTypeFunda::EType objType) :
-  m_child(child ? child : new AstNumber(0)),
+AstCast::AstCast(ObjTypeFunda::EType objType, AstValue* child) :
   m_objType(new ObjTypeFunda(objType)),
+  m_child(child ? child : new AstNumber(0)),
   m_irValue(NULL) {
-  assert(m_child);
   assert(m_objType);
+  assert(m_child);
 }
 
 AstCast::~AstCast() {
-  delete m_child;
   delete m_objType;
+  delete m_child;
 }
 
 void AstCast::setIrValue(llvm::Value* value) {

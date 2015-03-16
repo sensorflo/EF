@@ -38,8 +38,8 @@ public:
 
 class AstCast : public AstValue {
 public:
-  AstCast(AstValue* child, ObjType* objType);
-  AstCast(AstValue* child, ObjTypeFunda::EType objType);
+  AstCast(ObjType* objType, AstValue* child);
+  AstCast(ObjTypeFunda::EType objType, AstValue* child);
   ~AstCast();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
@@ -47,10 +47,10 @@ public:
   virtual const ObjType& objType() const { return *m_objType; }
 
 private:
-  /** We're the owner. Is guaranteed to be non-null */
-  AstValue* m_child;
   /** We're the owner. Is garanteed to be non-null. */
   const ObjType*const m_objType;
+  /** We're the owner. Is guaranteed to be non-null */
+  AstValue* m_child;
 
   // decorations for IrGen
 public:
