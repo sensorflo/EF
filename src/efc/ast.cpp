@@ -430,11 +430,15 @@ void AstFunCall::setIrValue(llvm::Value* value) {
 }
 
 const ObjType& AstFunCall::objType() const {
-  // KLUDGE: Currently wrongly too much depends on that nearly all expressions
-  // are of type int, so for now the default has to be int opposed to an
-  // assertion, because here the type really isn't known.
-  static ObjTypeFunda ret(ObjTypeFunda::eInt);
-  return ret;
+  if ( !m_ret ) {
+    const auto& objType = m_address->objType();
+    assert(typeid(objType)==typeid(ObjTypeFun));
+    const auto& objTypeFun = static_cast<const ObjTypeFun&>(objType);
+    auto objTypeRet = objTypeFun.ret().clone();
+    objTypeRet->removeQualifiers(ObjType::eMutable);
+    m_ret = unique_ptr<const ObjType>(objTypeRet);
+  }
+  return *m_ret;
 }
 
 /** The list's elements must be non-null */

@@ -123,6 +123,7 @@ public:
   virtual ObjTypeFun* clone() const;
 
   const std::list<std::shared_ptr<const ObjType> >& args() const { return *m_args; }
+  const ObjType& ret() const { return *m_ret; }
 
 private:
   /** We're the owner of the container object. m_args itself and the pointers

@@ -258,6 +258,7 @@ private:
   AstValue* const m_address;
   /** We're the owner. Is garanteed to be non-null */
   AstCtList* const m_args;
+  mutable std::unique_ptr<const ObjType> m_ret;
 
 // decorations for IrGen
 public:

@@ -425,6 +425,61 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
+
+// aka temporary objects are immutable
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_function_call,
+    transform,
+    sets_the_objectType_of_the_AstFunCall_node_to_the_return_type_of_the_called_function)) {
+
+  string spec = "Example: function with no args returning bool";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstFunCall* funCall = new AstFunCall(new AstSymbol("foo"));
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        pe.mkFunDef(
+          pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eBool)),
+          new AstNumber(0, ObjTypeFunda::eBool)),
+        funCall)};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), funCall->objType()) <<
+      amendAst(ast) << amendSpec(spec);
+  }
+
+  spec = "Example: function with no args returning 'mutable' int -> "
+    "obj type of expession is still immutable as all temporary objects.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstFunCall* funCall = new AstFunCall(new AstSymbol("foo"));
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        pe.mkFunDef(
+          pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
+          new AstNumber(0, ObjTypeFunda::eBool)),
+        funCall)};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), funCall->objType()) <<
+      amendAst(ast) << amendSpec(spec);
+  }
+}
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_assignment_to_an_immutable_data_object,
     transform,
