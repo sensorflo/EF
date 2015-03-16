@@ -22,8 +22,7 @@ basic_ostream<char>& AstPrinter::printTo(const AstNode& root,
 }
 
 void AstPrinter::visit(const AstCast& cast) {
-  m_os << "cast(";
-  m_os << cast.objType() << " ";
+  m_os << cast.objType() << "(";
   cast.child().accept(*this);
   m_os << ")";
 }
