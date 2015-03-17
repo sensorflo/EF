@@ -260,6 +260,44 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
+    a_cast,
+    genIrInImplicitMain,
+    succeeds)) {
+
+  string spec = "bool -> int: false is 0";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eInt),
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    0, spec);
+
+  spec = "bool -> int: true is 1";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eInt),
+      new AstNumber(1, ObjTypeFunda::eBool)),
+    1, spec);
+
+  spec = "int -> bool: 0 is false";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstIf(
+      new AstCast(
+        new ObjTypeFunda(ObjTypeFunda::eBool),
+        new AstNumber(0, ObjTypeFunda::eInt)),
+      new AstNumber(1),
+      new AstNumber(2)),
+    2, spec);
+
+  spec = "int -> bool: not 0 is true";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstIf(
+      new AstNumber(42, ObjTypeFunda::eInt),
+      new AstNumber(1),
+      new AstNumber(2)),
+    1, spec);
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME(
     a_seq_with_some_expressions_not_having_a_value_but_the_last_having_a_value,
     genIrInImplicitMain,
     returns_the_result_of_the_last_expression)) {
