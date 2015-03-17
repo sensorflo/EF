@@ -103,8 +103,7 @@
 %type <AstCtList*> ct_list initializer pure2_standalone_expr_seq
 %type <std::list<AstArgDecl*>*> pure_naked_param_ct_list
 %type <std::list<AstValue*>*> pure_ct_list
-%type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if opt_else
-%type <std::list<AstIf::ConditionActionPair>*> opt_elif_list
+%type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif opt_else 
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifiers> valvar
 %type <RawAstDataDecl*> naked_data_decl
@@ -308,12 +307,13 @@ valvar
   ;
 
 naked_if
-  : standalone_expr opt_colon block_expr opt_elif_list opt_else      { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
+  : standalone_expr opt_colon block_expr opt_else                    { $$ = new AstIf($1, $3, $4); }
+  | standalone_expr opt_colon block_expr elif                        { $$ = new AstIf($1, $3, $4); }
   ;
 
-opt_elif_list
-  : %empty                                                           { $$ = new std::list<AstIf::ConditionActionPair>(); }  
-  | opt_elif_list ELIF standalone_expr opt_colon block_expr          { ($1)->push_back(AstIf::ConditionActionPair($3, $5)); std::swap($$,$1); }
+elif
+  : ELIF standalone_expr opt_colon block_expr opt_else               { $$ = new AstIf($2, $4, $5); }  
+  | ELIF standalone_expr opt_colon block_expr elif                   { $$ = new AstIf($2, $4, $5); }
   ;  
 
 opt_else
