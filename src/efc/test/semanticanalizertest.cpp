@@ -481,6 +481,31 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_cast,
+    transform,
+    sets_the_objectType_of_the_AstCast_node_to_the_type_of_the_cast)) {
+
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstCast(
+        new ObjTypeFunda(ObjTypeFunda::eInt),
+        new AstNumber(0, ObjTypeFunda::eBool))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+      amendAst(ast);
+  }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_assignment_to_an_immutable_data_object,
     transform,
     reports_an_eWriteToImmutable)) {

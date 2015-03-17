@@ -23,6 +23,10 @@ AstCast::AstCast(ObjType* objType, AstValue* child) :
   m_irValue(NULL) {
   assert(m_child);
   assert(m_objType);
+
+  // only currently for simplicity; the cast, as most expression, creates a
+  // temporary object, and temporary objects are immutable
+  assert(!(m_objType->qualifiers() & ObjType::eMutable));
 }
 
 AstCast::AstCast(ObjTypeFunda::EType objType, AstValue* child) :

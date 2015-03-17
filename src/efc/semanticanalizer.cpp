@@ -15,7 +15,11 @@ void SemanticAnalizer::analyze(AstNode& root) {
   root.accept(*this);
 }
 
-void SemanticAnalizer::visit(AstCast& cast) { }
+void SemanticAnalizer::visit(AstCast& cast) {
+  cast.child().accept(*this);
+  // ObjType must not be set, AstCast knows its own ObjType
+  postConditionCheck(cast);
+}
 
 void SemanticAnalizer::visit(AstCtList& ctList) {
   list<AstValue*>& childs = ctList.childs();
