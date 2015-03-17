@@ -302,13 +302,13 @@ initializer
   | EQUAL LPAREN ct_list RPAREN                                      { swap($$,$3); }
   ;
 
-naked_if
-  : standalone_expr opt_colon block_expr opt_elif_list opt_else      { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
-  ;
-
 valvar
   : VAL                                                              { $$ = ObjType::eNoQualifier; }
   | VAR	                                                             { $$ = ObjType::eMutable; }
+  ;
+
+naked_if
+  : standalone_expr opt_colon block_expr opt_elif_list opt_else      { ($4)->push_front(AstIf::ConditionActionPair($1, $3)); $$ = new AstIf($4, $5); }
   ;
 
 opt_elif_list
