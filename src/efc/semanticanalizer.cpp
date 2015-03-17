@@ -183,11 +183,8 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 }
 
 void SemanticAnalizer::visit(AstIf& if_) {
-  list<AstIf::ConditionActionPair>::iterator i = if_.conditionActionPairs().begin();
-  for ( /*nop*/; i!=if_.conditionActionPairs().end(); ++i ) {
-    i->m_condition->accept(*this);
-    i->m_action->accept(*this);
-  }
+  if_.condition().accept(*this);
+  if_.action().accept(*this);
   if (if_.elseAction()) {
     if_.elseAction()->accept(*this);
   }

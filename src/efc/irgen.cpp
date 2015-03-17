@@ -370,11 +370,6 @@ void IrGen::visit(AstDataDef& dataDef) {
 }
 
 void IrGen::visit(AstIf& if_) {
-  // misc setup
-  const list<AstIf::ConditionActionPair>& capairs = if_.conditionActionPairs();
-  assert(capairs.size()==1); // curently size>=2 is not yet supported
-  const AstIf::ConditionActionPair& capair = capairs.front(); 
-
   // setup needed basic blocks
   Function* functionIr = m_builder.GetInsertBlock()->getParent();
   BasicBlock* ThenFirstBB = BasicBlock::Create(getGlobalContext(), "ifthen", functionIr);
@@ -382,8 +377,7 @@ void IrGen::visit(AstIf& if_) {
   BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "ifmerge");
 
   // IR for evaluate condition
-  assert(capair.m_condition);
-  Value* condIr = callAcceptOn(*capair.m_condition);
+  Value* condIr = callAcceptOn(if_.condition());
   assert(condIr);
   Value* condCmpIr = m_builder.CreateICmpNE(condIr,
     ConstantInt::get(getGlobalContext(), APInt(1, 0)), "ifcond");
@@ -393,8 +387,7 @@ void IrGen::visit(AstIf& if_) {
 
   // IR for then clause
   m_builder.SetInsertPoint(ThenFirstBB);
-  assert(capair.m_action);
-  Value* thenValue = callAcceptOn(*capair.m_action);
+  Value* thenValue = callAcceptOn(if_.action());
   assert(thenValue);
   m_builder.CreateBr(MergeBB);
   BasicBlock* ThenLastBB = m_builder.GetInsertBlock();
@@ -406,6 +399,8 @@ void IrGen::visit(AstIf& if_) {
   if ( if_.elseAction() ) {
     elseValue = callAcceptOn(*if_.elseAction());
   } else {
+    // KLUDGE: int32 as type of else branch is hard coded, it needs to be a
+    // dynamic type
     elseValue = ConstantInt::get( getGlobalContext(), APInt(32, 0));
   }
   assert(elseValue);

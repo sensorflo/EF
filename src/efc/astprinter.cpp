@@ -100,14 +100,10 @@ void AstPrinter::visit(const AstDataDef& dataDef) {
 
 void AstPrinter::visit(const AstIf& if_) {
   m_os << "if(";
-  list<AstIf::ConditionActionPair>::iterator i = if_.conditionActionPairs().begin();
-  for ( /*nop*/; i!=if_.conditionActionPairs().end(); ++i ) {
-    if ( i!=if_.conditionActionPairs().begin() ) { m_os << " "; }
-    i->m_condition->accept(*this);
-    m_os << " ";
-    i->m_action->accept(*this);
-  }
-  if (if_.elseAction()) {
+  if_.condition().accept(*this);
+  m_os << " ";
+  if_.action().accept(*this);
+  if ( if_.elseAction() ) {
     m_os << " ";
     if_.elseAction()->accept(*this);
   }

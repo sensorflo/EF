@@ -53,11 +53,8 @@ void AstDefaultIterator::visit(AstDataDef& dataDef) {
 }
 
 void AstDefaultIterator::visit(AstIf& if_) {
-  list<AstIf::ConditionActionPair>::iterator i = if_.conditionActionPairs().begin();
-  for ( /*nop*/; i!=if_.conditionActionPairs().end(); ++i ) {
-    i->m_condition->accept(m_visitor);
-    i->m_action->accept(m_visitor);
-  }
+  if_.condition().accept(m_visitor);
+  if_.action().accept(m_visitor);
   if (if_.elseAction()) {
     if_.elseAction()->accept(m_visitor);
   }

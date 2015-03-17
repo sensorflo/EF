@@ -329,29 +329,20 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
 /* If flow control expression */
 class AstIf : public AstValue {
 public:
-  struct ConditionActionPair {
-    ConditionActionPair(AstValue* condition, AstValue* action) :
-      m_condition(condition), m_action(action) {}
-    /** We're the owner. Is garanteed to be non-null */
-    AstValue* m_condition;
-    /** We're the owner. Is garanteed to be non-null */
-    AstValue* m_action;
-  };
-  AstIf(std::list<ConditionActionPair>* conditionActionPairs, AstValue* elseAction = NULL);
   AstIf(AstValue* cond, AstValue* action, AstValue* elseAction = NULL);
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  std::list<ConditionActionPair>& conditionActionPairs() const { return *m_conditionActionPairs; }
+  AstValue& condition() const { return *m_condition; }
+  AstValue& action() const { return *m_action; }
   AstValue* elseAction() const { return m_elseAction; }
   virtual const ObjType& objType() const;
 
 private:
-  static std::list<ConditionActionPair>* makeDefaultConditionActionPairs();
-  static std::list<ConditionActionPair>* makeConditionActionPairs(
-    AstValue* cond, AstValue* action);
-  /** We're the owner. Is garanteed to be non-null and size>=1*/
-  std::list<ConditionActionPair>* const m_conditionActionPairs;
+  /** We're the owner. Is garanteed to be non-null */
+  AstValue* const m_condition;
+  /** We're the owner. Is garanteed to be non-null */
+  AstValue* const m_action;
   /** We're the owner. Is NOT garanteed to be non-null */
   AstValue* const m_elseAction;
 

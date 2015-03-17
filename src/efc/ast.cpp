@@ -342,51 +342,25 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
   }
 }
 
-AstIf::AstIf(list<AstIf::ConditionActionPair>* conditionActionPairs, AstValue* elseAction) :
-  m_conditionActionPairs(
-    conditionActionPairs ? conditionActionPairs : makeDefaultConditionActionPairs()),
-  m_elseAction(elseAction),
-  m_irValue(NULL) {
-  assert(m_conditionActionPairs);
-  assert(!m_conditionActionPairs->empty());
-  assert(m_conditionActionPairs->front().m_condition);
-  assert(m_conditionActionPairs->front().m_action);
-}
-
 AstIf::AstIf(AstValue* cond, AstValue* action, AstValue* elseAction) :
-  m_conditionActionPairs(makeConditionActionPairs(cond,action)),
+  m_condition(cond),
+  m_action(action),
   m_elseAction(elseAction),
   m_irValue(NULL) {
-  assert(m_conditionActionPairs);
-  assert(!m_conditionActionPairs->empty());
-  assert(m_conditionActionPairs->front().m_condition);
-  assert(m_conditionActionPairs->front().m_action);
+  assert(m_condition);
+  assert(m_action);
 }
 
 AstIf::~AstIf() {
-  delete m_conditionActionPairs->front().m_condition;
-  delete m_conditionActionPairs->front().m_action;
-  delete m_conditionActionPairs;
-  if (m_elseAction) { delete m_elseAction; }
+  delete m_condition;
+  delete m_action;
+  delete m_elseAction;
 }
 
 void AstIf::setIrValue(llvm::Value* value) {
   assert(value);
   assert(!m_irValue); // it doesnt make sense to set it twice
   m_irValue = value;
-}
-
-list<AstIf::ConditionActionPair>* AstIf::makeDefaultConditionActionPairs() {
-  list<ConditionActionPair>* tmp = new list<AstIf::ConditionActionPair>();
-  tmp->push_back(ConditionActionPair(new AstNumber(0),new AstNumber(0)));
-  return tmp;
-}
-
-list<AstIf::ConditionActionPair>* AstIf::makeConditionActionPairs(
-  AstValue* cond, AstValue* action) {
-  list<ConditionActionPair>* tmp = new list<AstIf::ConditionActionPair>();
-  tmp->push_back(ConditionActionPair(cond, action));
-  return tmp;
 }
 
 const ObjType& AstIf::objType() const {
