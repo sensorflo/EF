@@ -826,13 +826,3 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     3, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
-    an_if_expression_without_else_WITH_a_condition_evaluating_to_false,
-    genIrInImplicitMain,
-    returns_default_value_of_expressions_type)) {
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstIf(
-      new AstNumber(0, ObjTypeFunda::eBool), // condition
-      new AstNumber(2)), // then clause
-    0, ""); // default for int
-}
