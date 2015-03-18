@@ -3,7 +3,7 @@
 #include "astdefaultiterator.h"
 #include "env.h"
 #include "errorhandler.h"
-#include <stdexcept>
+#include "memoryext.h"
 using namespace std;
 
 SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
@@ -65,13 +65,18 @@ void SemanticAnalizer::visit(AstOperator& op) {
   }
 
   // Set the obj type of this AstOperator node. It is a temporary object which
-  // is always immutable. For the sequence operator this is the type of the
-  // rhs. For the other operators, now that we know the two operands have the
-  // same obj type, either operand's obj type can be taken.
-  auto objType = unique_ptr<ObjType>(argschilds.back()->objType().clone());
-  objType->removeQualifiers(ObjType::eMutable);
-  op.setObjType(move(objType));
-
+  // is always immutable.
+  if ( op.class_() == AstOperator::eComparison ) {
+    op.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eBool));
+  }
+  // For the sequence operator this is the type of the rhs. For the other
+  // operators, now that we know the two operands have the same obj type,
+  // either operand's obj type can be taken.
+  else {
+    auto objType = unique_ptr<ObjType>(argschilds.back()->objType().clone());
+    objType->removeQualifiers(ObjType::eMutable);
+    op.setObjType(move(objType));
+  }
   postConditionCheck(op);
 }
 

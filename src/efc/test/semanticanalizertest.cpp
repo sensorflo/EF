@@ -357,7 +357,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 
 // aka temporary objects are immutable
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    an_operator,
+    an_arithmetic_or_logical_operator,
     transform,
     sets_the_objectType_of_the_AstOperator_node_to_the_type_of_the_two_operands_however_with_an_immutable_qualifier)) {
 
@@ -452,6 +452,28 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
+// aka temporary objects are immutable
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_comparision_operator,
+    transform,
+    sets_the_objectType_of_the_AstOperator_node_to_immutable_bool)) {
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  unique_ptr<AstValue> ast{
+    new AstOperator("==",
+      new AstNumber(42),
+      new AstNumber(77))};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+    amendAst(ast);
+}
 
 // aka temporary objects are immutable
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
