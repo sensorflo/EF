@@ -80,6 +80,8 @@ void SemanticAnalizer::visit(AstNumber& number) {
   // Intended to catch errors when AST is build by hand instead
   // by parser, e.g. in tests.
   assert( number.objType().isValueInRange( number.value()));
+
+  postConditionCheck(number);
 }
 
 void SemanticAnalizer::visit(AstSymbol& symbol) {
@@ -93,6 +95,8 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
     !(symbol.objType().qualifiers() & ObjType::eMutable)) {
     Error::throwError(m_errorHandler, Error::eWriteToImmutable);
   }
+
+  postConditionCheck(symbol);
 }
 
 void SemanticAnalizer::visit(AstFunCall& funCall) {
@@ -113,6 +117,10 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
       Error::throwError(m_errorHandler, Error::eInvalidArguments);
     }
   }
+
+  // ObjType must not be set, AstFunCall knows its own ObjType
+
+  postConditionCheck(funCall);
 }
 
 void SemanticAnalizer::visit(AstFunDef& funDef) {
@@ -132,11 +140,14 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   funDef.body().accept(*this);
 
   m_env.popScope();
+
+  postConditionCheck(funDef);
 }
 
 void SemanticAnalizer::visit(AstFunDecl& funDecl) {
   // Note that visit(AstFundDef) does all of the work for the case AstFunDecl
   // is a child of AstFundDef.
+  postConditionCheck(funDecl);
 }
 
 void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
@@ -163,6 +174,8 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
 
     dataDecl.setStentry(envs_stentry_ptr);
   }
+
+  postConditionCheck(dataDecl);
 }
 
 void SemanticAnalizer::visit(AstArgDecl& argDecl) {
@@ -180,6 +193,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
   if ( dataDef.decl().objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
+  postConditionCheck(dataDef);
 }
 
 void SemanticAnalizer::visit(AstIf& if_) {
@@ -188,6 +202,34 @@ void SemanticAnalizer::visit(AstIf& if_) {
   if (if_.elseAction()) {
     if_.elseAction()->accept(*this);
   }
+
+  if ( !if_.condition().objType().matchesSaufQualifiers(
+      ObjTypeFunda(ObjTypeFunda::eBool)) ) {
+    Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+  }
+
+  // In case of two clauses, check that both clauses are of the same obj type,
+  // sauf qualifiers. Currently there are no implicit conversions
+  if ( if_.elseAction() ) {
+    auto& lhs = if_.action().objType();
+    auto& rhs = if_.elseAction()->objType();
+    if ( !lhs.matchesSaufQualifiers(rhs) ) {
+      Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+    }
+  }
+
+  // Set the obj type of this AstIf node. It is a temporary object which is
+  // always immutable. Now that we know the two clauses have the same obj
+  // type, either clause's obj type can be taken.
+  if ( if_.elseAction() ) {
+    auto objType = unique_ptr<ObjType>(if_.action().objType().clone());
+    objType->removeQualifiers(ObjType::eMutable);
+    if_.setObjType(move(objType));
+  } else {
+    // KLUDGE. It should be void, but that type does not yet exist.
+  }
+
+  postConditionCheck(if_);
 }
 
 void SemanticAnalizer::postConditionCheck(const AstValue& node) {

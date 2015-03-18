@@ -410,7 +410,7 @@ void IrGen::visit(AstIf& if_) {
   // IR for merge of then/else clauses
   functionIr->getBasicBlockList().push_back(MergeBB);
   m_builder.SetInsertPoint(MergeBB);
-  PHINode* phi = m_builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2,
+  PHINode* phi = m_builder.CreatePHI( if_.objType().llvmType(), 2,
     "ifphi");
   assert(phi);
   phi->addIncoming(thenValue, ThenLastBB);

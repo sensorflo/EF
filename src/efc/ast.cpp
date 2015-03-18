@@ -364,11 +364,13 @@ void AstIf::setIrValue(llvm::Value* value) {
 }
 
 const ObjType& AstIf::objType() const {
-  // KLUDGE: Currently wrongly too much depends on that nearly all expressions
-  // are of type int, so for now the default has to be int opposed to an
-  // assertion, because here the type really isn't known.
-  static ObjTypeFunda ret(ObjTypeFunda::eInt);
-  return ret;
+  assert(m_objType);
+  return *m_objType.get();
+}
+
+void AstIf::setObjType(unique_ptr<ObjType> objType) {
+  assert(!m_objType); // it doesn't make sense to set it twice
+  m_objType = move(objType);
 }
 
 void AstSymbol::setIrValue(llvm::Value* value) {

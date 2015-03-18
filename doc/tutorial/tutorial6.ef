@@ -11,8 +11,8 @@
 // expression having a value. If cond_expr is true, then the overall value
 // equals to then_expr, and if cond_expr is false then the overall value equals
 // to else_expr.
-x:=1  y:=2  z:=3
-foo1 := if x: y else z$
+x:=1  y:=2
+foo1 := if x==y: x else y$
 
 // Also definitions and declarations like 'val foo: int = 3$' and 'decl fun
 // foo: () -> int$' are expressions. Their value is that of the identifier
@@ -51,10 +51,10 @@ foo1 := if x: y else z$
 // args_close_del = ['end ...] ( \) | \$ );
 // ----------------------------------------------------------------------
 // 
-// The following lines are equivalent
-if   x: y else z $      
-if ( x: y else z )      
-if   x: y else z end if$
+// The following ifs are equivalent
+if   x==y: x else y $      
+if ( x==y: x else y )      
+if   x==y: x else y end if$
 
 // Also operators can be written in the call syntax.
 // operator syntax       call syntax

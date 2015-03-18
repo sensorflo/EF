@@ -337,6 +337,7 @@ public:
   AstValue& action() const { return *m_action; }
   AstValue* elseAction() const { return m_elseAction; }
   virtual const ObjType& objType() const;
+  void setObjType(std::unique_ptr<ObjType> objType);
 
 private:
   /** We're the owner. Is garanteed to be non-null */
@@ -345,6 +346,7 @@ private:
   AstValue* const m_action;
   /** We're the owner. Is NOT garanteed to be non-null */
   AstValue* const m_elseAction;
+  std::unique_ptr<ObjType> m_objType;
 
 // decorations for IrGen
 public:

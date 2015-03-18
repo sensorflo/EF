@@ -9,6 +9,9 @@ class ObjTypeFunda;
 class ObjTypeFun;
 class AstValue;
 class AstOperator;
+namespace llvm {
+  class Type;
+}
 
 /** Abstract base class for all object types */
 class ObjType {
@@ -44,6 +47,7 @@ public:
   Qualifiers qualifiers() const { return m_qualifiers; }
 
   virtual AstValue* createDefaultAstValue() const = 0;
+  virtual llvm::Type* llvmType() const = 0;
 
   /** Returns true if this type has the given operator as member function.
   Assumes that the operands are of the same type. The argument may not be
@@ -95,6 +99,7 @@ public:
 
   EType type() const { return m_type; }
   virtual AstValue* createDefaultAstValue() const;
+  virtual llvm::Type* llvmType() const;
 
   virtual bool hasMember(int op) const;
 
@@ -118,6 +123,7 @@ public:
   virtual MatchType match2(const ObjTypeFun& other) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
   virtual AstValue* createDefaultAstValue() const;
+  virtual llvm::Type* llvmType() const;
   virtual bool hasMember(int) const { return false; }
 
   virtual ObjTypeFun* clone() const;

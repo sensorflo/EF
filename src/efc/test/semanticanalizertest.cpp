@@ -95,6 +95,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(77, ObjTypeFunda::eInt)),
     Error::eNoImplicitConversion, spec);
+
+  spec = "Example: If else clause";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstIf(new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(77, ObjTypeFunda::eInt)),
+    Error::eNoImplicitConversion, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -115,6 +122,26 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
       new AstNumber(42, ObjTypeFunda::eInt),
       new AstNumber(1, ObjTypeFunda::eBool)),
     Error::eNoImplicitConversion, spec);
+
+  spec = "Example: If else clause";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstIf(new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(77, ObjTypeFunda::eInt),
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    Error::eNoImplicitConversion, spec);
+}
+
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+    an_if_expression_WITH_a_condition_whose_type_is_not_bool,
+    transform,
+    reports_eNoImplicitConversion,
+    BECAUSE_currently_there_are_no_implicit_widening_conversions)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstIf(new AstNumber(0, ObjTypeFunda::eInt),
+      new AstNumber(42),
+      new AstNumber(77)),
+    Error::eNoImplicitConversion, "");
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -501,6 +528,60 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
     // verify
     EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+      amendAst(ast);
+  }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_if_astnode,
+    transform,
+    sets_the_objectType_of_the_AstIf_node_to_the_type_of_its_two_clauses_however_without_mutable_qualifier)) {
+
+  // this specification only looks at operands with identical types. Other
+  // specifications specify how to introduce implicit conversions when the
+  // type of the operands don't match
+
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstNumber(1, ObjTypeFunda::eBool),
+        new AstNumber(0, ObjTypeFunda::eBool))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+      amendAst(ast);
+  }
+
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstValue* if_ = new AstIf(
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstSymbol("x"),
+      new AstSymbol("x"));
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        new AstDataDecl("x",
+          new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
+        if_)};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
       amendAst(ast);
   }
 }

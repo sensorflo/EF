@@ -2,7 +2,9 @@
 #include "ast.h"
 #include <cassert>
 #include <sstream>
+#include "llvm/IR/LLVMContext.h"
 using namespace std;
+using namespace llvm;
 
 ObjType& ObjType::addQualifiers(Qualifiers qualifiers) {
   m_qualifiers = static_cast<Qualifiers>(m_qualifiers | qualifiers);
@@ -66,6 +68,15 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
 
 AstValue* ObjTypeFunda::createDefaultAstValue() const {
   return new AstNumber(0, new ObjTypeFunda(m_type));
+}
+
+llvm::Type* ObjTypeFunda::llvmType() const {
+  switch (m_type) {
+  case eInt: return Type::getInt32Ty(getGlobalContext());
+  case eBool: return Type::getInt1Ty(getGlobalContext());
+  };
+  assert(false);
+  return NULL;
 }
 
 bool ObjTypeFunda::hasMember(int op) const {
@@ -159,5 +170,9 @@ AstValue* ObjTypeFun::createDefaultAstValue() const {
   // a 'ObjTypeData' abstract class into the ObjType hierarchy, but currently
   // I think that is overkill.
   assert(false);
+}
+
+llvm::Type* ObjTypeFun::llvmType() const {
+  assert(false); // not implemented yet
 }
 
