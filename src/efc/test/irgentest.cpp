@@ -291,7 +291,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   spec = "int -> bool: not 0 is true";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstIf(
-      new AstNumber(42, ObjTypeFunda::eInt),
+      new AstCast(
+        new ObjTypeFunda(ObjTypeFunda::eBool),
+        new AstNumber(42, ObjTypeFunda::eInt)),
       new AstNumber(1),
       new AstNumber(2)),
     1, spec);
