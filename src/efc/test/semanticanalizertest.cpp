@@ -783,3 +783,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstSymbol("foo"))),
     Error::eNoSuchMember, spec);
 }
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_cast_aka_constructor_WITH_an_argument_whose_obj_type_is_not_any_of_,
+    transform,
+    reports_eNoSuchMember)) {
+
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstCast(new ObjTypeFunda(ObjTypeFunda::eVoid), new AstNumber(42)),
+    Error::eNoSuchMember, "");
+}

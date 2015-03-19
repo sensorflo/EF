@@ -66,6 +66,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFun
 
 
   /* type keywords */
+void                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eVoid, loc);
 int                 return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eInt, loc);
 bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool, loc);
 

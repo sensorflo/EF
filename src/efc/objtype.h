@@ -53,6 +53,7 @@ public:
   Assumes that the operands are of the same type. The argument may not be
   eSeq, since that operator is never a member. */
   virtual bool hasMember(int op) const = 0;
+  virtual bool hasConstructor(const ObjType& other) const = 0;
 
   static bool matchesFully_(const ObjType& rhs, const ObjType& lhs);
   static bool matchesSaufQualifiers_(const ObjType& rhs, const ObjType& lhs);
@@ -80,13 +81,13 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
 class ObjTypeFunda : public ObjType {
 public:
   enum EType {
+    eVoid,
     eInt,
-    eBool
+    eBool,
     // later: double etc
   };
 
-  ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier) :
-    ObjType(qualifiers), m_type(type) {};
+  ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier);
   ObjTypeFunda(const ObjTypeFunda& rhs) :
     ObjType(rhs), m_type{rhs.m_type} {};
 
@@ -102,6 +103,7 @@ public:
   virtual llvm::Type* llvmType() const;
 
   virtual bool hasMember(int op) const;
+  virtual bool hasConstructor(const ObjType& other) const;
 
   bool isValueInRange(int val) const;
 
@@ -125,6 +127,7 @@ public:
   virtual AstValue* createDefaultAstValue() const;
   virtual llvm::Type* llvmType() const;
   virtual bool hasMember(int) const { return false; }
+  virtual bool hasConstructor(const ObjType& other) const { return false; }
 
   virtual ObjTypeFun* clone() const;
 

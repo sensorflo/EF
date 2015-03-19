@@ -49,6 +49,13 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::MatchType mt) 
   }
 }
 
+ObjTypeFunda::ObjTypeFunda(EType type, Qualifiers qualifiers)  :
+  ObjType(qualifiers), m_type(type) {
+  if ( type==eVoid ) {
+    assert( qualifiers == eNoQualifier );
+  }
+}
+
 ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& other) const {
   if (m_type!=other.m_type) { return eNoMatch; }
   if (m_qualifiers!=other.m_qualifiers) { return eOnlyQualifierMismatches; }
@@ -57,6 +64,7 @@ ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& other) const {
 
 basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   switch (m_type) {
+  case eVoid: os << "void"; break;
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
   };
@@ -72,6 +80,7 @@ AstValue* ObjTypeFunda::createDefaultAstValue() const {
 
 llvm::Type* ObjTypeFunda::llvmType() const {
   switch (m_type) {
+  case eVoid: assert(false); return NULL;
   case eInt: return Type::getInt32Ty(getGlobalContext());
   case eBool: return Type::getInt1Ty(getGlobalContext());
   };
@@ -91,8 +100,25 @@ bool ObjTypeFunda::hasMember(int op) const {
   return false;
 }
 
+bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
+  // double dispatch is not yet required; currently it's more practical to
+  // just use RTTI
+  if (typeid(ObjTypeFunda) != typeid(other)) {
+    return false;
+  }
+  const ObjTypeFunda& otherFunda = static_cast<const ObjTypeFunda&>(other);
+  switch (m_type) {
+  case eVoid: return false;
+  case eBool: // fall through
+  case eInt: return otherFunda.m_type != eVoid;
+  default: assert(false);
+  }
+  return false;
+}
+
 bool ObjTypeFunda::isValueInRange(int val) const {
   switch (m_type) {
+  case eVoid: return false;
   case eInt: return true;
   case eBool: return val==0 || val==1;
   };

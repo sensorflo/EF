@@ -18,6 +18,12 @@ void SemanticAnalizer::analyze(AstNode& root) {
 void SemanticAnalizer::visit(AstCast& cast) {
   cast.child().accept(*this);
   // ObjType must not be set, AstCast knows its own ObjType
+
+  //test if conversion is eligible, i.e. if such a constructor exists
+  if ( !cast.objType().hasConstructor(cast.objType()) ) {
+    Error::throwError(m_errorHandler, Error::eNoSuchMember);
+  }
+
   postConditionCheck(cast);
 }
 

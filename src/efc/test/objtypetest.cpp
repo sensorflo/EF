@@ -29,6 +29,7 @@ void testMatch(const string& spec, ObjType::MatchType expectedMatchType,
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   // fundamental types
+  EXPECT_EQ("void", ObjTypeFunda(ObjTypeFunda::eVoid).toStr());
   EXPECT_EQ("int", ObjTypeFunda(ObjTypeFunda::eInt).toStr());
   EXPECT_EQ("int-mut", ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).toStr());
   EXPECT_EQ("bool", ObjTypeFunda(ObjTypeFunda::eBool).toStr());
@@ -129,6 +130,50 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
+}
+
+TEST(ObjTypeTest, MAKE_TEST_NAME1(
+    hasConstructor)) {
+
+  // between fundamental types
+  // =========================
+  struct T {
+    ObjTypeFunda::EType UUT;
+    ObjTypeFunda::EType arg;
+    bool hasConstructor;
+  };
+  vector<T> inputSpecs{
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eBool, false},
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eInt, false},
+
+    {ObjTypeFunda::eBool, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eBool, ObjTypeFunda::eBool, true},
+    {ObjTypeFunda::eBool, ObjTypeFunda::eInt, true},
+
+    {ObjTypeFunda::eInt, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eInt, ObjTypeFunda::eBool, true},
+    {ObjTypeFunda::eInt, ObjTypeFunda::eInt, true}};
+
+  for ( const auto& inputSpec : inputSpecs ) {
+    ObjTypeFunda UUT{ inputSpec.UUT };
+    ObjTypeFunda arg{ inputSpec.arg };
+    EXPECT_EQ( inputSpec.hasConstructor, UUT.hasConstructor(arg))
+      << "UUT: " << UUT << "\n"
+      << "arg: " << arg << "\n";
+  }
+
+  // one type is not fundamental type
+  // ================================
+  {
+    ObjTypeFunda fundamentaltype{ObjTypeFunda::eInt};
+    ObjTypeFun functiontype{
+      ObjTypeFun::createArgs(),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
+    EXPECT_FALSE( fundamentaltype.hasConstructor(functiontype) );
+    EXPECT_FALSE( functiontype.hasConstructor(fundamentaltype) );
+    EXPECT_FALSE( functiontype.hasConstructor(functiontype) );
+  }
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
