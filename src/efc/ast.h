@@ -28,12 +28,22 @@ public:
   // decorations for IrGen
 public:
   virtual llvm::Value* irValue() = 0;
-  virtual void setIrValue(llvm::Value*) = 0;
 };
 
 class AstValue : public AstNode {
 public:
   virtual const ObjType& objType() const =0;
+};
+
+class AstNop : public AstValue {
+public:
+  virtual void accept(AstVisitor& visitor);
+  virtual void accept(AstConstVisitor& visitor) const;
+  virtual const ObjType& objType() const;
+
+  // decorations for IrGen
+public:
+  virtual llvm::Value* irValue() { return NULL; }
 };
 
 class AstCast : public AstValue {

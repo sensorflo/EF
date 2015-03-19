@@ -116,6 +116,9 @@ llvm::Value* IrGen::callAcceptOn(AstNode& node) {
   return node.irValue();
 }
 
+void IrGen::visit(AstNop& nop) {
+}
+
 void IrGen::visit(AstCast& cast) {
   cast.child().accept(*this);
   cast.setIrValue( m_builder.CreateZExt(

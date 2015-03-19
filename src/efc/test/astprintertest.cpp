@@ -11,7 +11,10 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
     toStr,
     returns_the_canonical_string_representation_of_the_AST)) {
 
-  string spec = "AstNumber";
+  string spec = "AstNop";
+  EXPECT_TOSTR_EQ( "nop", AstNop(), spec);
+
+  spec = "AstNumber";
   EXPECT_TOSTR_EQ( "42", AstNumber(42), spec);
   EXPECT_TOSTR_EQ( "0bool", AstNumber(0, ObjTypeFunda::eBool), spec);
   EXPECT_TOSTR_EQ( "1bool", AstNumber(1, ObjTypeFunda::eBool), spec);

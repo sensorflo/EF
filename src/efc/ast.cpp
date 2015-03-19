@@ -17,6 +17,11 @@ string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
+const ObjType& AstNop::objType() const {
+  static const ObjTypeFunda voidObjType{ObjTypeFunda::eVoid};
+  return voidObjType;
+}
+
 AstCast::AstCast(ObjType* objType, AstValue* child) :
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
   m_child(child ? child : new AstNumber(0)),
@@ -482,6 +487,7 @@ const ObjType& AstCtList::objType() const {
 }
 
 
+void AstNop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCast::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstFunDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstFunDecl::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
@@ -495,6 +501,7 @@ void AstOperator::accept(AstConstVisitor& visitor) const { visitor.visit(*this);
 void AstIf::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCtList::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 
+void AstNop::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCast::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstFunDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstFunDecl::accept(AstVisitor& visitor) { visitor.visit(*this); }

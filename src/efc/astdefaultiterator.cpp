@@ -2,6 +2,9 @@
 #include "ast.h"
 using namespace std;
 
+void AstDefaultIterator::visit(AstNop&) {
+}
+
 void AstDefaultIterator::visit(AstCast& cast) {
   cast.child().accept(m_visitor);
 }

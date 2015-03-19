@@ -1,6 +1,7 @@
 #ifndef ASTFORWARDS_H
 #define ASTFORWARDS_H
 
+class AstNop;
 class AstNode;
 class AstValue;
 class AstNumber;
