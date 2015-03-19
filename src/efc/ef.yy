@@ -58,6 +58,7 @@
   VAR "var"
   RAW_NEW "raw_new"
   RAW_DELETE "raw_delete"
+  NOP "nop"
   EQUAL "="
   COLON_EQUAL ":="
   COMMA ","
@@ -237,6 +238,7 @@ primary_expr
   | NUMBER                                          { $$ = new AstNumber($1.m_value, $1.m_objType); }
   | G_LPAREN standalone_expr_seq RPAREN             { $$ = $2; }
   | ID                                              { $$ = new AstSymbol($1); }
+  | NOP                                             { $$ = new AstNop(); }
   ;
   
 list_expr

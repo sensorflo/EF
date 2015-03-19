@@ -62,6 +62,13 @@ void testParse(const string& efProgram, const string& expectedAst,
   }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    a_nop,
+    scannAndParse,
+    succeeds_AND_returns_correct_AST) ) {
+  TEST_PARSE( "nop", "nop", "trivial example");
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_literal,
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
