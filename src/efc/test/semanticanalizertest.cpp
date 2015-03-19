@@ -555,7 +555,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    an_if_astnode,
+    an_if_astnode_with_else_clause,
     transform,
     sets_the_objectType_of_the_AstIf_node_to_the_type_of_its_two_clauses_however_without_mutable_qualifier)) {
 
@@ -629,6 +629,29 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
       amendAst(ast);
   }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_if_astnode_with_no_else_clause,
+    transform,
+    sets_the_objectType_of_the_AstIf_node_to_void)) {
+
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  unique_ptr<AstValue> ast{
+    new AstIf(
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(1, ObjTypeFunda::eInt))};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->objType()) <<
+    amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(

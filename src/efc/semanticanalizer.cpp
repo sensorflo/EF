@@ -240,7 +240,7 @@ void SemanticAnalizer::visit(AstIf& if_) {
     objType->removeQualifiers(ObjType::eMutable);
     if_.setObjType(move(objType));
   } else {
-    // KLUDGE. It should be void, but that type does not yet exist.
+    if_.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eVoid));
   }
 
   postConditionCheck(if_);
