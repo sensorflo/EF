@@ -563,6 +563,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   // specifications specify how to introduce implicit conversions when the
   // type of the operands don't match
 
+  string spec = "Example: both clauses of type bool -> whole if is of type bool";
   {
     // setup
     Env env;
@@ -583,6 +584,28 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       amendAst(ast);
   }
 
+  spec = "Example: both clauses of type void -> whole if is of type void";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstNop(),
+        new AstNop())};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->objType()) <<
+      amendAst(ast);
+  }
+
+  spec = "Example: both clauses are of type mutable-int -> whole if is of type (immutable-) int";
   {
     // setup
     Env env;
