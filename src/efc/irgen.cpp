@@ -58,12 +58,7 @@ void IrGen::genIrInImplicitMain(AstValue& root) {
   m_builder.SetInsertPoint( BasicBlock::Create( getGlobalContext(), "entry",
       m_mainFunction));
 
-  // Currently the return type is always int, so ensure the return type of the
-  // IR code is also Int32
-  Value* resultIr = callAcceptOn(root);
-  assert(resultIr);
-  Value* extResultIr = m_builder.CreateZExt( resultIr, Type::getInt32Ty(getGlobalContext()));
-  m_builder.CreateRet(extResultIr);
+  m_builder.CreateRet( callAcceptOn(root));
 
   verifyFunction(*m_mainFunction);
 }
