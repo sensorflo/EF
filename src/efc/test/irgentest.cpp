@@ -6,6 +6,9 @@
 #include "../env.h"
 #include "../errorhandler.h"
 #include "llvm/IR/Module.h"
+#include "llvm/IR/Module.h"
+#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include <memory>
 using namespace testing;
 using namespace std;
@@ -22,6 +25,7 @@ public:
   using IrGen::jitExecFunction1Arg;
   using IrGen::jitExecFunction2Arg;
   using IrGen::m_module;
+  using IrGen::m_executionEngine;
   Env m_env;
   ErrorHandler* m_errorHandler;
   SemanticAnalizer m_semanticAnalizer;
@@ -389,7 +393,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     genIr,
     adds_the_definition_to_the_module_with_the_correct_signature)) {
 
-  string spec = "Example: zero arguments";
+  string spec = "Example: zero args, ret type int";
   {
     // setup
     // IrGen is currently dumb and expects an expression having a value at
@@ -415,23 +419,20 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       << amendAst(ast) << amendSpec(spec);
   }
 
-  spec = "Example: two arguments";
+  spec = "Example: 1 int arg, 1 bool arg, ret type void";
   {
     // setup
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-    list<string>* args = new list<string>();
-    args->push_back("arg1");
-    args->push_back("arg2");
     unique_ptr<AstValue> ast(
       pe.mkFunDef(
         pe.mkFunDecl(
           "foo",
-          new ObjTypeFunda(ObjTypeFunda::eInt),
+          new ObjTypeFunda(ObjTypeFunda::eVoid),
           new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
+          new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eBool))),
         new AstNumber(77)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
@@ -442,9 +443,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     Function* functionIr = UUT.m_module->getFunction("foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
+    EXPECT_EQ(Type::getVoidTy(getGlobalContext()), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(functionIr->arg_size(), args->size())
+    EXPECT_EQ(2, functionIr->arg_size())
       << amendAst(ast) << amendSpec(spec);
   }
 }
@@ -615,6 +616,43 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // verify
   int x = 2;
   EXPECT_EQ( x+1, UUT.jitExecFunction1Arg("foo", x)) << amendAst(ast);
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    a_function_definition_foo_with_mixed_argument_types,
+    genIr)) {
+
+  // setup
+  TestingIrGen UUT;
+  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
+  unique_ptr<AstValue> ast(
+    pe.mkFunDef(
+      pe.mkFunDecl(
+        "foo",
+        new ObjTypeFunda(ObjTypeFunda::eInt),
+        new AstArgDecl("condition", new ObjTypeFunda(ObjTypeFunda::eBool)),
+        new AstArgDecl("thenValue", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstArgDecl("elseValue", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new AstIf(
+        new AstSymbol("condition"),
+        new AstSymbol("thenValue"),
+        new AstSymbol("elseValue"))));
+  UUT.m_semanticAnalizer.analyze(*ast);
+
+  // execute
+  UUT.genIr(*ast);
+
+  // verify
+  auto jitExecFoo = [&UUT](bool condition, int thenValue, int elseValue)->int {
+    Function* functionIr = UUT.m_module->getFunction("foo");
+    void* functionVoidPtr = UUT.m_executionEngine->getPointerToFunction(functionIr);
+    assert(functionVoidPtr);
+    int (*functionPtr)(bool,int,int) = (int (*)(bool,int,int))(intptr_t)functionVoidPtr;
+    assert(functionPtr);
+    return functionPtr(condition, thenValue, elseValue);
+  };
+  EXPECT_EQ( 42, jitExecFoo(true, 42, 77) ) << amendAst(ast);
+  EXPECT_EQ( 77, jitExecFoo(false, 42, 77) ) << amendAst(ast);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(

@@ -58,7 +58,7 @@ private:
   llvm::Value* callAcceptOn(AstNode&);
 
   llvm::AllocaInst* createAllocaInEntryBlock(llvm::Function* functionIr,
-    const std::string& varName);
+    const std::string& varName, llvm::Type* type);
 
   llvm::IRBuilder<> m_builder;
   /** m_executionEngine is the owner */

@@ -267,7 +267,8 @@ void IrGen::visit(AstFunDef& funDef) {
   Function::arg_iterator iterIr = functionIr->arg_begin();
   list<AstArgDecl*>::const_iterator iterAst = funDef.decl().args().begin();
   for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
-    AllocaInst* alloca = createAllocaInEntryBlock(functionIr, (*iterAst)->name());
+    AllocaInst* alloca = createAllocaInEntryBlock(functionIr,
+      (*iterAst)->name(), (*iterAst)->objType().llvmType());
     m_builder.CreateStore(iterIr, alloca);
     (*iterAst)->stentry()->setValueIr(alloca);
   }
@@ -300,8 +301,10 @@ void IrGen::visit(AstFunDecl& funDecl) {
   // now.
   if ( ! funDecl.stentry()->valueIr() ) {
     // create IR function with given name and signature
-    vector<Type*> argsIr(funDecl.args().size(),
-      Type::getInt32Ty(getGlobalContext()));
+    vector<Type*> argsIr;
+    for ( const auto& arg : funDecl.args() ) {
+      argsIr.push_back(arg->objType().llvmType());
+    }
     Type* retTypeIr = funDecl.retObjType().llvmType();
     FunctionType* functionTypeIr = FunctionType::get(retTypeIr, argsIr, false);
     assert(functionTypeIr);
@@ -372,7 +375,8 @@ void IrGen::visit(AstDataDef& dataDef) {
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
     assert(functionIr);
     AllocaInst* alloca =
-      createAllocaInEntryBlock(functionIr, dataDef.decl().name());
+      createAllocaInEntryBlock(functionIr, dataDef.decl().name(),
+        dataDef.objType().llvmType());
     assert(alloca);
     m_builder.CreateStore(initValue, alloca);
     stentry->setValueIr(alloca);
@@ -434,9 +438,8 @@ void IrGen::visit(AstIf& if_) {
 
 /** We want allocas in the entry block to facilitate llvm's mem2reg pass.*/
 AllocaInst* IrGen::createAllocaInEntryBlock(Function* functionIr,
-  const string &varName) {
+  const string &varName, llvm::Type* type) {
   IRBuilder<> irBuilder(&functionIr->getEntryBlock(),
     functionIr->getEntryBlock().begin());
-  return irBuilder.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0,
-    varName.c_str());
+  return irBuilder.CreateAlloca(type, 0, varName.c_str());
 }
