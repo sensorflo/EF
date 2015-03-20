@@ -80,7 +80,7 @@ AstValue* ObjTypeFunda::createDefaultAstValue() const {
 
 llvm::Type* ObjTypeFunda::llvmType() const {
   switch (m_type) {
-  case eVoid: assert(false); return NULL;
+  case eVoid: return Type::getVoidTy(getGlobalContext());
   case eInt: return Type::getInt32Ty(getGlobalContext());
   case eBool: return Type::getInt1Ty(getGlobalContext());
   };

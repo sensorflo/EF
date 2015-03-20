@@ -450,6 +450,28 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
+    a_function_definition_foo_with_return_type_void,
+    genIr,
+    JIT_executing_foo_succeeds))   {
+  // setup
+  TestingIrGen UUT;
+  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
+  unique_ptr<AstValue> ast(
+    pe.mkFunDef(
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eVoid)),
+      new AstNop()));
+  UUT.m_semanticAnalizer.analyze(*ast.get());
+
+  // execute
+  UUT.genIr(*ast);
+
+  // verify
+  // todo: via e.g. global variable verify that function really was called
+  EXPECT_NO_THROW( UUT.jitExecFunction("foo"))
+    << amendAst(ast);
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME(
     a_function_definition_foo_with_body_returning_a_value_x,
     genIr,
     JIT_executing_foo_returns_x)) {

@@ -16,6 +16,8 @@
 using namespace std;
 using namespace llvm;
 
+Value *const IrGen::m_void = reinterpret_cast<Value *>(0xFFFFFFFF);
+
 void IrGen::staticOneTimeInit() {
   InitializeNativeTarget();
 }
@@ -79,6 +81,10 @@ int IrGen::jitExecFunction2Arg(const string& name, int arg1, int arg2) {
   return jitExecFunction2Arg(m_module->getFunction(name), arg1, arg2);
 }
 
+void IrGen::jitExecFunctionVoidRet(const string& name) {
+  jitExecFunctionVoidRet(m_module->getFunction(name));
+}
+
 int IrGen::jitExecFunction(llvm::Function* function) {
   void* functionVoidPtr =
     m_executionEngine->getPointerToFunction(function);
@@ -104,6 +110,15 @@ int IrGen::jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2) {
   int (*functionPtr)(int, int) = (int (*)(int, int))(intptr_t)functionVoidPtr;
   assert(functionPtr);
   return functionPtr(arg1, arg2);
+}
+
+void IrGen::jitExecFunctionVoidRet(llvm::Function* function) {
+  void* functionVoidPtr =
+    m_executionEngine->getPointerToFunction(function);
+  assert(functionVoidPtr);
+  void (*functionPtr)() = (void (*)())(intptr_t)functionVoidPtr;
+  assert(functionPtr);
+  functionPtr();
 }
 
 llvm::Value* IrGen::callAcceptOn(AstNode& node) {
@@ -257,11 +272,12 @@ void IrGen::visit(AstFunDef& funDef) {
     (*iterAst)->stentry()->setValueIr(alloca);
   }
 
-  // Currently the return type is always int, so ensure the return type of the
-  // IR code is also Int32
-  Value* extResultIr = m_builder.CreateZExt( callAcceptOn(funDef.body()),
-    Type::getInt32Ty(getGlobalContext()) );
-  m_builder.CreateRet(extResultIr);
+  Value* ret = callAcceptOn( funDef.body());
+  if ( ret == m_void ) {
+    m_builder.CreateRetVoid();
+  } else {
+    m_builder.CreateRet( ret);
+  }
 
   //verifyFunction(*functionIr);
 
@@ -286,7 +302,7 @@ void IrGen::visit(AstFunDecl& funDecl) {
     // create IR function with given name and signature
     vector<Type*> argsIr(funDecl.args().size(),
       Type::getInt32Ty(getGlobalContext()));
-    Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
+    Type* retTypeIr = funDecl.retObjType().llvmType();
     FunctionType* functionTypeIr = FunctionType::get(retTypeIr, argsIr, false);
     assert(functionTypeIr);
     Function* functionIr = Function::Create( functionTypeIr,

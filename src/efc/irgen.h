@@ -49,9 +49,11 @@ private:
   int jitExecFunction(llvm::Function* function);
   int jitExecFunction1Arg(llvm::Function* function, int arg1);
   int jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2);
+  void jitExecFunctionVoidRet(llvm::Function* function);
   int jitExecFunction(const std::string& name);
   int jitExecFunction1Arg(const std::string& name, int arg1);
   int jitExecFunction2Arg(const std::string& name, int arg1, int arg2);
+  void jitExecFunctionVoidRet(const std::string& name);
 
   llvm::Value* callAcceptOn(AstNode&);
 
@@ -69,6 +71,7 @@ private:
   ErrorHandler& m_errorHandler;
   /** We're not the owner, guaranteed to be non-null. */
   AstVisitor* m_enclosingVisitor;
+  static llvm::Value *const m_void;
 };
 
 #endif
