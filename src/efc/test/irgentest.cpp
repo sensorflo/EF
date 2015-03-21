@@ -756,11 +756,13 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 
   spec = "Writing to the data definition expression modifies the defined data object.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('=',
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-        new AstNumber(42)),
-      new AstNumber(77)),
+    new AstOperator(';',
+      new AstOperator('=',
+        new AstDataDef(
+          new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+          new AstNumber(42)),
+        new AstNumber(77)),
+      new AstSymbol("foo")),
     77, spec);
 }
 
