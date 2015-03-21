@@ -119,21 +119,21 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   // precedence level group: unary prefix not
   spec = "! aka 'not' is right associative. ! and 'not' are synonyms";
-  TEST_PARSE( "not not a", "not(not(a))", spec);
-  TEST_PARSE( "not !   a", "not(not(a))", spec);
-  TEST_PARSE( "!   not a", "not(not(a))", spec);
-  TEST_PARSE( "!   !   a", "not(not(a))", spec);
+  TEST_PARSE( "not not a", "!(!(a))", spec);
+  TEST_PARSE( "not !   a", "!(!(a))", spec);
+  TEST_PARSE( "!   not a", "!(!(a))", spec);
+  TEST_PARSE( "!   !   a", "!(!(a))", spec);
 
   spec = "! has lower precedence than function call ()";
-  TEST_PARSE( "!foo()", "not(foo())", spec);
+  TEST_PARSE( "!foo()", "!(foo())", spec);
 
   // precedence level group: binary * /
   spec = "* is left associative";
   TEST_PARSE( "a*b*c", "*(*(a b) c)", spec);
 
   spec = "* has lower precedence than !";
-  TEST_PARSE( "!a *  b", "*(not(a) b)", spec);
-  TEST_PARSE( " a * !b", "*(a not(b))", spec);
+  TEST_PARSE( "!a *  b", "*(!(a) b)", spec);
+  TEST_PARSE( " a * !b", "*(a !(b))", spec);
 
   spec = "/ is left associative";
   TEST_PARSE( "a/b/c", "/(/(a b) c)", spec);
@@ -241,8 +241,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   // unary
-  TEST_PARSE( "!(x)", "not(x)", "");
-  TEST_PARSE( "not(x)", "not(x)", "");
+  TEST_PARSE( "!(x)", "!(x)", "");
+  TEST_PARSE( "not(x)", "!(x)", "");
 
   // binary
   TEST_PARSE( "and(x,y)", "and(x y)", "");

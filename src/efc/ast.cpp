@@ -333,16 +333,14 @@ void AstOperator::setObjType(unique_ptr<ObjType> objType) {
 
 basic_ostream<char>& operator<<(basic_ostream<char>& os,
   AstOperator::EOperation op) {
-  switch (op) {
-  case AstOperator::eAnd: return os << "and";
-  case AstOperator::eOr: return os << "or";
-  case AstOperator::eNot: return os << "not";
-  case AstOperator::eEqualTo: return os << "==";
-  default:
-    if (static_cast<int>(op)<128) {
-      return os << static_cast<char>(op);
-    } else {
-      assert(false);
+  if (static_cast<int>(op)<128) {
+    return os << static_cast<char>(op);
+  } else {
+    switch (op) {
+    case AstOperator::eAnd: return os << "and";
+    case AstOperator::eOr: return os << "or";
+    case AstOperator::eEqualTo: return os << "==";
+    default: assert(false); return os;
     }
   }
 }
