@@ -421,7 +421,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
           new ObjTypeFunda(ObjTypeFunda::eVoid),
           new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eBool))),
-        new AstNumber(77)));
+        new AstNop()));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute

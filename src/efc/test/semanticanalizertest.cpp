@@ -783,7 +783,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
           "foo",
           new ObjTypeFunda(ObjTypeFunda::eInt),
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
-        new AstNumber(1, ObjTypeFunda::eBool)),
+        new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0, ObjTypeFunda::eInt)))),
     Error::eInvalidArguments, spec);
 
