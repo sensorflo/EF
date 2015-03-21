@@ -201,7 +201,7 @@ void IrGen::visit(AstOperator& op) {
 
     switch (op_) {
     case AstOperator::eAssign   :            m_builder.CreateStore (operandIr, resultIr            );
-                                  resultIr = operandIr; break;
+                                  resultIr = m_void; break;
     case AstOperator::eNot      : resultIr = m_builder.CreateNot   (operandIr,            "nottmp" ); break;
     case AstOperator::eAnd      : resultIr = m_builder.CreateAnd   (resultIr,  operandIr, "andtmp" ); break;
     case AstOperator::eOr       : resultIr = m_builder.CreateOr    (resultIr,  operandIr, "ortmp"  ); break;
