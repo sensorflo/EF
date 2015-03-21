@@ -26,8 +26,12 @@ public:
   virtual ~IrGen();
 
   void genIr(AstNode& root);
-  void genIrInImplicitMain(AstValue& root);
-  int jitExecMain();
+  void jitExec(const std::string& funName);
+
+  int jitExecFunction(const std::string& name);
+  int jitExecFunction1Arg(const std::string& name, int arg1);
+  int jitExecFunction2Arg(const std::string& name, int arg1, int arg2);
+  void jitExecFunctionVoidRet(const std::string& name);
 
 private:
   friend class TestingIrGen;
@@ -50,10 +54,6 @@ private:
   int jitExecFunction1Arg(llvm::Function* function, int arg1);
   int jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2);
   void jitExecFunctionVoidRet(llvm::Function* function);
-  int jitExecFunction(const std::string& name);
-  int jitExecFunction1Arg(const std::string& name, int arg1);
-  int jitExecFunction2Arg(const std::string& name, int arg1, int arg2);
-  void jitExecFunctionVoidRet(const std::string& name);
 
   llvm::Value* callAcceptOn(AstNode&);
 
@@ -66,7 +66,6 @@ private:
   std::string m_errStr;
   /** We're the owner */
   llvm::ExecutionEngine* m_executionEngine;
-  llvm::Function* m_mainFunction;
   std::stack<llvm::BasicBlock*> m_BasicBlockStack;
   ErrorHandler& m_errorHandler;
   /** We're not the owner, guaranteed to be non-null. */

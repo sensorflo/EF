@@ -41,19 +41,19 @@ void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
   semanticAnalizer.analyze(*astRoot);
 
   // execute
-  UUT.genIrInImplicitMain(*astRoot);
-  int result = UUT.jitExecMain();
+  UUT.genIr(*astRoot);
+  int result = UUT.jitExecFunction("main");
 
   // verify
   EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot);
 }
 
-#define TEST_GEN_IR_IN_IMPLICIT_MAIN(astRoot, expectedResult, spec)        \
+#define TEST_GEN_IR_IN_IMPLICIT_MAIN(astRoot, expectedResult, spec)     \
   {                                                                     \
     SCOPED_TRACE("testgenIrInImplicitMain called from here (via TEST_GEN_IR_IN_IMPLICIT_MAIN)"); \
-    TestingIrGen UUT;                                            \
+    TestingIrGen UUT;                                                   \
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
-    testgenIrInImplicitMain(UUT, astRoot, expectedResult, spec);           \
+    testgenIrInImplicitMain(UUT, pe.mkMainFunDef(astRoot), expectedResult, spec); \
   }
 
 void testgenIrInImplicitMainThrows(TestingIrGen& UUT, AstValue* astRoot,
@@ -68,7 +68,7 @@ void testgenIrInImplicitMainThrows(TestingIrGen& UUT, AstValue* astRoot,
   
   // execute
   try {
-    UUT.genIrInImplicitMain(*ast.get());
+    UUT.genIr(*ast.get());
   }
 
   // verify
@@ -97,13 +97,13 @@ void testgenIrInImplicitMainThrows(TestingIrGen& UUT, AstValue* astRoot,
 #define TEST_GEN_IR_IMPLICIT_MAIN_THROWS(astRoot, spec)                 \
   {                                                                     \
     SCOPED_TRACE("testgenIrInImplicitMainThrows called from here (via TEST_GEN_IR_IMPLICIT_MAIN_THROWS)"); \
-    TestingIrGen UUT;                                            \
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                      \
-    testgenIrInImplicitMainThrows(UUT, astRoot, spec);                     \
+    TestingIrGen UUT;                                                   \
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
+    testgenIrInImplicitMainThrows(UUT, pe.mkMainFunDef(astRoot), spec); \
   }
 
 void testgenIrReportsError(TestingIrGen& UUT, AstValue* astRoot,
-  Error::No expectedErrorNo, bool bInImplicitMain, const string& spec = "") {
+  Error::No expectedErrorNo, const string& spec = "") {
 
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
@@ -116,11 +116,7 @@ void testgenIrReportsError(TestingIrGen& UUT, AstValue* astRoot,
 
   // execute
   try {
-    if (bInImplicitMain) {
-      UUT.genIrInImplicitMain(*astRoot);
-    } else {
-      UUT.genIr(*astRoot);
-    }
+    UUT.genIr(*astRoot);
   }
 
   // verify
@@ -159,14 +155,6 @@ void testgenIrReportsError(TestingIrGen& UUT, AstValue* astRoot,
     TestingIrGen UUT;                                            \
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                      \
     testgenIrReportsError(UUT, astRoot, expectedErrorNo, false, spec); \
-  }
-
-#define TEST_GEN_MODULE_IN_IMPLICIT_MAIN_REPORTS_ERROR(astRoot, expectedErrorNo, spec) \
-  {                                                                     \
-    SCOPED_TRACE("testgenIrReportsError called from here (via TEST_GEN_MODULE_IN_IMPLICIT_MAIN_REPORTS_ERROR)"); \
-    TestingIrGen UUT;                                            \
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                      \
-    testgenIrReportsError(UUT, astRoot, expectedErrorNo, true, spec); \
   }
 
 TEST(IrGenTest, MAKE_TEST_NAME(

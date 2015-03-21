@@ -84,11 +84,11 @@ void Driver::doSemanticAnalysis(AstNode& ast) {
 void Driver::generateIr(AstNode& ast) {
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
-  m_irGen.genIrInImplicitMain(dynamic_cast<AstValue&>(ast));
+  m_irGen.genIr( *m_parserExt.mkMainFunDef( &dynamic_cast<AstValue&>(ast)));
 }
 
 int Driver::jitExecMain() {
-  return m_irGen.jitExecMain();
+  return m_irGen.jitExecFunction("main");
 }
 
 basic_ostream<char>& Driver::print(const location& loc) {

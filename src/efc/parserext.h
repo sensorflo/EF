@@ -46,6 +46,9 @@ public:
   AstFunDecl* mkFunDecl(const std::string name, const ObjType* ret,
     AstArgDecl* arg1, AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   AstFunDef* mkFunDef(AstFunDecl* decl, AstValue* body);
+
+  AstFunDef* mkMainFunDef(AstValue* body);
+
   ErrorHandler& errorHandler() { return m_errorHandler; }
 
 private:

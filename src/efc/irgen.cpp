@@ -26,7 +26,6 @@ IrGen::IrGen(ErrorHandler& errorHandler) :
   m_builder(getGlobalContext()),
   m_module(new Module("Main", getGlobalContext())),
   m_executionEngine(EngineBuilder(m_module).setErrorStr(&m_errStr).create()),
-  m_mainFunction(NULL),
   m_errorHandler(errorHandler) {
   assert(m_module);
   assert(m_executionEngine);
@@ -42,31 +41,6 @@ the AST, only declarations or definitions are allowed.
 \pre SemanticAnalizer must have massaged the AST and the Env */
 void IrGen::genIr(AstNode& root) {
   callAcceptOn(root);
-}
-
-/** As genIr, but interpret the given AST as the body of a "fun main:()int"
-function definition. */
-void IrGen::genIrInImplicitMain(AstValue& root) {
-  // protects against double definition of the implicit main method
-  assert(!m_mainFunction);
-
-  vector<Type*> argsIr(0);
-  Type* retTypeIr = Type::getInt32Ty(getGlobalContext());
-  FunctionType* functionTypeIr = FunctionType::get( retTypeIr, argsIr, false);
-  m_mainFunction = Function::Create( functionTypeIr,
-    Function::ExternalLinkage, "main", m_module );
-  assert(m_mainFunction);
-
-  m_builder.SetInsertPoint( BasicBlock::Create( getGlobalContext(), "entry",
-      m_mainFunction));
-
-  m_builder.CreateRet( callAcceptOn(root));
-
-  verifyFunction(*m_mainFunction);
-}
-
-int IrGen::jitExecMain() {
-  return jitExecFunction(m_mainFunction);
 }
 
 int IrGen::jitExecFunction(const string& name) {

@@ -124,3 +124,9 @@ AstFunDef* ParserExt::mkFunDef(AstFunDecl* decl, AstValue* body) {
   // handling stentry.isDefined() is done later
   return new AstFunDef(decl, body);
 }
+
+AstFunDef* ParserExt::mkMainFunDef(AstValue* body) {
+  return mkFunDef(
+    mkFunDecl("main", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    body);
+}
