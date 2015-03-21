@@ -454,7 +454,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
 // aka temporary objects are immutable
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    an_assignment_operator,
+    a_non_dot_assignment_operator,
     transform,
     sets_the_objectType_of_the_AstOperator_node_to_void)) {
   // setup
@@ -477,6 +477,35 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   // verify
   EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), assignmentAst->objType()) <<
+    amendAst(ast);
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_dot_assignment_operator,
+    transform,
+    sets_the_objectType_of_the_AstOperator_node_to_lhs_which_includes_being_mutable)) {
+
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  AstValue* dotAssignmentAst =
+    new AstOperator(".=",
+      new AstSymbol("x"),
+      new AstNumber(0, ObjTypeFunda::eInt));
+  unique_ptr<AstValue> ast{
+    new AstOperator(';',
+      new AstDataDef(
+        new AstDataDecl("x",
+          new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      dotAssignmentAst)};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), dotAssignmentAst->objType()) <<
     amendAst(ast);
 }
 
@@ -686,6 +715,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_assignment_to_an_immutable_data_object,
     transform,
     reports_an_eWriteToImmutable)) {
+
+  string spec = "Example: Assignment to an symbol standing for a previously "
+    "defined immutable data object";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
       new AstDataDef(
@@ -696,12 +728,24 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstNumber(77))),
     Error::eWriteToImmutable, "");
 
+  spec = "Example: Assignment directly to the definition of an "
+    "immutable data object";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator('=',
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)),
       new AstNumber(77)),
+    Error::eWriteToImmutable, "");
+
+  spec = "Example: Assignment to the temporary object resulting from a "
+    "math operator";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator('=',
+      new AstOperator('+',
+        new AstNumber(42),
+        new AstNumber(77)),
+      new AstNumber(88)),
     Error::eWriteToImmutable, "");
 }
 

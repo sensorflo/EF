@@ -60,6 +60,7 @@
   RAW_DELETE "raw_delete"
   NOP "nop"
   EQUAL "="
+  DOT_EQUAL ".="
   COLON_EQUAL ":="
   COMMA ","
   SEMICOLON ";"
@@ -89,7 +90,7 @@
 %token <std::string> ID "identifier"
 %token <NumberToken> NUMBER "number"
 %precedence ASSIGNEMENT
-%right EQUAL
+%right EQUAL DOT_EQUAL
 %left PIPE_PIPE OR
 %left AMPER_AMPER AND
 %left EQUAL_EQUAL
@@ -221,6 +222,7 @@ operator_expr
 
   /* binary operators */
   | sub_expr EQUAL       sub_expr                   { $$ = new AstOperator('=', $1, $3); }
+  | sub_expr DOT_EQUAL   sub_expr                   { $$ = new AstOperator(".=", $1, $3); }
   | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt)), $3); }
   | sub_expr OR          sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr PIPE_PIPE   sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }

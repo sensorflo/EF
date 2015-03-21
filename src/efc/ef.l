@@ -101,6 +101,7 @@ bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool
 "&&"                return yy::Parser::make_AMPER_AMPER(loc);
 "||"                return yy::Parser::make_PIPE_PIPE(loc);
 "=="                return yy::Parser::make_EQUAL_EQUAL(loc);
+".="                return yy::Parser::make_DOT_EQUAL(loc);
 ([-+*/!]|&&|"||"|"=="|"and"|"or"|"not"|"new"|"delete")[ \t]*"("    {   /*todo: allow comments and newlines intbetween*/
   char* p = yytext;
   for (/*nop*/; *p && *p!=' ' && *p!='\t' && *p!='('; ++p ) /*nop*/;

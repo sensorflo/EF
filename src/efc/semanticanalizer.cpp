@@ -44,7 +44,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // Note that orrect number of arguments was already handled in AstOperator's
   // ctor; we're allowed to count on that.
 
-  if (AstOperator::eAssign == op.op()) {
+  if (AstOperator::eAssignment == op.class_()) {
     argschilds.front()->setAccess(eWrite, m_errorHandler);
   }
 
@@ -79,7 +79,12 @@ void SemanticAnalizer::visit(AstOperator& op) {
     if ( op.class_() == AstOperator::eComparison ) {
       op.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eBool));
     } else if ( op.class_() == AstOperator::eAssignment ) {
-      op.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eVoid));
+      if ( op.op() == AstOperator::eDotAssign ) {
+        op.setObjType(unique_ptr<ObjType>(argschilds.front()->objType().clone()));
+        // don't remove mutable qualifier
+      } else {
+        op.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eVoid));
+      }
     }
     // For the sequence operator this is the type of the rhs. For the other
     // operators, now that we know the two operands have the same obj type,

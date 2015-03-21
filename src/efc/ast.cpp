@@ -244,6 +244,7 @@ const map<const string, const AstOperator::EOperation> AstOperator::m_opMap{
   {"or", eOr},
   {"||", eOr},
   {"==", eEqualTo},
+  {".=", eDotAssign},
   {"not", eNot}};
 
 // in case of ambiguity, prefer one letters over symbols. Also note that
@@ -252,7 +253,8 @@ const map<const string, const AstOperator::EOperation> AstOperator::m_opMap{
 const map<const AstOperator::EOperation, const std::string> AstOperator::m_opReverseMap{
   {eAnd, "and"},
   {eOr, "or"},
-  {eEqualTo, "=="}};
+  {eEqualTo, "=="},
+  {eDotAssign, ".="}};
 
 AstOperator::AstOperator(char op, AstCtList* args) :
   AstOperator(static_cast<EOperation>(op), args) {};
@@ -263,6 +265,7 @@ AstOperator::AstOperator(const string& op, AstCtList* args) :
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
   m_args(args ? args : new AstCtList),
+  m_access(eRead),
   m_irValue(NULL) {
   const size_t required_arity = op == eNot ? 1 : 2;
   assert( args->childs().size() == required_arity );
@@ -288,6 +291,7 @@ AstOperator::EClass AstOperator::class_() const {
 AstOperator::EClass AstOperator::classOf(AstOperator::EOperation op) {
   switch (op) {
   case eAssign:
+  case eDotAssign:
     return eAssignment;
 
   case eAdd:
@@ -319,6 +323,13 @@ AstOperator::EOperation AstOperator::toEOperation(const string& op) {
     assert( i != m_opMap.end() );
     return i->second;
   }
+}
+
+void AstOperator::setAccess(Access access, ErrorHandler& errorHandler) {
+  if ( access==eWrite && m_op!=eDotAssign ) {
+    Error::throwError(errorHandler, Error::eWriteToImmutable);
+  }
+  m_access = access;
 }
 
 void AstOperator::setIrValue(llvm::Value* value) {

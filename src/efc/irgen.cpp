@@ -177,9 +177,11 @@ void IrGen::visit(AstOperator& op) {
     // nop
     break;
   case AstOperator::eAssign: // fallthrough
+  case AstOperator::eDotAssign:
   case AstOperator::eEqualTo:
   case AstOperator::eDiv: {
     if ( op_==AstOperator::eAssign ) { assert(argschilds.size()==2); }
+    if ( op_==AstOperator::eDotAssign ) { assert(argschilds.size()==2); }
     if ( op_==AstOperator::eEqualTo ){ assert(argschilds.size()==2); }
     if ( op_==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
     AstValue& lhsAst = **(iter++);
@@ -200,6 +202,8 @@ void IrGen::visit(AstOperator& op) {
     }
 
     switch (op_) {
+    case AstOperator::eDotAssign:            m_builder.CreateStore (operandIr, resultIr            );
+                                  resultIr = op.access()==eWrite ? resultIr : operandIr; break;
     case AstOperator::eAssign   :            m_builder.CreateStore (operandIr, resultIr            );
                                   resultIr = m_void; break;
     case AstOperator::eNot      : resultIr = m_builder.CreateNot   (operandIr,            "nottmp" ); break;

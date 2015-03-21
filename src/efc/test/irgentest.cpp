@@ -742,19 +742,19 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     42, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
-    a_mutable_data_object_definition_of_foo_being_initialized_with_x,
-    genIrInImplicitMain,
-    returns_x_lvalue)) {
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_a_mutable_data_object_definition_expression,
+    THEN_its_value_is_the_defined_data_object)) {
 
-  string spec = "Value of definition expression should equal initializer's value";
+  string spec = "Reading from the data definition expression gives the value "
+    "of the data object after initialization, which in turn equals value of the initializer.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstDataDef(
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       new AstNumber(42)),
     42, spec);
 
-  spec = "Definition expresssion is an lvalue which concequently is assignable to";
+  spec = "Writing to the data definition expression modifies the defined data object.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator('=',
       new AstDataDef(
@@ -762,6 +762,35 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         new AstNumber(42)),
       new AstNumber(77)),
     77, spec);
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_a_dot_assignment_expression,
+    THEN_its_value_is_the_lhs_data_object)) {
+
+  string spec = "Reading from the dot assignment expression gives the value "
+    "of the lhs after the assignment, which in turn equals value of the rhs.";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstOperator(".=",
+        new AstSymbol("foo"),
+        new AstNumber(42))),
+    42, "");
+
+  spec = "Writing to the dot assignment expression modifies the lhs data object.";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstOperator('=',
+        new AstOperator(".=",
+          new AstSymbol("foo"),
+          new AstNumber(42)),
+        new AstNumber(77)),
+      new AstSymbol("foo")),
+    77, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -793,28 +822,28 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
-    foo_defined_as_variable_initialized_with_x_followed_by_assigning_y_to_foo,
+    assigning_to_a_variable_and_later_referencing_the_variable,
     genIrInImplicitMain,
-    returns_y)) {
-
-  string spec = "Example: Assignement 'foo=77' being last expression in sequence"; 
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator(';',
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-        new AstNumber(42)),
-      new AstOperator('=',
-        new AstSymbol("foo"),
-        new AstNumber(77))),
-    77, spec);
-
-  spec = "Example: After assignment 'foo=77', there is a further 'foo' expression"; 
+    returns_the_new_value_of_the_variable)) {
+  string spec = "Example: using operator '='";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
       new AstDataDef(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)),
       new AstOperator('=',
+        new AstSymbol("foo"),
+        new AstNumber(77)),
+      new AstSymbol("foo")),
+    77, spec);
+
+  spec = "Example: using operator '.='";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+        new AstNumber(42)),
+      new AstOperator(".=",
         new AstSymbol("foo"),
         new AstNumber(77)),
       new AstSymbol("foo")),

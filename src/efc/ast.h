@@ -290,7 +290,8 @@ public:
     eSeq = ';',
     eAnd = 128,
     eOr,
-    eEqualTo
+    eEqualTo,
+    eDotAssign
   };
   enum EClass {
     eAssignment,
@@ -308,6 +309,8 @@ public:
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+  virtual Access access() const { return m_access; }
+  virtual void setAccess(Access access, ErrorHandler& );
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
   virtual const ObjType& objType() const;
@@ -327,6 +330,7 @@ private:
   /** We're the owner. Is garanteed to be non-null */
   AstCtList* const m_args;
   std::unique_ptr<ObjType> m_objType;
+  Access m_access;
   static const std::map<const std::string, const EOperation> m_opMap;
   static const std::map<const EOperation, const std::string> m_opReverseMap;
 
