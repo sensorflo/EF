@@ -102,6 +102,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(77, ObjTypeFunda::eInt)),
     Error::eNoImplicitConversion, spec);
+
+  spec = "Example: Body of a function definition must match function's return type";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef(
+      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eBool)),
+      new AstNumber(42)),
+    Error::eNoImplicitConversion, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -127,6 +134,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstIf(new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(77, ObjTypeFunda::eInt),
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    Error::eNoImplicitConversion, spec);
+
+  spec = "Example: Body of a function definition must match function's return type";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef(
+      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstNumber(0, ObjTypeFunda::eBool)),
     Error::eNoImplicitConversion, spec);
 }

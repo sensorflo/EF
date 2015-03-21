@@ -163,6 +163,10 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 
   funDef.body().accept(*this);
 
+  if ( ! funDef.body().objType().matchesSaufQualifiers( funDef.decl().retObjType())) {
+    Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+  }
+
   m_env.popScope();
 
   postConditionCheck(funDef);
