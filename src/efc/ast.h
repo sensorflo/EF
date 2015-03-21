@@ -317,13 +317,18 @@ public:
   static EOperation toEOperation(const std::string& op);
 
 private:
+  friend std::basic_ostream<char>& operator<<(std::basic_ostream<char>&,
+    AstOperator::EOperation);
+
   AstOperator(const AstOperator&);
   AstOperator& operator=(const AstOperator&);
+
   const EOperation m_op;
   /** We're the owner. Is garanteed to be non-null */
   AstCtList* const m_args;
   std::unique_ptr<ObjType> m_objType;
-  static std::map<std::string, EOperation> m_opMap;
+  static const std::map<const std::string, const EOperation> m_opMap;
+  static const std::map<const EOperation, const std::string> m_opReverseMap;
 
 // decorations for IrGen
 public:

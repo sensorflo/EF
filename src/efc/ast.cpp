@@ -238,7 +238,21 @@ void AstNumber::setIrValue(llvm::Value* value) {
   m_irValue = value;
 }
 
-map<string, AstOperator::EOperation> AstOperator::m_opMap;
+const map<const string, const AstOperator::EOperation> AstOperator::m_opMap{
+  {"and", eAnd},
+  {"&&", eAnd},
+  {"or", eOr},
+  {"||", eOr},
+  {"==", eEqualTo},
+  {"not", eNot}};
+
+// in case of ambiguity, prefer one letters over symbols. Also note that
+// single char operators are prefered over multi chars; the single chars are
+// not even in the map.
+const map<const AstOperator::EOperation, const std::string> AstOperator::m_opReverseMap{
+  {eAnd, "and"},
+  {eOr, "or"},
+  {eEqualTo, "=="}};
 
 AstOperator::AstOperator(char op, AstCtList* args) :
   AstOperator(static_cast<EOperation>(op), args) {};
@@ -301,15 +315,7 @@ AstOperator::EOperation AstOperator::toEOperation(const string& op) {
   if (op.size()==1) {
     return static_cast<EOperation>(op[0]);
   } else {
-    if (m_opMap.empty()) {
-      m_opMap.insert(make_pair("and", eAnd));
-      m_opMap.insert(make_pair("&&", eAnd));
-      m_opMap.insert(make_pair("or", eOr));
-      m_opMap.insert(make_pair("||", eOr));
-      m_opMap.insert(make_pair("==", eEqualTo));
-      m_opMap.insert(make_pair("not", eNot));
-    }
-    map<string,EOperation>::iterator i = m_opMap.find(op);
+    auto i = m_opMap.find(op);
     assert( i != m_opMap.end() );
     return i->second;
   }
@@ -336,12 +342,9 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
   if (static_cast<int>(op)<128) {
     return os << static_cast<char>(op);
   } else {
-    switch (op) {
-    case AstOperator::eAnd: return os << "and";
-    case AstOperator::eOr: return os << "or";
-    case AstOperator::eEqualTo: return os << "==";
-    default: assert(false); return os;
-    }
+    auto i = AstOperator::m_opReverseMap.find(op);
+    assert( i != AstOperator::m_opReverseMap.end() );
+    return os << i->second;
   }
 }
 
