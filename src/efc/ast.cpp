@@ -363,6 +363,7 @@ AstIf::AstIf(AstValue* cond, AstValue* action, AstValue* elseAction) :
   m_condition(cond),
   m_action(action),
   m_elseAction(elseAction),
+  m_access(eRead),
   m_irValue(NULL) {
   assert(m_condition);
   assert(m_action);
@@ -388,6 +389,13 @@ const ObjType& AstIf::objType() const {
 void AstIf::setObjType(unique_ptr<ObjType> objType) {
   assert(!m_objType); // it doesn't make sense to set it twice
   m_objType = move(objType);
+}
+
+void AstIf::setAccess(Access access, ErrorHandler& errorHandler) {
+  if (access==eWrite && !m_elseAction) {
+    Error::throwError(errorHandler, Error::eWriteToImmutable);
+  }
+  m_access = access;
 }
 
 void AstSymbol::setIrValue(llvm::Value* value) {

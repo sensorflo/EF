@@ -236,8 +236,10 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 
 void SemanticAnalizer::visit(AstIf& if_) {
   if_.condition().accept(*this);
+  if_.action().setAccess(if_.access(), m_errorHandler);
   if_.action().accept(*this);
   if (if_.elseAction()) {
+    if_.elseAction()->setAccess(if_.access(), m_errorHandler);
     if_.elseAction()->accept(*this);
   }
 
@@ -256,13 +258,13 @@ void SemanticAnalizer::visit(AstIf& if_) {
     }
   }
 
-  // Set the obj type of this AstIf node. It is a temporary object which is
-  // always immutable. Now that we know the two clauses have the same obj
-  // type, either clause's obj type can be taken.
+  // Set the obj type of this AstIf node. It's exactly the type of the
+  // evaluated clause, i.e. it's not a new (immutable) temporary.  Now that we
+  // know the two clauses have the same obj type, either clause's obj type can
+  // be taken.
   if ( if_.elseAction() ) {
-    auto objType = unique_ptr<ObjType>(if_.action().objType().clone());
-    objType->removeQualifiers(ObjType::eMutable);
-    if_.setObjType(move(objType));
+    if_.setObjType(unique_ptr<ObjType>(if_.action().objType().clone()));
+    // don't remove mutable qualifier
   } else {
     if_.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eVoid));
   }

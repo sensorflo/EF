@@ -352,6 +352,8 @@ public:
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+  virtual Access access() const { return m_access; }
+  virtual void setAccess(Access access, ErrorHandler& );
   AstValue& condition() const { return *m_condition; }
   AstValue& action() const { return *m_action; }
   AstValue* elseAction() const { return m_elseAction; }
@@ -366,6 +368,7 @@ private:
   /** We're the owner. Is NOT garanteed to be non-null */
   AstValue* const m_elseAction;
   std::unique_ptr<ObjType> m_objType;
+  Access m_access;
 
 // decorations for IrGen
 public:

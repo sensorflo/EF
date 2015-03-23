@@ -911,27 +911,58 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     42, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
-    an_if_else_expression_WITH_a_condition_evaluating_to_true,
-    genIrInImplicitMain,
-    returns_the_value_of_the_then_clause)) {
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstIf(
-      new AstNumber(1, ObjTypeFunda::eBool), // condition
-      new AstNumber(2), // then clause
-      new AstNumber(3)), // else clause
-    2, "");
-}
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_an_if_expression,
+    THEN_its_value_is_the_resulting_obj_of_the_evaluated_clase)) {
 
-TEST(IrGenTest, MAKE_TEST_NAME(
-    an_if_else_expression_WITH_a_condition_evaluating_to_false,
-    genIrInImplicitMain,
-    returns_the_value_of_the_else_clause)) {
+  string specBase = "Reading from the if expression gives the value"
+    "of the clause which is evaluated.";
+
+  string spec = specBase + "Example: Condition evaluates to true.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstIf(
-      new AstNumber(0, ObjTypeFunda::eBool), // condition
-      new AstNumber(2), // then clause
-      new AstNumber(3)), // else clause
-    3, "");
+      new AstNumber(1, ObjTypeFunda::eBool),
+      new AstNumber(42),
+      new AstNumber(77)),
+    42, "");
+
+  spec = specBase + "Example: condition evaluates to false.";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstIf(
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(42),
+      new AstNumber(77)),
+    77, "");
+
+  specBase = "Writing to the if expression modifies the object "
+    "resulting from the evaluated clause.";
+  spec = specBase + "Example: condition evaluates to true.";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstDataDef(new AstDataDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstOperator('=',
+        new AstIf(
+          new AstNumber(1, ObjTypeFunda::eBool),
+          new AstSymbol("x"),
+          new AstSymbol("y")),
+        new AstNumber(42)),
+      new AstSymbol("x")),
+    42, "");
+
+
+  spec = specBase + "Example: condition evaluates to false.";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstDataDef(new AstDataDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstOperator('=',
+        new AstIf(
+          new AstNumber(0, ObjTypeFunda::eBool),
+          new AstSymbol("x"),
+          new AstSymbol("y")),
+        new AstNumber(42)),
+      new AstSymbol("y")),
+    42, "");
 }
 

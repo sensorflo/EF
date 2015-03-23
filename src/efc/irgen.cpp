@@ -394,24 +394,25 @@ void IrGen::visit(AstIf& if_) {
   Value* elseValue = NULL;
   if ( if_.elseAction() ) {
     elseValue = callAcceptOn(*if_.elseAction());
+    assert(elseValue);
   } else {
-    // KLUDGE: int32 as type of else branch is hard coded, it needs to be a
-    // dynamic type
-    elseValue = ConstantInt::get( getGlobalContext(), APInt(32, 0));
+    elseValue = m_void;
   }
-  assert(elseValue);
   m_builder.CreateBr(MergeBB);
   BasicBlock* ElseLastBB = m_builder.GetInsertBlock();
 
   // IR for merge of then/else clauses
   functionIr->getBasicBlockList().push_back(MergeBB);
   m_builder.SetInsertPoint(MergeBB);
-  PHINode* phi = m_builder.CreatePHI( if_.objType().llvmType(), 2,
-    "ifphi");
-  assert(phi);
-  phi->addIncoming(thenValue, ThenLastBB);
-  phi->addIncoming(elseValue, ElseLastBB);
-  if_.setIrValue(phi);
+  if ( thenValue!=m_void && elseValue!=m_void ) {
+    PHINode* phi = m_builder.CreatePHI( thenValue->getType(), 2, "ifphi");
+    assert(phi);
+    phi->addIncoming(thenValue, ThenLastBB);
+    phi->addIncoming(elseValue, ElseLastBB);
+    if_.setIrValue(phi);
+  } else {
+    if_.setIrValue(m_void);
+  }
 }
 
 /** We want allocas in the entry block to facilitate llvm's mem2reg pass.*/

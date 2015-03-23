@@ -655,10 +655,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    an_if_astnode_with_else_clause,
-    transform,
-    sets_the_objectType_of_the_AstIf_node_to_the_type_of_its_two_clauses_however_without_mutable_qualifier)) {
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_an_if_expression_with_else_clause,
+    THEN_its_obj_type_is_exactly_that_of_either_of_its_two_clauses)) {
 
   // this specification only looks at operands with identical types. Other
   // specifications specify how to introduce implicit conversions when the
@@ -706,7 +705,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       amendAst(ast);
   }
 
-  spec = "Example: both clauses are of type mutable-int -> whole if is of type (immutable-) int";
+  spec = "Example: both clauses are of type mutable-bool -> whole if is of type mutable-bool";
   {
     // setup
     Env env;
@@ -727,7 +726,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable), ast->objType()) <<
       amendAst(ast);
   }
 }
@@ -753,6 +752,63 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   // verify
   EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->objType()) <<
     amendAst(ast);
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_an_access_to_an_if_expression,
+    THEN_the_access_value_of_both_clauses_equal_that_outer_access_value))
+{
+  string spec = "Example: read access";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    AstValue* thenClauseAst = new AstSymbol("x");
+    AstValue* elseClauseAst = new AstSymbol("x");
+    unique_ptr<AstValue> ast{
+      new AstOperator(';', // imposes read access on its rhs
+        new AstDataDef(
+          new AstDataDecl("x",
+            new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+        new AstIf( // the if expression under test
+          new AstNumber(0, ObjTypeFunda::eBool),
+          thenClauseAst, elseClauseAst))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_EQ( eRead, thenClauseAst->access()) << amendAst(ast);
+    EXPECT_EQ( eRead, thenClauseAst->access()) << amendAst(ast);
+  }
+
+  spec = "Example: write access";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    AstValue* thenClauseAst = new AstSymbol("x");
+    AstValue* elseClauseAst = new AstSymbol("x");
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        new AstDataDef(
+          new AstDataDecl("x",
+            new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+        new AstOperator('=', // imposes write access onto the if expression
+          new AstIf( // the if expression under test
+            new AstNumber(0, ObjTypeFunda::eBool),
+            thenClauseAst, elseClauseAst),
+          new AstNumber(77)))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_EQ( eWrite, thenClauseAst->access()) << amendAst(ast);
+    EXPECT_EQ( eWrite, thenClauseAst->access()) << amendAst(ast);
+  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
