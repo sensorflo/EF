@@ -326,7 +326,7 @@ AstOperator::EOperation AstOperator::toEOperation(const string& op) {
 }
 
 void AstOperator::setAccess(Access access, ErrorHandler& errorHandler) {
-  if ( access==eWrite && m_op!=eDotAssign ) {
+  if ( access==eWrite && (m_op!=eDotAssign && m_op!=eSeq) ) {
     Error::throwError(errorHandler, Error::eWriteToImmutable);
   }
   m_access = access;

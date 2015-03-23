@@ -783,6 +783,31 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     77, "");
 }
 
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_a_seq_expression,
+    THEN_its_value_is_the_rhs_data_object)) {
+
+  string spec = "Reading from the seq expression gives the value of the rhs";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstNumber(42),
+      new AstNumber(77)),
+    77, "");
+
+  spec = "Writing to the seq assignment expression modifies the rhs data object.";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstOperator('=',
+        new AstOperator(';',
+          new AstNumber(42),
+          new AstSymbol("foo")),
+        new AstNumber(77)),
+      new AstSymbol("foo")),
+    77, "");
+}
+
 TEST(IrGenTest, MAKE_TEST_NAME(
     foo_defined_as_data_object_followed_by_a_simple_expression_referencing_foo,
     genIrInImplicitMain,

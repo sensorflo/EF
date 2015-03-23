@@ -44,8 +44,13 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // Note that orrect number of arguments was already handled in AstOperator's
   // ctor; we're allowed to count on that.
 
-  if (AstOperator::eAssignment == op.class_()) {
-    argschilds.front()->setAccess(eWrite, m_errorHandler);
+  // Set EAccess of childs.
+  {
+    if (AstOperator::eAssignment == op.class_()) {
+      argschilds.front()->setAccess(eWrite, m_errorHandler);
+    } else if ( AstOperator::eSeq == op.op() ) {
+      argschilds.back()->setAccess(op.access(), m_errorHandler);
+    }
   }
 
   op.args().accept(*this);
@@ -86,9 +91,14 @@ void SemanticAnalizer::visit(AstOperator& op) {
         op.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eVoid));
       }
     }
-    // For the sequence operator this is the type of the rhs. For the other
-    // operators, now that we know the two operands have the same obj type,
-    // either operand's obj type can be taken.
+    // The obj type of the seq operator is exactly that of its rhs
+    else if ( op.op() == AstOperator::eSeq ) {
+      op.setObjType(unique_ptr<ObjType>(argschilds.back()->objType().clone()));
+      // don't remove mutable qualifier
+    }
+    // For ther operands, the operator expression's objtype is, now that we
+    // know the two operands have the same obj type, either operand's obj
+    // type.
     else {
       auto objType = unique_ptr<ObjType>(argschilds.back()->objType().clone());
       objType->removeQualifiers(ObjType::eMutable);

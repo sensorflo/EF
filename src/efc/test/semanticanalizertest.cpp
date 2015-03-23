@@ -370,6 +370,34 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 }
 
 // aka temporary objects are immutable
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_an_access_to_a_sequence_operator,
+    THEN_the_access_value_of_seqs_rhs_equals_that_outer_access_value_AND_the_access_value_of_the_lhs_is_eRead))
+{
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  AstValue* lhsAst = new AstNumber(42);
+  AstValue* rhsAst = new AstSymbol("x");
+  unique_ptr<AstValue> ast{
+    new AstOperator(';',
+      new AstDataDef(
+        new AstDataDecl("x",
+          new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstOperator('=', // imposes write access onto the seq operator
+        new AstOperator(';', lhsAst, rhsAst), // the seq operator under test
+        new AstNumber(77)))};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  EXPECT_EQ( eRead, lhsAst->access()) << amendAst(ast);
+  EXPECT_EQ( eWrite, rhsAst->access()) << amendAst(ast);
+}
+
+// aka temporary objects are immutable
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_arithmetic_or_logical_operator,
     transform,
@@ -428,20 +456,22 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstValue* opAst =
+      new AstOperator('+',
+        new AstSymbol("x"),
+        new AstSymbol("x"));
     unique_ptr<AstValue> ast{
       new AstOperator(';',
         new AstDataDef(
           new AstDataDecl("x",
             new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
-        new AstOperator('+',
-          new AstSymbol("x"),
-          new AstSymbol("x")))};
+        opAst)};
 
     // exercise
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), opAst->objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 
