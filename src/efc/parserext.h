@@ -34,7 +34,7 @@ public:
 
   AstOperator* mkOperatorTree(const std::string& op, AstCtList* args);
   AstOperator* mkOperatorTree(const std::string& op, AstValue* child1,
-    AstValue* child2, AstValue* child3 = NULL);
+    AstValue* child2, AstValue* child3 = NULL, AstValue* child4 = NULL);
 
   AstDataDecl* mkDataDecl(ObjType::Qualifiers qualifiers,
     RawAstDataDecl*& rawAstDataDecl);

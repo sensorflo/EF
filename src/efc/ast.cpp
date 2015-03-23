@@ -457,12 +457,13 @@ AstCtList::AstCtList(AstValue* child) :
 }
 
 /** NULL childs are ignored.*/
-AstCtList::AstCtList(AstValue* child1, AstValue* child2, AstValue* child3) :
+AstCtList::AstCtList(AstValue* child1, AstValue* child2, AstValue* child3, AstValue* child4) :
   m_childs(new list<AstValue*>()) {
   assert(m_childs);
   if (child1) { m_childs->push_back(child1); }
   if (child2) { m_childs->push_back(child2); }
   if (child3) { m_childs->push_back(child3); }
+  if (child4) { m_childs->push_back(child4); }
 }
 
 AstCtList::~AstCtList() {

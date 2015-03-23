@@ -52,8 +52,8 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
 }
 
 AstOperator* ParserExt::mkOperatorTree(const string& op, AstValue* child1,
-  AstValue* child2, AstValue* child3) {
-  return mkOperatorTree(op, new AstCtList(child1, child2, child3));
+  AstValue* child2, AstValue* child3, AstValue* child4) {
+  return mkOperatorTree(op, new AstCtList(child1, child2, child3, child4));
 }
 
 AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifiers qualifiers,

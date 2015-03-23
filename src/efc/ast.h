@@ -379,7 +379,8 @@ class AstCtList : public AstNode {
 public:
   AstCtList(std::list<AstValue*>* childs);
   AstCtList(AstValue* child1 = NULL);
-  AstCtList(AstValue* child1, AstValue* child2, AstValue* child3 = NULL);
+  AstCtList(AstValue* child1, AstValue* child2, AstValue* child3 = NULL,
+    AstValue* child4 = NULL);
   ~AstCtList();
   void releaseOwnership();
   virtual void accept(AstVisitor& visitor);
