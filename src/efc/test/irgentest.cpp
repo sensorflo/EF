@@ -34,18 +34,39 @@ public:
 void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
   int expectedResult, const string& spec = "") {
 
-  // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
   unique_ptr<AstValue> astRootAp(astRoot);
-  SemanticAnalizer semanticAnalizer(UUT.m_env, *UUT.m_errorHandler);
-  semanticAnalizer.analyze(*astRoot);
+  bool unexpctedExceptionThrown = false;
+  string exceptionDescription;
 
-  // execute
-  UUT.genIr(*astRoot);
-  int result = UUT.jitExecFunction("main");
+  try {
+    // setup
+    SemanticAnalizer semanticAnalizer(UUT.m_env, *UUT.m_errorHandler);
+    semanticAnalizer.analyze(*astRoot);
 
-  // verify
-  EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot);
+    // execute
+    UUT.genIr(*astRoot);
+    int result = UUT.jitExecFunction("main");
+
+    // verify
+    EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot);
+  }
+
+  // For better diagnostic messages in case unexpectedly an error
+  // occured. Also without those catches, gtest printer does not print the
+  // location (file, lineno) of the test that failed.
+  catch (exception& e) {
+    unexpctedExceptionThrown = true;
+    exceptionDescription = e.what();
+  }
+  catch (...) {
+    unexpctedExceptionThrown = true;
+  }
+  if ( unexpctedExceptionThrown ) {
+    FAIL() << "Unexpectedly an exception was thrown. " <<
+      "It's description is: '" << exceptionDescription << "'\n" <<
+      amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
+  }
 }
 
 #define TEST_GEN_IR_IN_IMPLICIT_MAIN(astRoot, expectedResult, spec)     \
@@ -965,4 +986,3 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstSymbol("y")),
     42, "");
 }
-
