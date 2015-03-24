@@ -18,12 +18,16 @@ class ErrorHandler;
 
 class AstNode {
 public:
+  AstNode(Access access = eRead) : m_access(access) {};
   virtual ~AstNode() {};
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
-  virtual Access access() const { return eRead; }
+  virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& errorHandler);
   std::string toStr() const;
+
+protected:
+  Access m_access;
 
   // decorations for IrGen
 public:
@@ -32,6 +36,7 @@ public:
 
 class AstValue : public AstNode {
 public:
+  AstValue(Access access = eRead) : AstNode(access) {};
   virtual const ObjType& objType() const =0;
 };
 
@@ -145,7 +150,6 @@ public:
   virtual std::shared_ptr<const ObjType>& objTypeShareOwnership();
   virtual SymbolTableEntry* stentry() const { return m_stentry.get(); }
   virtual void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
-  virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
   
 private:
@@ -154,7 +158,6 @@ private:
   std::shared_ptr<const ObjType> m_objType;
   /** NULL means this DataDecl was not yet put into the environment */
   std::shared_ptr<SymbolTableEntry> m_stentry;
-  Access m_access;
 
 // decorations for IrGen
 public:
@@ -183,7 +186,6 @@ public:
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   virtual AstValue& initValue() const;
   virtual const ObjType& objType() const;
-  virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
 private:
   /** We're the owner. Is garanteed to be non-null */
@@ -192,7 +194,6 @@ private:
   AstCtList* const m_ctorArgs;
   /** We're the owner. Is _NOT_ guaranteed to  be non-null. */
   AstValue* m_implicitInitializer;
-  Access m_access;
 
 // decorations for IrGen
 public:
@@ -229,20 +230,19 @@ public:
 class AstSymbol : public AstValue {
 public:
   AstSymbol(const std::string& name, Access access = eRead) :
-    m_name(name), m_access(access), m_stentry(NULL), m_irValue(NULL) {};
+    AstValue(access),
+    m_name(name), m_stentry(NULL), m_irValue(NULL) { }
   virtual ~AstSymbol() {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   const std::string& name() const { return m_name; }
   virtual const ObjType& objType() const;
-  virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
   virtual SymbolTableEntry* stentry() { return m_stentry.get(); }
   virtual void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
 
 private:
   const std::string m_name;
-  Access m_access;
   /** We're not the owner, can be NULL */
   std::shared_ptr<SymbolTableEntry> m_stentry;
 
@@ -309,7 +309,6 @@ public:
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& );
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
@@ -330,7 +329,6 @@ private:
   /** We're the owner. Is garanteed to be non-null */
   AstCtList* const m_args;
   std::unique_ptr<ObjType> m_objType;
-  Access m_access;
   static const std::map<const std::string, const EOperation> m_opMap;
   static const std::map<const EOperation, const std::string> m_opReverseMap;
 
@@ -352,7 +350,6 @@ public:
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& );
   AstValue& condition() const { return *m_condition; }
   AstValue& action() const { return *m_action; }
@@ -368,7 +365,6 @@ private:
   /** We're the owner. Is NOT garanteed to be non-null */
   AstValue* const m_elseAction;
   std::unique_ptr<ObjType> m_objType;
-  Access m_access;
 
 // decorations for IrGen
 public:

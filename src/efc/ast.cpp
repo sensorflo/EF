@@ -8,9 +8,10 @@
 using namespace std;
 
 void AstNode::setAccess(Access access, ErrorHandler& errorHandler) {
-  if ( access!=eRead ) {
+  if ( access==eWrite ) {
     Error::throwError(errorHandler, Error::eWriteToImmutable);
   }
+  m_access = access;
 }
 
 string AstNode::toStr() const {
@@ -143,7 +144,6 @@ AstDataDecl::AstDataDecl(const string& name, ObjType* objType,
   m_objType(objType ? shared_ptr<ObjType>(objType) :
     make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
   m_stentry(move(stentry)),
-  m_access(eRead),
   m_irValue(NULL) {
 }
 
@@ -171,7 +171,6 @@ AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_ctorArgs(initValue ? new AstCtList(initValue) : new AstCtList()),
   m_implicitInitializer(initValue ? NULL : m_decl->objType().createDefaultAstValue()),
-  m_access(eRead),
   m_irValue(NULL) {
   assert(m_decl);
   assert(m_ctorArgs);
@@ -181,7 +180,6 @@ AstDataDef::AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()),
   m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_decl->objType().createDefaultAstValue()),
-  m_access(eRead),
   m_irValue(NULL) {
   assert(m_decl);
   assert(m_ctorArgs);
@@ -265,7 +263,6 @@ AstOperator::AstOperator(const string& op, AstCtList* args) :
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
   m_args(args ? args : new AstCtList),
-  m_access(eRead),
   m_irValue(NULL) {
   const size_t required_arity = op == eNot ? 1 : 2;
   assert( args->childs().size() == required_arity );
@@ -363,7 +360,6 @@ AstIf::AstIf(AstValue* cond, AstValue* action, AstValue* elseAction) :
   m_condition(cond),
   m_action(action),
   m_elseAction(elseAction),
-  m_access(eRead),
   m_irValue(NULL) {
   assert(m_condition);
   assert(m_action);
