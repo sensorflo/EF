@@ -107,7 +107,7 @@ void IrGen::visit(AstCast& cast) {
   cast.child().accept(*this);
   cast.setIrValue( m_builder.CreateZExt(
       cast.child().irValue(),
-      Type::getInt32Ty(getGlobalContext())));
+      Type::getInt32Ty(getGlobalContext())));//!!!! must be dynamic type
 }
 
 void IrGen::visit(AstCtList&) {
@@ -413,6 +413,9 @@ void IrGen::visit(AstIf& if_) {
   } else {
     if_.setIrValue(m_void);
   }
+}
+
+void IrGen::visit(AstReturn& return_) {
 }
 
 /** We want allocas in the entry block to facilitate llvm's mem2reg pass.*/

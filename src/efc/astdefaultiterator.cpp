@@ -63,3 +63,7 @@ void AstDefaultIterator::visit(AstIf& if_) {
   }
 }
 
+void AstDefaultIterator::visit(AstReturn& return_) {
+  return_.retVal().accept(m_visitor);
+}
+

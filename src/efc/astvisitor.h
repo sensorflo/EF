@@ -19,6 +19,7 @@ public:
   virtual void visit(AstArgDecl& argDecl) =0;
   virtual void visit(AstDataDef& dataDef) =0;
   virtual void visit(AstIf& if_) =0;
+  virtual void visit(AstReturn& return_) =0;
 };
 
 class AstConstVisitor {
@@ -37,6 +38,7 @@ public:
   virtual void visit(const AstArgDecl& argDecl) =0;
   virtual void visit(const AstDataDef& dataDef) =0;
   virtual void visit(const AstIf& if_) =0;
+  virtual void visit(const AstReturn& return_) =0;
 };
 
 #endif

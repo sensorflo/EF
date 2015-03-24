@@ -27,6 +27,7 @@ private:
   virtual void visit(AstArgDecl& argDecl);
   virtual void visit(AstDataDef& dataDef);
   virtual void visit(AstIf& if_);
+  virtual void visit(AstReturn& return_);
 
   void postConditionCheck(const AstValue& node);
 

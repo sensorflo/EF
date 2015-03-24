@@ -374,6 +374,27 @@ public:
   llvm::Value* m_irValue;
 };
 
+class AstReturn : public AstValue {
+public:
+  AstReturn(AstValue* retVal);
+  virtual void accept(AstVisitor& visitor);
+  virtual void accept(AstConstVisitor& visitor) const;
+  virtual const ObjType& objType() const;
+
+  AstValue& retVal() const;
+
+private:
+  /** Is garanteed to be non-null */
+  const std::unique_ptr<AstValue> m_retVal;
+
+// decorations for IrGen
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value);
+public:
+  llvm::Value* m_irValue;
+};
+
 class AstCtList : public AstNode {
 public:
   AstCtList(std::list<AstValue*>* childs);

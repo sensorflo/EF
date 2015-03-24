@@ -113,3 +113,6 @@ void AstPrinter::visit(const AstIf& if_) {
   }
   m_os << ")";
 }
+
+void AstPrinter::visit(const AstReturn& return_) {
+}

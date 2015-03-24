@@ -25,6 +25,7 @@ private:
   virtual void visit(const AstArgDecl& argDecl);
   virtual void visit(const AstDataDef& dataDef);
   virtual void visit(const AstIf& if_);
+  virtual void visit(const AstReturn& return_);
   
   std::basic_ostream<char>& m_os;
 };

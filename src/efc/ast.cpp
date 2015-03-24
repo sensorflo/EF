@@ -394,6 +394,27 @@ void AstIf::setAccess(Access access, ErrorHandler& errorHandler) {
   m_access = access;
 }
 
+AstReturn::AstReturn(AstValue* retVal) :
+  m_retVal(retVal) {
+  assert(m_retVal);
+}
+
+const ObjType& AstReturn::objType() const {
+  assert(false);
+  return *((const ObjType*)nullptr);
+}
+
+AstValue& AstReturn::retVal() const {
+  assert(m_retVal);
+  return *m_retVal.get();
+}
+
+void AstReturn::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
+}
+
 void AstSymbol::setIrValue(llvm::Value* value) {
   assert(value);
   assert(!m_irValue); // it doesnt make sense to set it twice
@@ -516,6 +537,7 @@ void AstSymbol::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstFunCall::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstOperator::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstIf::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstReturn::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCtList::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 
 void AstNop::accept(AstVisitor& visitor) { visitor.visit(*this); }
@@ -530,4 +552,5 @@ void AstSymbol::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstFunCall::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstOperator::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstReturn::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCtList::accept(AstVisitor& visitor) { visitor.visit(*this); }

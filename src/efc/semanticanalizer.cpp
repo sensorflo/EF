@@ -273,6 +273,9 @@ void SemanticAnalizer::visit(AstIf& if_) {
   postConditionCheck(if_);
 }
 
+void SemanticAnalizer::visit(AstReturn& return_) {
+}
+
 void SemanticAnalizer::postConditionCheck(const AstValue& node) {
   assert((node.objType(),true)); // asserts internally if not defined
 }
