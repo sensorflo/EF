@@ -49,6 +49,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
     if (AstOperator::eAssignment == op.class_()) {
       argschilds.front()->setAccess(eWrite, m_errorHandler);
     } else if ( AstOperator::eSeq == op.op() ) {
+      argschilds.front()->setAccess(eIgnore, m_errorHandler);
       argschilds.back()->setAccess(op.access(), m_errorHandler);
     }
   }

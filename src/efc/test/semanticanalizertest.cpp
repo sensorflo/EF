@@ -372,7 +372,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 // aka temporary objects are immutable
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_access_to_a_sequence_operator,
-    THEN_the_access_value_of_seqs_rhs_equals_that_outer_access_value_AND_the_access_value_of_the_lhs_is_eRead))
+    THEN_the_access_value_of_seqs_rhs_equals_that_outer_access_value_AND_the_access_value_of_the_lhs_is_eIgnore))
 {
   // setup
   Env env;
@@ -393,7 +393,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( eRead, lhsAst->access()) << amendAst(ast);
+  EXPECT_EQ( eIgnore, lhsAst->access()) << amendAst(ast);
   EXPECT_EQ( eWrite, rhsAst->access()) << amendAst(ast);
 }
 
