@@ -256,7 +256,7 @@ void IrGen::visit(AstFunDef& funDef) {
   assert( ret);
   if ( funDef.body().objType().isVoid() ) {
     m_builder.CreateRetVoid();
-  } else {
+  } else if ( ! funDef.body().objType().isNoreturn() )  {
     m_builder.CreateRet( ret);
   }
 
@@ -418,6 +418,14 @@ void IrGen::visit(AstIf& if_) {
 }
 
 void IrGen::visit(AstReturn& return_) {
+  Value* ret = callAcceptOn( return_.retVal());
+  assert( ret);
+  if ( return_.retVal().objType().isVoid() ) {
+    m_builder.CreateRetVoid();
+  } else {
+    m_builder.CreateRet( ret);
+  }
+  return_.setIrValue(m_abstractObject);
 }
 
 /** We want allocas in the entry block to facilitate llvm's mem2reg pass.*/

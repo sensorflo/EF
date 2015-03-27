@@ -988,3 +988,42 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstSymbol("y")),
     42, "");
 }
+
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_an_return_expression,
+    THEN_the_current_function_is_terminated_and_the_operands_value_is_returned_to_the_caller)) {
+
+  string spec = "Trivial example: return expression, returning an int, at end of function body";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstReturn( new AstNumber(42)),
+    42, "");
+
+  spec = "Example: return expression, returning an void, at end of function body";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      pe.mkFunDef(
+        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eVoid)),
+        new AstReturn(new AstNop)),
+      new AstFunCall(new AstSymbol("foo")),
+      new AstNumber(42)),
+    42, "");
+
+  spec = "Example: Early return in the then clause of an if expression";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstOperator(";",
+      new AstIf(
+        new AstNumber(1, ObjTypeFunda::eBool),
+        new AstReturn(new AstNumber(42))),
+      new AstNumber(0)),
+    42, "");
+
+  spec = "Example: Early return in the else clause of an if expression";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstOperator(";",
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstNumber(0),
+        new AstReturn(new AstNumber(42))),
+      new AstNumber(0)),
+    42, "");
+}
