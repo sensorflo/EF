@@ -23,6 +23,12 @@ const ObjType& AstNop::objType() const {
   return voidObjType;
 }
 
+void AstNop::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
+}
+
 AstCast::AstCast(ObjType* objType, AstValue* child) :
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
   m_child(child ? child : new AstNumber(0)),

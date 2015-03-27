@@ -42,13 +42,17 @@ public:
 
 class AstNop : public AstValue {
 public:
+  AstNop() : m_irValue(NULL) {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const ObjType& objType() const;
 
   // decorations for IrGen
 public:
-  virtual llvm::Value* irValue() { return NULL; }
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value);
+public:
+  llvm::Value* m_irValue;
 };
 
 class AstCast : public AstValue {

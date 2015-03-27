@@ -101,6 +101,7 @@ llvm::Value* IrGen::callAcceptOn(AstNode& node) {
 }
 
 void IrGen::visit(AstNop& nop) {
+  nop.setIrValue(m_abstractObject);//void
 }
 
 void IrGen::visit(AstCast& cast) {
@@ -252,10 +253,10 @@ void IrGen::visit(AstFunDef& funDef) {
   }
 
   Value* ret = callAcceptOn( funDef.body());
+  assert( ret);
   if ( funDef.body().objType().isVoid() ) {
     m_builder.CreateRetVoid();
   } else {
-    assert( ret);
     m_builder.CreateRet( ret);
   }
 
