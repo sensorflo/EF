@@ -8,6 +8,7 @@
 #include "../parserext.h"
 #include <memory>
 #include <string>
+#include <sstream>
 using namespace testing;
 using namespace std;
 
@@ -186,6 +187,190 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_simple_example_of_a_reference_to_an_unknown_name,
+    transform,
+    reports_an_eErrUnknownName)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstSymbol("x"),
+    Error::eUnknownName, "");
+
+  // separate test for symbol and funcal since currently the two do sadly not
+  // share a common implementation
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstFunCall(new AstSymbol("foo")),
+    Error::eUnknownName, "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+    a_data_object_definition_named_x_in_a_block_AND_a_symbol_named_x_after_the_block,
+    transform,
+    reports_eUnknownName,
+    BECAUSE_the_scope_of_data_objects_declarations_is_that_of_the_enclosing_block)) {
+
+  string spec = "Example: Then clause of an if expression is a block.";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
+      new AstSymbol("x")),
+    Error::eUnknownName, spec);
+
+  spec = "Example: Else clause of an if expression is a block.";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstNumber(42, ObjTypeFunda::eInt),
+        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
+      new AstSymbol("x")),
+    Error::eUnknownName, spec);
+
+  spec = "Example: The whole if expesssion is a block. I.e. data object's declared "
+    "in the condition can be referenced in both clauses but not after the if expression.";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstIf(
+        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
+        new AstNop()),
+      new AstSymbol("x")),
+    Error::eUnknownName, spec);
+
+  spec = "Example: Body of a function definition is a block. Example with a parameter.";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDef(
+        pe.mkFunDecl(
+          "foo",
+          new ObjTypeFunda(ObjTypeFunda::eVoid),
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstNop()),
+      new AstSymbol("x")),
+    Error::eUnknownName, spec);
+
+  spec = "Example: Body of a function definition is a block. Example with a local data object";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDef(
+        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
+      new AstSymbol("x")),
+    Error::eUnknownName, spec);
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+    a_data_definition_in_a_block,
+    transform,
+    inserts_a_symbol_table_entry_with_the_scope_of_the_block)) {
+
+  string spec = "Example: An if expressions with an if clause (being a "
+    "distinct block) and an else clause (being a distinct block), each "
+    "block defines its own distinct data object.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+
+    AstDataDef* thenClauseDef =
+      new AstDataDef( new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
+    AstSymbol* thenClauseSymbol = new AstSymbol("x");
+
+    AstDataDef* elseClauseDef =
+      new AstDataDef( new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
+    AstSymbol* elseClauseSymbol = new AstSymbol("x");
+
+    unique_ptr<AstValue> ast{
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstOperator(';', thenClauseDef, thenClauseSymbol ),
+        new AstOperator(';', elseClauseDef, elseClauseSymbol ))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    SymbolTableEntry* thenClauseStentry = thenClauseDef->decl().stentry();
+    SymbolTableEntry* elseClauseStentry = elseClauseDef->decl().stentry();
+    EXPECT_EQ( thenClauseSymbol->stentry(), thenClauseStentry )
+      << amendSpec(spec) << amendAst(ast);
+    EXPECT_EQ( elseClauseSymbol->stentry(), elseClauseStentry )
+      << amendSpec(spec) << amendAst(ast);
+    EXPECT_NE( thenClauseStentry, elseClauseStentry )
+      << amendSpec(spec) << amendAst(ast);
+  }
+
+  spec = "Example: An outer data object definition and a symbol referencing it after "
+    "an inner block, and an inner block containing a data definition and "
+    "a symbol referencing the inner data object. Concrete example: block created by "
+    "the then clause of an if expression.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(env, errorHandler);
+
+    AstDataDef* outerDef =
+      new AstDataDef( new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
+    AstSymbol* outerSymbol = new AstSymbol("x");
+
+    AstDataDef* innerDef =
+      new AstDataDef( new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
+    AstSymbol* innerSymbol = new AstSymbol("x");
+
+    unique_ptr<AstValue> ast{
+      pe.mkOperatorTree(";",
+        outerDef,
+        new AstIf(
+          new AstNumber(0, ObjTypeFunda::eBool),
+          new AstOperator(';', innerDef, innerSymbol)),
+        outerSymbol)};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    SymbolTableEntry* outerStentry = outerDef->decl().stentry();
+    SymbolTableEntry* innerStentry = innerDef->decl().stentry();
+    EXPECT_EQ( outerSymbol->stentry(), outerStentry )
+      << amendSpec(spec) << amendAst(ast);
+    EXPECT_EQ( innerSymbol->stentry(), innerStentry )
+      << amendSpec(spec) << amendAst(ast);
+    EXPECT_NE( outerStentry, innerStentry )
+      << amendSpec(spec) << amendAst(ast);
+  }
+
+  spec = "Example: An if expression is an own distinct block, i.e. a data "
+    "object definition in its condition is visible in the then and in the "
+    "else clause.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(env, errorHandler);
+
+    AstDataDef* def =
+      new AstDataDef( new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool)));
+    AstSymbol* thenClauseSymbol = new AstSymbol("x");
+    AstSymbol* elseClauseSymbol = new AstSymbol("x");
+
+    unique_ptr<AstValue> ast{new AstIf( def, thenClauseSymbol, elseClauseSymbol)};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    SymbolTableEntry* defStentry = def->decl().stentry();
+    EXPECT_EQ( thenClauseSymbol->stentry(), defStentry )
+      << amendSpec(spec) << amendAst(ast);
+    EXPECT_EQ( elseClauseSymbol->stentry(), defStentry )
+      << amendSpec(spec) << amendAst(ast);
+  }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_data_redeclaration_with_matching_type,
     transform,
     succeeds_AND_inserts_an_appropriate_SymbolTableEntry_into_Env_once)) {
@@ -272,21 +457,6 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))),
     Error::eIncompatibleRedaclaration, spec);
-}
-
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    a_reference_to_an_unknown_name,
-    transform,
-    reports_an_eErrUnknownName)) {
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstSymbol("x"),
-    Error::eUnknownName, "");
-
-  // separate test for symbol and funcal since currently the two do sadly not
-  // share a common implementation
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstFunCall(new AstSymbol("foo")),
-    Error::eUnknownName, "");
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(

@@ -179,26 +179,27 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 
   funDef.decl().stentry()->markAsDefined(m_errorHandler);
 
-  m_funRetObjTypes.push(&funDef.decl().retObjType());
-  m_env.pushScope();
+  {
+    m_funRetObjTypes.push(&funDef.decl().retObjType());
+    Env::AutoScope scope(m_env);
 
-  list<AstArgDecl*>::const_iterator argDeclIter = funDef.decl().args().begin();
-  list<AstArgDecl*>::const_iterator end = funDef.decl().args().end();
-  for ( ; argDeclIter!=end; ++argDeclIter) {
-    (*argDeclIter)->accept(*this);
-    (*argDeclIter)->stentry()->markAsDefined(m_errorHandler);
+    list<AstArgDecl*>::const_iterator argDeclIter = funDef.decl().args().begin();
+    list<AstArgDecl*>::const_iterator end = funDef.decl().args().end();
+    for ( ; argDeclIter!=end; ++argDeclIter) {
+      (*argDeclIter)->accept(*this);
+      (*argDeclIter)->stentry()->markAsDefined(m_errorHandler);
+    }
+
+    funDef.body().accept(*this);
+
+    m_funRetObjTypes.pop();
   }
-
-  funDef.body().accept(*this);
 
   const auto& bodyObjType = funDef.body().objType();
   if ( ! bodyObjType.matchesSaufQualifiers( funDef.decl().retObjType())
     && ! bodyObjType.isNoreturn()) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
-
-  m_env.popScope();
-  m_funRetObjTypes.pop();
 
   postConditionCheck(funDef);
 }
@@ -256,12 +257,17 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 }
 
 void SemanticAnalizer::visit(AstIf& if_) {
-  if_.condition().accept(*this);
-  if_.action().setAccess(if_.access(), m_errorHandler);
-  if_.action().accept(*this);
-  if (if_.elseAction()) {
-    if_.elseAction()->setAccess(if_.access(), m_errorHandler);
-    if_.elseAction()->accept(*this);
+  {
+    Env::AutoScope scope(m_env);
+    if_.condition().accept(*this);
+
+    if_.action().setAccess(if_.access(), m_errorHandler);
+    callAcceptWithinNewScope(if_.action());
+
+    if (if_.elseAction()) {
+      if_.elseAction()->setAccess(if_.access(), m_errorHandler);
+      callAcceptWithinNewScope(*if_.elseAction());
+    }
   }
 
   if ( !if_.condition().objType().matchesSaufQualifiers(
@@ -310,6 +316,11 @@ void SemanticAnalizer::visit(AstReturn& return_) {
   if ( ! return_.retVal().objType().matchesSaufQualifiers( currentFunReturnType ) ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
+}
+
+void SemanticAnalizer::callAcceptWithinNewScope(AstValue& node) {
+  Env::AutoScope scope(m_env);
+  node.accept(*this);
 }
 
 void SemanticAnalizer::postConditionCheck(const AstValue& node) {

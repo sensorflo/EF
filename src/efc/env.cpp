@@ -27,6 +27,14 @@ void SymbolTableEntry::setValueIr(llvm::Value* valueIr) {
   m_valueIr = valueIr;
 }
 
+Env::AutoScope::AutoScope(Env& env) : m_env(env) {
+  m_env.pushScope();
+}
+
+Env::AutoScope::~AutoScope() {
+  m_env.popScope();
+}
+
 Env::Env() {
   m_ststack.push_front(SymbolTable());
 }

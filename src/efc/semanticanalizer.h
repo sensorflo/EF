@@ -31,6 +31,7 @@ private:
   virtual void visit(AstIf& if_);
   virtual void visit(AstReturn& return_);
 
+  void callAcceptWithinNewScope(AstValue& node);
   void postConditionCheck(const AstValue& node);
 
   friend class TestingSemanticAnalizer;

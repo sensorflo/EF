@@ -41,6 +41,14 @@ public:
 
 class Env {
 public:
+  class AutoScope {
+  public:
+    AutoScope(Env& env);
+    ~AutoScope();
+  private:
+    Env& m_env;
+  };
+
   typedef std::pair<SymbolTable::iterator,bool> InsertRet;
 
   Env();
