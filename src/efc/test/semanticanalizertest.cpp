@@ -1269,3 +1269,17 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     new AstReturn( new AstNumber(0)),
     Error::eNotInFunBodyContext, "");
 }
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+    an_expression_of_obj_type_noreturn_as_lhs_to_the_sequence_operator,
+    transform,
+    reports_an_eUnreachableCode,
+    BECAUSE_the_rhs_can_not_be_reached)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef(
+      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstOperator(';',
+        new AstReturn(new AstNumber(42)),
+        new AstNumber(77))),
+    Error::eUnreachableCode, "");
+}

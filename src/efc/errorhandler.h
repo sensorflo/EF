@@ -19,6 +19,7 @@ public:
     eInvalidArguments,
     eNoSuchMember,
     eNotInFunBodyContext,
+    eUnreachableCode,
     eCnt
   };
 

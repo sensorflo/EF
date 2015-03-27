@@ -79,6 +79,16 @@ void SemanticAnalizer::visit(AstOperator& op) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 
+  // Report eUnreachableCode if the lhs of an sequence operator is of obj type
+  // noreturn.  That is actually also true for other operators, but there the
+  // error eNoSuchMember has higher priority.
+  if ( op.op()==AstOperator::eSeq ) {
+    static const ObjTypeFunda noreturnObjType(ObjTypeFunda::eNoreturn);
+    if ( argschilds.front()->objType().matchesFully(noreturnObjType) ) {
+      Error::throwError(m_errorHandler, Error::eUnreachableCode);
+    }
+  }
+
   // Set the obj type of this AstOperator node. It is a temporary object which
   // is always immutable.
   {
