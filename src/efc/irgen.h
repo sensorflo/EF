@@ -71,7 +71,9 @@ private:
   ErrorHandler& m_errorHandler;
   /** We're not the owner, guaranteed to be non-null. */
   AstVisitor* m_enclosingVisitor;
-  static llvm::Value *const m_void;
+  /** For abstract obj types like void or noreturn. Contrast this with nullptr
+  which means '(accidentaly) not (yet) set)'. */
+  static llvm::Value* const m_abstractObject;
 };
 
 #endif

@@ -83,11 +83,12 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
 class ObjTypeFunda : public ObjType {
 public:
   enum EType {
+    // abstract objects
     eVoid,
     eNoreturn,
+    // concrete objects
     eInt,
-    eBool,
-    // later: double etc
+    eBool
   };
 
   ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier);

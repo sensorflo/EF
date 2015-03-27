@@ -16,7 +16,7 @@
 using namespace std;
 using namespace llvm;
 
-Value *const IrGen::m_void = reinterpret_cast<Value *>(0xFFFFFFFF);
+Value* const IrGen::m_abstractObject = reinterpret_cast<Value*>(0xFFFFFFFF);
 
 void IrGen::staticOneTimeInit() {
   InitializeNativeTarget();
@@ -179,7 +179,7 @@ void IrGen::visit(AstOperator& op) {
     case AstOperator::eDotAssign:            m_builder.CreateStore (operandIr, resultIr            );
                                   resultIr = op.access()==eWrite ? resultIr : operandIr; break;
     case AstOperator::eAssign   :            m_builder.CreateStore (operandIr, resultIr            );
-                                  resultIr = m_void; break;
+                                  resultIr = m_abstractObject; break;
     case AstOperator::eNot      : resultIr = m_builder.CreateNot   (operandIr,            "nottmp" ); break;
     case AstOperator::eAnd      : resultIr = m_builder.CreateAnd   (resultIr,  operandIr, "andtmp" ); break;
     case AstOperator::eOr       : resultIr = m_builder.CreateOr    (resultIr,  operandIr, "ortmp"  ); break;
@@ -252,9 +252,10 @@ void IrGen::visit(AstFunDef& funDef) {
   }
 
   Value* ret = callAcceptOn( funDef.body());
-  if ( ret == m_void ) {
+  if ( funDef.body().objType().isVoid() ) {
     m_builder.CreateRetVoid();
   } else {
+    assert( ret);
     m_builder.CreateRet( ret);
   }
 
@@ -396,7 +397,7 @@ void IrGen::visit(AstIf& if_) {
     elseValue = callAcceptOn(*if_.elseAction());
     assert(elseValue);
   } else {
-    elseValue = m_void;
+    elseValue = m_abstractObject;
   }
   m_builder.CreateBr(MergeBB);
   BasicBlock* ElseLastBB = m_builder.GetInsertBlock();
@@ -404,14 +405,14 @@ void IrGen::visit(AstIf& if_) {
   // IR for merge of then/else clauses
   functionIr->getBasicBlockList().push_back(MergeBB);
   m_builder.SetInsertPoint(MergeBB);
-  if ( thenValue!=m_void && elseValue!=m_void ) {
+  if ( thenValue!=m_abstractObject && elseValue!=m_abstractObject ) {
     PHINode* phi = m_builder.CreatePHI( thenValue->getType(), 2, "ifphi");
     assert(phi);
     phi->addIncoming(thenValue, ThenLastBB);
     phi->addIncoming(elseValue, ElseLastBB);
     if_.setIrValue(phi);
   } else {
-    if_.setIrValue(m_void);
+    if_.setIrValue(m_abstractObject);
   }
 }
 
