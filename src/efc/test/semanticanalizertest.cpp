@@ -63,8 +63,10 @@ void testAstTraversalReportsError(TestingSemanticAnalizer& UUT, AstNode* ast,
     amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
 
   // ... and that that one error has the expected ErrorNo
-  EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
-    amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+  if ( ! errors.empty() ) {
+    EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
+      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+  }
 }
 
 #define TEST_ASTTRAVERSAL_REPORTS_ERROR(ast, expectedErrorNo, spec)     \

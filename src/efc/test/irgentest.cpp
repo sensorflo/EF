@@ -148,8 +148,10 @@ void testgenIrReportsError(TestingIrGen& UUT, AstValue* astRoot,
     EXPECT_EQ(1, errors.size()) <<
       "Expecting exactly one error\n" << 
       amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
-    EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
-      amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
+    if ( !errors.empty() ) {
+      EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
+        amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
+    }
   }
   catch (exception& e) {
     anyThrow = true;
