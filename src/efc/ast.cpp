@@ -395,13 +395,14 @@ void AstIf::setAccess(Access access, ErrorHandler& errorHandler) {
 }
 
 AstReturn::AstReturn(AstValue* retVal) :
-  m_retVal(retVal) {
+  m_retVal(retVal),
+  m_irValue(NULL) {
   assert(m_retVal);
 }
 
 const ObjType& AstReturn::objType() const {
-  assert(false);
-  return *((const ObjType*)nullptr);
+  static const ObjTypeFunda noretObjType(ObjTypeFunda::eNoreturn);
+  return noretObjType;
 }
 
 AstValue& AstReturn::retVal() const {

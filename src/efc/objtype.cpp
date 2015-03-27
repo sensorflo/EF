@@ -8,6 +8,7 @@ using namespace llvm;
 
 ObjType& ObjType::addQualifiers(Qualifiers qualifiers) {
   m_qualifiers = static_cast<Qualifiers>(m_qualifiers | qualifiers);
+  // don't allow for certain types, e.g. fun, void, noret
   return *this;
 }
 
@@ -54,6 +55,7 @@ ObjTypeFunda::ObjTypeFunda(EType type, Qualifiers qualifiers)  :
   if ( type==eVoid ) {
     assert( qualifiers == eNoQualifier );
   }
+  // same for eNoret
 }
 
 ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& other) const {
@@ -65,6 +67,7 @@ ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& other) const {
 basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   switch (m_type) {
   case eVoid: os << "void"; break;
+  case eNoreturn: os << "noreturn"; break;
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
   };
@@ -81,6 +84,7 @@ AstValue* ObjTypeFunda::createDefaultAstValue() const {
 llvm::Type* ObjTypeFunda::llvmType() const {
   switch (m_type) {
   case eVoid: return Type::getVoidTy(getGlobalContext());
+  case eNoreturn: return nullptr;
   case eInt: return Type::getInt32Ty(getGlobalContext());
   case eBool: return Type::getInt1Ty(getGlobalContext());
   };
@@ -89,11 +93,13 @@ llvm::Type* ObjTypeFunda::llvmType() const {
 }
 
 bool ObjTypeFunda::hasMember(int op) const {
+  // bugfix: void has none of these
+  // new: eNoreturn has none of these
   switch (AstOperator::classOf(static_cast<AstOperator::EOperation>(op))) {
-  case AstOperator::eAssignment: return true;
+  case AstOperator::eAssignment: return m_type != eNoreturn;  // scalar types
   case AstOperator::eArithmetic: return m_type == eInt; // arithmetic types
   case AstOperator::eLogical: return m_type == eBool;
-  case AstOperator::eComparison: return true; // scalar types
+  case AstOperator::eComparison: return m_type != eNoreturn; // scalar types
   case AstOperator::eOther: return true;
   default: assert(false);
   }
@@ -119,6 +125,7 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
 bool ObjTypeFunda::isValueInRange(int val) const {
   switch (m_type) {
   case eVoid: return false;
+  case eNoreturn: return false;
   case eInt: return true;
   case eBool: return val==0 || val==1;
   };

@@ -24,6 +24,7 @@ const char* toStr(Error::No no) {
   case Error::eNoImplicitConversion: return "eNoImplicitConversion";
   case Error::eInvalidArguments: return "eInvalidArguments";
   case Error::eNoSuchMember: return "eNoSuchMember";
+  case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
   case Error::eCnt: return "<unknown>";
   }
   return "<unknown>";

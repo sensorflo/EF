@@ -69,6 +69,16 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    a_return_expression,
+    scannAndParse,
+    succeeds_AND_returns_correct_AST) ) {
+  TEST_PARSE( "return 42$", "return(42)", "trivial example");
+  TEST_PARSE( "return(42)", "return(42)", "trivial example");
+  TEST_PARSE( "return$", "return(nop)", "");
+  TEST_PARSE( "return()", "return(nop)", "");
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_literal,
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {

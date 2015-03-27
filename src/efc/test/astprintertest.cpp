@@ -51,6 +51,10 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
       new AstNumber(1),
       new AstNumber(0)), spec);
 
+  spec = "AstReturn";
+  EXPECT_TOSTR_EQ( "return(42)",
+    AstReturn(new AstNumber(42)), spec);
+
   spec = "AstDataDecl";
   EXPECT_TOSTR_EQ( "decldata(foo int)", AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)), spec);
   EXPECT_TOSTR_EQ( "decldata(foo int-mut)", AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)), spec);

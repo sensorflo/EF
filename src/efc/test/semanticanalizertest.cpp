@@ -656,6 +656,138 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_a_return_expression,
+    THEN_the_objType_is_noreturn)) {
+
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  AstValue* retAst = new AstReturn(new AstNumber(42, ObjTypeFunda::eInt));
+  unique_ptr<AstValue> ast{
+    pe.mkFunDef(
+      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      retAst)};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eNoreturn), retAst->objType()) <<
+    amendAst(ast);
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_a_return_expression_whose_retVal_ObjType_does_match_functions_return_ObjType,
+    THEN_it_succeeds)) {
+
+  string spec = "Example: return expression as last (and only) expression in fun's body";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstNode* ast =
+      pe.mkFunDef(
+        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
+
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast) << amendSpec(spec);
+  }
+
+  spec = "Example: Early return, return expression in an if clause";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstNode* ast =
+      pe.mkFunDef(
+        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstOperator(';',
+          new AstIf(
+            new AstNumber(0, ObjTypeFunda::eBool),
+            new AstReturn(new AstNumber(42, ObjTypeFunda::eInt))), // early return
+          new AstNumber(77, ObjTypeFunda::eInt)));
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
+  }
+
+  spec = "Example: Nested functions with different return types.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstNode* ast =
+      pe.mkFunDef(
+        pe.mkFunDecl( "outer", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstOperator(';',
+
+          pe.mkFunDef(
+            pe.mkFunDecl( "inner", new ObjTypeFunda(ObjTypeFunda::eBool)),
+            new AstReturn(new AstNumber(0, ObjTypeFunda::eBool))),
+
+          new AstReturn(new AstNumber(42, ObjTypeFunda::eInt))));
+
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
+  }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_a_return_expression_whose_retVal_ObjType_does_not_match_functions_return_ObjType,
+    THEN_it_reports_eNoImplicitConversion)) {
+
+  string spec = "Example: return expression as last (and only) expression in fun's body";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef(
+      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstReturn(new AstNumber(42, ObjTypeFunda::eBool))),
+    Error::eNoImplicitConversion, "");
+
+  spec = "Example: Early return, return expression in an if clause";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef(
+      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstOperator(';',
+        new AstIf(
+          new AstNumber(0, ObjTypeFunda::eBool),
+          new AstReturn(new AstNumber(0, ObjTypeFunda::eBool))), // early return
+        new AstNumber(77, ObjTypeFunda::eInt))),
+    Error::eNoImplicitConversion, "");
+
+  spec = "Example: Nested function. Return expression in body of inner function "
+    "does not match return type of its function, but would match that of the "
+    "outer function. Naturally that is still an error.";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef(
+      pe.mkFunDecl( "outer", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstOperator(';',
+
+        pe.mkFunDef(
+          pe.mkFunDecl( "inner", new ObjTypeFunda(ObjTypeFunda::eBool)),
+          new AstReturn(new AstNumber(0, ObjTypeFunda::eInt))), // return under test
+
+        new AstNumber(42))),
+    Error::eNoImplicitConversion, "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_if_expression_with_else_clause,
     THEN_its_obj_type_is_exactly_that_of_either_of_its_two_clauses)) {
 
@@ -1010,4 +1142,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstCast(new ObjTypeFunda(ObjTypeFunda::eVoid), new AstNumber(42)),
     Error::eNoSuchMember, "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+    a_return_expression_outside_a_function_body,
+    transform,
+    reports_an_eNotInFunBodyContext)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstReturn( new AstNumber(0)),
+    Error::eNotInFunBodyContext, "");
 }

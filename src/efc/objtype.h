@@ -82,6 +82,7 @@ class ObjTypeFunda : public ObjType {
 public:
   enum EType {
     eVoid,
+    eNoreturn,
     eInt,
     eBool,
     // later: double etc

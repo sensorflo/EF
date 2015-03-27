@@ -2,9 +2,11 @@
 #define SEMANTICANALIZER_H
 #include "astvisitor.h"
 #include <cstddef>
+#include <stack>
 
 class Env;
 class ErrorHandler;
+class ObjType;
 
 /** Does semenatic analysis by inserting AST nodes where needed or reporting
 errors via the ErrorHandler.*/
@@ -35,6 +37,7 @@ private:
 
   Env& m_env;
   ErrorHandler& m_errorHandler;
+  std::stack<const ObjType*> m_funRetObjTypes;
 };
 
 #endif

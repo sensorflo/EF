@@ -18,6 +18,7 @@ public:
     eNoImplicitConversion,
     eInvalidArguments,
     eNoSuchMember,
+    eNotInFunBodyContext,
     eCnt
   };
 

@@ -59,6 +59,7 @@
   RAW_NEW "raw_new"
   RAW_DELETE "raw_delete"
   NOP "nop"
+  RETURN "return"
   EQUAL "="
   DOT_EQUAL ".="
   COLON_EQUAL ":="
@@ -105,7 +106,7 @@
 %type <AstCtList*> ct_list initializer pure2_standalone_expr_seq
 %type <std::list<AstArgDecl*>*> pure_naked_param_ct_list
 %type <std::list<AstValue*>*> pure_ct_list
-%type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif opt_else 
+%type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif opt_else naked_return
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifiers> valvar
 %type <RawAstDataDecl*> naked_data_decl
@@ -248,6 +249,7 @@ list_expr
   | DECL kwao FUN naked_fun_decl kwac               { $$ = $4; }
   | FUN kwao naked_fun_def kwac                     { $$ = $3; }
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
+  | RETURN kwao naked_return kwac                   { $$ = $3; }
   | OP_LPAREN ct_list RPAREN                        { $$ = parserExt.mkOperatorTree($1, $2); }
   | RAW_NEW kwao type initializer kwac              { $$ = NULL; }
   | RAW_DELETE kwao sub_expr kwac                   { $$ = NULL; }
@@ -323,6 +325,11 @@ elif
 opt_else
   : %empty                                                           { $$ = NULL; }
   | ELSE block_expr                                                  { $$ = $2; }
+  ;
+
+naked_return
+  : %empty                                                           { $$ = new AstReturn(new AstNop()); }
+  | standalone_expr                                                  { $$ = new AstReturn($1); }
   ;
 
 /* Epilogue section

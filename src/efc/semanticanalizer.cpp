@@ -163,6 +163,7 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 
   funDef.decl().stentry()->markAsDefined(m_errorHandler);
 
+  m_funRetObjTypes.push(&funDef.decl().retObjType());
   m_env.pushScope();
 
   list<AstArgDecl*>::const_iterator argDeclIter = funDef.decl().args().begin();
@@ -174,11 +175,15 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 
   funDef.body().accept(*this);
 
-  if ( ! funDef.body().objType().matchesSaufQualifiers( funDef.decl().retObjType())) {
+  const auto& bodyObjType = funDef.body().objType();
+  static const ObjTypeFunda noreturnObjType(ObjTypeFunda::eNoreturn);
+  if ( ! bodyObjType.matchesSaufQualifiers( funDef.decl().retObjType())
+    && ! bodyObjType.matchesSaufQualifiers( noreturnObjType)) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
   m_env.popScope();
+  m_funRetObjTypes.pop();
 
   postConditionCheck(funDef);
 }
@@ -274,6 +279,13 @@ void SemanticAnalizer::visit(AstIf& if_) {
 }
 
 void SemanticAnalizer::visit(AstReturn& return_) {
+  if ( m_funRetObjTypes.empty() ) {
+    Error::throwError(m_errorHandler, Error::eNotInFunBodyContext);
+  }
+  const auto& currentFunReturnType = *m_funRetObjTypes.top();
+  if ( ! return_.retVal().objType().matchesSaufQualifiers( currentFunReturnType ) ) {
+    Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+  }
 }
 
 void SemanticAnalizer::postConditionCheck(const AstValue& node) {

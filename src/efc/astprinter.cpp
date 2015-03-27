@@ -115,4 +115,7 @@ void AstPrinter::visit(const AstIf& if_) {
 }
 
 void AstPrinter::visit(const AstReturn& return_) {
+  m_os << "return(";
+  return_.retVal().accept(*this);
+  m_os << ")";
 }
