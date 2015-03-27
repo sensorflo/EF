@@ -255,12 +255,21 @@ void SemanticAnalizer::visit(AstIf& if_) {
   }
 
   // In case of two clauses, check that both clauses are of the same obj type,
-  // sauf qualifiers. Currently there are no implicit conversions
+  // sauf qualifiers. Currently there are no implicit conversions.  As an
+  // exception, if one of the two clauses is of type noreturn, then the if
+  // expression's type is that of the other clause.
+  static const ObjTypeFunda noreturnObjType(ObjTypeFunda::eNoreturn);
+  const bool actionIsOfTypeNoreturn =
+    if_.action().objType().matchesSaufQualifiers(noreturnObjType);
   if ( if_.elseAction() ) {
     auto& lhs = if_.action().objType();
     auto& rhs = if_.elseAction()->objType();
     if ( !lhs.matchesSaufQualifiers(rhs) ) {
-      Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+      const bool elseActionIsOfTypeNoreturn =
+        rhs.matchesSaufQualifiers(noreturnObjType);
+      if ( !actionIsOfTypeNoreturn && !elseActionIsOfTypeNoreturn) {
+        Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+      }
     }
   }
 
@@ -269,7 +278,11 @@ void SemanticAnalizer::visit(AstIf& if_) {
   // know the two clauses have the same obj type, either clause's obj type can
   // be taken.
   if ( if_.elseAction() ) {
-    if_.setObjType(unique_ptr<ObjType>(if_.action().objType().clone()));
+    if ( !actionIsOfTypeNoreturn ) {
+      if_.setObjType(unique_ptr<ObjType>(if_.action().objType().clone()));
+    } else {
+      if_.setObjType(unique_ptr<ObjType>(if_.elseAction()->objType().clone()));
+    }
     // don't remove mutable qualifier
   } else {
     if_.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eVoid));

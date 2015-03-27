@@ -96,7 +96,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
       new AstNumber(77, ObjTypeFunda::eInt)),
     Error::eNoImplicitConversion, spec);
 
-  spec = "Example: If else clause";
+  spec = "Example: If else clause (note that there is an excpetion if one type "
+    "is noreturn, see other specifications)";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstIf(new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(0, ObjTypeFunda::eBool),
@@ -130,7 +131,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
       new AstNumber(1, ObjTypeFunda::eBool)),
     Error::eNoImplicitConversion, spec);
 
-  spec = "Example: If else clause";
+  spec = "Example: If else clause (note that there is an excpetion if one type "
+    "is noreturn, see other specifications)";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstIf(new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(77, ObjTypeFunda::eInt),
@@ -788,8 +790,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
-    GIVEN_an_if_expression_with_else_clause,
-    THEN_its_obj_type_is_exactly_that_of_either_of_its_two_clauses)) {
+    GIVEN_an_if_expression_with_else_clause_AND_none_of_the_two_clauses_is_of_obj_type_noreturn,
+    THEN_the_if_expressions_obj_type_is_exactly_that_of_either_of_its_two_clauses)) {
 
   // this specification only looks at operands with identical types. Other
   // specifications specify how to introduce implicit conversions when the
@@ -863,27 +865,142 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    an_if_astnode_with_no_else_clause,
-    transform,
-    sets_the_objectType_of_the_AstIf_node_to_void)) {
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_an_if_expression_with_else_clause_AND_either_of_the_two_clauses_is_of_obj_type_noreturn,
+    THEN_the_if_expressions_obj_type_is_exactly_that_of_the_other_clause)) {
 
-  // setup
-  Env env;
-  ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-  unique_ptr<AstValue> ast{
-    new AstIf(
-      new AstNumber(0, ObjTypeFunda::eBool),
-      new AstNumber(1, ObjTypeFunda::eInt))};
+  string spec = "Example: then clause of type bool, else clause of type noreturn -> "
+    "the if expression's type is bool.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstValue* astIf =
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstNumber(1, ObjTypeFunda::eBool),
+        new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
+    unique_ptr<AstValue> ast{
+      pe.mkFunDef(
+        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstOperator(';',
+          astIf,
+          new AstNumber(42)))};
 
-  // exercise
-  UUT.analyze(*ast.get());
+    // exercise
+    UUT.analyze(*ast.get());
 
-  // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->objType()) <<
-    amendAst(ast);
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), astIf->objType()) <<
+      amendAst(ast);
+  }
+
+  spec = "Example: then clause of type noreturn, else clause of type bool -> "
+    "the if expression's type is bool.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstValue* astIf =
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)),
+        new AstNumber(1, ObjTypeFunda::eBool));
+    unique_ptr<AstValue> ast{
+      pe.mkFunDef(
+        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstOperator(';',
+          astIf,
+          new AstNumber(42)))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), astIf->objType()) <<
+      amendAst(ast);
+  }
+
+  spec = "Example: both clauses of type noreturn -> the if expression's type is noreturn.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstValue* astIf =
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)),
+        new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
+    unique_ptr<AstValue> ast{
+      pe.mkFunDef(
+        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        astIf)};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eNoreturn), astIf->objType()) <<
+      amendAst(ast);
+  }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+    GIVEN_an_if_expression_with_no_else_clause,
+    THEN_the_if_expressions_obj_type_is_void,
+    BECAUSE_the_type_of_the_inexistent_else_clause_is_void)) {
+
+  string spec = "Example: then clause is of type bool -> if expression is of type void.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstNumber(1, ObjTypeFunda::eInt))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->objType()) <<
+      amendAst(ast);
+  }
+
+  spec = "Example: then clause is of type noreturn -> if expression is of type void.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstValue* astIf =
+      new AstIf(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
+    unique_ptr<AstValue> ast{
+      pe.mkFunDef(
+        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstOperator(';',
+          astIf,
+          new AstNumber(42)))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), astIf->objType()) <<
+      amendAst(ast);
+  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
