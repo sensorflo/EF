@@ -83,8 +83,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // noreturn.  That is actually also true for other operators, but there the
   // error eNoSuchMember has higher priority.
   if ( op.op()==AstOperator::eSeq ) {
-    static const ObjTypeFunda noreturnObjType(ObjTypeFunda::eNoreturn);
-    if ( argschilds.front()->objType().matchesFully(noreturnObjType) ) {
+    if ( argschilds.front()->objType().isNoreturn() ) {
       Error::throwError(m_errorHandler, Error::eUnreachableCode);
     }
   }
@@ -186,9 +185,8 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   funDef.body().accept(*this);
 
   const auto& bodyObjType = funDef.body().objType();
-  static const ObjTypeFunda noreturnObjType(ObjTypeFunda::eNoreturn);
   if ( ! bodyObjType.matchesSaufQualifiers( funDef.decl().retObjType())
-    && ! bodyObjType.matchesSaufQualifiers( noreturnObjType)) {
+    && ! bodyObjType.isNoreturn()) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
@@ -268,16 +266,12 @@ void SemanticAnalizer::visit(AstIf& if_) {
   // sauf qualifiers. Currently there are no implicit conversions.  As an
   // exception, if one of the two clauses is of type noreturn, then the if
   // expression's type is that of the other clause.
-  static const ObjTypeFunda noreturnObjType(ObjTypeFunda::eNoreturn);
-  const bool actionIsOfTypeNoreturn =
-    if_.action().objType().matchesSaufQualifiers(noreturnObjType);
+  const bool actionIsOfTypeNoreturn = if_.action().objType().isNoreturn();
   if ( if_.elseAction() ) {
     auto& lhs = if_.action().objType();
     auto& rhs = if_.elseAction()->objType();
     if ( !lhs.matchesSaufQualifiers(rhs) ) {
-      const bool elseActionIsOfTypeNoreturn =
-        rhs.matchesSaufQualifiers(noreturnObjType);
-      if ( !actionIsOfTypeNoreturn && !elseActionIsOfTypeNoreturn) {
+      if ( !actionIsOfTypeNoreturn && !rhs.isNoreturn()) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
       }
     }

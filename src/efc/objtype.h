@@ -33,6 +33,8 @@ public:
   ObjType& addQualifiers(Qualifiers qualifiers);
   ObjType& removeQualifiers(Qualifiers qualifiers);
 
+  bool isVoid() const;
+  bool isNoreturn() const;
   bool matchesFully(const ObjType& other) const;
   bool matchesSaufQualifiers(const ObjType& other) const;
   virtual MatchType match(const ObjType& other) const = 0;

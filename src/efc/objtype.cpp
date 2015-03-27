@@ -23,8 +23,18 @@ string ObjType::toStr() const {
   return ss.str();
 }
 
+bool ObjType::isVoid() const {
+  static const ObjTypeFunda voidType(ObjTypeFunda::eVoid);
+  return matchesFully(voidType);
+}
+
+bool ObjType::isNoreturn() const {
+  static const ObjTypeFunda noreturnType(ObjTypeFunda::eNoreturn);
+  return matchesFully(noreturnType);
+}
+
 bool ObjType::matchesFully(const ObjType& other) const {
-  return eFullMatch == this->match(other);
+  return match(other) == eFullMatch;
 }
 
 bool ObjType::matchesSaufQualifiers(const ObjType& other) const {
