@@ -53,6 +53,7 @@
   IF "if"
   ELIF "elif"
   ELSE "else"
+  WHILE "while"
   FUN "fun"
   VAL "val"
   VAR "var"
@@ -106,7 +107,7 @@
 %type <AstCtList*> ct_list initializer pure2_standalone_expr_seq
 %type <std::list<AstArgDecl*>*> pure_naked_param_ct_list
 %type <std::list<AstValue*>*> pure_ct_list
-%type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif opt_else naked_return
+%type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif opt_else naked_return naked_while
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifiers> valvar
 %type <RawAstDataDecl*> naked_data_decl
@@ -249,6 +250,7 @@ list_expr
   | DECL kwao FUN naked_fun_decl kwac               { $$ = $4; }
   | FUN kwao naked_fun_def kwac                     { $$ = $3; }
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
+  | WHILE kwao naked_while kwac                     { std::swap($$,$3); }
   | RETURN kwao naked_return kwac                   { $$ = $3; }
   | OP_LPAREN ct_list RPAREN                        { $$ = parserExt.mkOperatorTree($1, $2); }
   | RAW_NEW kwao type initializer kwac              { $$ = NULL; }
@@ -325,6 +327,10 @@ elif
 opt_else
   : %empty                                                           { $$ = NULL; }
   | ELSE block_expr                                                  { $$ = $2; }
+  ;
+
+naked_while
+  : standalone_expr opt_colon block_expr                             { $$ = new AstLoop($1, $3); }
   ;
 
 naked_return

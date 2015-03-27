@@ -502,3 +502,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "if  x  1 elif y  2 elif z  3 else 4 end if$", "if(x 1 if(y 2 if(z 3 4)))", "");
 }
 
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    an_loop_control_expression,
+    scannAndParse,
+    succeeds_AND_returns_correct_AST) ) {
+  TEST_PARSE( "while x: y$", "while(x y)", "");
+  TEST_PARSE( "while(x: y)", "while(x y)", "");
+}

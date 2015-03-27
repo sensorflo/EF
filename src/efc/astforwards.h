@@ -16,6 +16,7 @@ class AstDataDecl;
 class AstArgDecl;
 class AstDataDef;
 class AstIf;
+class AstLoop;
 class AstReturn;
 
 #endif

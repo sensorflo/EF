@@ -63,6 +63,11 @@ void AstDefaultIterator::visit(AstIf& if_) {
   }
 }
 
+void AstDefaultIterator::visit(AstLoop& loop) {
+  loop.condition().accept(m_visitor);
+  loop.body().accept(m_visitor);
+}
+
 void AstDefaultIterator::visit(AstReturn& return_) {
   return_.retVal().accept(m_visitor);
 }

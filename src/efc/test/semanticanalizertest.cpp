@@ -298,6 +298,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
       << amendSpec(spec) << amendAst(ast);
     EXPECT_NE( thenClauseStentry, elseClauseStentry )
       << amendSpec(spec) << amendAst(ast);
+    EXPECT_TRUE( NULL!=thenClauseStentry )
+      << amendSpec(spec) << amendAst(ast);
+    EXPECT_TRUE( NULL!=elseClauseStentry )
+      << amendSpec(spec) << amendAst(ast);
   }
 
   spec = "Example: An outer data object definition and a symbol referencing it after "
@@ -339,6 +343,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
       << amendSpec(spec) << amendAst(ast);
     EXPECT_NE( outerStentry, innerStentry )
       << amendSpec(spec) << amendAst(ast);
+    EXPECT_TRUE( NULL!=outerStentry )
+      << amendSpec(spec) << amendAst(ast);
+    EXPECT_TRUE( NULL!=innerStentry )
+      << amendSpec(spec) << amendAst(ast);
   }
 
   spec = "Example: An if expression is an own distinct block, i.e. a data "
@@ -366,6 +374,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     EXPECT_EQ( thenClauseSymbol->stentry(), defStentry )
       << amendSpec(spec) << amendAst(ast);
     EXPECT_EQ( elseClauseSymbol->stentry(), defStentry )
+      << amendSpec(spec) << amendAst(ast);
+    EXPECT_TRUE( NULL!=defStentry )
       << amendSpec(spec) << amendAst(ast);
   }
 }

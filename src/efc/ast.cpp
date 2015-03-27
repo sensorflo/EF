@@ -400,6 +400,30 @@ void AstIf::setAccess(Access access, ErrorHandler& errorHandler) {
   m_access = access;
 }
 
+AstLoop::AstLoop(AstValue* cond, AstValue* body) :
+  m_condition(cond),
+  m_body(body),
+  m_irValue(NULL) {
+  assert(m_condition);
+  assert(m_body);
+}
+
+AstLoop::~AstLoop() {
+  delete m_condition;
+  delete m_body;
+}
+
+const ObjType& AstLoop::objType() const {
+  static const ObjTypeFunda void_(ObjTypeFunda::eVoid);
+  return void_;
+}
+
+void AstLoop::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
+}
+
 AstReturn::AstReturn(AstValue* retVal) :
   m_retVal(retVal),
   m_irValue(NULL) {
@@ -544,6 +568,7 @@ void AstSymbol::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstFunCall::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstOperator::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstIf::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstLoop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstReturn::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCtList::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 
@@ -559,5 +584,6 @@ void AstSymbol::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstFunCall::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstOperator::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstLoop::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstReturn::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCtList::accept(AstVisitor& visitor) { visitor.visit(*this); }

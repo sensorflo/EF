@@ -417,6 +417,9 @@ void IrGen::visit(AstIf& if_) {
   }
 }
 
+void IrGen::visit(AstLoop& loop_) {
+}
+
 void IrGen::visit(AstReturn& return_) {
   Value* ret = callAcceptOn( return_.retVal());
   assert( ret);

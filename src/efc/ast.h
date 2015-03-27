@@ -378,6 +378,31 @@ public:
   llvm::Value* m_irValue;
 };
 
+class AstLoop : public AstValue {
+public:
+  AstLoop(AstValue* cond, AstValue* body);
+  virtual ~AstLoop();
+  virtual void accept(AstVisitor& visitor);
+  virtual void accept(AstConstVisitor& visitor) const;
+  AstValue& condition() const { return *m_condition; }
+  AstValue& body() const { return *m_body; }
+  virtual const ObjType& objType() const;
+
+private:
+  /** We're the owner. Is garanteed to be non-null */
+  AstValue* const m_condition;
+  /** We're the owner. Is garanteed to be non-null */
+  AstValue* const m_body;
+  std::unique_ptr<ObjType> m_objType;
+
+// decorations for IrGen
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value);
+public:
+  llvm::Value* m_irValue;
+};
+
 class AstReturn : public AstValue {
 public:
   AstReturn(AstValue* retVal);

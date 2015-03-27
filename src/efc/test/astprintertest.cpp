@@ -51,6 +51,12 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
       new AstNumber(1),
       new AstNumber(0)), spec);
 
+  spec = "AstWhile";
+  EXPECT_TOSTR_EQ( "while(x 1)",
+    AstLoop(
+      new AstSymbol("x"),
+      new AstNumber(1)), spec);
+
   spec = "AstReturn";
   EXPECT_TOSTR_EQ( "return(42)",
     AstReturn(new AstNumber(42)), spec);

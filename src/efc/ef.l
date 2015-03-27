@@ -51,6 +51,7 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 if                  return yy::Parser::make_IF(loc);
 elif                return yy::Parser::make_ELIF(loc);
 else                return yy::Parser::make_ELSE(loc);
+while               return yy::Parser::make_WHILE(loc);
 fun                 return yy::Parser::make_FUN(loc);
 val                 return yy::Parser::make_VAL(loc);
 var                 return yy::Parser::make_VAR(loc);

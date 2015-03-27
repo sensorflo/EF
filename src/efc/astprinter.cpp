@@ -114,6 +114,14 @@ void AstPrinter::visit(const AstIf& if_) {
   m_os << ")";
 }
 
+void AstPrinter::visit(const AstLoop& loop) {
+  m_os << "while(";
+  loop.condition().accept(*this);
+  m_os << " ";
+  loop.body().accept(*this);
+  m_os << ")";
+}
+
 void AstPrinter::visit(const AstReturn& return_) {
   m_os << "return(";
   return_.retVal().accept(*this);

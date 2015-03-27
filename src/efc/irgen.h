@@ -49,6 +49,7 @@ private:
   virtual void visit(AstArgDecl& argDecl);
   virtual void visit(AstDataDef& dataDef);
   virtual void visit(AstIf& if_);
+  virtual void visit(AstLoop& loop);
   virtual void visit(AstReturn& return_);
 
   int jitExecFunction(llvm::Function* function);

@@ -308,6 +308,9 @@ void SemanticAnalizer::visit(AstIf& if_) {
   postConditionCheck(if_);
 }
 
+void SemanticAnalizer::visit(AstLoop& loop) {
+}
+
 void SemanticAnalizer::visit(AstReturn& return_) {
   if ( m_funRetObjTypes.empty() ) {
     Error::throwError(m_errorHandler, Error::eNotInFunBodyContext);
