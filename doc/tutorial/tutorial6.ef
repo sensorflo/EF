@@ -58,5 +58,5 @@ if   x==y: x else y end if$
 
 // Also operators can be written in the call syntax.
 // operator syntax       call syntax
-  x+y                   +(x,y)
+   tmp1 := x+y           tmp2 := +(x,y)
 

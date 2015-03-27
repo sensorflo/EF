@@ -26,6 +26,7 @@ const char* toStr(Error::No no) {
   case Error::eNoSuchMember: return "eNoSuchMember";
   case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
   case Error::eUnreachableCode: return "eUnreachableCode";
+  case Error::eComputedValueNotUsed: return "eComputedValueNotUsed";
   case Error::eCnt: return "<unknown>";
   }
   return "<unknown>";

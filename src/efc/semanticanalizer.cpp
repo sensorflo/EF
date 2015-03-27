@@ -88,6 +88,13 @@ void SemanticAnalizer::visit(AstOperator& op) {
     }
   }
 
+  // On eComputedValueNotUsed
+  if ( op.op()!=AstOperator::eSeq // computes no value
+    && op.class_()!=AstOperator::eAssignment // have side effects
+    && op.access()==eIgnore ) {
+    Error::throwError(m_errorHandler, Error::eComputedValueNotUsed);
+  }
+
   // Set the obj type of this AstOperator node. It is a temporary object which
   // is always immutable.
   {

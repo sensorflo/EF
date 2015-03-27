@@ -20,6 +20,7 @@ public:
     eNoSuchMember,
     eNotInFunBodyContext,
     eUnreachableCode,
+    eComputedValueNotUsed,
     eCnt
   };
 

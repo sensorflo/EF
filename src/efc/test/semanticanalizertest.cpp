@@ -1285,3 +1285,17 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
         new AstNumber(77))),
     Error::eUnreachableCode, "");
 }
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_node_computing_an_value_at_runtime_AND_has_no_side_effects_AND_its_result_is_not_used,
+    transform,
+    reports_eComputedValueNotUsed)) {
+  string spec = "Example: operator + being lhs of sequence operator";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstOperator('+',
+        new AstNumber(42),
+        new AstNumber(77)),
+      new AstNumber(11)),
+    Error::eComputedValueNotUsed, "")
+}
