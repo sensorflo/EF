@@ -393,7 +393,9 @@ void IrGen::visit(AstIf& if_) {
   m_builder.SetInsertPoint(ThenFirstBB);
   Value* thenValue = callAcceptOn(if_.action());
   assert(thenValue);
-  m_builder.CreateBr(MergeBB);
+  if ( ! if_.action().objType().isNoreturn() ) {
+    m_builder.CreateBr(MergeBB);
+  }
   BasicBlock* ThenLastBB = m_builder.GetInsertBlock();
 
   // IR for else clause
@@ -403,10 +405,13 @@ void IrGen::visit(AstIf& if_) {
   if ( if_.elseAction() ) {
     elseValue = callAcceptOn(*if_.elseAction());
     assert(elseValue);
+    if ( ! if_.elseAction()->objType().isNoreturn() ) {
+      m_builder.CreateBr(MergeBB);
+    }
   } else {
     elseValue = m_abstractObject;
+    m_builder.CreateBr(MergeBB);
   }
-  m_builder.CreateBr(MergeBB);
   BasicBlock* ElseLastBB = m_builder.GetInsertBlock();
 
   // IR for merge of then/else clauses
