@@ -20,20 +20,6 @@ public:
   using SemanticAnalizer::m_env;
 };
 
-void testAstTraversalThrows(AstNode* ast, const string& spec) {
-  ENV_ASSERT_TRUE( ast!=NULL );
-  Env env;
-  ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  EXPECT_ANY_THROW( UUT.analyze(*ast) ) << amendSpec(spec) << amendAst(ast);
-}
-
-#define TEST_ASTTRAVERSAL_THROWS(ast, spec)                                \
-  {                                                                     \
-    SCOPED_TRACE("transform called from here (via TEST_ASTTRAVERSAL_THROWS)"); \
-    testAstTraversalThrows(ast, spec);                                     \
-  }
-
 void testAstTraversalReportsError(TestingSemanticAnalizer& UUT, AstNode* ast,
   Error::No expectedErrorNo, const string& spec) {
   // setup
