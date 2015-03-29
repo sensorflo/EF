@@ -45,7 +45,7 @@ string amend(llvm::Module* module) {
 
 string amend(const ErrorHandler& errorHandler) {
   stringstream ss;
-  ss << string("\nErrorHanlder's errors:");
+  ss << string("\nErrorHandler's errors:");
   if (errorHandler.errors().empty()) {
     ss << " none\n";
   } else {
