@@ -791,7 +791,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstOperator(".=",
         new AstSymbol("foo"),
         new AstNumber(42))),
-    42, "");
+    42, spec);
 
   spec = "Writing to the dot assignment expression modifies the lhs data object.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -804,7 +804,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
           new AstNumber(42)),
         new AstNumber(77)),
       new AstSymbol("foo")),
-    77, "");
+    77, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(
@@ -816,7 +816,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     pe.mkOperatorTree(";",
       new AstNumber(42),
       new AstNumber(77)),
-    77, "");
+    77, spec);
 
   spec = "Writing to the seq assignment expression modifies the rhs data object.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -829,7 +829,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
           new AstSymbol("foo")),
         new AstNumber(77)),
       new AstSymbol("foo")),
-    77, "");
+    77, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -948,7 +948,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstNumber(1, ObjTypeFunda::eBool),
       new AstNumber(42),
       new AstNumber(77)),
-    42, "");
+    42, spec);
 
   spec = specBase + "Example: condition evaluates to false.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -956,7 +956,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(42),
       new AstNumber(77)),
-    77, "");
+    77, spec);
 
   specBase = "Writing to the if expression modifies the object "
     "resulting from the evaluated clause.";
@@ -972,7 +972,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
           new AstSymbol("y")),
         new AstNumber(42)),
       new AstSymbol("x")),
-    42, "");
+    42, spec);
 
 
   spec = specBase + "Example: condition evaluates to false.";
@@ -987,7 +987,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
           new AstSymbol("y")),
         new AstNumber(42)),
       new AstSymbol("y")),
-    42, "");
+    42, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(
@@ -997,7 +997,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   string spec = "Trivial example: return expression, returning an int, at end of function body";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstReturn( new AstNumber(42)),
-    42, "");
+    42, spec);
 
   spec = "Example: return expression, returning an void, at end of function body";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -1007,7 +1007,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstReturn(new AstNop)),
       new AstFunCall(new AstSymbol("foo")),
       new AstNumber(42)),
-    42, "");
+    42, spec);
 
   spec = "Example: Early return in the then clause of an if expression";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -1016,7 +1016,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstNumber(1, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42))),
       new AstNumber(0)),
-    42, "");
+    42, spec);
 
   spec = "Example: Early return in the else clause of an if expression";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -1026,5 +1026,5 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstNumber(0),
         new AstReturn(new AstNumber(42))),
       new AstNumber(0)),
-    42, "");
+    42, spec);
 }

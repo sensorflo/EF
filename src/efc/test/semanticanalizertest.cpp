@@ -125,7 +125,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     new AstDataDef(
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstNumber(0, ObjTypeFunda::eBool)),
-    Error::eNoImplicitConversion, "");
+    Error::eNoImplicitConversion, spec);
 
   spec = "Example: Binary math operator";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
@@ -528,7 +528,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     new AstOperator(';',
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
-    Error::eIncompatibleRedaclaration, "");
+    Error::eIncompatibleRedaclaration, spec);
 
   spec = "Example: first function type, then fundamental type";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
@@ -1018,7 +1018,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     pe.mkFunDef(
       pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstReturn(new AstNumber(42, ObjTypeFunda::eBool))),
-    Error::eNoImplicitConversion, "");
+    Error::eNoImplicitConversion, spec);
 
   spec = "Example: Early return, return expression in an if clause";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
@@ -1029,7 +1029,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
           new AstNumber(0, ObjTypeFunda::eBool),
           new AstReturn(new AstNumber(0, ObjTypeFunda::eBool))), // early return
         new AstNumber(77, ObjTypeFunda::eInt))),
-    Error::eNoImplicitConversion, "");
+    Error::eNoImplicitConversion, spec);
 
   spec = "Example: Nested function. Return expression in body of inner function "
     "does not match return type of its function, but would match that of the "
@@ -1044,7 +1044,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
           new AstReturn(new AstNumber(0, ObjTypeFunda::eInt))), // return under test
 
         new AstNumber(42))),
-    Error::eNoImplicitConversion, "");
+    Error::eNoImplicitConversion, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
@@ -1403,7 +1403,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       new AstOperator('=',
         new AstSymbol("foo"),
         new AstNumber(77))),
-    Error::eWriteToImmutable, "");
+    Error::eWriteToImmutable, spec);
 
   spec = "Example: Assignment directly to the definition of an "
     "immutable data object";
@@ -1413,7 +1413,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)),
       new AstNumber(77)),
-    Error::eWriteToImmutable, "");
+    Error::eWriteToImmutable, spec);
 
   spec = "Example: Assignment to the temporary object resulting from a "
     "math operator";
@@ -1423,7 +1423,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstNumber(42),
         new AstNumber(77)),
       new AstNumber(88)),
-    Error::eWriteToImmutable, "");
+    Error::eWriteToImmutable, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -1623,5 +1623,5 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstNumber(42),
         new AstNumber(77)),
       new AstNumber(11)),
-    Error::eComputedValueNotUsed, "")
+    Error::eComputedValueNotUsed, spec)
 }
