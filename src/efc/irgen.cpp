@@ -329,7 +329,13 @@ void IrGen::visit(AstFunCall& funCall) {
     argsIr.push_back(argIr);
   }
 
-  funCall.setIrValue(m_builder.CreateCall(callee, argsIr, "calltmp"));
+  const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(funCall.address().objType());
+  if ( objTypeFun.ret().isVoid() ) {
+    m_builder.CreateCall(callee, argsIr);
+    funCall.setIrValue(m_abstractObject);
+  } else {
+    funCall.setIrValue(m_builder.CreateCall(callee, argsIr, "calltmp"));
+  }
 }
 
 void IrGen::visit(AstDataDecl& dataDecl) {
