@@ -437,7 +437,37 @@ void IrGen::visit(AstIf& if_) {
   }
 }
 
-void IrGen::visit(AstLoop& loop_) {
+void IrGen::visit(AstLoop& loop) {
+  // setup needed basic blocks
+  Function* functionIr = m_builder.GetInsertBlock()->getParent();
+  BasicBlock* condBB = BasicBlock::Create(getGlobalContext(), "loopcond");
+  BasicBlock* bodyBB = BasicBlock::Create(getGlobalContext(), "loopbody");
+  BasicBlock* afterBB = BasicBlock::Create(getGlobalContext(), "afterloop");
+
+  // current BB:
+  m_builder.CreateBr(condBB);
+
+  // condBB:
+  functionIr->getBasicBlockList().push_back(condBB);
+  m_builder.SetInsertPoint(condBB);
+  Value* condIr = callAcceptOn(loop.condition());
+  assert(condIr);
+  m_builder.CreateCondBr(condIr, bodyBB, afterBB);
+
+  // bodyBB:
+  functionIr->getBasicBlockList().push_back(bodyBB);
+  m_builder.SetInsertPoint(bodyBB);
+  callAcceptOn(loop.body());
+  if ( ! loop.body().objType().isNoreturn() ) {
+    m_builder.CreateBr(condBB);
+  }
+
+  // afterBB:
+  functionIr->getBasicBlockList().push_back(afterBB);
+  m_builder.SetInsertPoint(afterBB);
+
+  //
+  loop.setIrValue(m_abstractObject);
 }
 
 void IrGen::visit(AstReturn& return_) {

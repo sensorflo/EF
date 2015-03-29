@@ -925,3 +925,22 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstNumber(0)),
     42, spec);
 }
+
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_an_loop_expression,
+    THEN_it_loops_as_long_as_condition_evaluates_to_true)) {
+
+  string spec = "Example: Count x down from 1 to 0";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+        new AstNumber(1)),
+      new AstLoop(
+        new AstOperator('!', new AstOperator("==", new AstSymbol("x"), new AstNumber(0))),
+        new AstOperator('=',
+          new AstSymbol("x"),
+          new AstOperator('-', new AstSymbol("x"), new AstNumber(1)))),
+      new AstSymbol("x")),
+    0, spec);
+}
