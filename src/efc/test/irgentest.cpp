@@ -49,7 +49,8 @@ void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
     int result = UUT.jitExecFunction("main");
 
     // verify
-    EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot);
+    EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot) <<
+      amend(UUT.m_module);
   }
 
   // For better diagnostic messages in case unexpectedly an error

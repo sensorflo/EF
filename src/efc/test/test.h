@@ -6,6 +6,9 @@
 class AstNode;
 class AstValue;
 class ErrorHandler;
+namespace llvm {
+  class Module;
+}
 
 /** Helper macros to make a test name, which really is a specification in
 prose in the "given when then sothat/because" DSL. Using the testdox tool
@@ -48,6 +51,7 @@ std::string amendSpec(const std::string& spec);
 std::string amendAst(const AstNode* ast);
 std::string amendAst(const std::auto_ptr<AstValue>& ast);
 std::string amendAst(const std::unique_ptr<AstValue>& ast);
+std::string amend(llvm::Module* module);
 std::string amend(const ErrorHandler& errorHandler);
 
 #define EXPECT_MATCHES_FULLY( expected_obj_type, actual_obj_type ) \
