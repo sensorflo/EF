@@ -10,9 +10,11 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Support/TargetSelect.h"
+#include "llvm/Support/raw_os_ostream.h"
 #include <algorithm>
 #include <cstdlib>
 #include <stdexcept>
+#include <sstream>
 using namespace std;
 using namespace llvm;
 
@@ -41,6 +43,16 @@ the AST, only declarations or definitions are allowed.
 \pre SemanticAnalizer must have massaged the AST and the Env */
 void IrGen::genIr(AstNode& root) {
   callAcceptOn(root);
+
+  stringstream ss;
+  llvm::raw_os_ostream llvmss(ss);
+  if (verifyModule(*m_module, &llvmss)) {
+    llvmss.flush();
+    ss << "\n--- llvm module dump: ------------------\n";
+    m_module->print(llvmss, nullptr);
+    ss << "----------------------------------------\n";
+    throw runtime_error(ss.str());
+  }
 }
 
 int IrGen::jitExecFunction(const string& name) {
@@ -259,8 +271,6 @@ void IrGen::visit(AstFunDef& funDef) {
   } else if ( ! funDef.body().objType().isNoreturn() )  {
     m_builder.CreateRet( ret);
   }
-
-  //verifyFunction(*functionIr);
 
   if ( !m_BasicBlockStack.empty() ) {
     m_builder.SetInsertPoint(m_BasicBlockStack.top());
