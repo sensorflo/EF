@@ -390,16 +390,14 @@ void IrGen::visit(AstIf& if_) {
   BasicBlock* ElseFirstBB = BasicBlock::Create(getGlobalContext(), "ifelse");
   BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "ifmerge");
 
-  // IR for evaluate condition
+  // current BB:
   Value* condIr = callAcceptOn(if_.condition());
   assert(condIr);
   Value* condCmpIr = m_builder.CreateICmpNE(condIr,
     ConstantInt::get(getGlobalContext(), APInt(1, 0)), "ifcond");
-
-  // IR for branch based on condition
   m_builder.CreateCondBr(condCmpIr, ThenFirstBB, ElseFirstBB);
 
-  // IR for then clause
+  // thenFirstBB:
   m_builder.SetInsertPoint(ThenFirstBB);
   Value* thenValue = callAcceptOn(if_.action());
   assert(thenValue);
@@ -408,7 +406,7 @@ void IrGen::visit(AstIf& if_) {
   }
   BasicBlock* ThenLastBB = m_builder.GetInsertBlock();
 
-  // IR for else clause
+  // elseFirstBB:
   functionIr->getBasicBlockList().push_back(ElseFirstBB);
   m_builder.SetInsertPoint(ElseFirstBB);
   Value* elseValue = NULL;
@@ -424,7 +422,8 @@ void IrGen::visit(AstIf& if_) {
   }
   BasicBlock* ElseLastBB = m_builder.GetInsertBlock();
 
-  // IR for merge of then/else clauses
+  // mergeBB:
+  // also sets IrValue of this AstIf
   functionIr->getBasicBlockList().push_back(MergeBB);
   m_builder.SetInsertPoint(MergeBB);
   if ( thenValue!=m_abstractObject && elseValue!=m_abstractObject ) {
