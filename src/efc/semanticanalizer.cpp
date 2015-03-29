@@ -73,6 +73,17 @@ void SemanticAnalizer::visit(AstOperator& op) {
     assert(argschilds.size()==1);
   }
 
+  // If an operand is modified ensure its writable. Note that reading is
+  // always successfull, and if not, its because of mismatching type and/or
+  // because lhs does not support the requested operator. That includes trying
+  // to read or do an operation from / with void or noreturn. Both cases are
+  // handled elsewhere.
+  if ( op.class_() == AstOperator::eAssignment ) {
+    if ( ! (argschilds.front()->objType().qualifiers() & ObjType::eMutable) ) {
+      Error::throwError(m_errorHandler, Error::eWriteToImmutable);
+    }
+  }
+
   // Verify that the first argument has the operator as member function.
   if ( op.op()!=AstOperator::eSeq // eSeq is a global operator, not a member function
     && !argschilds.front()->objType().hasMember(op.op())) {
@@ -142,11 +153,6 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
     Error::throwError(m_errorHandler, Error::eUnknownName);
   }
   symbol.setStentry(move(stentry));
-  if (symbol.access()==eWrite &&
-    !(symbol.objType().qualifiers() & ObjType::eMutable)) {
-    Error::throwError(m_errorHandler, Error::eWriteToImmutable);
-  }
-
   postConditionCheck(symbol);
 }
 
@@ -246,10 +252,6 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
   dataDef.decl().accept(*this);
   dataDef.decl().stentry()->markAsDefined(m_errorHandler);
   dataDef.ctorArgs().accept(*this);
-  if ( dataDef.access()==eWrite &&
-    !(dataDef.objType().qualifiers() & ObjType::eMutable)) {
-    Error::throwError(m_errorHandler, Error::eWriteToImmutable);
-  }
   if ( dataDef.decl().objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
