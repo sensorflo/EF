@@ -309,6 +309,22 @@ void SemanticAnalizer::visit(AstIf& if_) {
 }
 
 void SemanticAnalizer::visit(AstLoop& loop) {
+  {
+    Env::AutoScope scope(m_env);
+
+    // access to condition is eRead, which we  need not explicitely set
+    loop.condition().accept(*this);
+
+    loop.body().setAccess(eIgnore, m_errorHandler);
+    callAcceptWithinNewScope(loop.body());
+  }
+
+  if ( !loop.condition().objType().matchesSaufQualifiers(
+      ObjTypeFunda(ObjTypeFunda::eBool)) ) {
+    Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+  }
+
+  // loop's ObjType is always void and thus can't be set
 }
 
 void SemanticAnalizer::visit(AstReturn& return_) {

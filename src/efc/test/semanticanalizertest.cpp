@@ -152,14 +152,20 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
-    an_if_expression_WITH_a_condition_whose_type_is_not_bool,
+    an_flow_control_expresssion_WITH_a_condition_whose_type_is_not_bool,
     transform,
     reports_eNoImplicitConversion,
     BECAUSE_currently_there_are_no_implicit_widening_conversions)) {
+
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstIf(new AstNumber(0, ObjTypeFunda::eInt),
       new AstNumber(42),
       new AstNumber(77)),
+    Error::eNoImplicitConversion, "");
+
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstLoop(new AstNumber(0, ObjTypeFunda::eInt),
+      new AstNop()),
     Error::eNoImplicitConversion, "");
 }
 
@@ -231,6 +237,25 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
       new AstIf(
+        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
+        new AstNop()),
+      new AstSymbol("x")),
+    Error::eUnknownName, spec);
+
+  spec = "Example: Body of a loop expression is a block.";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstLoop(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
+      new AstSymbol("x")),
+    Error::eUnknownName, spec);
+
+  spec = "Example: The whole loop expesssion is a block. I.e. data object's declared "
+    "in the condition can be referenced in the body but not after the loop expression.";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstLoop(
         new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
         new AstNop()),
       new AstSymbol("x")),
@@ -374,6 +399,57 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     EXPECT_EQ( thenClauseSymbol->stentry(), defStentry )
       << amendSpec(spec) << amendAst(ast);
     EXPECT_EQ( elseClauseSymbol->stentry(), defStentry )
+      << amendSpec(spec) << amendAst(ast);
+    EXPECT_TRUE( NULL!=defStentry )
+      << amendSpec(spec) << amendAst(ast);
+  }
+
+  spec = "Example: The body of an loop expression is a bock.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    AstDataDef* def =
+      new AstDataDef( new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
+    AstSymbol* symbol = new AstSymbol("x");
+    unique_ptr<AstValue> ast{
+      new AstLoop(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstOperator(';', def, symbol))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    SymbolTableEntry* defStentry = def->decl().stentry();
+    EXPECT_EQ( symbol->stentry(), defStentry)
+      << amendSpec(spec) << amendAst(ast);
+    EXPECT_TRUE( NULL!=defStentry )
+      << amendSpec(spec) << amendAst(ast);
+  }
+
+  spec = "Example: An loop expression is an own distinct block, i.e. a data "
+    "object definition in its condition is visible in the body.";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(env, errorHandler);
+
+    AstDataDef* def =
+      new AstDataDef( new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool)));
+    AstSymbol* symbol = new AstSymbol("x");
+
+    unique_ptr<AstValue> ast{new AstLoop( def, symbol)};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    SymbolTableEntry* defStentry = def->decl().stentry();
+    EXPECT_EQ( symbol->stentry(), def->decl().stentry() )
       << amendSpec(spec) << amendAst(ast);
     EXPECT_TRUE( NULL!=defStentry )
       << amendSpec(spec) << amendAst(ast);
@@ -1240,6 +1316,76 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     EXPECT_EQ( eWrite, thenClauseAst->access()) << amendAst(ast);
     EXPECT_EQ( eWrite, thenClauseAst->access()) << amendAst(ast);
   }
+}
+
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+    GIVEN_an_loop_expression,
+    THEN_the_loop_expressions_obj_type_is_void,
+    BEAUSE_the_condition_might_prevent_the_block_from_ever_being_executed)) {
+
+  string spec = "Example: obj type of body is int -> obj type of loop is still and always void";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstLoop(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstNumber(42))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->objType()) <<
+      amendAst(ast);
+  }
+
+  spec = "Example: obj type of body is noret -> obj type of loop is still and always void";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    AstLoop* loop =
+      new AstLoop(
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstReturn(new AstNumber(42)));
+    unique_ptr<AstValue> ast{
+        pe.mkFunDef(
+          pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstOperator(';', loop, new AstNumber(42)))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), loop->objType()) <<
+      amendAst(ast);
+  }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_an_loop_expression,
+    THEN_the_access_value_of_the_condition_is_eRead_AND_the_access_value_of_the_body_is_eIgnore))
+{
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  AstValue* condition = new AstNumber(0, ObjTypeFunda::eBool);
+  AstValue* body = new AstNumber(42);
+  unique_ptr<AstValue> ast{ new AstLoop( condition, body)};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  EXPECT_EQ( eRead, condition->access()) << amendAst(ast);
+  EXPECT_EQ( eIgnore, body->access()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
