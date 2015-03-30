@@ -26,6 +26,7 @@ void AstPrinter::visit(const AstNop& nop) {
 }
 
 void AstPrinter::visit(const AstBlock& block) {
+  block.body().accept(*this);
 }
 
 void AstPrinter::visit(const AstCast& cast) {
