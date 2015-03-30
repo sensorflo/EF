@@ -31,6 +31,13 @@ void SemanticAnalizer::visit(AstNop& nop) {
 }
 
 void SemanticAnalizer::visit(AstBlock& block) {
+  { Env::AutoScope scope(m_env);
+    block.body().accept(*this);
+  }
+
+  auto objType = unique_ptr<ObjType>(block.body().objType().clone());
+  objType->removeQualifiers(ObjType::eMutable);
+  block.setObjType(move(objType));
 }
 
 void SemanticAnalizer::visit(AstCtList& ctList) {

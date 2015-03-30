@@ -61,9 +61,11 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const ObjType& objType() const;
+  void setObjType(std::unique_ptr<ObjType> objType);
   AstValue& body() const { return *m_body.get(); }
 
 private:
+  std::unique_ptr<ObjType> m_objType;
   std::unique_ptr<AstValue> m_body;
 
   // decorations for IrGen

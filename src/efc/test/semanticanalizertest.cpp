@@ -193,8 +193,46 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eUnknownName, "");
 }
 
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+    a_data_definition_in_a_block,
+    transform,
+    inserts_a_symbol_table_entry_with_the_scope_of_the_block)) {
+
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  const auto dataDef =
+    new AstDataDef( new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
+  const auto symbol = new AstSymbol("x");
+  unique_ptr<AstValue> ast{
+    new AstBlock(
+      new AstOperator(';', dataDef, symbol))};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  const auto dataDefStentry = dataDef->decl().stentry();
+  EXPECT_TRUE( nullptr!=dataDefStentry ) << amendAst(ast);
+  EXPECT_EQ( dataDefStentry, symbol->stentry()) << amendAst(ast);
+}
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     a_data_object_definition_named_x_in_a_block_AND_a_symbol_named_x_after_the_block,
+    transform,
+    reports_eUnknownName,
+    BECAUSE_the_scope_of_data_objects_declarations_is_that_of_the_enclosing_block)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstBlock(
+        new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
+      new AstSymbol("x")),
+    Error::eUnknownName, "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+    a_data_object_definition_named_x_in_a_block_AND_a_symbol_named_x_after_the_block_OLD,
     transform,
     reports_eUnknownName,
     BECAUSE_the_scope_of_data_objects_declarations_is_that_of_the_enclosing_block)) {
@@ -270,7 +308,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
-    a_data_definition_in_a_block,
+    a_data_definition_in_a_block_OLD,
     transform,
     inserts_a_symbol_table_entry_with_the_scope_of_the_block)) {
 
@@ -616,6 +654,72 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 }
 
 // aka temporary objects are immutable
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_a_block,
+    THEN_its_objectType_is_that_of_the_body_however_with_an_immutable_qualifier))   {
+
+  string spec = "Example: block ends with a temporary (thus immutable) data object";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstBlock(
+        new AstNumber(42, ObjTypeFunda::eInt))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+      amendAst(ast) << amendSpec(spec);
+  }
+
+  spec = "Example: block ends with a local mutable data object";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstBlock(
+        new AstDataDef(
+          new AstDataDecl("x",
+            new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable))))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+      amendAst(ast) << amendSpec(spec);
+  }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_an_access_to_a_bock,
+    THEN_the_access_value_of_its_body_is_always_eRead))
+{
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  AstValue* body = new AstNumber(42);
+  unique_ptr<AstValue> ast{
+    new AstOperator(';', // imposes eIgnore access onto the block
+      new AstBlock(body),
+      new AstNumber(42))};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  EXPECT_EQ( eRead, body->access()) << amendAst(ast);
+}
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_access_to_a_sequence_operator,
     THEN_the_access_value_of_seqs_rhs_equals_that_outer_access_value_AND_the_access_value_of_the_lhs_is_eIgnore))

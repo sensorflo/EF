@@ -36,7 +36,14 @@ AstBlock::AstBlock(AstValue* body) :
 }
 
 const ObjType& AstBlock::objType() const {
-  return *static_cast<ObjType*>(nullptr);
+  assert(m_objType.get());
+  return *m_objType.get();
+}
+
+void AstBlock::setObjType(std::unique_ptr<ObjType> objType) {
+  assert(objType);
+  assert(!m_objType); // it doesnt make sense to set it twice
+  m_objType = move(objType);
 }
 
 void AstBlock::setIrValue(llvm::Value* value) {
