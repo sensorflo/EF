@@ -117,6 +117,7 @@ void IrGen::visit(AstNop& nop) {
 }
 
 void IrGen::visit(AstBlock& block) {
+  block.setIrValue(callAcceptOn(block.body()));
 }
 
 void IrGen::visit(AstCast& cast) {

@@ -86,6 +86,21 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
+    a_block,
+    genIrInImplicitMain,
+    returns_the_blocks_bodies_value)) {
+
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstBlock(new AstNumber(42)), 42, "");
+
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstBlock(
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstNumber(42))), 42, "");
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME(
     an_operator,
     genIrInImplicitMain,
     returns_the_result_of_that_operator)) {
