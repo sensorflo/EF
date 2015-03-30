@@ -13,6 +13,7 @@ public:
 
 private:
   virtual void visit(const AstNop& nop);
+  virtual void visit(const AstBlock& block);
   virtual void visit(const AstCast& cast);
   virtual void visit(const AstCtList& ctList);
   virtual void visit(const AstOperator& op);

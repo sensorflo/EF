@@ -12,6 +12,7 @@ public:
     m_visitor(visitor) {}
 
   virtual void visit(AstNop& nop);
+  virtual void visit(AstBlock& block);
   virtual void visit(AstCast& cast);
   virtual void visit(AstCtList& ctList);
   virtual void visit(AstOperator& op);

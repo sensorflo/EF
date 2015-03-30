@@ -30,6 +30,9 @@ void SemanticAnalizer::visit(AstCast& cast) {
 void SemanticAnalizer::visit(AstNop& nop) {
 }
 
+void SemanticAnalizer::visit(AstBlock& block) {
+}
+
 void SemanticAnalizer::visit(AstCtList& ctList) {
   list<AstValue*>& childs = ctList.childs();
   for (list<AstValue*>::const_iterator i=childs.begin();

@@ -7,6 +7,7 @@ class AstVisitor {
 public:
   virtual ~AstVisitor() {};
   virtual void visit(AstNop& nop) =0;
+  virtual void visit(AstBlock& block) =0;
   virtual void visit(AstCast& cast) =0;
   virtual void visit(AstCtList& ctList) =0;
   virtual void visit(AstOperator& op) =0;
@@ -27,6 +28,7 @@ class AstConstVisitor {
 public:
   virtual ~AstConstVisitor() {};
   virtual void visit(const AstNop& nop) =0;
+  virtual void visit(const AstBlock& block) =0;
   virtual void visit(const AstCast& cast) =0;
   virtual void visit(const AstCtList& ctList) =0;
   virtual void visit(const AstOperator& op) =0;

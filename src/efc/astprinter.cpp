@@ -25,6 +25,9 @@ void AstPrinter::visit(const AstNop& nop) {
   m_os << "nop";
 }
 
+void AstPrinter::visit(const AstBlock& block) {
+}
+
 void AstPrinter::visit(const AstCast& cast) {
   m_os << cast.objType() << "(";
   cast.child().accept(*this);

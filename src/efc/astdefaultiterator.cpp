@@ -5,6 +5,10 @@ using namespace std;
 void AstDefaultIterator::visit(AstNop&) {
 }
 
+void AstDefaultIterator::visit(AstBlock& block) {
+  block.body().accept(*this);
+}
+
 void AstDefaultIterator::visit(AstCast& cast) {
   cast.child().accept(m_visitor);
 }

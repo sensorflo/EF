@@ -2,6 +2,7 @@
 #define ASTFORWARDS_H
 
 class AstNop;
+class AstBlock;
 class AstNode;
 class AstValue;
 class AstNumber;

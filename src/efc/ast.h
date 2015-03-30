@@ -55,6 +55,25 @@ public:
   llvm::Value* m_irValue;
 };
 
+class AstBlock : public AstValue {
+public:
+  AstBlock(AstValue* body);
+  virtual void accept(AstVisitor& visitor);
+  virtual void accept(AstConstVisitor& visitor) const;
+  virtual const ObjType& objType() const;
+  AstValue& body() const { return *m_body.get(); }
+
+private:
+  std::unique_ptr<AstValue> m_body;
+
+  // decorations for IrGen
+public:
+  virtual llvm::Value* irValue() { return m_irValue; }
+  virtual void setIrValue(llvm::Value* value);
+public:
+  llvm::Value* m_irValue;
+};
+
 class AstCast : public AstValue {
 public:
   AstCast(ObjType* objType, AstValue* child);

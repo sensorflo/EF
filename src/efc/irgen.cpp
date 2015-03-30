@@ -116,6 +116,9 @@ void IrGen::visit(AstNop& nop) {
   nop.setIrValue(m_abstractObject);//void
 }
 
+void IrGen::visit(AstBlock& block) {
+}
+
 void IrGen::visit(AstCast& cast) {
   cast.child().accept(*this);
   cast.setIrValue( m_builder.CreateZExt(

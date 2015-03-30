@@ -29,6 +29,22 @@ void AstNop::setIrValue(llvm::Value* value) {
   m_irValue = value;
 }
 
+AstBlock::AstBlock(AstValue* body) :
+  m_body(body),
+  m_irValue(nullptr) {
+  assert(m_body);
+}
+
+const ObjType& AstBlock::objType() const {
+  return *static_cast<ObjType*>(nullptr);
+}
+
+void AstBlock::setIrValue(llvm::Value* value) {
+  assert(value);
+  assert(!m_irValue); // it doesnt make sense to set it twice
+  m_irValue = value;
+}
+
 AstCast::AstCast(ObjType* objType, AstValue* child) :
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
   m_child(child ? child : new AstNumber(0)),
@@ -557,6 +573,7 @@ const ObjType& AstCtList::objType() const {
 
 
 void AstNop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstBlock::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCast::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstFunDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstFunDecl::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
@@ -573,6 +590,7 @@ void AstReturn::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCtList::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 
 void AstNop::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstBlock::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCast::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstFunDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstFunDecl::accept(AstVisitor& visitor) { visitor.visit(*this); }
