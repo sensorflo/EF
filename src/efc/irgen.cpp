@@ -146,79 +146,30 @@ void IrGen::visit(AstCtList&) {
 
 void IrGen::visit(AstOperator& op) {
   const list<AstValue*>& argschilds = op.args().childs();
-  list<AstValue*>::const_iterator iter = argschilds.begin();
   Value* resultIr = NULL;
-  const AstOperator::EOperation op_ = op.op();
 
-  // Determine initial value of chain. Some operators start with constants,
-  // other already need to read in one or two operands.
-  switch (op_) {
-  case AstOperator::eNot:
-    assert(argschilds.size()==1);
-    break;
-  case AstOperator::eSub:
-    if (argschilds.size()<=1) {
-      resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 0));
-    } else {
-      AstValue& lhsAst = **(iter++);
-      resultIr = callAcceptOn(lhsAst);
-      assert(resultIr);
-    }
-    break;
-  case AstOperator::eOr:
-    resultIr = ConstantInt::get( getGlobalContext(), APInt(1, 0));
-    break;
-  case AstOperator::eAnd:
-    resultIr = ConstantInt::get( getGlobalContext(), APInt(1, 1));
-    break;
-  case AstOperator::eAdd:
-    resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 0));
-    break;
-  case AstOperator::eMul:
-    resultIr = ConstantInt::get( getGlobalContext(), APInt(32, 1));
-    break;
-  case AstOperator::eSeq:
-    // nop
-    break;
-  case AstOperator::eAssign: // fallthrough
-  case AstOperator::eDotAssign:
-  case AstOperator::eEqualTo:
-  case AstOperator::eDiv: {
-    if ( op_==AstOperator::eAssign ) { assert(argschilds.size()==2); }
-    if ( op_==AstOperator::eDotAssign ) { assert(argschilds.size()==2); }
-    if ( op_==AstOperator::eEqualTo ){ assert(argschilds.size()==2); }
-    if ( op_==AstOperator::eDiv )    { assert(argschilds.size()>=2); }
-    AstValue& lhsAst = **(iter++);
-    resultIr = callAcceptOn(lhsAst);
-    assert(resultIr);
-    break;
-  }
-  default:
-    assert(false);
+  // unary operators
+  if (op.op()==AstOperator::eNot) {
+    resultIr = m_builder.CreateNot(callAcceptOn(*argschilds.front()), "nottmp" );
   }
 
-  // Iterate trough all operands
-  for (; iter!=argschilds.end(); ++iter) {
-    AstValue& operandAst = **iter;
-    Value* operandIr = callAcceptOn(operandAst);
-    if ( op_!=AstOperator::eSeq ) {
-      assert(operandIr);
-    }
-
-    switch (op_) {
-    case AstOperator::eDotAssign:            m_builder.CreateStore (operandIr, resultIr            );
-                                  resultIr = op.access()==eWrite ? resultIr : operandIr; break;
-    case AstOperator::eAssign   :            m_builder.CreateStore (operandIr, resultIr            );
+  // binary operators
+  else {
+    auto lhsIr = callAcceptOn(*argschilds.front());
+    auto rhsIr = callAcceptOn(*argschilds.back());
+    switch (op.op()) {
+    case AstOperator::eDotAssign:            m_builder.CreateStore (rhsIr, lhsIr);
+                                  resultIr = op.access()==eWrite ? lhsIr : rhsIr; break;
+    case AstOperator::eAssign   :            m_builder.CreateStore (rhsIr, lhsIr);
                                   resultIr = m_abstractObject; break;
-    case AstOperator::eNot      : resultIr = m_builder.CreateNot   (operandIr,            "nottmp" ); break;
-    case AstOperator::eAnd      : resultIr = m_builder.CreateAnd   (resultIr,  operandIr, "andtmp" ); break;
-    case AstOperator::eOr       : resultIr = m_builder.CreateOr    (resultIr,  operandIr, "ortmp"  ); break;
-    case AstOperator::eSub      : resultIr = m_builder.CreateSub   (resultIr,  operandIr, "subtmp" ); break;
-    case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (resultIr,  operandIr, "addtmp" ); break;
-    case AstOperator::eMul      : resultIr = m_builder.CreateMul   (resultIr,  operandIr, "multmp" ); break;
-    case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (resultIr,  operandIr, "divtmp" ); break;
-    case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(resultIr,  operandIr, "cmptmp" ); break;
-    case AstOperator::eSeq      : resultIr = operandIr; break; // replacing previous resultIr
+    case AstOperator::eAnd      : resultIr = m_builder.CreateAnd   (lhsIr, rhsIr, "andtmp"); break;
+    case AstOperator::eOr       : resultIr = m_builder.CreateOr    (lhsIr, rhsIr, "ortmp" ); break;
+    case AstOperator::eSub      : resultIr = m_builder.CreateSub   (lhsIr, rhsIr, "subtmp"); break;
+    case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (lhsIr, rhsIr, "addtmp"); break;
+    case AstOperator::eMul      : resultIr = m_builder.CreateMul   (lhsIr, rhsIr, "multmp"); break;
+    case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (lhsIr, rhsIr, "divtmp"); break;
+    case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(lhsIr, rhsIr, "cmptmp"); break;
+    case AstOperator::eSeq      : resultIr = rhsIr; break;
     default: assert(false); break;
     }
   }
