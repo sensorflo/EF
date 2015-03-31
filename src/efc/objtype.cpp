@@ -140,10 +140,10 @@ bool ObjTypeFunda::hasMember(int op) const {
   // bugfix: void has none of these
   // new: eNoreturn has none of these
   switch (AstOperator::classOf(static_cast<AstOperator::EOperation>(op))) {
-  case AstOperator::eAssignment: return m_type != eNoreturn;  // scalar types
-  case AstOperator::eArithmetic: return m_type == eInt; // arithmetic types
+  case AstOperator::eAssignment: return is(eScalar);
+  case AstOperator::eArithmetic: return is(eArithmetic);
   case AstOperator::eLogical: return m_type == eBool;
-  case AstOperator::eComparison: return m_type != eNoreturn; // scalar types
+  case AstOperator::eComparison: return is(eScalar);
   case AstOperator::eOther: return true;
   default: assert(false);
   }
