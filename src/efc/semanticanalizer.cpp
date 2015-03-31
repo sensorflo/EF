@@ -269,17 +269,14 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 }
 
 void SemanticAnalizer::visit(AstIf& if_) {
-  {
-    Env::AutoScope scope(m_env);
-    if_.condition().accept(*this);
+  if_.condition().accept(*this);
 
-    if_.action().setAccess(if_.access(), m_errorHandler);
-    callAcceptWithinNewScope(if_.action());
+  if_.action().setAccess(if_.access(), m_errorHandler);
+  if_.action().accept(*this);
 
-    if (if_.elseAction()) {
-      if_.elseAction()->setAccess(if_.access(), m_errorHandler);
-      callAcceptWithinNewScope(*if_.elseAction());
-    }
+  if (if_.elseAction()) {
+    if_.elseAction()->setAccess(if_.access(), m_errorHandler);
+    if_.elseAction()->accept(*this);
   }
 
   if ( !if_.condition().objType().matchesSaufQualifiers(
@@ -321,15 +318,11 @@ void SemanticAnalizer::visit(AstIf& if_) {
 }
 
 void SemanticAnalizer::visit(AstLoop& loop) {
-  {
-    Env::AutoScope scope(m_env);
+  // access to condition is eRead, which we  need not explicitely set
+  loop.condition().accept(*this);
 
-    // access to condition is eRead, which we  need not explicitely set
-    loop.condition().accept(*this);
-
-    loop.body().setAccess(eIgnore, m_errorHandler);
-    callAcceptWithinNewScope(loop.body());
-  }
+  loop.body().setAccess(eIgnore, m_errorHandler);
+  loop.body().accept(*this);
 
   if ( !loop.condition().objType().matchesSaufQualifiers(
       ObjTypeFunda(ObjTypeFunda::eBool)) ) {

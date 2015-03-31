@@ -122,10 +122,8 @@ void IrGen::visit(AstBlock& block) {
 
 void IrGen::visit(AstCast& cast) {
   auto childIr = callAcceptOn(cast.child());
-
   const auto& oldtype = cast.child().objType();
   const auto& newtype = cast.objType();
-
   if ( oldtype.is(ObjType::eStoredAsIntegral) && newtype.is(ObjType::eStoredAsIntegral)) {
     auto oldsize = oldtype.size();
     auto newsize = newtype.size();

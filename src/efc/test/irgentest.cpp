@@ -869,37 +869,6 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstNumber(42),
       new AstNumber(77)),
     77, spec);
-
-  specBase = "Writing to the if expression modifies the object "
-    "resulting from the evaluated clause.";
-  spec = specBase + "Example: condition evaluates to true.";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    pe.mkOperatorTree(";",
-      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
-      new AstDataDef(new AstDataDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
-      new AstOperator('=',
-        new AstIf(
-          new AstNumber(1, ObjTypeFunda::eBool),
-          new AstSymbol("x"),
-          new AstSymbol("y")),
-        new AstNumber(42)),
-      new AstSymbol("x")),
-    42, spec);
-
-
-  spec = specBase + "Example: condition evaluates to false.";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    pe.mkOperatorTree(";",
-      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
-      new AstDataDef(new AstDataDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
-      new AstOperator('=',
-        new AstIf(
-          new AstNumber(0, ObjTypeFunda::eBool),
-          new AstSymbol("x"),
-          new AstSymbol("y")),
-        new AstNumber(42)),
-      new AstSymbol("y")),
-    42, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(

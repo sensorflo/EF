@@ -145,7 +145,7 @@ program
   ;
 
 block_expr
-  : standalone_expr_seq                             { std::swap($$,$1); }
+  : standalone_expr_seq                             { $$ = new AstBlock($1); }
   ;
 
 /* Note that the trailing 'seq_operator' is not really a sequence operator,
@@ -315,13 +315,13 @@ valvar
   ;
 
 naked_if
-  : standalone_expr opt_colon block_expr opt_else                    { $$ = new AstIf($1, $3, $4); }
-  | standalone_expr opt_colon block_expr elif                        { $$ = new AstIf($1, $3, $4); }
+  : standalone_expr opt_colon block_expr opt_else                    { $$ = new AstBlock(new AstIf($1, $3, $4)); }
+  | standalone_expr opt_colon block_expr elif                        { $$ = new AstBlock(new AstIf($1, $3, $4)); }
   ;
 
 elif
-  : ELIF standalone_expr opt_colon block_expr opt_else               { $$ = new AstIf($2, $4, $5); }  
-  | ELIF standalone_expr opt_colon block_expr elif                   { $$ = new AstIf($2, $4, $5); }
+  : ELIF standalone_expr opt_colon block_expr opt_else               { $$ = new AstBlock(new AstIf($2, $4, $5)); }  
+  | ELIF standalone_expr opt_colon block_expr elif                   { $$ = new AstBlock(new AstIf($2, $4, $5)); }
   ;  
 
 opt_else
@@ -330,7 +330,7 @@ opt_else
   ;
 
 naked_while
-  : standalone_expr opt_colon block_expr                             { $$ = new AstLoop($1, $3); }
+  : standalone_expr opt_colon block_expr                             { $$ = new AstBlock(new AstLoop($1, $3)); }
   ;
 
 naked_return
