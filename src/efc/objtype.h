@@ -28,6 +28,18 @@ public:
     eFullMatch
     // later: implicit castable
   };
+  enum EClass {
+    eAbstract,
+
+    eScalar,
+      eArithmetic,
+        eIntegral,
+
+    eStoredAsIntegral,
+
+    eFunction
+  };
+
   virtual ~ObjType() {};
 
   ObjType& addQualifiers(Qualifiers qualifiers);
@@ -40,6 +52,10 @@ public:
   virtual MatchType match(const ObjType& other) const = 0;
   virtual MatchType match2(const ObjTypeFunda& other) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypeFun& other) const { return eNoMatch; }
+
+  virtual bool is(EClass class_) const =0;
+  /** Size in bits */
+  virtual int size() const =0;
 
   virtual ObjType* clone() const = 0;
 
@@ -100,6 +116,9 @@ public:
   virtual MatchType match2(const ObjTypeFunda& other) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
 
+  virtual bool is(EClass class_) const;
+  virtual int size() const;
+
   virtual ObjTypeFunda* clone() const;
 
   EType type() const { return m_type; }
@@ -133,6 +152,9 @@ public:
   virtual bool hasMember(int) const { return false; }
   virtual bool hasConstructor(const ObjType& other) const { return false; }
 
+  virtual bool is(EClass class_) const;
+  virtual int size() const { return -1;}
+  
   virtual ObjTypeFun* clone() const;
 
   const std::list<std::shared_ptr<const ObjType> >& args() const { return *m_args; }

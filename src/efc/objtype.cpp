@@ -87,6 +87,40 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
+bool ObjTypeFunda::is(ObjType::EClass class_) const {
+  switch(m_type) {
+  case eVoid:
+  case eNoreturn:
+    return class_==eAbstract;
+  case eBool:
+  case eInt:
+    if (class_==eScalar) return true;
+    if (class_==eStoredAsIntegral) return true;
+    switch(m_type) {
+    case eBool:
+      return false;
+    case eInt:
+      if (class_==eArithmetic) return true;
+      if (class_==eIntegral) return true;
+      return false;
+    default: assert(false);
+    }
+    return false;
+  }
+  return false;
+}
+
+int ObjTypeFunda::size() const {
+  switch(m_type) {
+  case eVoid:
+  case eNoreturn: return -1;
+  case eBool: return 1;
+  case eInt: return 32;
+  }
+  assert(false);
+  return -1;
+}
+
 AstValue* ObjTypeFunda::createDefaultAstValue() const {
   return new AstNumber(0, new ObjTypeFunda(m_type));
 }
@@ -175,6 +209,10 @@ ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& other) const {
   }
   if (m_ret->match(*other.m_ret) != eFullMatch) return eNoMatch;
   return eFullMatch;
+}
+
+bool ObjTypeFun::is(ObjType::EClass class_) const {
+  return class_ == eFunction;
 }
 
 ObjTypeFun* ObjTypeFun::clone() const {

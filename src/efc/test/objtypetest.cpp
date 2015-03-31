@@ -210,3 +210,58 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   }
 }
 
+TEST(ObjTypeTest, MAKE_TEST_NAME1(
+    class_)) {
+
+  struct T{
+    bool m_isMember;
+    ObjTypeFunda::EType m_fundaType;
+    ObjType::EClass m_typeClass;
+  };
+
+  vector<T> inputs{
+    {true,  ObjTypeFunda::eVoid, ObjType::eAbstract},
+    {false, ObjTypeFunda::eVoid, ObjType::eScalar},
+    {false, ObjTypeFunda::eVoid, ObjType::eArithmetic},
+    {false, ObjTypeFunda::eVoid, ObjType::eIntegral},
+    {false, ObjTypeFunda::eVoid, ObjType::eStoredAsIntegral},
+    {false, ObjTypeFunda::eVoid, ObjType::eFunction},
+
+    {true,  ObjTypeFunda::eNoreturn, ObjType::eAbstract},
+    {false, ObjTypeFunda::eNoreturn, ObjType::eScalar},
+    {false, ObjTypeFunda::eNoreturn, ObjType::eArithmetic},
+    {false, ObjTypeFunda::eNoreturn, ObjType::eIntegral},
+    {false, ObjTypeFunda::eNoreturn, ObjType::eStoredAsIntegral},
+    {false, ObjTypeFunda::eNoreturn, ObjType::eFunction},
+
+    {false, ObjTypeFunda::eBool, ObjType::eAbstract},
+    {true,  ObjTypeFunda::eBool, ObjType::eScalar},
+    {false, ObjTypeFunda::eBool, ObjType::eArithmetic},
+    {false, ObjTypeFunda::eBool, ObjType::eIntegral},
+    {true,  ObjTypeFunda::eBool, ObjType::eStoredAsIntegral},
+    {false, ObjTypeFunda::eBool, ObjType::eFunction},
+
+    {false, ObjTypeFunda::eInt, ObjType::eAbstract},
+    {true,  ObjTypeFunda::eInt, ObjType::eScalar},
+    {true,  ObjTypeFunda::eInt, ObjType::eArithmetic},
+    {true,  ObjTypeFunda::eInt, ObjType::eIntegral},
+    {true,  ObjTypeFunda::eInt, ObjType::eStoredAsIntegral},
+    {false, ObjTypeFunda::eInt, ObjType::eFunction}};
+
+  for (const auto& i : inputs) {
+    EXPECT_EQ( i.m_isMember, ObjTypeFunda(i.m_fundaType).is(i.m_typeClass));
+  }
+
+
+  EXPECT_TRUE( ObjTypeFun(ObjTypeFun::createArgs()).is(ObjType::eFunction));
+}
+
+TEST(ObjTypeTest, MAKE_TEST_NAME1(
+    size)) {
+  EXPECT_EQ( -1, ObjTypeFunda(ObjTypeFunda::eVoid).size());
+  EXPECT_EQ( -1, ObjTypeFunda(ObjTypeFunda::eNoreturn).size());
+  EXPECT_EQ( 1, ObjTypeFunda(ObjTypeFunda::eBool).size());
+  EXPECT_EQ( 32, ObjTypeFunda(ObjTypeFunda::eInt).size());
+
+  EXPECT_EQ( -1, ObjTypeFun(ObjTypeFun::createArgs()).size());
+}
