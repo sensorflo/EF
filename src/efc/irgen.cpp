@@ -412,9 +412,7 @@ void IrGen::visit(AstIf& if_) {
   // current BB:
   Value* condIr = callAcceptOn(if_.condition());
   assert(condIr);
-  Value* condCmpIr = m_builder.CreateICmpNE(condIr,
-    ConstantInt::get(getGlobalContext(), APInt(1, 0)), "ifcond");
-  m_builder.CreateCondBr(condCmpIr, ThenFirstBB, ElseFirstBB);
+  m_builder.CreateCondBr(condIr, ThenFirstBB, ElseFirstBB);
 
   // thenFirstBB:
   m_builder.SetInsertPoint(ThenFirstBB);
