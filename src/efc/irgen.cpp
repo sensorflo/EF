@@ -153,7 +153,41 @@ void IrGen::visit(AstOperator& op) {
     resultIr = m_builder.CreateNot(callAcceptOn(*argschilds.front()), "nottmp" );
   }
 
-  // binary operators
+  // binary short circuit operators
+  else if (op.op()==AstOperator::eAnd || op.op()==AstOperator::eOr) {
+    Function* functionIr = m_builder.GetInsertBlock()->getParent();
+    BasicBlock* rhsBB = BasicBlock::Create(getGlobalContext(), "shortcircuitrhs");
+    BasicBlock* mergeBB = BasicBlock::Create(getGlobalContext(), "mergeshortcircuit");
+
+    // current/lhs BB:
+    auto lhsIr = callAcceptOn(*argschilds.front());
+    assert(lhsIr);
+    if ( op.op()==AstOperator::eAnd ) {
+      m_builder.CreateCondBr(lhsIr, rhsBB, mergeBB);
+    } else {
+      m_builder.CreateCondBr(lhsIr, mergeBB, rhsBB);
+    }
+    BasicBlock* lhsLastBB = m_builder.GetInsertBlock();
+
+    // rhsBB:
+    functionIr->getBasicBlockList().push_back(rhsBB);
+    m_builder.SetInsertPoint(rhsBB);
+    auto rhsIr = callAcceptOn(*argschilds.back());
+    m_builder.CreateBr(mergeBB);
+    BasicBlock* rhsLastBB = m_builder.GetInsertBlock();
+
+    // mergeBB:
+    functionIr->getBasicBlockList().push_back(mergeBB);
+    m_builder.SetInsertPoint(mergeBB);
+    PHINode* phi = m_builder.CreatePHI( Type::getInt1Ty(getGlobalContext()),
+      2, "shortcircuitphi");
+    assert(phi);
+    phi->addIncoming(lhsIr, lhsLastBB);
+    phi->addIncoming(rhsIr, rhsLastBB);
+    resultIr = phi;
+  }
+
+  // binary non short circuit operators
   else {
     auto lhsIr = callAcceptOn(*argschilds.front());
     auto rhsIr = callAcceptOn(*argschilds.back());
@@ -162,8 +196,6 @@ void IrGen::visit(AstOperator& op) {
                                   resultIr = op.access()==eWrite ? lhsIr : rhsIr; break;
     case AstOperator::eAssign   :            m_builder.CreateStore (rhsIr, lhsIr);
                                   resultIr = m_abstractObject; break;
-    case AstOperator::eAnd      : resultIr = m_builder.CreateAnd   (lhsIr, rhsIr, "andtmp"); break;
-    case AstOperator::eOr       : resultIr = m_builder.CreateOr    (lhsIr, rhsIr, "ortmp" ); break;
     case AstOperator::eSub      : resultIr = m_builder.CreateSub   (lhsIr, rhsIr, "subtmp"); break;
     case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (lhsIr, rhsIr, "addtmp"); break;
     case AstOperator::eMul      : resultIr = m_builder.CreateMul   (lhsIr, rhsIr, "multmp"); break;

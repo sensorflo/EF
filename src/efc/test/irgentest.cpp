@@ -200,6 +200,60 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
+    an_short_circuit_perator,
+    genIrInImplicitMain,
+    does_not_evaluate_rhs_operand_if_after_evaluating_lhs_operand_the_result_of_the_operator_is_already_known)) {
+
+  string spec = "Example: lhs of 'and' operator is false -> rhs is not evaluated";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
+        new AstNumber(1, ObjTypeFunda::eBool)),
+      new AstOperator(AstOperator::eAnd,
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
+      new AstCast(ObjTypeFunda::eInt, new AstSymbol("x"))),
+    1, "");
+
+  spec = "Example: lhs of 'and' operator is true -> rhs is evaluated";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
+        new AstNumber(1, ObjTypeFunda::eBool)),
+      new AstOperator(AstOperator::eAnd,
+        new AstNumber(1, ObjTypeFunda::eBool),
+        new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
+      new AstCast(ObjTypeFunda::eInt, new AstSymbol("x"))),
+    0, "");
+
+  spec = "Example: lhs of 'or' operator is true -> rhs is not evaluated";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
+        new AstNumber(1, ObjTypeFunda::eBool)),
+      new AstOperator(AstOperator::eOr,
+        new AstNumber(1, ObjTypeFunda::eBool),
+        new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
+      new AstCast(ObjTypeFunda::eInt, new AstSymbol("x"))),
+    1, "");
+
+  spec = "Example: lhs of 'or' operator is false -> rhs is evaluated";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
+        new AstNumber(1, ObjTypeFunda::eBool)),
+      new AstOperator(AstOperator::eOr,
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
+      new AstCast(ObjTypeFunda::eInt, new AstSymbol("x"))),
+    0, "");
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME(
     a_cast,
     genIrInImplicitMain,
     succeeds)) {

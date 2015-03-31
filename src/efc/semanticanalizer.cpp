@@ -111,6 +111,8 @@ void SemanticAnalizer::visit(AstOperator& op) {
 
   // On eComputedValueNotUsed
   if ( op.op()!=AstOperator::eSeq // computes no value
+    && op.op()!=AstOperator::eAnd // shirt circuit operator, is effectively flow control
+    && op.op()!=AstOperator::eOr  // dito
     && op.class_()!=AstOperator::eAssignment // have side effects
     && op.access()==eIgnore ) {
     Error::throwError(m_errorHandler, Error::eComputedValueNotUsed);
