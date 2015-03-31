@@ -121,10 +121,25 @@ void IrGen::visit(AstBlock& block) {
 }
 
 void IrGen::visit(AstCast& cast) {
-  cast.child().accept(*this);
-  cast.setIrValue( m_builder.CreateZExt(
-      cast.child().irValue(),
-      Type::getInt32Ty(getGlobalContext())));//!!!! must be dynamic type
+  auto childIr = callAcceptOn(cast.child());
+
+  const auto& oldtype = cast.child().objType();
+  const auto& newtype = cast.objType();
+
+  if ( oldtype.is(ObjType::eStoredAsIntegral) && newtype.is(ObjType::eStoredAsIntegral)) {
+    auto oldsize = oldtype.size();
+    auto newsize = newtype.size();
+    if (oldsize < newsize) {
+      assert(newsize==32);
+      cast.setIrValue( m_builder.CreateZExt( childIr, Type::getInt32Ty(getGlobalContext())));
+    } else {
+      assert(newsize==1);
+      cast.setIrValue( m_builder.CreateICmpNE(childIr,
+          ConstantInt::get(getGlobalContext(), APInt(1, 0)), ""));
+    }
+  } else {
+    assert(false);
+  }
 }
 
 void IrGen::visit(AstCtList&) {
