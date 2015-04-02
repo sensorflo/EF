@@ -34,6 +34,7 @@ public:
     eScalar,
       eArithmetic,
         eIntegral,
+        eFloatingPoint,
 
     eStoredAsIntegral,
 
@@ -104,7 +105,8 @@ public:
     eNoreturn,
     // concrete objects
     eInt,
-    eBool
+    eBool,
+    eDouble
   };
 
   ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier);

@@ -34,6 +34,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   EXPECT_EQ("int-mut", ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).toStr());
   EXPECT_EQ("bool", ObjTypeFunda(ObjTypeFunda::eBool).toStr());
   EXPECT_EQ("bool-mut", ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable).toStr());
+  EXPECT_EQ("double", ObjTypeFunda(ObjTypeFunda::eDouble).toStr());
 
   // function type
   EXPECT_EQ("fun((), int)",
@@ -146,14 +147,22 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {ObjTypeFunda::eVoid, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eVoid, ObjTypeFunda::eBool, false},
     {ObjTypeFunda::eVoid, ObjTypeFunda::eInt, false},
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eDouble, false},
 
     {ObjTypeFunda::eBool, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eBool, ObjTypeFunda::eBool, true},
     {ObjTypeFunda::eBool, ObjTypeFunda::eInt, true},
+    {ObjTypeFunda::eBool, ObjTypeFunda::eDouble, true},
 
     {ObjTypeFunda::eInt, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eInt, ObjTypeFunda::eBool, true},
-    {ObjTypeFunda::eInt, ObjTypeFunda::eInt, true}};
+    {ObjTypeFunda::eInt, ObjTypeFunda::eInt, true},
+    {ObjTypeFunda::eInt, ObjTypeFunda::eDouble, true},
+
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eBool, true},
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eInt, true},
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eDouble, true}};
 
   for ( const auto& inputSpec : inputSpecs ) {
     ObjTypeFunda UUT{ inputSpec.UUT };
@@ -224,6 +233,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {false, ObjTypeFunda::eVoid, ObjType::eScalar},
     {false, ObjTypeFunda::eVoid, ObjType::eArithmetic},
     {false, ObjTypeFunda::eVoid, ObjType::eIntegral},
+    {false, ObjTypeFunda::eVoid, ObjType::eFloatingPoint},
     {false, ObjTypeFunda::eVoid, ObjType::eStoredAsIntegral},
     {false, ObjTypeFunda::eVoid, ObjType::eFunction},
 
@@ -231,6 +241,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {false, ObjTypeFunda::eNoreturn, ObjType::eScalar},
     {false, ObjTypeFunda::eNoreturn, ObjType::eArithmetic},
     {false, ObjTypeFunda::eNoreturn, ObjType::eIntegral},
+    {false, ObjTypeFunda::eNoreturn, ObjType::eFloatingPoint},
     {false, ObjTypeFunda::eNoreturn, ObjType::eStoredAsIntegral},
     {false, ObjTypeFunda::eNoreturn, ObjType::eFunction},
 
@@ -238,6 +249,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {true,  ObjTypeFunda::eBool, ObjType::eScalar},
     {false, ObjTypeFunda::eBool, ObjType::eArithmetic},
     {false, ObjTypeFunda::eBool, ObjType::eIntegral},
+    {false, ObjTypeFunda::eBool, ObjType::eFloatingPoint},
     {true,  ObjTypeFunda::eBool, ObjType::eStoredAsIntegral},
     {false, ObjTypeFunda::eBool, ObjType::eFunction},
 
@@ -245,11 +257,22 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {true,  ObjTypeFunda::eInt, ObjType::eScalar},
     {true,  ObjTypeFunda::eInt, ObjType::eArithmetic},
     {true,  ObjTypeFunda::eInt, ObjType::eIntegral},
+    {false, ObjTypeFunda::eInt, ObjType::eFloatingPoint},
     {true,  ObjTypeFunda::eInt, ObjType::eStoredAsIntegral},
-    {false, ObjTypeFunda::eInt, ObjType::eFunction}};
+    {false, ObjTypeFunda::eInt, ObjType::eFunction},
+
+    {false, ObjTypeFunda::eDouble, ObjType::eAbstract},
+    {true,  ObjTypeFunda::eDouble, ObjType::eScalar},
+    {true,  ObjTypeFunda::eDouble, ObjType::eArithmetic},
+    {false, ObjTypeFunda::eDouble, ObjType::eIntegral},
+    {true,  ObjTypeFunda::eDouble, ObjType::eFloatingPoint},
+    {false, ObjTypeFunda::eDouble, ObjType::eStoredAsIntegral},
+    {false, ObjTypeFunda::eDouble, ObjType::eFunction}};
 
   for (const auto& i : inputs) {
-    EXPECT_EQ( i.m_isMember, ObjTypeFunda(i.m_fundaType).is(i.m_typeClass));
+    EXPECT_EQ( i.m_isMember, ObjTypeFunda(i.m_fundaType).is(i.m_typeClass))
+      << "fundamental type: " << i.m_fundaType << "\n"
+      << "type class: " << i.m_typeClass;
   }
 
 
@@ -262,6 +285,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   EXPECT_EQ( -1, ObjTypeFunda(ObjTypeFunda::eNoreturn).size());
   EXPECT_EQ( 1, ObjTypeFunda(ObjTypeFunda::eBool).size());
   EXPECT_EQ( 32, ObjTypeFunda(ObjTypeFunda::eInt).size());
+  EXPECT_EQ( 64, ObjTypeFunda(ObjTypeFunda::eDouble).size());
 
   EXPECT_EQ( -1, ObjTypeFun(ObjTypeFun::createArgs()).size());
 }

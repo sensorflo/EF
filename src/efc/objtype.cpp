@@ -80,6 +80,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   case eNoreturn: os << "noreturn"; break;
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
+  case eDouble: os << "double"; break;
   };
   if (eMutable & m_qualifiers) {
     os << "-mut";
@@ -94,14 +95,17 @@ bool ObjTypeFunda::is(ObjType::EClass class_) const {
     return class_==eAbstract;
   case eBool:
   case eInt:
+  case eDouble:
     if (class_==eScalar) return true;
-    if (class_==eStoredAsIntegral) return true;
+    if (class_==eStoredAsIntegral) return m_type!=eDouble;
     switch(m_type) {
     case eBool:
       return false;
     case eInt:
+    case eDouble:
       if (class_==eArithmetic) return true;
-      if (class_==eIntegral) return true;
+      if (class_==eIntegral) return m_type==eInt;
+      if (class_==eFloatingPoint) return m_type==eDouble;
       return false;
     default: assert(false);
     }
@@ -116,6 +120,7 @@ int ObjTypeFunda::size() const {
   case eNoreturn: return -1;
   case eBool: return 1;
   case eInt: return 32;
+  case eDouble: return 64;
   }
   assert(false);
   return -1;
@@ -130,6 +135,7 @@ llvm::Type* ObjTypeFunda::llvmType() const {
   case eVoid: return Type::getVoidTy(getGlobalContext());
   case eNoreturn: return nullptr;
   case eInt: return Type::getInt32Ty(getGlobalContext());
+  case eDouble: return Type::getDoubleTy(getGlobalContext());
   case eBool: return Type::getInt1Ty(getGlobalContext());
   };
   assert(false);
@@ -160,6 +166,7 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
   switch (m_type) {
   case eVoid: return false;
   case eBool: // fall through
+  case eDouble: // fall through
   case eInt: return otherFunda.m_type != eVoid;
   default: assert(false);
   }
@@ -171,6 +178,7 @@ bool ObjTypeFunda::isValueInRange(int val) const {
   case eVoid: return false;
   case eNoreturn: return false;
   case eInt: return true;
+  case eDouble: return true;
   case eBool: return val==0 || val==1;
   };
   assert(false);
