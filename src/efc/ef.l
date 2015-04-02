@@ -5,6 +5,7 @@
 %{
   #include <cerrno>
   #include <climits>
+  #include <cfloat>
   #include <cstdlib>
   #include <string>
   #include "../driver.h"
@@ -72,13 +73,17 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFun
 void                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eVoid, loc);
 int                 return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eInt, loc);
 bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool, loc);
+double              return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eDouble, loc);
 
 
-  /* literal number */
-[0-9]+{ID}?  {
+  /* literal integral / floatingpoint number  */
+[0-9]+(\.[0-9]+)?{ID}?  {
   errno = 0;
   char* suffix = NULL;
-  long int number = strtol(yytext, &suffix, 10);
+  bool containsDot = (nullptr != strchr(yytext, '.'));
+  long double number = strtold(yytext, &suffix);
+  ObjTypeFunda* objType = nullptr;
+
   if (errno) {
     driver.exitInternError(loc, string("Scanner's rule"
      "matched a number, but strtol doesn't recognize a number. ") +
@@ -87,14 +92,27 @@ bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool
   // currently no suffixes are recognized
   } else if (*suffix!='\0') {
     driver.error(loc, string("Unknown literal number suffix: ") + suffix);
-
-  // TODO: compare against target's INT_MIN/INT_MAX
-  } else if (number<INT_MIN || number>INT_MAX) {
-    number = number<INT_MIN ? INT_MIN : INT_MAX;
-    driver.error(loc, "Numeric literal to big");
   }
-  ObjTypeFunda* objType = new ObjTypeFunda(ObjTypeFunda::eInt);
-  return yy::Parser::make_NUMBER(NumberToken(number, objType), loc);
+
+  // it's an floating point literal
+  else if (containsDot) {
+    if (number<DBL_MIN || number>DBL_MAX) {
+      number = number<DBL_MIN ? DBL_MIN : DBL_MAX;
+      driver.error(loc, "Numeric literal to big");
+    }
+    objType = new ObjTypeFunda(ObjTypeFunda::eDouble);
+  }
+
+  // it's an integral literal
+  else {
+    if (number<INT_MIN || number>INT_MAX) {
+      number = number<INT_MIN ? INT_MIN : INT_MAX;
+      driver.error(loc, "Numeric literal to big");
+    }
+    objType = new ObjTypeFunda(ObjTypeFunda::eInt);
+  }
+  return yy::Parser::make_NUMBER(
+    NumberToken(static_cast<AstNumber::value_t>(number), objType), loc);
 }
 
   /* punctuation */

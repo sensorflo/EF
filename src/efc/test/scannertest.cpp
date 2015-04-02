@@ -46,17 +46,36 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_number,
     yylex,
     returns_TOK_NUMBER_AND_the_number_s_value_and_it_s_type_as_semantic_value_AND_succeeds)) {
-  DriverOnTmpFile driver( "42" );
 
-  Parser::symbol_type st = yylex(driver);
-  EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
-  EXPECT_EQ(42, st.value.as<NumberToken>().m_value );
-  ObjTypeFunda expectedType(ObjTypeFunda::eInt);
-  EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
+  string spec = "Example: a literal integral value";
+  {
+    DriverOnTmpFile driver( "42" );
 
-  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+    Parser::symbol_type st = yylex(driver);
+    EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
+    EXPECT_EQ(42, st.value.as<NumberToken>().m_value );
+    ObjTypeFunda expectedType(ObjTypeFunda::eInt);
+    EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
 
-  EXPECT_FALSE( driver.d().gotError() );
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+
+    EXPECT_FALSE( driver.d().gotError() );
+  }
+
+  spec = "Example: a literal floating point value";
+  {
+    DriverOnTmpFile driver( "42.77" );
+
+    Parser::symbol_type st = yylex(driver);
+    EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
+    EXPECT_EQ(42.77, st.value.as<NumberToken>().m_value );
+    ObjTypeFunda expectedType(ObjTypeFunda::eDouble);
+    EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
+
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+
+    EXPECT_FALSE( driver.d().gotError() );
+  }
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(

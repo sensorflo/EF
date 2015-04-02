@@ -231,6 +231,10 @@ public:
 /** Literal number */
 class AstNumber : public AstValue {
 public:
+  /** Universal type which is large enough for all currently supported EF
+  types. */
+  typedef double value_t;
+
   AstNumber(int value, ObjTypeFunda* objType = NULL);
   AstNumber(int value, ObjTypeFunda::EType eType,
     ObjTypeFunda::Qualifiers qualifiers = ObjTypeFunda::eNoQualifier);

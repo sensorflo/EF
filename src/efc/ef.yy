@@ -20,8 +20,8 @@
   class ObjType;
   struct NumberToken {
     NumberToken() : m_value(0), m_objType(NULL) {}
-    NumberToken(int value, ObjTypeFunda* objType) : m_value(value), m_objType(objType) {}
-    int m_value;
+    NumberToken(AstNumber::value_t value, ObjTypeFunda* objType) : m_value(value), m_objType(objType) {}
+    AstNumber::value_t m_value;
     ObjTypeFunda* m_objType;
   };
 }
