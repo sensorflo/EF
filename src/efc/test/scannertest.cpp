@@ -128,44 +128,34 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 TEST(ScannerTest, MAKE_TEST_NAME(
     an_operator_in_call_syntax,
     yylex_is_called,
-    returns_the_single_token_OP_LPAREN_AND_the_oparators_char_as_semantic_value)) {
+    returns_the_single_token_OP_NAME_AND_the_oparators_char_as_semantic_value)) {
 
   string spec = "trivial example";
   {
-    DriverOnTmpFile driver( "op*(" );
+    DriverOnTmpFile driver( "op*" );
     Parser::symbol_type st = yylex(driver);
-    EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_OP_NAME, st.token() ) << amendSpec(spec);
     EXPECT_EQ("*", st.value.as<string>()) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
 
-  spec = "blanks between operator and left parenthesis";
+  spec = "an operator with multiple chars (punctuation)";
   {
-    DriverOnTmpFile driver( "op*  (" );
+    DriverOnTmpFile driver( "op&&" );
     Parser::symbol_type st = yylex(driver);
-    EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
-    EXPECT_EQ("*", st.value.as<string>()) << amendSpec(spec);
-    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
-    EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
-  }
-
-  spec = "an operator with multiple chars, no blanks inbetween";
-  {
-    DriverOnTmpFile driver( "op&&(" );
-    Parser::symbol_type st = yylex(driver);
-    EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_OP_NAME, st.token() ) << amendSpec(spec);
     EXPECT_EQ("&&", st.value.as<string>()) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
 
-  spec = "an operator with multiple chars, blanks inbetween";
+  spec = "an operator with multiple chars (alphanumeric, thus preceded by an underscore)";
   {
-    DriverOnTmpFile driver( "op&&  (" );
+    DriverOnTmpFile driver( "op_and" );
     Parser::symbol_type st = yylex(driver);
-    EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
-    EXPECT_EQ("&&", st.value.as<string>()) << amendSpec(spec);
+    EXPECT_EQ(Parser::token::TOK_OP_NAME, st.token() ) << amendSpec(spec);
+    EXPECT_EQ("and", st.value.as<string>()) << amendSpec(spec);
     EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }

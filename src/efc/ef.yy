@@ -88,7 +88,7 @@
 ;
 
 %token <ObjTypeFunda::EType> FUNDAMENTAL_TYPE
-%token <std::string> OP_LPAREN 
+%token <std::string> OP_NAME 
 %token <std::string> ID "identifier"
 %token <NumberToken> NUMBER "number"
 %precedence ASSIGNEMENT
@@ -216,6 +216,7 @@ sub_expr
 operator_expr
   /* function call and cast */
   : sub_expr         LPAREN ct_list         RPAREN  { $$ = new AstFunCall($1, $3); }
+  | OP_NAME          LPAREN ct_list         RPAREN  { $$ = parserExt.mkOperatorTree($1, $3); }
   | FUNDAMENTAL_TYPE LPAREN standalone_expr RPAREN  { $$ = new AstCast($1, $3); }
 
   /* unary prefix */
@@ -252,7 +253,6 @@ list_expr
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
   | WHILE kwao naked_while kwac                     { std::swap($$,$3); }
   | RETURN kwao naked_return kwac                   { $$ = $3; }
-  | OP_LPAREN ct_list RPAREN                        { $$ = parserExt.mkOperatorTree($1, $2); }
   | RAW_NEW kwao type initializer kwac              { $$ = NULL; }
   | RAW_DELETE kwao sub_expr kwac                   { $$ = NULL; }
   ;
