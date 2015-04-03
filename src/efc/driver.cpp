@@ -3,11 +3,15 @@
 #include "env.h"
 #include "semanticanalizer.h"
 #include "irgen.h"
+#include "executionengineadapter.h"
 #include "gensrc/parser.hpp"
+#include "llvm/IR/Module.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <stdexcept>
+#include "memoryext.h"
 using namespace std;
 using namespace yy;
 
@@ -84,11 +88,13 @@ void Driver::doSemanticAnalysis(AstNode& ast) {
 void Driver::generateIr(AstNode& ast) {
   // It's assumed that the module wants an implicit main method, thus
   // a cast to AstValue is required
-  m_irGen.genIr( *m_parserExt.mkMainFunDef( &dynamic_cast<AstValue&>(ast)));
+  auto module = m_irGen.genIr(
+    *m_parserExt.mkMainFunDef( &dynamic_cast<AstValue&>(ast)));
+  m_executionEngine = make_unique<ExecutionEngineApater>(move(module));
 }
 
 int Driver::jitExecMain() {
-  return m_irGen.jitExecFunction("main");
+  return m_executionEngine->jitExecFunction("main");
 }
 
 basic_ostream<char>& Driver::print(const location& loc) {

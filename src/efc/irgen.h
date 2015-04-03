@@ -5,33 +5,26 @@
 #include "astvisitor.h"
 #include "llvm/IR/IRBuilder.h"
 #include <stack>
+#include <string>
+#include <memory>
 
 #include "astforwards.h"
 namespace llvm {
   class Module;
-  class ExecutionEngine;
   class BasicBlock;
 }
 class Env;
 class SymbolTableEntry;
 class ErrorHandler;
 
-
-/** IR Generator -- Generates (aka build) LLVM's intermediate representation
-from a given AST.*/
+/** IR Generator -- Generates LLVM intermediate representation from a given
+AST. */
 class IrGen : private AstVisitor  {
 public:
   static void staticOneTimeInit();
   IrGen(ErrorHandler& errorHandler);
-  virtual ~IrGen();
 
-  void genIr(AstNode& root);
-  void jitExec(const std::string& funName);
-
-  int jitExecFunction(const std::string& name);
-  int jitExecFunction1Arg(const std::string& name, int arg1);
-  int jitExecFunction2Arg(const std::string& name, int arg1, int arg2);
-  void jitExecFunctionVoidRet(const std::string& name);
+  std::unique_ptr<llvm::Module> genIr(AstNode& root);
 
 private:
   friend class TestingIrGen;
@@ -53,22 +46,15 @@ private:
   virtual void visit(AstLoop& loop);
   virtual void visit(AstReturn& return_);
 
-  int jitExecFunction(llvm::Function* function);
-  int jitExecFunction1Arg(llvm::Function* function, int arg1);
-  int jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2);
-  void jitExecFunctionVoidRet(llvm::Function* function);
-
   llvm::Value* callAcceptOn(AstNode&);
 
   llvm::AllocaInst* createAllocaInEntryBlock(llvm::Function* functionIr,
     const std::string& varName, llvm::Type* type);
 
   llvm::IRBuilder<> m_builder;
-  /** m_executionEngine is the owner */
-  llvm::Module* m_module;
-  std::string m_errStr;
-  /** We're the owner */
-  llvm::ExecutionEngine* m_executionEngine;
+  /** Is non-null during execution of IrGen, that is practically 'always'
+  from the view point of member functions. */
+  std::unique_ptr<llvm::Module> m_module;
   std::stack<llvm::BasicBlock*> m_BasicBlockStack;
   ErrorHandler& m_errorHandler;
   /** We're not the owner, guaranteed to be non-null. */

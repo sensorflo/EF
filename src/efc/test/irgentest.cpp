@@ -1,5 +1,6 @@
 #include "test.h"
 #include "../irgen.h"
+#include "../executionengineadapter.h"
 #include "../semanticanalizer.h"
 #include "../parserext.h"
 #include "../ast.h"
@@ -21,11 +22,6 @@ public:
       *(m_errorHandler = new ErrorHandler()) ),
     m_semanticAnalizer(m_env, *m_errorHandler) {};
   ~TestingIrGen() { delete m_errorHandler; };
-  using IrGen::jitExecFunction;
-  using IrGen::jitExecFunction1Arg;
-  using IrGen::jitExecFunction2Arg;
-  using IrGen::m_module;
-  using IrGen::m_executionEngine;
   Env m_env;
   ErrorHandler* m_errorHandler;
   SemanticAnalizer m_semanticAnalizer;
@@ -45,12 +41,13 @@ void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
     semanticAnalizer.analyze(*astRoot);
 
     // execute
-    UUT.genIr(*astRoot);
-    int result = UUT.jitExecFunction("main");
+    auto module = UUT.genIr(*astRoot);
 
     // verify
+    ExecutionEngineApater ee(move(module));
+    int result = ee.jitExecFunction("main");
     EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot) <<
-      amend(UUT.m_module);
+      amend(&ee.module());
   }
 
   // For better diagnostic messages in case unexpectedly an error
@@ -325,10 +322,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
-    UUT.genIr(*ast);
+    auto module = UUT.genIr(*ast);
 
     // verify
-    Function* functionIr = UUT.m_module->getFunction("foo");
+    Function* functionIr = module->getFunction("foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
@@ -353,10 +350,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
-    UUT.genIr(*ast);
+    auto module = UUT.genIr(*ast);
 
     // verify
-    Function* functionIr = UUT.m_module->getFunction("foo");
+    Function* functionIr = module->getFunction("foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
@@ -385,10 +382,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
-    UUT.genIr(*ast);
+    auto module = UUT.genIr(*ast);
 
     // verify
-    Function* functionIr = UUT.m_module->getFunction("foo");
+    Function* functionIr = module->getFunction("foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
@@ -415,10 +412,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
-    UUT.genIr(*ast);
+    auto module = UUT.genIr(*ast);
 
     // verify
-    Function* functionIr = UUT.m_module->getFunction("foo");
+    Function* functionIr = module->getFunction("foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getVoidTy(getGlobalContext()), functionIr->getReturnType())
@@ -442,12 +439,13 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   UUT.m_semanticAnalizer.analyze(*ast.get());
 
   // execute
-  UUT.genIr(*ast);
+  auto module = UUT.genIr(*ast);
 
   // verify
   // todo: via e.g. global variable verify that function really was called
-  EXPECT_NO_THROW( UUT.jitExecFunction("foo"))
-    << amendAst(ast);
+  ExecutionEngineApater ee(move(module));
+  EXPECT_NO_THROW( ee.jitExecFunction("foo"))
+    << amendAst(ast) << amend(&ee.module());
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -469,11 +467,12 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
-    UUT.genIr(*ast);
+    auto module = UUT.genIr(*ast);
 
     // verify
-    EXPECT_EQ( 77, UUT.jitExecFunction("foo") )
-      << amendAst(ast) << amendSpec(spec);
+    ExecutionEngineApater ee(move(module));
+    EXPECT_EQ( 77, ee.jitExecFunction("foo") )
+      << amendAst(ast) << amendSpec(spec) << amend(&ee.module());
   }
 
   spec = "Example: one argument, which however is ignored";
@@ -493,11 +492,12 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
-    UUT.genIr(*ast);
+    auto module = UUT.genIr(*ast);
 
     // verify
-    EXPECT_EQ( 42, UUT.jitExecFunction1Arg("foo", 256) )
-      << amendAst(ast) << amendSpec(spec);
+    ExecutionEngineApater ee(move(module));
+    EXPECT_EQ( 42, ee.jitExecFunction1Arg("foo", 256) )
+      << amendAst(ast) << amendSpec(spec) << amend(&ee.module());
   }
 }
 
@@ -520,12 +520,13 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   UUT.m_semanticAnalizer.analyze(*ast);
 
   // execute
-  UUT.genIr(*ast);
+  auto module = UUT.genIr(*ast);
 
   // verify
+  ExecutionEngineApater ee(move(module));
   int x = 256;
-  EXPECT_EQ( x, UUT.jitExecFunction1Arg("foo", x) )
-    << amendAst(ast);
+  EXPECT_EQ( x, ee.jitExecFunction1Arg("foo", x) )
+    << amendAst(ast) << amend(&ee.module());
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -553,12 +554,14 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   UUT.m_semanticAnalizer.analyze(*ast);
 
   // execute
-  UUT.genIr(*ast);
+  auto module = UUT.genIr(*ast);
 
   // verify
   int x = 2;
   int y = 3;
-  EXPECT_EQ( x*y, UUT.jitExecFunction2Arg("foo", x, y) ) << amendAst(ast);
+  ExecutionEngineApater ee(move(module));
+  EXPECT_EQ( x*y, ee.jitExecFunction2Arg("foo", x, y) ) << amendAst(ast)
+     << amend(&ee.module());
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -589,11 +592,13 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   UUT.m_semanticAnalizer.analyze(*ast);
 
   // execute
-  UUT.genIr(*ast);
+  auto module = UUT.genIr(*ast);
 
   // verify
   int x = 2;
-  EXPECT_EQ( x+1, UUT.jitExecFunction1Arg("foo", x)) << amendAst(ast);
+  ExecutionEngineApater ee(move(module));
+  EXPECT_EQ( x+1, ee.jitExecFunction1Arg("foo", x)) << amendAst(ast)
+    << amend(&ee.module());
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(
@@ -618,19 +623,17 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   UUT.m_semanticAnalizer.analyze(*ast);
 
   // execute
-  UUT.genIr(*ast);
+  auto module = UUT.genIr(*ast);
 
   // verify
-  auto jitExecFoo = [&UUT](bool condition, int thenValue, int elseValue)->int {
-    Function* functionIr = UUT.m_module->getFunction("foo");
-    void* functionVoidPtr = UUT.m_executionEngine->getPointerToFunction(functionIr);
-    assert(functionVoidPtr);
-    int (*functionPtr)(bool,int,int) = (int (*)(bool,int,int))(intptr_t)functionVoidPtr;
-    assert(functionPtr);
-    return functionPtr(condition, thenValue, elseValue);
-  };
-  EXPECT_EQ( 42, jitExecFoo(true, 42, 77) ) << amendAst(ast);
-  EXPECT_EQ( 77, jitExecFoo(false, 42, 77) ) << amendAst(ast);
+  Function* functionIr = module->getFunction("foo");
+  unique_ptr<ExecutionEngine> ee(EngineBuilder(module.release()).create());
+  void* functionVoidPtr = ee->getPointerToFunction(functionIr);
+  assert(functionVoidPtr);
+  int (*functionPtr)(bool,int,int) = (int (*)(bool,int,int))(intptr_t)functionVoidPtr;
+  assert(functionPtr);
+  EXPECT_EQ( 42, functionPtr(true, 42, 77) ) << amendAst(ast);
+  EXPECT_EQ( 77, functionPtr(false, 42, 77) ) << amendAst(ast);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(

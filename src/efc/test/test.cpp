@@ -43,6 +43,10 @@ string amend(llvm::Module* module) {
   return ss.str();
 }
 
+string amend(const std::unique_ptr<llvm::Module>& module) {
+  return amend(module.get());
+}
+
 string amend(const ErrorHandler& errorHandler) {
   stringstream ss;
   ss << string("\nErrorHandler's errors:");

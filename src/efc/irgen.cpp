@@ -2,8 +2,6 @@
 #include "ast.h"
 #include "env.h"
 #include "errorhandler.h"
-#include "llvm/ExecutionEngine/JIT.h"
-#include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/IR/Value.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
@@ -15,6 +13,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <sstream>
+#include "memoryext.h"
 using namespace std;
 using namespace llvm;
 
@@ -26,22 +25,16 @@ void IrGen::staticOneTimeInit() {
 
 IrGen::IrGen(ErrorHandler& errorHandler) :
   m_builder(getGlobalContext()),
-  m_module(new Module("Main", getGlobalContext())),
-  m_executionEngine(EngineBuilder(m_module).setErrorStr(&m_errStr).create()),
   m_errorHandler(errorHandler) {
-  assert(m_module);
-  assert(m_executionEngine);
-}
-
-IrGen::~IrGen() {
-  if (m_executionEngine) { delete m_executionEngine; }
 }
 
 /** Using the given AST, generates LLVM IR code, appending it to the one
 implict LLVM module associated with this IrGen object.  At the top level of
 the AST, only declarations or definitions are allowed.
 \pre SemanticAnalizer must have massaged the AST and the Env */
-void IrGen::genIr(AstNode& root) {
+unique_ptr<Module> IrGen::genIr(AstNode& root) {
+  m_module = make_unique<Module>("Main", getGlobalContext());
+
   callAcceptOn(root);
 
   stringstream ss;
@@ -53,58 +46,8 @@ void IrGen::genIr(AstNode& root) {
     ss << "----------------------------------------\n";
     throw runtime_error(ss.str());
   }
-}
 
-int IrGen::jitExecFunction(const string& name) {
-  return jitExecFunction(m_module->getFunction(name));
-}
-
-int IrGen::jitExecFunction1Arg(const string& name, int arg1) {
-  return jitExecFunction1Arg(m_module->getFunction(name), arg1);
-}
-
-int IrGen::jitExecFunction2Arg(const string& name, int arg1, int arg2) {
-  return jitExecFunction2Arg(m_module->getFunction(name), arg1, arg2);
-}
-
-void IrGen::jitExecFunctionVoidRet(const string& name) {
-  jitExecFunctionVoidRet(m_module->getFunction(name));
-}
-
-int IrGen::jitExecFunction(llvm::Function* function) {
-  void* functionVoidPtr =
-    m_executionEngine->getPointerToFunction(function);
-  assert(functionVoidPtr);
-  int (*functionPtr)() = (int (*)())(intptr_t)functionVoidPtr;
-  assert(functionPtr);
-  return functionPtr();
-}
-
-int IrGen::jitExecFunction1Arg(llvm::Function* function, int arg1) {
-  void* functionVoidPtr =
-    m_executionEngine->getPointerToFunction(function);
-  assert(functionVoidPtr);
-  int (*functionPtr)(int) = (int (*)(int))(intptr_t)functionVoidPtr;
-  assert(functionPtr);
-  return functionPtr(arg1);
-}
-
-int IrGen::jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2) {
-  void* functionVoidPtr =
-    m_executionEngine->getPointerToFunction(function);
-  assert(functionVoidPtr);
-  int (*functionPtr)(int, int) = (int (*)(int, int))(intptr_t)functionVoidPtr;
-  assert(functionPtr);
-  return functionPtr(arg1, arg2);
-}
-
-void IrGen::jitExecFunctionVoidRet(llvm::Function* function) {
-  void* functionVoidPtr =
-    m_executionEngine->getPointerToFunction(function);
-  assert(functionVoidPtr);
-  void (*functionPtr)() = (void (*)())(intptr_t)functionVoidPtr;
-  assert(functionPtr);
-  functionPtr();
+  return move(m_module);
 }
 
 llvm::Value* IrGen::callAcceptOn(AstNode& node) {
@@ -299,7 +242,7 @@ void IrGen::visit(AstFunDecl& funDecl) {
     FunctionType* functionTypeIr = FunctionType::get(retTypeIr, argsIr, false);
     assert(functionTypeIr);
     Function* functionIr = Function::Create( functionTypeIr,
-      Function::ExternalLinkage, funDecl.name(), m_module );
+      Function::ExternalLinkage, funDecl.name(), m_module.get() );
     assert(functionIr);
 
     // If the names differ (see condition of if statement below) that means a

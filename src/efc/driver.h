@@ -2,6 +2,7 @@
 #define DRIVER_H
 #include "gensrc/parser.hpp"
 #include <string>
+#include <memory>
 
 namespace yy {
   class Parser; 
@@ -12,6 +13,7 @@ class Env;
 class ParserExt;
 class SemanticAnalizer;
 class IrGen;
+class ExecutionEngineApater;
 
 #define YY_DECL yy::Parser::symbol_type yylex(Driver& driver)
 YY_DECL;
@@ -61,6 +63,7 @@ private:
   yy::Parser* m_parser;
   IrGen& m_irGen;
   SemanticAnalizer& m_semanticAnalizer;
+  std::unique_ptr<ExecutionEngineApater> m_executionEngine;
 };
   
 #endif
