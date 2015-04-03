@@ -104,10 +104,12 @@ bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool
 "||"                return yy::Parser::make_PIPE_PIPE(loc);
 "=="                return yy::Parser::make_EQUAL_EQUAL(loc);
 ".="                return yy::Parser::make_DOT_EQUAL(loc);
-([-+*/!]|&&|"||"|"=="|"and"|"or"|"not"|"new"|"delete")[ \t]*"("    {   /*todo: allow comments and newlines intbetween*/
-  char* p = yytext;
+op([-+*/!]|&&|"||"|"=="|"_and"|"_or"|"_not"|"_new"|"_delete")[ \t]*"(" {
+  char* start = yytext + 2;     // skip "op"
+  if (*start == '_') ++start;   // skip '_'
+  char* p=start; 
   for (/*nop*/; *p && *p!=' ' && *p!='\t' && *p!='('; ++p ) /*nop*/;
-  return yy::Parser::make_OP_LPAREN(string(yytext,p), loc);
+  return yy::Parser::make_OP_LPAREN(string(start,p), loc);
 }
 
 ";"                 return yy::Parser::make_SEMICOLON(loc);

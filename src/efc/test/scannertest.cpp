@@ -126,13 +126,13 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    a_binary_operator_followed_by_lparen_AND_optionally_blanks_and_or_comments_inbetween,
+    an_operator_in_call_syntax,
     yylex_is_called,
     returns_the_single_token_OP_LPAREN_AND_the_oparators_char_as_semantic_value)) {
 
   string spec = "trivial example";
   {
-    DriverOnTmpFile driver( "*(" );
+    DriverOnTmpFile driver( "op*(" );
     Parser::symbol_type st = yylex(driver);
     EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
     EXPECT_EQ("*", st.value.as<string>()) << amendSpec(spec);
@@ -140,9 +140,9 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
 
-  spec = "blanks inbetween";
+  spec = "blanks between operator and left parenthesis";
   {
-    DriverOnTmpFile driver( "*  (" );
+    DriverOnTmpFile driver( "op*  (" );
     Parser::symbol_type st = yylex(driver);
     EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
     EXPECT_EQ("*", st.value.as<string>()) << amendSpec(spec);
@@ -152,7 +152,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
   spec = "an operator with multiple chars, no blanks inbetween";
   {
-    DriverOnTmpFile driver( "&&(" );
+    DriverOnTmpFile driver( "op&&(" );
     Parser::symbol_type st = yylex(driver);
     EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
     EXPECT_EQ("&&", st.value.as<string>()) << amendSpec(spec);
@@ -162,7 +162,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
   spec = "an operator with multiple chars, blanks inbetween";
   {
-    DriverOnTmpFile driver( "&&  (" );
+    DriverOnTmpFile driver( "op&&  (" );
     Parser::symbol_type st = yylex(driver);
     EXPECT_EQ(Parser::token::TOK_OP_LPAREN, st.token() ) << amendSpec(spec);
     EXPECT_EQ("&&", st.value.as<string>()) << amendSpec(spec);

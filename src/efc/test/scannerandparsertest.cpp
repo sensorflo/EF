@@ -251,22 +251,22 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   // unary
-  TEST_PARSE( "!(x)", "!(x)", "");
-  TEST_PARSE( "not(x)", "!(x)", "");
+  TEST_PARSE( "op!(x)", "!(x)", "");
+  TEST_PARSE( "op_not(x)", "!(x)", "");
 
   // binary
-  TEST_PARSE( "and(x,y)", "and(x y)", "");
-  TEST_PARSE( "&&(x,y)", "and(x y)", "");
-  TEST_PARSE( "or(x,y)", "or(x y)", "");
-  TEST_PARSE( "||(x,y)", "or(x y)", "");
-  TEST_PARSE( "==(1,1)", "==(1 1)", "");
-  TEST_PARSE( "*(1,2)", "*(1 2)", "");
-  TEST_PARSE( "/(1,2)", "/(1 2)", "");
-  TEST_PARSE( "+(1,2)", "+(1 2)", "");
-  TEST_PARSE( "-(1,2)", "-(1 2)", "");
+  TEST_PARSE( "op_and(x,y)", "and(x y)", "");
+  TEST_PARSE( "op&&(x,y)", "and(x y)", "");
+  TEST_PARSE( "op_or(x,y)", "or(x y)", "");
+  TEST_PARSE( "op||(x,y)", "or(x y)", "");
+  TEST_PARSE( "op==(1,1)", "==(1 1)", "");
+  TEST_PARSE( "op*(1,2)", "*(1 2)", "");
+  TEST_PARSE( "op/(1,2)", "/(1 2)", "");
+  TEST_PARSE( "op+(1,2)", "+(1 2)", "");
+  TEST_PARSE( "op-(1,2)", "-(1 2)", "");
 
   // binary with more than two args result in a tree
-  TEST_PARSE( "+(1,2,3)", "+(+(1 2) 3)", ""); // left associative
+  TEST_PARSE( "op+(1,2,3)", "+(+(1 2) 3)", ""); // left associative
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
