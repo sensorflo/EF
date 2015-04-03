@@ -32,7 +32,7 @@ JIT executing the given function, passing the given args, and verifying that
 it returns the expected result. */
 template<typename TRet, typename...TArgs>
 void testgenIr(TestingIrGen& UUT, AstValue* astRoot,
-  const string& spec, int expectedResult, const string functionName,
+  const string& spec, TRet expectedResult, const string functionName,
   TArgs...args) {
 
   ENV_ASSERT_TRUE( astRoot!=NULL );

@@ -72,11 +72,12 @@ void IrGen::visit(AstCast& cast) {
     auto newsize = newtype.size();
     if (oldsize < newsize) {
       assert(newsize==32);
-      cast.setIrValue( m_builder.CreateZExt( childIr, Type::getInt32Ty(getGlobalContext())));
+      cast.setIrValue( m_builder.CreateZExt( childIr,
+          Type::getInt32Ty(getGlobalContext()), "zext"));
     } else {
       assert(newsize==1);
       cast.setIrValue( m_builder.CreateICmpNE(childIr,
-          ConstantInt::get(getGlobalContext(), APInt(1, 0)), ""));
+          ConstantInt::get(getGlobalContext(), APInt(1, 0)), "tobool"));
     }
   } else {
     assert(false);
@@ -93,14 +94,17 @@ void IrGen::visit(AstOperator& op) {
 
   // unary operators
   if (op.op()==AstOperator::eNot) {
-    resultIr = m_builder.CreateNot(callAcceptOn(*argschilds.front()), "nottmp" );
+    resultIr = m_builder.CreateNot(callAcceptOn(*argschilds.front()), "not" );
   }
 
   // binary short circuit operators
   else if (op.op()==AstOperator::eAnd || op.op()==AstOperator::eOr) {
+    const string opname = op.op()==AstOperator::eAnd ? "and" : "or";
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
-    BasicBlock* rhsBB = BasicBlock::Create(getGlobalContext(), "shortcircuitrhs");
-    BasicBlock* mergeBB = BasicBlock::Create(getGlobalContext(), "mergeshortcircuit");
+    BasicBlock* rhsBB = BasicBlock::Create(getGlobalContext(),
+      opname + "_rhs");
+    BasicBlock* mergeBB = BasicBlock::Create(getGlobalContext(),
+      opname + "_merge");
 
     // current/lhs BB:
     auto lhsIr = callAcceptOn(*argschilds.front());
@@ -123,7 +127,7 @@ void IrGen::visit(AstOperator& op) {
     functionIr->getBasicBlockList().push_back(mergeBB);
     m_builder.SetInsertPoint(mergeBB);
     PHINode* phi = m_builder.CreatePHI( Type::getInt1Ty(getGlobalContext()),
-      2, "shortcircuitphi");
+      2, opname);
     assert(phi);
     phi->addIncoming(lhsIr, lhsLastBB);
     phi->addIncoming(rhsIr, rhsLastBB);
@@ -139,11 +143,11 @@ void IrGen::visit(AstOperator& op) {
                                   resultIr = op.access()==eWrite ? lhsIr : rhsIr; break;
     case AstOperator::eAssign   :            m_builder.CreateStore (rhsIr, lhsIr);
                                   resultIr = m_abstractObject; break;
-    case AstOperator::eSub      : resultIr = m_builder.CreateSub   (lhsIr, rhsIr, "subtmp"); break;
-    case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (lhsIr, rhsIr, "addtmp"); break;
-    case AstOperator::eMul      : resultIr = m_builder.CreateMul   (lhsIr, rhsIr, "multmp"); break;
-    case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (lhsIr, rhsIr, "divtmp"); break;
-    case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(lhsIr, rhsIr, "cmptmp"); break;
+    case AstOperator::eSub      : resultIr = m_builder.CreateSub   (lhsIr, rhsIr, "sub"); break;
+    case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (lhsIr, rhsIr, "add"); break;
+    case AstOperator::eMul      : resultIr = m_builder.CreateMul   (lhsIr, rhsIr, "mul"); break;
+    case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (lhsIr, rhsIr, "div"); break;
+    case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(lhsIr, rhsIr, "cmp"); break;
     case AstOperator::eSeq      : resultIr = rhsIr; break;
     default: assert(false); break;
     }
@@ -287,7 +291,7 @@ void IrGen::visit(AstFunCall& funCall) {
     m_builder.CreateCall(callee, argsIr);
     funCall.setIrValue(m_abstractObject);
   } else {
-    funCall.setIrValue(m_builder.CreateCall(callee, argsIr, "calltmp"));
+    funCall.setIrValue(m_builder.CreateCall(callee, argsIr, callee->getName()));
   }
 }
 
@@ -329,9 +333,9 @@ void IrGen::visit(AstDataDef& dataDef) {
 void IrGen::visit(AstIf& if_) {
   // setup needed basic blocks
   Function* functionIr = m_builder.GetInsertBlock()->getParent();
-  BasicBlock* ThenFirstBB = BasicBlock::Create(getGlobalContext(), "ifthen", functionIr);
-  BasicBlock* ElseFirstBB = BasicBlock::Create(getGlobalContext(), "ifelse");
-  BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "ifmerge");
+  BasicBlock* ThenFirstBB = BasicBlock::Create(getGlobalContext(), "if_then", functionIr);
+  BasicBlock* ElseFirstBB = BasicBlock::Create(getGlobalContext(), "if_else");
+  BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "if_merge");
 
   // current BB:
   Value* condIr = callAcceptOn(if_.condition());
@@ -368,7 +372,7 @@ void IrGen::visit(AstIf& if_) {
   functionIr->getBasicBlockList().push_back(MergeBB);
   m_builder.SetInsertPoint(MergeBB);
   if ( thenValue!=m_abstractObject && elseValue!=m_abstractObject ) {
-    PHINode* phi = m_builder.CreatePHI( thenValue->getType(), 2, "ifphi");
+    PHINode* phi = m_builder.CreatePHI( thenValue->getType(), 2, "if_phi");
     assert(phi);
     phi->addIncoming(thenValue, ThenLastBB);
     phi->addIncoming(elseValue, ElseLastBB);
@@ -381,9 +385,9 @@ void IrGen::visit(AstIf& if_) {
 void IrGen::visit(AstLoop& loop) {
   // setup needed basic blocks
   Function* functionIr = m_builder.GetInsertBlock()->getParent();
-  BasicBlock* condBB = BasicBlock::Create(getGlobalContext(), "loopcond");
-  BasicBlock* bodyBB = BasicBlock::Create(getGlobalContext(), "loopbody");
-  BasicBlock* afterBB = BasicBlock::Create(getGlobalContext(), "afterloop");
+  BasicBlock* condBB = BasicBlock::Create(getGlobalContext(), "loop_cond");
+  BasicBlock* bodyBB = BasicBlock::Create(getGlobalContext(), "loop_body");
+  BasicBlock* afterBB = BasicBlock::Create(getGlobalContext(), "after_loop");
 
   // current BB:
   m_builder.CreateBr(condBB);
