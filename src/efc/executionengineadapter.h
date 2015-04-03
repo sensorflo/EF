@@ -1,11 +1,11 @@
 #ifndef EXECUTION_ENGINE_ADAPTER_H
 #define EXECUTION_ENGINE_ADAPTER_H
+#include "llvm/IR/Module.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include <string>
 #include <memory>
 
 namespace llvm {
-  class ExecutionEngine;
-  class Module;
   class Function;
 }
 
@@ -17,20 +17,17 @@ public:
 
   llvm::Module& module() { return m_module; }
 
-  void jitExec(const std::string& funName);
-
-  int jitExecFunction(const std::string& name);
-  int jitExecFunction1Arg(const std::string& name, int arg1);
-  int jitExecFunction2Arg(const std::string& name, int arg1, int arg2);
-  void jitExecFunctionVoidRet(const std::string& name);
-
+  template<typename TRet = int, typename...TArgs>
+  TRet jitExecFunction(const std::string& name, TArgs...args) {
+    void* functionVoidPtr =
+      m_executionEngine->getPointerToFunction(m_module.getFunction(name));
+    assert(functionVoidPtr);
+    TRet (*functionPtr)(TArgs...) = (TRet (*)(TArgs...))(intptr_t)functionVoidPtr;
+    assert(functionPtr);
+    return functionPtr(args...);
+  }
 
 private:
-  int jitExecFunction(llvm::Function* function);
-  int jitExecFunction1Arg(llvm::Function* function, int arg1);
-  int jitExecFunction2Arg(llvm::Function* function, int arg1, int arg2);
-  void jitExecFunctionVoidRet(llvm::Function* function);
-
   llvm::Module& m_module;
   std::string m_errStr;
   std::unique_ptr<llvm::ExecutionEngine> m_executionEngine;

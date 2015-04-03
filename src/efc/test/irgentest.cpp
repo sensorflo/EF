@@ -496,7 +496,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
     // verify
     ExecutionEngineApater ee(move(module));
-    EXPECT_EQ( 42, ee.jitExecFunction1Arg("foo", 256) )
+    EXPECT_EQ( 42, (ee.jitExecFunction<int,int>("foo", 256)))
       << amendAst(ast) << amendSpec(spec) << amend(&ee.module());
   }
 }
@@ -525,7 +525,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // verify
   ExecutionEngineApater ee(move(module));
   int x = 256;
-  EXPECT_EQ( x, ee.jitExecFunction1Arg("foo", x) )
+  EXPECT_EQ( x, (ee.jitExecFunction<int,int>("foo", x)) )
     << amendAst(ast) << amend(&ee.module());
 }
 
@@ -560,7 +560,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   int x = 2;
   int y = 3;
   ExecutionEngineApater ee(move(module));
-  EXPECT_EQ( x*y, ee.jitExecFunction2Arg("foo", x, y) ) << amendAst(ast)
+  EXPECT_EQ( x*y, (ee.jitExecFunction<int,int,int>("foo", x, y)) ) << amendAst(ast)
      << amend(&ee.module());
 }
 
@@ -597,7 +597,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // verify
   int x = 2;
   ExecutionEngineApater ee(move(module));
-  EXPECT_EQ( x+1, ee.jitExecFunction1Arg("foo", x)) << amendAst(ast)
+  EXPECT_EQ( x+1, (ee.jitExecFunction<int,int>("foo", x))) << amendAst(ast)
     << amend(&ee.module());
 }
 
