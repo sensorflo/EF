@@ -27,8 +27,13 @@ public:
   SemanticAnalizer m_semanticAnalizer;
 };
 
-void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
-  int expectedResult, const string& spec = "") {
+/** Tests the method genIr by first executing it on the given AST and then
+JIT executing the given function, passing the given args, and verifying that
+it returns the expected result. */
+template<typename TRet, typename...TArgs>
+void testgenIr(TestingIrGen& UUT, AstValue* astRoot,
+  const string& spec, int expectedResult, const string functionName,
+  TArgs...args) {
 
   ENV_ASSERT_TRUE( astRoot!=NULL );
   unique_ptr<AstValue> astRootAp(astRoot);
@@ -45,7 +50,7 @@ void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
 
     // verify
     ExecutionEngineApater ee(move(module));
-    int result = ee.jitExecFunction("main");
+    TRet result = ee.jitExecFunction<TRet,TArgs...>(functionName, args...);
     EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot) <<
       amend(&ee.module());
   }
@@ -67,12 +72,37 @@ void testgenIrInImplicitMain(TestingIrGen& UUT, AstValue* astRoot,
   }
 }
 
-#define TEST_GEN_IR_IN_IMPLICIT_MAIN(astRoot, expectedResult, spec)     \
+#define TEST_GEN_IR_IN_IMPLICIT_MAIN(astRoot, expectedResult, spec) \
+  TEST_GEN_IR_0ARG(pe.mkMainFunDef(astRoot), spec, int, "main", expectedResult)
+
+#define TEST_GEN_IR_0ARG(astRoot, spec, rettype, functionName,          \
+  expectedResult)                                                       \
   {                                                                     \
-    SCOPED_TRACE("testgenIrInImplicitMain called from here (via TEST_GEN_IR_IN_IMPLICIT_MAIN)"); \
+    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR)");       \
     TestingIrGen UUT;                                                   \
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
-    testgenIrInImplicitMain(UUT, pe.mkMainFunDef(astRoot), expectedResult, spec); \
+    testgenIr<rettype>(UUT, astRoot, spec, expectedResult,              \
+      functionName);                                                    \
+  }
+
+#define TEST_GEN_IR_1ARG(astRoot, spec, rettype, functionName, arg1type,\
+  expectedResult, arg1)                                                 \
+  {                                                                     \
+    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR)");       \
+    TestingIrGen UUT;                                                   \
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
+    testgenIr<rettype, arg1type>(UUT, astRoot, spec, expectedResult,    \
+      functionName, arg1);                                              \
+  }
+
+#define TEST_GEN_IR_2ARG(astRoot, spec, rettype, functionName, arg1type,\
+  arg2type, expectedResult, arg1, arg2)                                 \
+  {                                                                     \
+    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR)");       \
+    TestingIrGen UUT;                                                   \
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
+    testgenIr<rettype, arg1type, arg2type>(UUT, astRoot, spec,          \
+      expectedResult, functionName, arg1, arg2);                        \
   }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -448,100 +478,37 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     << amendAst(ast) << amend(&ee.module());
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
-    a_function_definition_foo_with_body_returning_a_value_x,
-    genIr,
-    JIT_executing_foo_returns_x)) {
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_a_function_defintion_returning_a_value,
+    THEN_JIT_executing_it_returns_that_value)) {
 
-  string spec = "Example: zero arguments";
-  {
-    // setup
-    // IrGen is currently dumb and expects an expression having a value at
-    // the end of a seq, thus provide one altought not needed for this test
-    TestingIrGen UUT;
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-    unique_ptr<AstValue> ast(
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstNumber(77)));
-    UUT.m_semanticAnalizer.analyze(*ast.get());
+  string spec = "Example: zero arguments, returning a literal";
+  TEST_GEN_IR_0ARG(
+    pe.mkFunDef(
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstNumber(42)),
+    spec, int, "foo", 42)
 
-    // execute
-    auto module = UUT.genIr(*ast);
+  spec = "Example: one argument, which however is ignored, returning "
+    "a literal";
+  TEST_GEN_IR_1ARG(
+    pe.mkFunDef(
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstNumber(42)),
+    spec, int, "foo", int, 42, 0);
 
-    // verify
-    ExecutionEngineApater ee(move(module));
-    EXPECT_EQ( 77, ee.jitExecFunction("foo") )
-      << amendAst(ast) << amendSpec(spec) << amend(&ee.module());
-  }
-
-  spec = "Example: one argument, which however is ignored";
-  {
-    // setup
-    // IrGen is currently dumb and expects an expression having a value at
-    // the end of a seq, thus provide one altought not needed for this test
-    TestingIrGen UUT;
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-    unique_ptr<AstValue> ast(
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new ObjTypeFunda(ObjTypeFunda::eInt),
-          new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
-        new AstNumber(42)));
-    UUT.m_semanticAnalizer.analyze(*ast.get());
-
-    // execute
-    auto module = UUT.genIr(*ast);
-
-    // verify
-    ExecutionEngineApater ee(move(module));
-    EXPECT_EQ( 42, (ee.jitExecFunction<int,int>("foo", 256)))
-      << amendAst(ast) << amendSpec(spec) << amend(&ee.module());
-  }
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
-    a_function_definition_foo_with_argument_x_with_body_returning_x,
-    genIr,
-    JIT_executing_foo_returns_x)) {
-  // setup
-  // IrGen is currently dumb and expects an expression having a value at
-  // the end of a seq, thus provide one altought not needed for this test
-  TestingIrGen UUT;
-  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-  unique_ptr<AstValue> ast(
+  spec = "Example: one argument which is returned";
+  TEST_GEN_IR_1ARG(
     pe.mkFunDef(
       pe.mkFunDecl(
         "foo",
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-      new AstSymbol("x")));
-  UUT.m_semanticAnalizer.analyze(*ast);
+      new AstSymbol("x")),
+    spec, int, "foo", int, 42, 42);
 
-  // execute
-  auto module = UUT.genIr(*ast);
-
-  // verify
-  ExecutionEngineApater ee(move(module));
-  int x = 256;
-  EXPECT_EQ( x, (ee.jitExecFunction<int,int>("foo", x)) )
-    << amendAst(ast) << amend(&ee.module());
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
-    a_function_definition_foo_with_body_returning_a_simple_calculation_with_its_arguments,
-    genIr,
-    JIT_executing_foo_returns_result_of_that_calculation)) {
-
-  // Culcultation: x*y
-
-  // setup
-  // IrGen is currently dumb and expects an expression having a value at
-  // the end of a seq, thus provide one altought not needed for this test
-  TestingIrGen UUT;
-  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-  unique_ptr<AstValue> ast(
+  spec = "Example: two arguments, returns the product";
+  TEST_GEN_IR_2ARG(
     pe.mkFunDef(
       pe.mkFunDecl(
         "foo",
@@ -550,18 +517,8 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstOperator('*',
         new AstSymbol("x"),
-        new AstSymbol("y"))));
-  UUT.m_semanticAnalizer.analyze(*ast);
-
-  // execute
-  auto module = UUT.genIr(*ast);
-
-  // verify
-  int x = 2;
-  int y = 3;
-  ExecutionEngineApater ee(move(module));
-  EXPECT_EQ( x*y, (ee.jitExecFunction<int,int,int>("foo", x, y)) ) << amendAst(ast)
-     << amend(&ee.module());
+        new AstSymbol("y"))),
+    spec, int, "foo", int, int, 3*4, 3, 4);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
