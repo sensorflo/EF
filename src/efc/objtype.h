@@ -131,7 +131,7 @@ public:
   virtual bool hasMember(int op) const;
   virtual bool hasConstructor(const ObjType& other) const;
 
-  bool isValueInRange(int val) const;
+  bool isValueInRange(double val) const;
 
 private:
   EType m_type;

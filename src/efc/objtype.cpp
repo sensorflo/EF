@@ -173,13 +173,13 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
   return false;
 }
 
-bool ObjTypeFunda::isValueInRange(int val) const {
+bool ObjTypeFunda::isValueInRange(double val) const {
   switch (m_type) {
   case eVoid: return false;
   case eNoreturn: return false;
-  case eInt: return true;
+  case eInt: return (INT_MIN<=val && val<=INT_MAX) && (val==static_cast<int>(val));
   case eDouble: return true;
-  case eBool: return val==0 || val==1;
+  case eBool: return val==0.0 || val==1.0;
   };
   assert(false);
   return false;
