@@ -68,11 +68,17 @@ void SemanticAnalizer::visit(AstOperator& op) {
   op.args().accept(*this);
 
   // Check that all operands are of the same obj type, sauf
-  // qualifiers. Currently there are no implicit conversions
+  // qualifiers. Currently there are no implicit conversions. However the rhs
+  // of logical and/or is allowed to be eNoreturn.
   if ( argschilds.size()==2 ) {
-    if ( op.class_() != AstOperator::eOther ) {
-      auto& lhs = argschilds.front()->objType();
-      auto& rhs = argschilds.back()->objType();
+    auto& lhs = argschilds.front()->objType();
+    auto& rhs = argschilds.back()->objType();
+    if ( op.class_() == AstOperator::eLogical ) {
+      if ( !lhs.matchesSaufQualifiers(rhs)
+        && !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eNoreturn))) {
+        Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+      }
+    } else if ( op.class_() != AstOperator::eOther ) {
       if ( !lhs.matchesSaufQualifiers(rhs) ) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
       }

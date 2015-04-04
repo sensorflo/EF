@@ -69,7 +69,8 @@ public:
   virtual llvm::Type* llvmType() const = 0;
 
   /** Returns true if this type has the given operator as member function.
-  Assumes that the operands are of the same type. The argument may not be
+  Assumes that the operands are of the same type, except for logical and/or,
+  where the rhs additionaly can be of type noreturn. The argument may not be
   eSeq, since that operator is never a member. */
   virtual bool hasMember(int op) const = 0;
   virtual bool hasConstructor(const ObjType& other) const = 0;

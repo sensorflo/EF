@@ -157,6 +157,28 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     Error::eNoImplicitConversion, spec);
 }
 
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_a_logical_and_or_logical_or_operator_WITH_an_rhs_of_type_noreturn,
+    THEN_it_succeeds)) {
+
+  TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
+    pe.mkFunDef(
+      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eBool)),
+      new AstOperator(
+        "&&",
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstReturn(new AstNumber(0, ObjTypeFunda::eBool)))),
+    "");
+
+  TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
+    pe.mkFunDef(
+      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eBool)),
+      new AstOperator(
+        "||",
+        new AstNumber(0, ObjTypeFunda::eBool),
+        new AstReturn(new AstNumber(0, ObjTypeFunda::eBool)))),
+    "");
+}
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     an_flow_control_expresssion_WITH_a_condition_whose_type_is_not_bool,
