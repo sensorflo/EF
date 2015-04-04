@@ -235,16 +235,16 @@ public:
   types. */
   typedef double value_t;
 
-  AstNumber(int value, ObjTypeFunda* objType = NULL);
-  AstNumber(int value, ObjTypeFunda::EType eType,
+  AstNumber(value_t value, ObjTypeFunda* objType = NULL);
+  AstNumber(value_t value, ObjTypeFunda::EType eType,
     ObjTypeFunda::Qualifiers qualifiers = ObjTypeFunda::eNoQualifier);
   ~AstNumber();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  int value() const { return m_value; }
+  value_t value() const { return m_value; }
   virtual const ObjTypeFunda& objType() const { return *m_objType; }
 private:
-  const int m_value;
+  const value_t m_value;
   /** We're the owner. Is garanteed to be non-null. */
   const ObjTypeFunda*const m_objType;
 

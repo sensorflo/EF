@@ -241,7 +241,7 @@ void AstDataDef::setIrValue(llvm::Value* value) {
   m_irValue = value;
 }
 
-AstNumber::AstNumber(int value, ObjTypeFunda* objType) :
+AstNumber::AstNumber(AstNumber::value_t value, ObjTypeFunda* objType) :
   m_value(value),
   m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
   m_irValue(NULL) {
@@ -250,7 +250,7 @@ AstNumber::AstNumber(int value, ObjTypeFunda* objType) :
   assert(!(m_objType->qualifiers() & ObjType::eMutable));
 }
 
-AstNumber::AstNumber(int value, ObjTypeFunda::EType eType,
+AstNumber::AstNumber(AstNumber::value_t value, ObjTypeFunda::EType eType,
   ObjTypeFunda::Qualifiers qualifiers) :
   AstNumber(value, new ObjTypeFunda(eType, qualifiers)) {
 }
