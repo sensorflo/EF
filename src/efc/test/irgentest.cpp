@@ -75,10 +75,24 @@ void testgenIr(TestingIrGen& UUT, AstValue* astRoot,
 #define TEST_GEN_IR_IN_IMPLICIT_MAIN(astRoot, expectedResult, spec) \
   TEST_GEN_IR_0ARG(pe.mkMainFunDef(astRoot), spec, int, "main", expectedResult)
 
+#define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(astRoot, expectedResult, spec) \
+  TEST_GEN_IR_0ARG(                                                     \
+    pe.mkFunDef(                                                        \
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eBool)),       \
+      astRoot),                                                         \
+    spec, bool, "foo", expectedResult)
+
+#define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(astRoot, expectedResult, spec) \
+  TEST_GEN_IR_0ARG(                                                     \
+    pe.mkFunDef(                                                        \
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eDouble)),     \
+      astRoot),                                                         \
+    spec, double, "foo", expectedResult)
+
 #define TEST_GEN_IR_0ARG(astRoot, spec, rettype, functionName,          \
   expectedResult)                                                       \
   {                                                                     \
-    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR)");       \
+    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_0ARG)");  \
     TestingIrGen UUT;                                                   \
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
     testgenIr<rettype>(UUT, astRoot, spec, expectedResult,              \
@@ -88,7 +102,7 @@ void testgenIr(TestingIrGen& UUT, AstValue* astRoot,
 #define TEST_GEN_IR_1ARG(astRoot, spec, rettype, functionName, arg1type,\
   expectedResult, arg1)                                                 \
   {                                                                     \
-    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR)");       \
+    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_1ARG)");  \
     TestingIrGen UUT;                                                   \
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
     testgenIr<rettype, arg1type>(UUT, astRoot, spec, expectedResult,    \
@@ -98,7 +112,7 @@ void testgenIr(TestingIrGen& UUT, AstValue* astRoot,
 #define TEST_GEN_IR_2ARG(astRoot, spec, rettype, functionName, arg1type,\
   arg2type, expectedResult, arg1, arg2)                                 \
   {                                                                     \
-    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR)");       \
+    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_2ARG)");  \
     TestingIrGen UUT;                                                   \
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
     testgenIr<rettype, arg1type, arg2type>(UUT, astRoot, spec,          \
