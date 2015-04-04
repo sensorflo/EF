@@ -123,7 +123,16 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     a_single_literal,
     genIrInImplicitMain,
     returns_the_literal_s_value)) {
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(new AstNumber(42), 42, "");
+
+  string spec = "Example: int literal";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstNumber(42),
+    42, spec);
+
+  spec = "Example: bool literal";
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstNumber(1, ObjTypeFunda::eBool),
+    true, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -152,77 +161,65 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstOperator(';', new AstNumber(11), new AstNumber(22)), 22, "");
 
   // not
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eNot,
-        new AstNumber(0, ObjTypeFunda::eBool))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eNot,
+      new AstNumber(0, ObjTypeFunda::eBool)),
     !false, "");
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eNot,
-        new AstNumber(1, ObjTypeFunda::eBool))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eNot,
+      new AstNumber(1, ObjTypeFunda::eBool)),
     !true, "");
 
   // and
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eAnd,
-        new AstNumber(0, ObjTypeFunda::eBool),
-        new AstNumber(0, ObjTypeFunda::eBool))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eAnd,
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eBool)),
     false && false, "");
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eAnd,
-        new AstNumber(0, ObjTypeFunda::eBool),
-        new AstNumber(1, ObjTypeFunda::eBool))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eAnd,
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(1, ObjTypeFunda::eBool)),
     false && true, "");
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eAnd,
-        new AstNumber(1, ObjTypeFunda::eBool),
-        new AstNumber(0, ObjTypeFunda::eBool))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eAnd,
+      new AstNumber(1, ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eBool)),
     true && false, "");
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eAnd,
-        new AstNumber(1, ObjTypeFunda::eBool),
-        new AstNumber(1, ObjTypeFunda::eBool))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eAnd,
+      new AstNumber(1, ObjTypeFunda::eBool),
+      new AstNumber(1, ObjTypeFunda::eBool)),
     true && true, "");
 
   // or
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eOr,
-        new AstNumber(0, ObjTypeFunda::eBool),
-        new AstNumber(0, ObjTypeFunda::eBool))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eOr,
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eBool)),
     false || false, "");
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eOr,
-        new AstNumber(0, ObjTypeFunda::eBool),
-        new AstNumber(1, ObjTypeFunda::eBool))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eOr,
+      new AstNumber(0, ObjTypeFunda::eBool),
+      new AstNumber(1, ObjTypeFunda::eBool)),
     false || true, "");
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eOr,
-        new AstNumber(1, ObjTypeFunda::eBool),
-        new AstNumber(0, ObjTypeFunda::eBool))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eOr,
+      new AstNumber(1, ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eBool)),
     true || false, "");
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eOr,
-        new AstNumber(1, ObjTypeFunda::eBool),
-        new AstNumber(1, ObjTypeFunda::eBool))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eOr,
+      new AstNumber(1, ObjTypeFunda::eBool),
+      new AstNumber(1, ObjTypeFunda::eBool)),
     true || true, "");
 
   // ==
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eEqualTo, new AstNumber(2), new AstNumber(2))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eEqualTo, new AstNumber(2), new AstNumber(2)),
     2==2, "");
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstCast(ObjTypeFunda::eInt,
-      new AstOperator(AstOperator::eEqualTo, new AstNumber(1), new AstNumber(2))),
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eEqualTo, new AstNumber(1), new AstNumber(2)),
     1==2, "");
 
   // + - * /
@@ -246,7 +243,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     does_not_evaluate_rhs_operand_if_after_evaluating_lhs_operand_the_result_of_the_operator_is_already_known)) {
 
   string spec = "Example: lhs of 'and' operator is false -> rhs is not evaluated";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     pe.mkOperatorTree(";",
       new AstDataDef(
         new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
@@ -254,11 +251,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstOperator(AstOperator::eAnd,
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
-      new AstCast(ObjTypeFunda::eInt, new AstSymbol("x"))),
-    1, "");
+      new AstSymbol("x")),
+    true, "");
 
   spec = "Example: lhs of 'and' operator is true -> rhs is evaluated";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     pe.mkOperatorTree(";",
       new AstDataDef(
         new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
@@ -266,11 +263,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstOperator(AstOperator::eAnd,
         new AstNumber(1, ObjTypeFunda::eBool),
         new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
-      new AstCast(ObjTypeFunda::eInt, new AstSymbol("x"))),
-    0, "");
+      new AstSymbol("x")),
+    false, "");
 
   spec = "Example: lhs of 'or' operator is true -> rhs is not evaluated";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     pe.mkOperatorTree(";",
       new AstDataDef(
         new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
@@ -278,11 +275,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstOperator(AstOperator::eOr,
         new AstNumber(1, ObjTypeFunda::eBool),
         new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
-      new AstCast(ObjTypeFunda::eInt, new AstSymbol("x"))),
-    1, "");
+      new AstSymbol("x")),
+    true, "");
 
   spec = "Example: lhs of 'or' operator is false -> rhs is evaluated";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     pe.mkOperatorTree(";",
       new AstDataDef(
         new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
@@ -290,8 +287,8 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstOperator(AstOperator::eOr,
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
-      new AstCast(ObjTypeFunda::eInt, new AstSymbol("x"))),
-    0, "");
+      new AstSymbol("x")),
+    false, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -314,25 +311,19 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     1, spec);
 
   spec = "int -> bool: 0 is false";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstIf(
-      new AstCast(
-        new ObjTypeFunda(ObjTypeFunda::eBool),
-        new AstNumber(0, ObjTypeFunda::eInt)),
-      new AstNumber(1),
-      new AstNumber(2)),
-    2, spec);
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eBool),
+      new AstNumber(0, ObjTypeFunda::eInt)),
+    false, spec);
 
   spec = "int -> bool: not 0 is true";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstIf(
-      new AstCast(
-        new ObjTypeFunda(ObjTypeFunda::eBool),
-        new AstNumber(42, ObjTypeFunda::eInt)),
-      new AstNumber(1),
-      new AstNumber(2)),
-    1, spec);
-}
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eBool),
+      new AstNumber(42, ObjTypeFunda::eInt)),
+    true, spec);
+ }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_seq_with_some_expressions_not_having_a_value_but_the_last_having_a_value,
@@ -473,6 +464,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     a_function_definition_foo_with_return_type_void,
     genIr,
     JIT_executing_foo_succeeds))   {
+
   // setup
   TestingIrGen UUT;
   ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
@@ -533,78 +525,20 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstSymbol("x"),
         new AstSymbol("y"))),
     spec, int, "foo", int, int, 3*4, 3, 4);
-}
 
-TEST(IrGenTest, MAKE_TEST_NAME(
-    a_function_definition_foo_with_argument_x_and_with_body_containing_a_simple_assignement_to_x_and_as_last_expr_in_bodies_seq_x,
-    genIr,
-    JIT_executing_foo_returns_result_of_that_calculation)) {
-
-  // Culcultation: x = x+1, return x
-
-  // setup
-  // IrGen is currently dumb and expects an expression having a value at
-  // the end of a seq, thus provide one altought not needed for this test
-  TestingIrGen UUT;
-  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-  unique_ptr<AstValue> ast(
-    pe.mkFunDef(
-      pe.mkFunDecl(
-        "foo",
-        new ObjTypeFunda(ObjTypeFunda::eInt),
-        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-      new AstOperator(';',
-        new AstOperator('=',
-          new AstSymbol("x"),
-          new AstOperator('+',
-            new AstSymbol("x"),
-            new AstNumber(1))),
-        new AstSymbol("x"))));
-  UUT.m_semanticAnalizer.analyze(*ast);
-
-  // execute
-  auto module = UUT.genIr(*ast);
-
-  // verify
-  int x = 2;
-  ExecutionEngineApater ee(move(module));
-  EXPECT_EQ( x+1, (ee.jitExecFunction<int,int>("foo", x))) << amendAst(ast)
-    << amend(&ee.module());
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME2(
-    a_function_definition_foo_with_mixed_argument_types,
-    genIr)) {
-
-  // setup
-  TestingIrGen UUT;
-  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-  unique_ptr<AstValue> ast(
+  spec = "Example: multiple arguments, mixed argument types";
+  TEST_GEN_IR_2ARG(
     pe.mkFunDef(
       pe.mkFunDecl(
         "foo",
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstArgDecl("condition", new ObjTypeFunda(ObjTypeFunda::eBool)),
-        new AstArgDecl("thenValue", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstArgDecl("elseValue", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstArgDecl("thenValue", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstIf(
         new AstSymbol("condition"),
         new AstSymbol("thenValue"),
-        new AstSymbol("elseValue"))));
-  UUT.m_semanticAnalizer.analyze(*ast);
-
-  // execute
-  auto module = UUT.genIr(*ast);
-
-  // verify
-  Function* functionIr = module->getFunction("foo");
-  unique_ptr<ExecutionEngine> ee(EngineBuilder(module.release()).create());
-  void* functionVoidPtr = ee->getPointerToFunction(functionIr);
-  assert(functionVoidPtr);
-  int (*functionPtr)(bool,int,int) = (int (*)(bool,int,int))(intptr_t)functionVoidPtr;
-  assert(functionPtr);
-  EXPECT_EQ( 42, functionPtr(true, 42, 77) ) << amendAst(ast);
-  EXPECT_EQ( 77, functionPtr(false, 42, 77) ) << amendAst(ast);
+        new AstNumber(77))),
+    spec, int, "foo", bool, int, true ? 42 : 77, true, 42);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
