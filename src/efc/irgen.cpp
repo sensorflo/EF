@@ -178,13 +178,27 @@ void IrGen::visit(AstOperator& op) {
                                   resultIr = op.access()==eWrite ? lhsIr : rhsIr; break;
     case AstOperator::eAssign   :            m_builder.CreateStore (rhsIr, lhsIr);
                                   resultIr = m_abstractObject; break;
-    case AstOperator::eSub      : resultIr = m_builder.CreateSub   (lhsIr, rhsIr, "sub"); break;
-    case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (lhsIr, rhsIr, "add"); break;
-    case AstOperator::eMul      : resultIr = m_builder.CreateMul   (lhsIr, rhsIr, "mul"); break;
-    case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (lhsIr, rhsIr, "div"); break;
-    case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(lhsIr, rhsIr, "cmp"); break;
     case AstOperator::eSeq      : resultIr = rhsIr; break;
-    default: assert(false); break;
+    default: 
+      if (argschilds.front()->objType().is(ObjType::eStoredAsIntegral)) {
+        switch (op.op()) {
+        case AstOperator::eSub      : resultIr = m_builder.CreateSub   (lhsIr, rhsIr, "sub"); break;
+        case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (lhsIr, rhsIr, "add"); break;
+        case AstOperator::eMul      : resultIr = m_builder.CreateMul   (lhsIr, rhsIr, "mul"); break;
+        case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (lhsIr, rhsIr, "div"); break;
+        case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(lhsIr, rhsIr, "cmp"); break;
+        default: assert(false);
+        }
+      } else {
+        switch (op.op()) {
+        case AstOperator::eSub      : resultIr = m_builder.CreateFSub   (lhsIr, rhsIr, "fsub"); break;
+        case AstOperator::eAdd      : resultIr = m_builder.CreateFAdd   (lhsIr, rhsIr, "add"); break;
+        case AstOperator::eMul      : resultIr = m_builder.CreateFMul   (lhsIr, rhsIr, "mul"); break;
+        case AstOperator::eDiv      : resultIr = m_builder.CreateFDiv   (lhsIr, rhsIr, "div"); break;
+        case AstOperator::eEqualTo  : resultIr = m_builder.CreateFCmpOEQ(lhsIr, rhsIr, "cmp"); break;
+        default: assert(false);
+        }
+      }
     }
   }
 

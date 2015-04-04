@@ -219,7 +219,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstNumber(1, ObjTypeFunda::eBool)),
     true || true, "");
 
-  // ==
+  // == with int operands
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstOperator(AstOperator::eEqualTo, new AstNumber(2), new AstNumber(2)),
     2==2, "");
@@ -227,7 +227,19 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstOperator(AstOperator::eEqualTo, new AstNumber(1), new AstNumber(2)),
     1==2, "");
 
-  // + - * /
+  // == with double operands
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eEqualTo,
+      new AstNumber(42.5, ObjTypeFunda::eDouble),
+      new AstNumber(42.5, ObjTypeFunda::eDouble)),
+    42.5==42.5, "");
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
+    new AstOperator(AstOperator::eEqualTo,
+      new AstNumber(42.5, ObjTypeFunda::eDouble),
+      new AstNumber(77.0, ObjTypeFunda::eDouble)),
+    42.5==77.0, "");
+
+  // + - * / with int operands
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator('+', new AstNumber(1), new AstNumber(2)),
     1+2, "");
@@ -240,6 +252,28 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator('/', new AstNumber(6), new AstNumber(3)),
     6/3, "");
+
+  // + - * / with double operands
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
+    new AstOperator('+',
+      new AstNumber(1.1, ObjTypeFunda::eDouble),
+      new AstNumber(2.2, ObjTypeFunda::eDouble)),
+    1.1+2.2, "");
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
+    new AstOperator('-',
+      new AstNumber(1.1, ObjTypeFunda::eDouble),
+      new AstNumber(2.2, ObjTypeFunda::eDouble)),
+    1.1-2.2, "");
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
+    new AstOperator('*',
+      new AstNumber(1.1, ObjTypeFunda::eDouble),
+      new AstNumber(2.2, ObjTypeFunda::eDouble)),
+    1.1*2.2, "");
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
+    new AstOperator('/',
+      new AstNumber(2.5, ObjTypeFunda::eDouble),
+      new AstNumber(2.0, ObjTypeFunda::eDouble)),
+    2.5/2.0, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
