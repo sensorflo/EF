@@ -1,7 +1,7 @@
-CXXFLAGS += `llvm-config --cxxflags | sed 's/-fno-exceptions\|-DNDEBUG//g'` -O0 -Wall -Werror -ggdb3 -std=c++11 #-pedantic
+CXXFLAGS += `llvm-config --cxxflags | sed 's/-fno-exceptions\|-DNDEBUG//g'` -O0 -Wall -Werror -std=c++11 -Wno-deprecated-register #-pedantic
 LDFLAGS += `llvm-config --ldflags`
 LIBS += `llvm-config --libs core jit native interpreter --system-libs | sed 's/-ledit//g'`
-CXX = g++
+CXX = clang++
 LEX = flex
 YACC = bison
 GTEST_DIR = /home/sensorflo/src/gtest
