@@ -129,6 +129,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstNumber(42),
     42, spec);
 
+  spec = "Example: double literal";
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
+    new AstNumber(42.77, ObjTypeFunda::eDouble),
+    42.77, spec);
+
   spec = "Example: bool literal";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstNumber(1, ObjTypeFunda::eBool),

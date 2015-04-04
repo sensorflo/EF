@@ -164,6 +164,9 @@ void IrGen::visit(AstNumber& number) {
   } else if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eBool))) {
     number.setIrValue(ConstantInt::get( getGlobalContext(),
         APInt(1, number.value())));
+  } else if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eDouble))) {
+    number.setIrValue(ConstantFP::get( getGlobalContext(),
+        APFloat(number.value())));
   } else {
     assert(false);
   }
