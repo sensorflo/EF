@@ -144,22 +144,33 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     bool hasConstructor;
   };
   vector<T> inputSpecs{
+    // abstract types have no members
     {ObjTypeFunda::eVoid, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eVoid, ObjTypeFunda::eBool, false},
     {ObjTypeFunda::eVoid, ObjTypeFunda::eInt, false},
     {ObjTypeFunda::eVoid, ObjTypeFunda::eDouble, false},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eNoreturn, false},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eBool, false},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eInt, false},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eDouble, false},
 
+    // all concrete fundamental types
+    // - can _not_ be constructed with an abstract type
+    // - can be constructed with a concrete fundamental type
     {ObjTypeFunda::eBool, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eBool, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eBool, ObjTypeFunda::eBool, true},
     {ObjTypeFunda::eBool, ObjTypeFunda::eInt, true},
     {ObjTypeFunda::eBool, ObjTypeFunda::eDouble, true},
-
     {ObjTypeFunda::eInt, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eInt, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eInt, ObjTypeFunda::eBool, true},
     {ObjTypeFunda::eInt, ObjTypeFunda::eInt, true},
     {ObjTypeFunda::eInt, ObjTypeFunda::eDouble, true},
-
     {ObjTypeFunda::eDouble, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eBool, true},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eInt, true},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eDouble, true}};

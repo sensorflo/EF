@@ -164,10 +164,12 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
   }
   const ObjTypeFunda& otherFunda = static_cast<const ObjTypeFunda&>(other);
   switch (m_type) {
-  case eVoid: return false;
+  case eVoid: // fall through
+  case eNoreturn: return false;
   case eBool: // fall through
   case eDouble: // fall through
-  case eInt: return otherFunda.m_type != eVoid;
+  case eInt:
+    return (otherFunda.m_type != eVoid) && (otherFunda.m_type != eNoreturn);
   default: assert(false);
   }
   return false;
