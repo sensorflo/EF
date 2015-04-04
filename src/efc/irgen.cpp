@@ -67,9 +67,16 @@ void IrGen::visit(AstCast& cast) {
   auto childIr = callAcceptOn(cast.child());
   const auto& oldtype = cast.child().objType();
   const auto& newtype = cast.objType();
-  if ( oldtype.is(ObjType::eStoredAsIntegral) && newtype.is(ObjType::eStoredAsIntegral)) {
-    auto oldsize = oldtype.size();
-    auto newsize = newtype.size();
+  auto oldsize = oldtype.size();
+  auto newsize = newtype.size();
+
+  // unity conversion
+  if (newtype.matchesSaufQualifiers(oldtype)) {
+    cast.setIrValue( childIr ); // i.e. a nop
+  }
+
+  // eStoredAsIntegral <-> eStoredAsIntegral
+  else if ( oldtype.is(ObjType::eStoredAsIntegral) && newtype.is(ObjType::eStoredAsIntegral)) {
     if (oldsize < newsize) {
       assert(newsize==32);
       cast.setIrValue( m_builder.CreateZExt( childIr,
@@ -77,9 +84,12 @@ void IrGen::visit(AstCast& cast) {
     } else {
       assert(newsize==1);
       cast.setIrValue( m_builder.CreateICmpNE(childIr,
-          ConstantInt::get(getGlobalContext(), APInt(1, 0)), "tobool"));
+          ConstantInt::get(getGlobalContext(), APInt(oldsize, 0)), "tobool"));
     }
-  } else {
+  }
+
+  // invaid casts should be catched by semantic analizer
+  else {
     assert(false);
   }
 }
