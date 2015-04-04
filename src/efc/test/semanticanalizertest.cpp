@@ -1441,14 +1441,85 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eNoSuchMember, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    an_cast_aka_constructor_WITH_an_argument_whose_obj_type_is_not_any_of_,
-    transform,
-    reports_eNoSuchMember)) {
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_a_cast_aka_constructor,
+    THEN_it_succeeds_if_newtype_has_respective_constructor_or_if_both_types_matchsaufqualifiers)) {
 
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstCast(new ObjTypeFunda(ObjTypeFunda::eVoid), new AstNumber(42)),
-    Error::eNoSuchMember, "");
+  struct T {
+    ObjTypeFunda::EType newType;
+    ObjTypeFunda::EType oldType;
+    bool isValid;
+  };
+  vector<T> inputSpecs{
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eVoid, true},
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eNoreturn, false},
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eBool, false},
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eInt, false},
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eDouble, false},
+
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eNoreturn, true},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eBool, false},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eInt, false},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eDouble, false},
+
+    {ObjTypeFunda::eBool, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eBool, ObjTypeFunda::eNoreturn, false},
+    {ObjTypeFunda::eBool, ObjTypeFunda::eBool, true},
+    {ObjTypeFunda::eBool, ObjTypeFunda::eInt, true},
+    {ObjTypeFunda::eBool, ObjTypeFunda::eDouble, true},
+
+    {ObjTypeFunda::eInt, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eInt, ObjTypeFunda::eNoreturn, false},
+    {ObjTypeFunda::eInt, ObjTypeFunda::eBool, true},
+    {ObjTypeFunda::eInt, ObjTypeFunda::eInt, true},
+    {ObjTypeFunda::eInt, ObjTypeFunda::eDouble, true},
+
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eNoreturn, false},
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eBool, true},
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eInt, true},
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eDouble, true}};
+
+  for ( const auto& inputSpec : inputSpecs ) {
+
+    // create child of AstCast
+    AstValue* castChild = nullptr;
+    switch (inputSpec.oldType) {
+    case ObjTypeFunda::eVoid:
+      castChild = new AstNop();
+      break; 
+    case ObjTypeFunda::eNoreturn:
+      castChild = new AstReturn(new AstNumber(0));
+      break; 
+    case ObjTypeFunda::eBool: // fall through
+    case ObjTypeFunda::eInt:  // fall through
+    case ObjTypeFunda::eDouble:
+      castChild = new AstNumber(0, inputSpec.oldType);
+      break; 
+    }
+
+    // AstCast needs to be wrapped into an AstFunDef since in some iterations
+    // the child of AstCast is the return expression.
+    AstValue* UUT = new AstCast( new ObjTypeFunda(inputSpec.newType), castChild);
+    AstValue* funbody =
+      inputSpec.newType == ObjTypeFunda::eNoreturn ?
+      UUT :
+      new AstOperator(';', UUT, new AstNumber(0));
+    if ( inputSpec.isValid ) {
+      TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
+        pe.mkFunDef(
+          pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          funbody),
+        "");
+    } else {
+      TEST_ASTTRAVERSAL_REPORTS_ERROR(
+        pe.mkFunDef(
+          pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          funbody),
+        Error::eNoSuchMember, "");
+    }
+  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
