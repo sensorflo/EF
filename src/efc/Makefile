@@ -35,15 +35,17 @@ gensrc/parser.cpp $(GEN_HEADERS): ef.yy ast.h objtype.h parserext.h driver.h acc
 gensrc/scanner.cpp: ef.l driver.h gensrc/parser.hpp | gensrc
 	$(LEX) $(LFLAGS) -o $@ $<
 
+efc.h.pch: efc.h objtype.h access.h ast.h
+	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
-out/%.o: gensrc/%.cpp | out
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
+out/%.o: gensrc/%.cpp efc.h.pch | out
+	$(CXX) -include efc.h $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
 	@cp out/$*.d out/$*.P; \
 		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 		-e '/^$$/ d' -e 's/$$/ :/' < out/$*.d >> out/$*.P;
 
-out/%.o: %.cpp | out
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
+out/%.o: %.cpp efc.h.pch | out
+	$(CXX) -include efc.h $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
 	@cp out/$*.d out/$*.P; \
 		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 		-e '/^$$/ d' -e 's/$$/ :/' < out/$*.d >> out/$*.P;
@@ -68,8 +70,11 @@ test efctest: out/efctest
 runtest runefctest: out/efctest
 	$<
 
-out/%.o: test/%.cpp | out
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
+test/efctest.h.pch: test/efctest.h efc.h.pch test/test.h
+	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
+
+out/%.o: test/%.cpp test/efctest.h.pch | out
+	$(CXX) -include test/efctest.h $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
 	@cp out/$*.d out/$*.P; \
 		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 		-e '/^$$/ d' -e 's/$$/ :/' < out/$*.d >> out/$*.P;
@@ -103,6 +108,7 @@ out/specs.html: test/*.cpp | out
 clean:
 	rm -rf out
 	rm -rf gensrc
+	rm -rf *.pch
 
 .PHONY: all efc test efctest runtest runefctest
 

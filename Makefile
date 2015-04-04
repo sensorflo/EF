@@ -4,7 +4,7 @@ allreally: all alltest runalltest
 
 alltest: efctest
 
-runalltest: runefctest
+runalltest: runefctest | alltest
 
 efc efctest runefctest:
 	cd src/efc && $(MAKE) $@
