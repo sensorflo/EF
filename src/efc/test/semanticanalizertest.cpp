@@ -20,7 +20,7 @@ public:
   using SemanticAnalizer::m_env;
 };
 
-void testAstTraversalReportsError(TestingSemanticAnalizer& UUT, AstNode* ast,
+void testAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
   Error::No expectedErrorNo, const string& spec) {
   // setup
   ENV_ASSERT_TRUE( ast!=NULL );
@@ -43,27 +43,48 @@ void testAstTraversalReportsError(TestingSemanticAnalizer& UUT, AstNode* ast,
     amendSpec(spec) << amendAst(ast) << amend(UUT.m_errorHandler) <<
     "\nexceptionwhat: " << excptionwhat;
 
-  // ... only exactly one error is reported
-  const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();
-  EXPECT_EQ(1, errors.size()) <<
-    "Expecting exactly one error\n" <<
-    amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
 
-  // ... and that that one error has the expected ErrorNo
-  if ( ! errors.empty() ) {
-    EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
+  // ... as expected no error was reported
+  const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();
+  if ( expectedErrorNo == Error::eNone ) {
+    EXPECT_TRUE(errors.empty()) <<
+      "Expecting no error\n" <<
       amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+  }
+
+  else {
+    // ... only exactly one error is reported
+    EXPECT_EQ(1, errors.size()) <<
+      "Expecting exactly one error\n" <<
+      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+
+    // ... and that that one error has the expected ErrorNo
+    if ( ! errors.empty() ) {
+      EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
+        amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+    }
   }
 }
 
 #define TEST_ASTTRAVERSAL_REPORTS_ERROR(ast, expectedErrorNo, spec)     \
   {                                                                     \
-    SCOPED_TRACE("transform called from here (via TEST_ASTTRAVERSAL_REPORTS_ERROR)"); \
+    SCOPED_TRACE("testAstTraversal called from here (via TEST_ASTTRAVERSAL_REPORTS_ERROR)"); \
+    static_assert(expectedErrorNo != Error::eNone, "");                 \
     Env env;                                                            \
     ErrorHandler errorHandler;                                          \
     TestingSemanticAnalizer UUT(env, errorHandler);                     \
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);                        \
-    testAstTraversalReportsError(UUT, ast, expectedErrorNo, spec);      \
+    testAstTraversal(UUT, ast, expectedErrorNo, spec);                  \
+  }
+
+#define TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(ast, spec)            \
+  {                                                                     \
+    SCOPED_TRACE("testAstTraversal called from here (via TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS)"); \
+    Env env;                                                            \
+    ErrorHandler errorHandler;                                          \
+    TestingSemanticAnalizer UUT(env, errorHandler);                     \
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);                        \
+    testAstTraversal(UUT, ast, Error::eNone, spec);                     \
   }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
