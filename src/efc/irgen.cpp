@@ -88,6 +88,31 @@ void IrGen::visit(AstCast& cast) {
     }
   }
 
+  // eStoredAsIntegral -> double
+  else if (oldtype.is(ObjType::eStoredAsIntegral)
+    && newtype.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eDouble))) {
+    if ( oldsize==1 ) {
+      cast.setIrValue( m_builder.CreateUIToFP( childIr,
+          Type::getDoubleTy(getGlobalContext()), "uitofp"));
+    } else {
+      cast.setIrValue( m_builder.CreateSIToFP( childIr,
+          Type::getDoubleTy(getGlobalContext()), "sitofp"));
+    }
+  }
+
+  // double -> eStoredAsIntegral
+  else if (oldtype.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eDouble))
+    && newtype.is(ObjType::eStoredAsIntegral)) {
+    if ( newsize==1 ) {
+      cast.setIrValue( m_builder.CreateFCmpONE( childIr,
+          ConstantFP::get(getGlobalContext(), APFloat(0.0)), "tobool"));
+    } else {
+      assert(newsize==32);
+      cast.setIrValue( m_builder.CreateFPToSI( childIr,
+          Type::getInt32Ty(getGlobalContext()), "fptosi"));
+    }
+  }
+
   // invaid casts should be catched by semantic analizer
   else {
     assert(false);
