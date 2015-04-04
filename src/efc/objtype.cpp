@@ -143,16 +143,14 @@ llvm::Type* ObjTypeFunda::llvmType() const {
 }
 
 bool ObjTypeFunda::hasMember(int op) const {
-  // bugfix: void has none of these
-  // new: eNoreturn has none of these
   switch (AstOperator::classOf(static_cast<AstOperator::EOperation>(op))) {
   case AstOperator::eAssignment: return is(eScalar);
   case AstOperator::eArithmetic: return is(eArithmetic);
   case AstOperator::eLogical: return m_type == eBool;
   case AstOperator::eComparison: return is(eScalar);
-  case AstOperator::eOther: return true;
-  default: assert(false);
+  case AstOperator::eOther: assert(false); return false;
   }
+  assert(false);
   return false;
 }
 
