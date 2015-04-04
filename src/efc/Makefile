@@ -7,7 +7,7 @@ YACC = bison
 GTEST_DIR = /home/sensorflo/src/gtest
 BISON_DATA_DIR := $(shell bison --print-datadir)
 
-all: out gensrc out/efc
+all: out/efc
 
 out gensrc:
 	mkdir -p $@
@@ -26,23 +26,23 @@ EFC_OBJS = out/parser.o out/scanner.o $(patsubst %.cpp, out/%.o, $(EFC_SRCS))
 
 efc: out/efc
 
-gensrc/parser.cpp $(GEN_HEADERS): ef.yy ast.h objtype.h parserext.h driver.h access.h astforwards.h
+gensrc/parser.cpp $(GEN_HEADERS): ef.yy ast.h objtype.h parserext.h driver.h access.h astforwards.h | gensrc
 	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $<;\
     yaccexitstatus=$$?;\
     xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml;\
     exit $$yaccexitstatus
 
-gensrc/scanner.cpp: ef.l driver.h gensrc/parser.hpp
+gensrc/scanner.cpp: ef.l driver.h gensrc/parser.hpp | gensrc
 	$(LEX) $(LFLAGS) -o $@ $<
 
 
-out/%.o: gensrc/%.cpp
+out/%.o: gensrc/%.cpp | out
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
 	@cp out/$*.d out/$*.P; \
 		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 		-e '/^$$/ d' -e 's/$$/ :/' < out/$*.d >> out/$*.P;
 
-out/%.o: %.cpp
+out/%.o: %.cpp | out
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
 	@cp out/$*.d out/$*.P; \
 		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -68,7 +68,7 @@ test efctest: out/efctest
 runtest runefctest: out/efctest
 	$<
 
-out/%.o: test/%.cpp
+out/%.o: test/%.cpp | out
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
 	@cp out/$*.d out/$*.P; \
 		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
@@ -87,7 +87,7 @@ out/efctest: $(filter-out out/efc.o, $(EFC_OBJS)) $(EFCTEST_OBJS) out/libgtest.a
 
 doc: out/specs.html
 
-out/specs.html: test/*.cpp
+out/specs.html: test/*.cpp | out
 	-if type testdox >/dev/null ; then\
 		if type asciidoc >/dev/null ; then\
 			testdox -f asciidoc $^ | asciidoc -a toc -o $@ -;\
@@ -101,8 +101,8 @@ out/specs.html: test/*.cpp
 # ----------------------------------------------------------------------
 
 clean:
-	rm -rf out/*
-	rm -rf gensrc/*
+	rm -rf out
+	rm -rf gensrc
 
 .PHONY: all efc test efctest runtest runefctest
 
