@@ -1727,14 +1727,15 @@ properties:
  ** _static_
   *** _system static_: system global, implies shared ownership and implies
       shared access
-  *** _process static_: process global, implies shared access.  Const objects
-      might be in code segment.
-  *** _thread static_: thread private global, implies exclusive access.  Const
-      objects might be in code segment.
- ** _automatic_: Informally explained: objects on stack.  That includes
-    <<temporaries>> and parameters.
+  *** _(process) static_: process global.  Const objects might be in code
+      segment.
+ ** _local_
+  *** _thread local_: thread private global.
+  *** _local_ (aka _automatic_): Informally explained: objects on stack.  That
+      includes <<temporaries>> and function parameters.
  ** _dynamic_: Informally explained: objects on heap.
  ** _unstored_: An object occupying no storage.  E.g. for certain literals.
+    This just as an idea, probably EF will not have such a storage class.
 
 * _owner(s)_ / _exclusive/shared ownership_: The owner is responsible for
   freeing the underlying memory resource.  Knowing the owner(s) implicitly
