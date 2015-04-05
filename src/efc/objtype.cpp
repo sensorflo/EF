@@ -88,6 +88,12 @@ ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& other) const {
 }
 
 basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
+  if (m_storageDuration != eLocal) {
+    os << m_storageDuration << "-";
+  }
+  if (eMutable & m_qualifiers) {
+    os << "mut-";
+  }
   switch (m_type) {
   case eVoid: os << "void"; break;
   case eNoreturn: os << "noreturn"; break;
@@ -96,12 +102,6 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   case eBool: os << "bool"; break;
   case eDouble: os << "double"; break;
   };
-  if (eMutable & m_qualifiers) {
-    os << "-mut";
-  }
-  if (m_storageDuration != eLocal) {
-    os << "-" << m_storageDuration;
-  }
   return os;
 }
 
@@ -262,7 +262,7 @@ basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {
     if (i!=m_args->begin()) { os << ", "; }
     os << **i;
   }
-  os << "), ";
+  os << ") ";
   os << *m_ret;  
   os << ")";
   return os;
