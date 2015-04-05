@@ -260,7 +260,12 @@ void IrGen::visit(AstSymbol& symbol) {
   assert( stentry->valueIr() );
 
   Value* resultIr = NULL;
-  if (stentry->objType().qualifiers() & ObjType::eMutable) {
+
+  if (stentry->objType().is(ObjType::eFunction)) {
+    resultIr = stentry->valueIr();
+  }
+
+  else if ( stentry->objType().qualifiers() & ObjType::eMutable) {
     // stentry->valueIr() is the pointer returned by alloca corresponding to
     // the symbol
     if (symbol.access()==eWrite) {
@@ -268,8 +273,12 @@ void IrGen::visit(AstSymbol& symbol) {
     } else {
       resultIr = m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str());
     }
-  } else {
-    // stentry->valueIr() is directly the llvm::Value of the symbol
+  }
+
+  else {
+    // KLUDGE: It is currently assumed that an immutable local data object
+    // needs no storage and thus can be repressented as llvm::Value. See also
+    // visit of AstDataDecl.
     resultIr = stentry->valueIr();
   }
   symbol.setIrValue(resultIr);
@@ -399,19 +408,26 @@ void IrGen::visit(AstDataDef& dataDef) {
   // trivial. For variables aka allocas first an alloca has to be created.
   Value* initValue = callAcceptOn(dataDef.initValue());
   assert(initValue);
-  if ( dataDef.objType().qualifiers() & ObjType::eMutable ) {
-    Function* functionIr = m_builder.GetInsertBlock()->getParent();
-    assert(functionIr);
-    AllocaInst* alloca =
-      createAllocaInEntryBlock(functionIr, dataDef.decl().name(),
-        dataDef.objType().llvmType());
-    assert(alloca);
-    m_builder.CreateStore(initValue, alloca);
-    stentry->setValueIr(alloca);
-    dataDef.setIrValue(dataDef.access()==eRead ? initValue : alloca);
-  } else {
-    stentry->setValueIr(initValue);
-    dataDef.setIrValue(initValue);
+  const ObjType& objType = dataDef.objType();
+  {
+    if ( objType.qualifiers() & ObjType::eMutable ) {
+      Function* functionIr = m_builder.GetInsertBlock()->getParent();
+      assert(functionIr);
+      AllocaInst* alloca =
+        createAllocaInEntryBlock(functionIr, dataDef.decl().name(),
+          objType.llvmType());
+      assert(alloca);
+      m_builder.CreateStore(initValue, alloca);
+      stentry->setValueIr(alloca);
+      dataDef.setIrValue(dataDef.access()==eRead ? initValue : alloca);
+    } else {
+      // KLUDGE: It is currently assumed that an immutable local data object
+      // needs no storage and thus can be repressented as llvm::Value. However
+      // this is in general not true. It fails if its address is taken;
+      // currently there is no address of operator.
+      stentry->setValueIr(initValue);
+      dataDef.setIrValue(initValue);
+    }
   }
 }
 
