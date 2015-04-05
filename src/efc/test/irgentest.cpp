@@ -811,6 +811,62 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     77, spec);
 }
 
+TEST(IrGenTest, MAKE_TEST_NAME(
+    a_static_data_object_definition_being_initialized_with_x,
+    genIrInImplicitMain,
+    returns_x)) {
+  string spec = "Example: immutable static data object";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstDataDef(
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic)),
+      new AstNumber(42)),
+    42, "");
+
+  spec = "Example: mutable static data object";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstDataDef(
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable, ObjType::eStatic)),
+      new AstNumber(42)),
+    42, "");
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME3(
+    GIVEN_a_static_data_object_definition,
+    THEN_the_initialization_is_ignored_at_runtime_when_control_flow_reaches_it,
+    BECAUSE_initialization_of_an_static_data_object_is_done_at_program_startup)) {
+
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("spy_sum",
+          new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable, ObjType::eStatic))),
+
+      pe.mkFunDef(
+        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eVoid)),
+        new AstOperator(";",
+          new AstDataDef(
+            // Init UUT with true. This test is about that this happens _not_
+            // when control flow reaches this place
+            new AstDataDecl("UUT",
+              new ObjTypeFunda(ObjTypeFunda::eBool, ObjTypeFunda::eMutable, ObjType::eStatic)),
+            new AstNumber(1, ObjTypeFunda::eBool)),
+          new AstIf(
+            new AstSymbol("UUT"), // true only the first time ...
+            new AstOperator(';',
+              new AstOperator('=',  // ... since the then clause sets UUT to false
+                new AstSymbol("UUT"),
+                new AstNumber(0, ObjTypeFunda::eBool)),
+              new AstOperator('=',
+                new AstSymbol("spy_sum"),
+                new AstOperator('+', new AstSymbol("spy_sum"), new AstNumber(1))))))),
+
+      new AstFunCall(new AstSymbol("foo")), // 'spy_sum' should be increased
+      new AstFunCall(new AstSymbol("foo")), // 'spy_sum' should _not_ be increased
+      new AstSymbol("spy_sum")),            // should have been increased once
+                                            // -> value should be 1
+    1, "");
+}
+
 TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_dot_assignment_expression,
     THEN_its_value_is_the_lhs_data_object)) {
@@ -886,6 +942,24 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstNumber(42)),
       new AstSymbol("x")),
     42, spec);
+
+  spec = "Example: static immutable data object";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstOperator(';',
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic)),
+        new AstNumber(42)),
+      new AstSymbol("x")),
+    42, spec);
+
+  spec = "Example: static mutable data object";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstOperator(';',
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable, ObjType::eStatic)),
+        new AstNumber(42)),
+      new AstSymbol("x")),
+    42, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(
@@ -911,6 +985,18 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)),
       new AstOperator(".=",
+        new AstSymbol("foo"),
+        new AstNumber(77)),
+      new AstSymbol("foo")),
+    77, spec);
+
+  spec = "Example: static data object and using operator '='";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable, ObjType::eStatic)),
+        new AstNumber(42)),
+      new AstOperator('=',
         new AstSymbol("foo"),
         new AstNumber(77)),
       new AstSymbol("foo")),

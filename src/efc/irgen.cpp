@@ -265,7 +265,8 @@ void IrGen::visit(AstSymbol& symbol) {
     resultIr = stentry->valueIr();
   }
 
-  else if ( stentry->objType().qualifiers() & ObjType::eMutable) {
+  else if ( stentry->objType().qualifiers() & ObjType::eMutable
+    || stentry->objType().storageDuration() == ObjType::eStatic) {
     // stentry->valueIr() is the pointer returned by alloca corresponding to
     // the symbol
     if (symbol.access()==eWrite) {
@@ -409,7 +410,14 @@ void IrGen::visit(AstDataDef& dataDef) {
   Value* initValue = callAcceptOn(dataDef.initValue());
   assert(initValue);
   const ObjType& objType = dataDef.objType();
-  {
+  if ( objType.storageDuration() == ObjType::eStatic ) {
+    GlobalVariable* variable = new GlobalVariable( *m_module, objType.llvmType(),
+      ! objType.qualifiers() & ObjType::eMutable, GlobalValue::InternalLinkage,
+      static_cast<Constant*>(initValue),
+      dataDef.decl().name());
+    stentry->setValueIr(variable);
+    dataDef.setIrValue(dataDef.access()==eRead ? initValue : variable);
+  } else {
     if ( objType.qualifiers() & ObjType::eMutable ) {
       Function* functionIr = m_builder.GetInsertBlock()->getParent();
       assert(functionIr);
