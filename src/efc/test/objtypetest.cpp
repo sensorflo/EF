@@ -300,3 +300,19 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 
   EXPECT_EQ( -1, ObjTypeFun(ObjTypeFun::createArgs()).size());
 }
+
+TEST(ObjTypeTest, MAKE_TEST_NAME1(
+    createDefaultAstValue)) {
+
+  vector<ObjTypeFunda::EType> inputTypes = {
+    ObjTypeFunda::eBool, ObjTypeFunda::eChar, ObjTypeFunda::eInt,
+    ObjTypeFunda::eDouble};
+
+  for (const auto type : inputTypes ) {
+    unique_ptr<AstNumber> number{dynamic_cast<AstNumber*>(
+        ObjTypeFunda(type).createDefaultAstValue())};
+    EXPECT_TRUE( number != nullptr );
+    EXPECT_EQ( 0.0, number->value());
+    EXPECT_TRUE( number->objType().matchesFully(ObjTypeFunda(type)));
+  }
+}

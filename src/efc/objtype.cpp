@@ -127,6 +127,7 @@ int ObjTypeFunda::size() const {
 }
 
 AstValue* ObjTypeFunda::createDefaultAstValue() const {
+  assert(!is(eAbstract));
   return new AstNumber(0, new ObjTypeFunda(m_type));
 }
 

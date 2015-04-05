@@ -65,6 +65,7 @@ public:
 
   Qualifiers qualifiers() const { return m_qualifiers; }
 
+  /** asserts in case of there is no default AstValue */
   virtual AstValue* createDefaultAstValue() const = 0;
   virtual llvm::Type* llvmType() const = 0;
 
