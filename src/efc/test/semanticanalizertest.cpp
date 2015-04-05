@@ -224,6 +224,19 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_data_obj_declaration_initialized_with_an_non_ctconst_expression,
+    transform,
+    reports_eCTConstRequired)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic)),
+        new AstFunCall(new AstSymbol("foo")))),
+    Error::eCTConstRequired, "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_simple_example_of_a_reference_to_an_unknown_name,
     transform,
     reports_an_eErrUnknownName)) {

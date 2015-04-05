@@ -274,6 +274,10 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
   if ( dataDef.decl().objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
+  if ( dataDef.decl().objType().storageDuration() == ObjType::eStatic
+    && !dataDef.initValue().isCTConst() ) {
+    Error::throwError(m_errorHandler, Error::eCTConstRequired);
+  }
   postConditionCheck(dataDef);
 }
 
