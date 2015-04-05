@@ -221,6 +221,25 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     EXPECT_TRUE( stentry.get() ) << amendAst(ast.get());
     EXPECT_MATCHES_FULLY( *objType, stentry->objType()) << amendAst(ast.get());
   }
+
+  spec = "Example: static immutable int";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    auto objType = new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic);
+    unique_ptr<AstNode> ast(new AstDataDecl("x", objType));
+
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    shared_ptr<SymbolTableEntry> stentry;
+    env.find("x", stentry);
+    EXPECT_TRUE( stentry.get() ) << amendAst(ast.get());
+    EXPECT_MATCHES_FULLY( *objType, stentry->objType()) << amendAst(ast.get());
+  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -314,6 +333,28 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     env.find("x", stentry);
     EXPECT_TRUE( stentry.get() ) << amendAst(ast);
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), stentry->objType() );
+  }
+
+  spec = "Example: static data object";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic)),
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic)))};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
+    shared_ptr<SymbolTableEntry> stentry;
+    env.find("x", stentry);
+    EXPECT_TRUE( stentry.get() ) << amendAst(ast);
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic), stentry->objType() );
   }
 }
 
