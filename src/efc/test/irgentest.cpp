@@ -82,6 +82,13 @@ void testgenIr(TestingIrGen& UUT, AstValue* astRoot,
       astRoot),                                                         \
     spec, bool, "foo", expectedResult)
 
+#define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(astRoot, expectedResult, spec) \
+  TEST_GEN_IR_0ARG(                                                     \
+    pe.mkFunDef(                                                        \
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eChar)),       \
+      astRoot),                                                         \
+    spec, unsigned char, "foo", expectedResult)
+
 #define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(astRoot, expectedResult, spec) \
   TEST_GEN_IR_0ARG(                                                     \
     pe.mkFunDef(                                                        \
@@ -124,7 +131,12 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     genIrInImplicitMain,
     returns_the_literal_s_value)) {
 
-  string spec = "Example: int literal";
+  string spec = "Example: char literal";
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
+    new AstNumber('x', ObjTypeFunda::eChar),
+    'x', spec);
+
+  spec = "Example: int literal";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstNumber(42),
     42, spec);
@@ -342,6 +354,20 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstNumber(1, ObjTypeFunda::eBool)),
     true, spec);
 
+  spec = "bool -> char: false is 0";
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eChar),
+      new AstNumber(0, ObjTypeFunda::eBool)),
+    0, spec);
+
+  spec = "bool -> char: true is 1";
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eChar),
+      new AstNumber(1, ObjTypeFunda::eBool)),
+    1, spec);
+
   spec = "bool -> int: false is 0";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstCast(
@@ -363,6 +389,27 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstNumber(1, ObjTypeFunda::eBool)),
     1.0, spec);
 
+  spec = "char -> char: is a nop";
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eChar),
+      new AstNumber('x', ObjTypeFunda::eChar)),
+    'x', spec);
+
+  spec = "char (above 128) -> int";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eInt),
+      new AstNumber(200, ObjTypeFunda::eChar)),
+    200, spec);
+
+  spec = "char (above 128) -> double";
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eDouble),
+      new AstNumber(200, ObjTypeFunda::eChar)),
+    200.0, spec);
+
   spec = "int -> bool: 0 is false";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstCast(
@@ -376,6 +423,13 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new ObjTypeFunda(ObjTypeFunda::eBool),
       new AstNumber(42, ObjTypeFunda::eInt)),
     true, spec);
+
+  spec = "int -> char";
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eChar),
+      new AstNumber(200, ObjTypeFunda::eInt)),
+    200, spec);
 
   spec = "int -> int: is a nop";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -404,6 +458,13 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new ObjTypeFunda(ObjTypeFunda::eBool),
       new AstNumber(42.77, ObjTypeFunda::eDouble)),
     true, spec);
+
+  spec = "double -> char";
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
+    new AstCast(
+      new ObjTypeFunda(ObjTypeFunda::eChar),
+      new AstNumber(200.22, ObjTypeFunda::eDouble)),
+    200, spec);
 
   spec = "double -> int";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(

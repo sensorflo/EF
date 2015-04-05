@@ -90,18 +90,27 @@ void IrGen::visit(AstCast& cast) {
       cast.setIrValue( m_builder.CreateICmpNE(childIr,
           ConstantInt::get(getGlobalContext(), APInt(oldsize, 0)), irValueName));
     }
-    // between non-bool integrals
+    // between non-bool integrals, smaller -> larger
+    else if (oldsize < newsize) {
+      assert(oldsize==8);// implies char, which implies unsigned
+      assert(newsize==32); //  implies int, which implies signed
+      cast.setIrValue( m_builder.CreateZExt( childIr, newtype.llvmType(),
+          irValueName));
+    }
+    // between non-bool integrals, larger -> smaller
     else {
-      // none currently
-      assert(false);
+      assert(oldsize==32); //  implies int, which implies signed
+      assert(newsize==8);// implies char, which implies unsigned
+      cast.setIrValue( m_builder.CreateTrunc( childIr, newtype.llvmType(),
+          irValueName));
     }
   }
 
   // eStoredAsIntegral -> double
   else if (oldtype.is(ObjType::eStoredAsIntegral)
     && newtype.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eDouble))) {
-    // unsigned types: bool
-    if ( oldsize==1 ) {
+    // unsigned types: bool, char
+    if ( oldsize==1 || oldsize==8 ) {
       cast.setIrValue( m_builder.CreateUIToFP( childIr, newtype.llvmType(),
           irValueName));
     }
@@ -121,9 +130,11 @@ void IrGen::visit(AstCast& cast) {
       cast.setIrValue( m_builder.CreateFCmpONE( childIr,
           ConstantFP::get(getGlobalContext(), APFloat(0.0)), irValueName));
     }
-
-    // unsigned types: none currently
-
+    // unsigned types: char
+    else if ( newsize==8 ) {
+      cast.setIrValue( m_builder.CreateFPToUI( childIr, newtype.llvmType(),
+          irValueName));
+    }
     // signed types: int
     else {
       assert(newsize==32);
@@ -226,7 +237,10 @@ void IrGen::visit(AstOperator& op) {
 }
 
 void IrGen::visit(AstNumber& number) {
-  if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eInt)) ) {
+  if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eChar))) {
+    number.setIrValue(ConstantInt::get( getGlobalContext(),
+        APInt(8, number.value())));
+  } else if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eInt)) ) {
     number.setIrValue(ConstantInt::get( getGlobalContext(),
         APInt(32, number.value())));
   } else if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eBool))) {

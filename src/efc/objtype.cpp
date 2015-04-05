@@ -139,7 +139,7 @@ llvm::Type* ObjTypeFunda::llvmType() const {
   switch (m_type) {
   case eVoid: return Type::getVoidTy(getGlobalContext());
   case eNoreturn: return nullptr;
-  case eChar: assert(false); // not yet implemented
+  case eChar: return Type::getInt8Ty(getGlobalContext());
   case eInt: return Type::getInt32Ty(getGlobalContext());
   case eDouble: return Type::getDoubleTy(getGlobalContext());
   case eBool: return Type::getInt1Ty(getGlobalContext());
