@@ -30,13 +30,23 @@ void testMatch(const string& spec, ObjType::MatchType expectedMatchType,
 TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   // fundamental types
   EXPECT_EQ("void", ObjTypeFunda(ObjTypeFunda::eVoid).toStr());
+  EXPECT_EQ("noreturn", ObjTypeFunda(ObjTypeFunda::eNoreturn).toStr());
   EXPECT_EQ("char", ObjTypeFunda(ObjTypeFunda::eChar).toStr());
   EXPECT_EQ("char-mut", ObjTypeFunda(ObjTypeFunda::eChar, ObjType::eMutable).toStr());
+  EXPECT_EQ("char-static", ObjTypeFunda(ObjTypeFunda::eChar, ObjType::eStatic).toStr());
+  EXPECT_EQ("char-mut-static", ObjTypeFunda(ObjTypeFunda::eChar, ObjType::eMutable, ObjType::eStatic).toStr());
   EXPECT_EQ("int", ObjTypeFunda(ObjTypeFunda::eInt).toStr());
   EXPECT_EQ("int-mut", ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).toStr());
+  EXPECT_EQ("int-static", ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic).toStr());
+  EXPECT_EQ("int-mut-static", ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable, ObjType::eStatic).toStr());
   EXPECT_EQ("bool", ObjTypeFunda(ObjTypeFunda::eBool).toStr());
   EXPECT_EQ("bool-mut", ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable).toStr());
+  EXPECT_EQ("bool-static", ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eStatic).toStr());
+  EXPECT_EQ("bool-mut-static", ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable, ObjType::eStatic).toStr());
   EXPECT_EQ("double", ObjTypeFunda(ObjTypeFunda::eDouble).toStr());
+  EXPECT_EQ("double-mut", ObjTypeFunda(ObjTypeFunda::eDouble, ObjType::eMutable).toStr());
+  EXPECT_EQ("double-static", ObjTypeFunda(ObjTypeFunda::eDouble, ObjType::eStatic).toStr());
+  EXPECT_EQ("double-mut-static", ObjTypeFunda(ObjTypeFunda::eDouble, ObjType::eMutable, ObjType::eStatic).toStr());
 
   // function type
   EXPECT_EQ("fun((), int)",

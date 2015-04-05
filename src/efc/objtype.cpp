@@ -60,13 +60,26 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::MatchType mt) 
   }
 }
 
-ObjTypeFunda::ObjTypeFunda(EType type, Qualifiers qualifiers)  :
-  ObjType(qualifiers), m_type(type) {
+basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::StorageDuration sd) {
+  switch (sd) {
+  case ObjType::eLocal: return os;
+  case ObjType::eStatic: return os << "static";
+  default: assert(false); return os;
+  }
+  return os;
+}
+
+ObjTypeFunda::ObjTypeFunda(EType type, Qualifiers qualifiers,
+  StorageDuration storageDuration)  :
+  ObjType(qualifiers), m_type(type), m_storageDuration(storageDuration) {
   if ( type==eVoid ) {
     assert( qualifiers == eNoQualifier );
   }
   // same for eNoret
 }
+
+ObjTypeFunda::ObjTypeFunda(EType type, StorageDuration storageDuration) :
+  ObjTypeFunda(type, eNoQualifier, storageDuration) {}
 
 ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& other) const {
   if (m_type!=other.m_type) { return eNoMatch; }
@@ -85,6 +98,9 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   };
   if (eMutable & m_qualifiers) {
     os << "-mut";
+  }
+  if (m_storageDuration != eLocal) {
+    os << "-" << m_storageDuration;
   }
   return os;
 }
