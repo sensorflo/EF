@@ -38,6 +38,7 @@ class AstValue : public AstNode {
 public:
   AstValue(Access access = eRead) : AstNode(access) {};
   virtual const ObjType& objType() const =0;
+  virtual bool isCTConst() const { return false; }
 };
 
 class AstNop : public AstValue {
@@ -243,6 +244,7 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
   value_t value() const { return m_value; }
   virtual const ObjTypeFunda& objType() const { return *m_objType; }
+  virtual bool isCTConst() const { return true; }
 private:
   const value_t m_value;
   /** We're the owner. Is garanteed to be non-null. */
