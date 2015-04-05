@@ -78,6 +78,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   switch (m_type) {
   case eVoid: os << "void"; break;
   case eNoreturn: os << "noreturn"; break;
+  case eChar: os << "char"; break;
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
   case eDouble: os << "double"; break;
@@ -93,13 +94,15 @@ bool ObjTypeFunda::is(ObjType::EClass class_) const {
   case eVoid:
   case eNoreturn:
     return class_==eAbstract;
+  case eChar:
   case eBool:
   case eInt:
   case eDouble:
     if (class_==eScalar) return true;
     if (class_==eStoredAsIntegral) return m_type!=eDouble;
     switch(m_type) {
-    case eBool:
+    case eBool: // fall through
+    case eChar:
       return false;
     case eInt:
     case eDouble:
@@ -119,6 +122,7 @@ int ObjTypeFunda::size() const {
   case eVoid:
   case eNoreturn: return -1;
   case eBool: return 1;
+  case eChar: return 8;
   case eInt: return 32;
   case eDouble: return 64;
   }
@@ -135,6 +139,7 @@ llvm::Type* ObjTypeFunda::llvmType() const {
   switch (m_type) {
   case eVoid: return Type::getVoidTy(getGlobalContext());
   case eNoreturn: return nullptr;
+  case eChar: assert(false); // not yet implemented
   case eInt: return Type::getInt32Ty(getGlobalContext());
   case eDouble: return Type::getDoubleTy(getGlobalContext());
   case eBool: return Type::getInt1Ty(getGlobalContext());
@@ -166,6 +171,7 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
   case eVoid: // fall through
   case eNoreturn: return false;
   case eBool: // fall through
+  case eChar: // fall through
   case eDouble: // fall through
   case eInt:
     return (otherFunda.m_type != eVoid) && (otherFunda.m_type != eNoreturn);
@@ -178,6 +184,7 @@ bool ObjTypeFunda::isValueInRange(double val) const {
   switch (m_type) {
   case eVoid: return false;
   case eNoreturn: return false;
+  case eChar: return (0<=val && val<=0xFF) && (val==static_cast<int>(val));
   case eInt: return (INT_MIN<=val && val<=INT_MAX) && (val==static_cast<int>(val));
   case eDouble: return true;
   case eBool: return val==0.0 || val==1.0;

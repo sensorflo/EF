@@ -1515,6 +1515,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
       castChild = new AstReturn(new AstNumber(0));
       break; 
     case ObjTypeFunda::eBool: // fall through
+    case ObjTypeFunda::eChar:  // fall through
     case ObjTypeFunda::eInt:  // fall through
     case ObjTypeFunda::eDouble:
       castChild = new AstNumber(0, inputSpec.oldType);

@@ -106,6 +106,7 @@ public:
     eVoid,
     eNoreturn,
     // concrete objects
+    eChar,
     eInt,
     eBool,
     eDouble
