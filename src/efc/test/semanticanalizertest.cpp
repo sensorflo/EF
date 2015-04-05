@@ -199,26 +199,28 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    a_simple_AstDataDecl,
+    a_simple_data_obj_declaration,
     transform,
     inserts_an_appropriate_SymbolTableEntry_into_Env)) {
 
-  // setup
-  Env env;
-  ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  auto_ptr<AstNode> ast(
-    new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
+  string spec = "Example: local immutable int";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    auto objType = new ObjTypeFunda(ObjTypeFunda::eInt);
+    unique_ptr<AstNode> ast(new AstDataDecl("x", objType));
 
-  // exercise
-  UUT.analyze(*ast);
+    // exercise
+    UUT.analyze(*ast);
 
-  // verify
-  shared_ptr<SymbolTableEntry> stentry;
-  env.find("x", stentry);
-  EXPECT_TRUE( stentry.get() ) << amendAst(ast.get());
-  EXPECT_EQ( ObjType::eFullMatch,
-    stentry->objType().match( ObjTypeFunda(ObjTypeFunda::eInt)));
+    // verify
+    shared_ptr<SymbolTableEntry> stentry;
+    env.find("x", stentry);
+    EXPECT_TRUE( stentry.get() ) << amendAst(ast.get());
+    EXPECT_MATCHES_FULLY( *objType, stentry->objType()) << amendAst(ast.get());
+  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -237,7 +239,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
-    a_data_definition_in_a_block,
+    a_data_obj_definition_in_a_block,
     transform,
     inserts_a_symbol_table_entry_with_the_scope_of_the_block)) {
 
@@ -262,10 +264,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
-    a_data_object_definition_named_x_in_a_block_AND_a_symbol_named_x_after_the_block,
+    a_local_data_object_definition_named_x_in_a_block_AND_a_symbol_named_x_after_the_block,
     transform,
     reports_eUnknownName,
-    BECAUSE_the_scope_of_data_objects_declarations_is_that_of_the_enclosing_block)) {
+    BECAUSE_the_scope_of_local_data_objects_declarations_is_that_of_the_enclosing_block)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
       new AstBlock(
@@ -279,28 +281,27 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     transform,
     succeeds_AND_inserts_an_appropriate_SymbolTableEntry_into_Env_once)) {
 
-  // setup
-  Env env;
-  ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  AstNode* ast =
-    new AstOperator(';',
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)));
+  string spec = "Example: local data object";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))};
 
-  // exercise
-  UUT.analyze(*ast);
+    // exercise
+    UUT.analyze(*ast.get());
 
-  // verify
-  EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
-  shared_ptr<SymbolTableEntry> stentry;
-  env.find("x", stentry);
-  EXPECT_TRUE( stentry.get() ) << amendAst(ast);
-  EXPECT_EQ( ObjType::eFullMatch,
-    stentry->objType().match( ObjTypeFunda(ObjTypeFunda::eInt)));
-
-  // tear down
-  delete ast;
+    // verify
+    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
+    shared_ptr<SymbolTableEntry> stentry;
+    env.find("x", stentry);
+    EXPECT_TRUE( stentry.get() ) << amendAst(ast);
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), stentry->objType() );
+  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(

@@ -157,14 +157,16 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     genIrInImplicitMain,
     returns_the_blocks_bodies_value)) {
 
+  string spec = "Example: body contains a literal";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstBlock(new AstNumber(42)), 42, "");
+    new AstBlock(new AstNumber(42)), 42, spec);
 
+  spec = "Example: body contains a local data def";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstBlock(
       new AstDataDef(
         new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstNumber(42))), 42, "");
+        new AstNumber(42))), 42, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -774,7 +776,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
-    a_inmutable_data_object_definition_of_foo_being_initialized_with_x,
+    a_immutable_local_data_object_definition_of_foo_being_initialized_with_x,
     genIrInImplicitMain,
     returns_x_rvalue)) {
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -784,9 +786,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     42, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
-    GIVEN_a_mutable_data_object_definition_expression,
-    THEN_its_value_is_the_defined_data_object)) {
+TEST(IrGenTest, MAKE_TEST_NAME(
+    GIVEN_a_mutable_local_data_object_definition_expression,
+    genIrInImplicitMain,
+    returns_x_lvalue)) {
 
   string spec = "Reading from the data definition expression gives the value "
     "of the data object after initialization, which in turn equals value of the initializer.";
@@ -862,39 +865,34 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     77, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
-    foo_defined_as_data_object_followed_by_a_simple_expression_referencing_foo,
-    genIrInImplicitMain,
-    returns_result_of_that_expression)) {
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_a_data_object_defintion_with_an_explict_or_implicit_initialization,
+    THEN_a_later_read_of_that_data_object_delivers_its_current_value)) {
 
-  string spec = "value (aka immutable (aka const) data obj)";
+  string spec = "Example: local immutable data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
       new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstNumber(42)),
-      new AstOperator('+',
-        new AstSymbol("foo"),
-        new AstNumber(77))),
-    42+77, spec);
+      new AstSymbol("x")),
+    42, spec);
 
-  spec = "variable (aka mutable data obj)";
+  spec = "Example: local mutable data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
       new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstNumber(42)),
-      new AstOperator('+',
-        new AstSymbol("foo"),
-        new AstNumber(77))),
-    42+77, spec);
+      new AstSymbol("x")),
+    42, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
-    assigning_to_a_variable_and_later_referencing_the_variable,
-    genIrInImplicitMain,
-    returns_the_new_value_of_the_variable)) {
-  string spec = "Example: using operator '='";
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_an_assignmnt_to_a_mutable_data_object,
+    THEN_a_later_read_of_of_that_data_object_delivers_the_new_value)) {
+
+  string spec = "Example: local data object and using operator '='";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
       new AstDataDef(
@@ -906,7 +904,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstSymbol("foo")),
     77, spec);
 
-  spec = "Example: using operator '.='";
+  spec = "Example: local data object and using operator '.='";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
       new AstDataDef(
