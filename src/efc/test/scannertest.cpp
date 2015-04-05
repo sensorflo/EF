@@ -43,6 +43,24 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
+    a_literal_char,
+    yylex,
+    returns_TOK_NUMBER_AND_the_char_s_value_and_it_s_type_as_semantic_value_AND_succeeds)) {
+
+  DriverOnTmpFile driver( "'x'" );
+
+  Parser::symbol_type st = yylex(driver);
+  EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
+  EXPECT_EQ('x', st.value.as<NumberToken>().m_value );
+  ObjTypeFunda expectedType(ObjTypeFunda::eChar);
+  EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
+
+  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, yylex(driver).token() );
+
+  EXPECT_FALSE( driver.d().gotError() );
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_number,
     yylex,
     returns_TOK_NUMBER_AND_the_number_s_value_and_it_s_type_as_semantic_value_AND_succeeds)) {

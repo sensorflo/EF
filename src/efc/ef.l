@@ -65,15 +65,23 @@ raw_new             return yy::Parser::make_RAW_NEW(loc);
 raw_delete          return yy::Parser::make_RAW_DELETE(loc);
 nop                 return yy::Parser::make_NOP(loc);
 return              return yy::Parser::make_RETURN(loc);
-false               return yy::Parser::make_NUMBER(NumberToken(0, new ObjTypeFunda(ObjTypeFunda::eBool)), loc);
-true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFunda(ObjTypeFunda::eBool)), loc);
 
 
   /* type keywords */
 void                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eVoid, loc);
+char                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eChar, loc);
 int                 return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eInt, loc);
 bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool, loc);
 double              return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eDouble, loc);
+
+
+  /* literal bool */
+false               return yy::Parser::make_NUMBER(NumberToken(0, new ObjTypeFunda(ObjTypeFunda::eBool)), loc);
+true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFunda(ObjTypeFunda::eBool)), loc);
+
+
+  /* literal char */
+'.'                 return yy::Parser::make_NUMBER(NumberToken(yytext[1], new ObjTypeFunda(ObjTypeFunda::eChar)), loc);
 
 
   /* literal integral / floatingpoint number  */
