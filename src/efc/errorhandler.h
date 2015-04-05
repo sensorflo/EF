@@ -21,6 +21,7 @@ public:
     eNotInFunBodyContext,
     eUnreachableCode,
     eComputedValueNotUsed,
+    eCTConstRequired,
     eCnt
   };
 

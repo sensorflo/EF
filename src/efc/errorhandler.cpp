@@ -27,6 +27,7 @@ const char* toStr(Error::No no) {
   case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
   case Error::eUnreachableCode: return "eUnreachableCode";
   case Error::eComputedValueNotUsed: return "eComputedValueNotUsed";
+  case Error::eCTConstRequired: return "eCTConstRequired";
   case Error::eCnt: return "<unknown>";
   }
   return "<unknown>";
