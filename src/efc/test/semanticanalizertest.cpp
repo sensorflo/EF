@@ -270,6 +270,28 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eUnknownName, "");
 }
 
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_reference_to_an_entity_other_than_local_data_object_before_its_declaration_or_definition,
+    transform,
+    succeeds)) {
+
+  string spec = "Example: function call before function declaration";
+  TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
+    new AstOperator(';',
+      new AstFunCall(new AstSymbol("foo")),
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eVoid))),
+    "");
+
+  spec = "Example: static data - !!!! Not yet implemented, "
+    "currently behaves as local data !!!!";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstSymbol("x"),
+      new AstDataDecl("x",
+        new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic))),
+    Error::eUnknownName, "");
+}
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     a_data_obj_definition_in_a_block,
     transform,
