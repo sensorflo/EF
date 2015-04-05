@@ -65,10 +65,12 @@ void IrGen::visit(AstBlock& block) {
 
 void IrGen::visit(AstCast& cast) {
   auto childIr = callAcceptOn(cast.child());
+  assert(childIr);
   const auto& oldtype = cast.child().objType();
   const auto& newtype = cast.objType();
   auto oldsize = oldtype.size();
   auto newsize = newtype.size();
+  string irValueName = childIr->getName().str() + "_as_" + newtype.toStr();
 
   // unity conversion
   if (newtype.matchesSaufQualifiers(oldtype)) {
@@ -77,39 +79,56 @@ void IrGen::visit(AstCast& cast) {
 
   // eStoredAsIntegral <-> eStoredAsIntegral
   else if ( oldtype.is(ObjType::eStoredAsIntegral) && newtype.is(ObjType::eStoredAsIntegral)) {
-    if (oldsize < newsize) {
-      assert(newsize==32);
-      cast.setIrValue( m_builder.CreateZExt( childIr,
-          Type::getInt32Ty(getGlobalContext()), "zext"));
-    } else {
-      assert(newsize==1);
+    // from bool
+    if (oldsize == 1) {
+      cast.setIrValue( m_builder.CreateZExt( childIr, newtype.llvmType(),
+          irValueName));
+    }
+    // to bool
+    else if (newsize == 1) {
+      assert(oldsize==32);
       cast.setIrValue( m_builder.CreateICmpNE(childIr,
-          ConstantInt::get(getGlobalContext(), APInt(oldsize, 0)), "tobool"));
+          ConstantInt::get(getGlobalContext(), APInt(oldsize, 0)), irValueName));
+    }
+    // between non-bool integrals
+    else {
+      // none currently
+      assert(false);
     }
   }
 
   // eStoredAsIntegral -> double
   else if (oldtype.is(ObjType::eStoredAsIntegral)
     && newtype.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eDouble))) {
+    // unsigned types: bool
     if ( oldsize==1 ) {
-      cast.setIrValue( m_builder.CreateUIToFP( childIr,
-          Type::getDoubleTy(getGlobalContext()), "uitofp"));
-    } else {
-      cast.setIrValue( m_builder.CreateSIToFP( childIr,
-          Type::getDoubleTy(getGlobalContext()), "sitofp"));
+      cast.setIrValue( m_builder.CreateUIToFP( childIr, newtype.llvmType(),
+          irValueName));
+    }
+    // signed types: int
+    else {
+      assert(oldsize==32);
+      cast.setIrValue( m_builder.CreateSIToFP( childIr, newtype.llvmType(),
+          irValueName));
     }
   }
 
   // double -> eStoredAsIntegral
   else if (oldtype.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eDouble))
     && newtype.is(ObjType::eStoredAsIntegral)) {
+    // bool
     if ( newsize==1 ) {
       cast.setIrValue( m_builder.CreateFCmpONE( childIr,
-          ConstantFP::get(getGlobalContext(), APFloat(0.0)), "tobool"));
-    } else {
+          ConstantFP::get(getGlobalContext(), APFloat(0.0)), irValueName));
+    }
+
+    // unsigned types: none currently
+
+    // signed types: int
+    else {
       assert(newsize==32);
-      cast.setIrValue( m_builder.CreateFPToSI( childIr,
-          Type::getInt32Ty(getGlobalContext()), "fptosi"));
+      cast.setIrValue( m_builder.CreateFPToSI( childIr, newtype.llvmType(),
+          irValueName));
     }
   }
 
