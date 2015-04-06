@@ -403,8 +403,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   shared_ptr<SymbolTableEntry> stentry;
   env.find("foo", stentry);
   EXPECT_TRUE( stentry.get() ) << amendAst(ast);
-  EXPECT_EQ( ObjType::eFullMatch,
-    stentry->objType().match(
+  EXPECT_TRUE( stentry->objType().matchesFully(
       ObjTypeFun(
         ObjTypeFun::createArgs(),
         make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))));

@@ -66,14 +66,15 @@ void IrGen::visit(AstBlock& block) {
 void IrGen::visit(AstCast& cast) {
   auto childIr = callAcceptOn(cast.child());
   assert(childIr);
-  const auto& oldtype = cast.child().objType();
-  const auto& newtype = cast.objType();
+  // At this point, AstCast is always between fundamental types
+  const auto& oldtype = dynamic_cast<const ObjTypeFunda&>(cast.child().objType());
+  const auto& newtype = dynamic_cast<const ObjTypeFunda&>(cast.objType());
   auto oldsize = oldtype.size();
   auto newsize = newtype.size();
   string irValueName = childIr->getName().str() + "_as_" + newtype.toStr();
 
   // unity conversion
-  if (newtype.matchesSaufQualifiers(oldtype)) {
+  if (newtype.type() == oldtype.type()) {
     cast.setIrValue( childIr ); // i.e. a nop
   }
 
@@ -108,7 +109,7 @@ void IrGen::visit(AstCast& cast) {
 
   // eStoredAsIntegral -> double
   else if (oldtype.is(ObjType::eStoredAsIntegral)
-    && newtype.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eDouble))) {
+    && newtype.type() == ObjTypeFunda::eDouble) {
     // unsigned types: bool, char
     if ( oldsize==1 || oldsize==8 ) {
       cast.setIrValue( m_builder.CreateUIToFP( childIr, newtype.llvmType(),
@@ -123,7 +124,7 @@ void IrGen::visit(AstCast& cast) {
   }
 
   // double -> eStoredAsIntegral
-  else if (oldtype.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eDouble))
+ else if (oldtype.type() == ObjTypeFunda::eDouble
     && newtype.is(ObjType::eStoredAsIntegral)) {
     // bool
     if ( newsize==1 ) {
@@ -237,21 +238,21 @@ void IrGen::visit(AstOperator& op) {
 }
 
 void IrGen::visit(AstNumber& number) {
-  if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eChar))) {
-    number.setIrValue(ConstantInt::get( getGlobalContext(),
-        APInt(8, number.value())));
-  } else if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eInt)) ) {
-    number.setIrValue(ConstantInt::get( getGlobalContext(),
-        APInt(32, number.value())));
-  } else if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eBool))) {
-    number.setIrValue(ConstantInt::get( getGlobalContext(),
-        APInt(1, number.value())));
-  } else if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eDouble))) {
-    number.setIrValue(ConstantFP::get( getGlobalContext(),
-        APFloat(number.value())));
-  } else {
+  Value* value = nullptr;
+  switch (number.objType().type()) { 
+  case ObjTypeFunda::eChar: // fall through
+  case ObjTypeFunda::eInt:  // fall through
+  case ObjTypeFunda::eBool:
+    value = ConstantInt::get( getGlobalContext(),
+      APInt(number.objType().size(), number.value()));
+    break;
+  case ObjTypeFunda::eDouble:
+    value = ConstantFP::get( getGlobalContext(), APFloat(number.value()));
+    break;
+  default:
     assert(false);
   }
+  number.setIrValue(value);
 }
 
 void IrGen::visit(AstSymbol& symbol) {
