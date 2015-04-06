@@ -51,14 +51,18 @@ void AstPrinter::visit(const AstOperator& op) {
 }
 
 void AstPrinter::visit(const AstNumber& number) {
-  m_os << number.value();
-  if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eDouble)) ) {
-    m_os << "d";
-  }
-  if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eBool)) ) {
-    m_os << "bool";
-    // if value is outside range of bool, that is a topic that shall not
-    // interest us at this point here
+  if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eChar)) ) {
+    m_os << "'" << char(number.value()) << "'";
+  } else {
+    m_os << number.value();
+    if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eDouble)) ) {
+      m_os << "d";
+    }
+    if ( number.objType().match(ObjTypeFunda(ObjTypeFunda::eBool)) ) {
+      m_os << "bool";
+      // if value is outside range of bool, that is a topic that shall not
+      // interest us at this point here
+    }
   }
 }
 
