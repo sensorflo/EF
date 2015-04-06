@@ -1596,6 +1596,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     case ObjTypeFunda::eDouble:
       castChild = new AstNumber(0, inputSpec.oldType);
       break; 
+    case ObjTypeFunda::ePointer:
+      assert(false);
+      break;
     }
 
     // AstCast needs to be wrapped into an AstFunDef since in some iterations

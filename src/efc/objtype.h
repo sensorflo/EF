@@ -6,9 +6,9 @@
 #include <memory>
 
 class ObjTypeFunda;
+class ObjTypePtr;
 class ObjTypeFun;
 class AstValue;
-class AstOperator;
 namespace llvm {
   class Type;
 }
@@ -59,6 +59,7 @@ public:
   this, likewise for eMatchButAnyQualifierIsStronger. */
   virtual MatchType match(const ObjType& other) const = 0;
   virtual MatchType match2(const ObjTypeFunda& other) const { return eNoMatch; }
+  virtual MatchType match2(const ObjTypePtr& other) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypeFun& other) const { return eNoMatch; }
 
   virtual bool is(EClass class_) const =0;
@@ -110,7 +111,9 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   ObjType::StorageDuration sd);
 
 
-/** Fundamental type: int, bool, double etc */
+/** Fundamental type (int, bool, double etc) and also pointer type. 'General
+scalar' (note that it also includes abstract objects) might be a better
+name. */
 class ObjTypeFunda : public ObjType {
 public:
   enum EType {
@@ -121,7 +124,9 @@ public:
     eChar,
     eInt,
     eBool,
-    eDouble
+    eDouble,
+      // implemented in derived classes 
+      ePointer
   };
 
   ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier, StorageDuration storageDuration = eLocal);
@@ -153,6 +158,26 @@ private:
   const StorageDuration m_storageDuration;
 };
 
+
+/** Compond-type/pointer */
+class ObjTypePtr : public ObjTypeFunda {
+public:
+  ObjTypePtr(std::shared_ptr<const ObjType> pointee,
+    Qualifiers qualifiers = eNoQualifier, StorageDuration storageDuration = eLocal);
+  ObjTypePtr(std::shared_ptr<const ObjType> pointee, StorageDuration storageDuration);
+
+  virtual ObjTypePtr* clone() const;
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
+
+  virtual AstValue* createDefaultAstValue() const;
+
+  virtual bool hasMember(int op) const;
+  virtual bool hasConstructor(const ObjType& other) const;
+
+private:
+  /** Guaranteed to be non-null */
+  const std::shared_ptr<const ObjType> m_pointee;
+};
 
 /** Compound-type/function */
 class ObjTypeFun : public ObjType {

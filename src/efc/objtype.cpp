@@ -104,6 +104,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
   case eDouble: os << "double"; break;
+  case ePointer: assert(false); break; // not yet implemented
   };
   return os;
 }
@@ -132,6 +133,9 @@ bool ObjTypeFunda::is(ObjType::EClass class_) const {
     default: assert(false);
     }
     return false;
+  case ePointer:
+    assert(false);  // not yet implemented
+    return false;
   }
   return false;
 }
@@ -144,6 +148,7 @@ int ObjTypeFunda::size() const {
   case eChar: return 8;
   case eInt: return 32;
   case eDouble: return 64;
+  case ePointer: return 32;
   }
   assert(false);
   return -1;
@@ -162,6 +167,7 @@ llvm::Type* ObjTypeFunda::llvmType() const {
   case eInt: return Type::getInt32Ty(getGlobalContext());
   case eDouble: return Type::getDoubleTy(getGlobalContext());
   case eBool: return Type::getInt1Ty(getGlobalContext());
+  case ePointer: assert(false);  // not yet implemented
   };
   assert(false);
   return NULL;
@@ -207,6 +213,7 @@ bool ObjTypeFunda::isValueInRange(double val) const {
   case eInt: return (INT_MIN<=val && val<=INT_MAX) && (val==static_cast<int>(val));
   case eDouble: return true;
   case eBool: return val==0.0 || val==1.0;
+  case ePointer: assert(false);  // not yet implemented
   };
   assert(false);
   return false;
@@ -223,6 +230,44 @@ bool ObjType::matchesFully_(const ObjType& rhs, const ObjType& lhs) {
 bool ObjType::matchesSaufQualifiers_(const ObjType& rhs, const ObjType& lhs) {
   return rhs.matchesSaufQualifiers(lhs);
 }
+
+ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee, Qualifiers qualifiers,
+  StorageDuration storageDuration) :
+  ObjTypeFunda(ePointer, qualifiers, storageDuration),
+  m_pointee(move(pointee)) {
+  assert(m_pointee);
+}
+
+ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee,
+  StorageDuration storageDuration) :
+  ObjTypePtr(pointee, eNoQualifier, storageDuration ) {
+}
+
+ObjTypePtr* ObjTypePtr::clone() const {
+  assert(false); // not yet implemented
+  return nullptr;
+};
+
+std::basic_ostream<char>& ObjTypePtr::printTo(
+  std::basic_ostream<char>& os) const {
+  assert(false); // not yet implemented
+  return os;
+};
+
+AstValue* ObjTypePtr::createDefaultAstValue() const {
+  assert(false); // not yet implemented
+  return nullptr;
+};
+
+bool ObjTypePtr::hasMember(int op) const {
+  assert(false); // not yet implemented
+  return false;
+};
+
+bool ObjTypePtr::hasConstructor(const ObjType& other) const {
+  assert(false); // not yet implemented
+  return false;
+};
 
 ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType> >* args, shared_ptr<const ObjType> ret) :
   ObjType(eNoQualifier),
