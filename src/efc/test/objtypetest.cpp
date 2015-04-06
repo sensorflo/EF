@@ -48,6 +48,11 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   EXPECT_EQ("static-double", ObjTypeFunda(ObjTypeFunda::eDouble, ObjType::eStatic).toStr());
   EXPECT_EQ("static-mut-double", ObjTypeFunda(ObjTypeFunda::eDouble, ObjType::eMutable, ObjType::eStatic).toStr());
 
+  // pointer type
+  EXPECT_EQ("raw^int", ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
+  EXPECT_EQ("static-mut-raw^int",
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), ObjType::eMutable, ObjType::eStatic).toStr());
+
   // function type
   EXPECT_EQ("fun(() int)",
     ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());

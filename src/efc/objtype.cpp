@@ -104,7 +104,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
   case eDouble: os << "double"; break;
-  case ePointer: assert(false); break; // not yet implemented
+  case ePointer: os << "raw^"; break;
   };
   return os;
 }
@@ -250,7 +250,8 @@ ObjTypePtr* ObjTypePtr::clone() const {
 
 std::basic_ostream<char>& ObjTypePtr::printTo(
   std::basic_ostream<char>& os) const {
-  assert(false); // not yet implemented
+  ObjTypeFunda::printTo(os);
+  m_pointee->printTo(os);
   return os;
 };
 
