@@ -85,6 +85,10 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   EXPECT_EQ(
     ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifiers(),
     ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).addQualifiers(ObjType::eMutable).qualifiers());
+
+  EXPECT_EQ(
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), ObjType::eMutable).qualifiers(),
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).addQualifiers(ObjType::eMutable).qualifiers());
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
@@ -96,6 +100,10 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   EXPECT_EQ(
     ObjTypeFunda(ObjTypeFunda::eInt).qualifiers(),
     ObjTypeFunda(ObjTypeFunda::eInt).removeQualifiers(ObjType::eMutable).qualifiers());
+
+  EXPECT_EQ(
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).qualifiers(),
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), ObjType::eMutable).removeQualifiers(ObjType::eMutable).qualifiers());
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
