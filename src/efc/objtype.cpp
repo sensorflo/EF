@@ -118,11 +118,13 @@ bool ObjTypeFunda::is(ObjType::EClass class_) const {
   case eBool:
   case eInt:
   case eDouble:
+  case ePointer:
     if (class_==eScalar) return true;
     if (class_==eStoredAsIntegral) return m_type!=eDouble;
     switch(m_type) {
     case eBool: // fall through
-    case eChar:
+    case eChar: // fall through
+    case ePointer:
       return false;
     case eInt:
     case eDouble:
@@ -132,9 +134,6 @@ bool ObjTypeFunda::is(ObjType::EClass class_) const {
       return false;
     default: assert(false);
     }
-    return false;
-  case ePointer:
-    assert(false);  // not yet implemented
     return false;
   }
   return false;

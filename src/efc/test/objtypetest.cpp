@@ -273,7 +273,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     class_)) {
 
   struct T{
-    bool m_isMember;
+    bool m_isMemberOfClass;
     ObjTypeFunda::EType m_fundaType;
     ObjType::EClass m_typeClass;
   };
@@ -325,14 +325,30 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {false, ObjTypeFunda::eDouble, ObjType::eIntegral},
     {true,  ObjTypeFunda::eDouble, ObjType::eFloatingPoint},
     {false, ObjTypeFunda::eDouble, ObjType::eStoredAsIntegral},
-    {false, ObjTypeFunda::eDouble, ObjType::eFunction}};
+    {false, ObjTypeFunda::eDouble, ObjType::eFunction},
+
+    {false, ObjTypeFunda::ePointer, ObjType::eAbstract},
+    {true,  ObjTypeFunda::ePointer, ObjType::eScalar},
+    {false, ObjTypeFunda::ePointer, ObjType::eArithmetic},
+    {false, ObjTypeFunda::ePointer, ObjType::eIntegral},
+    {false, ObjTypeFunda::ePointer, ObjType::eFloatingPoint},
+    {true,  ObjTypeFunda::ePointer, ObjType::eStoredAsIntegral},
+    {false, ObjTypeFunda::ePointer, ObjType::eFunction}};
 
   for (const auto& i : inputs) {
-    EXPECT_EQ( i.m_isMember, ObjTypeFunda(i.m_fundaType).is(i.m_typeClass))
+    EXPECT_EQ( i.m_isMemberOfClass, ObjTypeFunda(i.m_fundaType).is(i.m_typeClass))
       << "fundamental type: " << i.m_fundaType << "\n"
       << "type class: " << i.m_typeClass;
   }
 
+  ObjTypePtr objTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)); 
+  EXPECT_FALSE(objTypePtr.is(ObjType::eAbstract));
+  EXPECT_TRUE (objTypePtr.is(ObjType::eScalar));
+  EXPECT_FALSE(objTypePtr.is(ObjType::eArithmetic));
+  EXPECT_FALSE(objTypePtr.is(ObjType::eIntegral));
+  EXPECT_FALSE(objTypePtr.is(ObjType::eFloatingPoint));
+  EXPECT_TRUE (objTypePtr.is(ObjType::eStoredAsIntegral));
+  EXPECT_FALSE(objTypePtr.is(ObjType::eFunction));
 
   EXPECT_TRUE( ObjTypeFun(ObjTypeFun::createArgs()).is(ObjType::eFunction));
 }
