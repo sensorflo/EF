@@ -24,7 +24,8 @@ public:
   };
   enum MatchType {
     eNoMatch,
-    eOnlyQualifierMismatches,
+    eMatchButAllQualifiersAreWeaker,
+    eMatchButAnyQualifierIsStronger,
     eFullMatch
     // later: implicit castable
   };
@@ -54,6 +55,8 @@ public:
   bool isNoreturn() const;
   bool matchesFully(const ObjType& other) const;
   bool matchesSaufQualifiers(const ObjType& other) const;
+  /** eMatchButAllQualifiersAreWeaker means that other has weaker qualifiers than
+  this, likewise for eMatchButAnyQualifierIsStronger. */
   virtual MatchType match(const ObjType& other) const = 0;
   virtual MatchType match2(const ObjTypeFunda& other) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypeFun& other) const { return eNoMatch; }

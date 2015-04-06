@@ -38,8 +38,7 @@ bool ObjType::matchesFully(const ObjType& other) const {
 }
 
 bool ObjType::matchesSaufQualifiers(const ObjType& other) const {
-  auto m = this->match(other);
-  return (m == eOnlyQualifierMismatches) || (m == eFullMatch);
+  return this->match(other) != eNoMatch;
 }
 
 basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::Qualifiers qualifiers) {
@@ -54,7 +53,8 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::Qualifiers qua
 basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::MatchType mt) {
   switch (mt) {
   case ObjType::eNoMatch: return os << "NoMatch";
-  case ObjType::eOnlyQualifierMismatches: return os << "OnlyQualifierMismatches";
+  case ObjType::eMatchButAllQualifiersAreWeaker: return os << "MatchButAllQualifiersAreWeaker";
+  case ObjType::eMatchButAnyQualifierIsStronger: return os << "MatchButAnyQualifierIsStronger";
   case ObjType::eFullMatch: return os << "FullMatch";
   default: assert(false); return os;
   }
@@ -83,8 +83,11 @@ ObjTypeFunda::ObjTypeFunda(EType type, StorageDuration storageDuration) :
 
 ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& other) const {
   if (m_type!=other.m_type) { return eNoMatch; }
-  if (m_qualifiers!=other.m_qualifiers) { return eOnlyQualifierMismatches; }
-  return eFullMatch;
+  if (m_qualifiers==other.m_qualifiers) { return eFullMatch; }
+  // note that in match2(...), 'this' and 'other' are swaped relative to
+  // match(...)
+  if (m_qualifiers & eMutable) { return eMatchButAllQualifiersAreWeaker; }
+  return eMatchButAnyQualifierIsStronger;
 }
 
 basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {

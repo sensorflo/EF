@@ -105,8 +105,11 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   TEST_MATCH( "", ObjType::eNoMatch,
     ObjTypeFunda(ObjTypeFunda::eBool), ObjTypeFunda(ObjTypeFunda::eInt) );
 
-  TEST_MATCH( "", ObjType::eOnlyQualifierMismatches,
+  TEST_MATCH( "", ObjType::eMatchButAllQualifiersAreWeaker,
     ObjTypeFunda(ObjTypeFunda::eInt), ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable));
+
+  TEST_MATCH( "", ObjType::eMatchButAnyQualifierIsStronger,
+    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), ObjTypeFunda(ObjTypeFunda::eInt));
 
   TEST_MATCH( "", ObjType::eNoMatch,
     ObjTypeFunda(ObjTypeFunda::eInt),
