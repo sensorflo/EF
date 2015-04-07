@@ -1,8 +1,9 @@
 #include "objtype.h"
 #include "ast.h"
+#include "llvm/IR/LLVMContext.h"
 #include <cassert>
 #include <sstream>
-#include "llvm/IR/LLVMContext.h"
+#include "memoryext.h"
 using namespace std;
 using namespace llvm;
 
@@ -290,14 +291,25 @@ bool ObjTypePtr::hasConstructor(const ObjType& other) const {
   return false;
 };
 
-ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType> >* args, shared_ptr<const ObjType> ret) :
-  ObjType(eNoQualifier),
-  m_args( args ? args : new list<shared_ptr<const ObjType> >),
-  m_ret( ret ? move(ret) : make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt) ){
+ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret) :
+  ObjType{eNoQualifier},
+  m_args{ args ?
+      unique_ptr<list<shared_ptr<const ObjType>>>{args} :
+    make_unique<list<shared_ptr<const ObjType>>>()},
+  m_ret{ ret ? move(ret) : make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt)} {
   assert(m_args);
   assert(m_ret);
   for (list<shared_ptr<const ObjType> >::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
     assert(*i);
+  }
+}
+
+ObjTypeFun::ObjTypeFun(const ObjTypeFun& other) :
+  ObjType{other},
+  m_args{make_unique<list<shared_ptr<const ObjType>>>()},
+  m_ret{other.m_ret->clone()} {
+  for ( const auto& srcArg : *other.m_args  ) {
+    m_args->push_back(shared_ptr<ObjType>{srcArg->clone()});
   }
 }
 
@@ -321,12 +333,7 @@ bool ObjTypeFun::is(ObjType::EClass class_) const {
 }
 
 ObjTypeFun* ObjTypeFun::clone() const {
-  std::list<std::shared_ptr<const ObjType> >* dstArgs =
-    new list<shared_ptr<const ObjType> >;
-  for ( const auto& srcArg : *m_args  ) {
-    dstArgs->push_back(shared_ptr<ObjType>{srcArg->clone()});
-  }
-  return new ObjTypeFun( dstArgs, shared_ptr<const ObjType>(m_ret->clone()));
+  return new ObjTypeFun(*this);
 }
 
 basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {

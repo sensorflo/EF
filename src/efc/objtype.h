@@ -94,6 +94,9 @@ protected:
   ObjType(const ObjType& rhs) : m_qualifiers(rhs.m_qualifiers) {};
 
   Qualifiers m_qualifiers;
+
+private:
+  ObjType& operator=(const ObjType&) =delete; // for simplicity reasons
 };
 
 inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
@@ -154,6 +157,7 @@ public:
   bool isValueInRange(double val) const;
 
 private:
+  ObjTypeFunda& operator=(const ObjTypeFunda&) =delete; // for simplicity reasons
   const EType m_type;
   const StorageDuration m_storageDuration;
 };
@@ -180,6 +184,8 @@ public:
   virtual bool hasConstructor(const ObjType& other) const;
 
 private:
+  ObjTypePtr& operator=(const ObjTypePtr&) =delete; // for simplicity reasons
+
   /** Guaranteed to be non-null */
   const std::shared_ptr<const ObjType> m_pointee;
 };
@@ -189,6 +195,7 @@ class ObjTypeFun : public ObjType {
 public:
   ObjTypeFun(std::list<std::shared_ptr<const ObjType> >* args,
     std::shared_ptr<const ObjType> ret = std::shared_ptr<const ObjType>());
+  ObjTypeFun(const ObjTypeFun&);
   static std::list<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = NULL,
     const ObjType* arg2 = NULL, const ObjType* arg3 = NULL);
 
@@ -211,9 +218,11 @@ public:
   const ObjType& ret() const { return *m_ret; }
 
 private:
-  /** We're the owner of the container object. m_args itself and the pointers
-  in the cointainer are garanteed to be non-null. */
-  const std::list<std::shared_ptr<const ObjType> >* const m_args;
+  ObjTypePtr& operator=(const ObjTypePtr&) =delete; // for simplicity reasons
+
+  /** m_args itself and the pointers in the cointainer are garanteed to be
+  non-null. */
+  const std::unique_ptr<std::list<std::shared_ptr<const ObjType>>> m_args;
   const std::shared_ptr<const ObjType> m_ret;
 };
 
