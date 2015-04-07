@@ -57,10 +57,10 @@ public:
   bool matchesSaufQualifiers(const ObjType& dst) const;
   /** eMatchButAllQualifiersAreWeaker means that other has weaker qualifiers than
   this, likewise for eMatchButAnyQualifierIsStronger. */
-  virtual MatchType match(const ObjType& dst) const = 0;
-  virtual MatchType match2(const ObjTypeFunda& src) const { return eNoMatch; }
-  virtual MatchType match2(const ObjTypePtr& src) const { return eNoMatch; }
-  virtual MatchType match2(const ObjTypeFun& src) const { return eNoMatch; }
+  virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const = 0;
+  virtual MatchType match2(const ObjTypeFunda& src, bool isLevel0) const { return eNoMatch; }
+  virtual MatchType match2(const ObjTypePtr& src, bool isLevel0) const { return eNoMatch; }
+  virtual MatchType match2(const ObjTypeFun& src, bool isLevel0) const { return eNoMatch; }
 
   virtual bool is(EClass class_) const =0;
   /** Size in bits */
@@ -132,9 +132,9 @@ public:
   ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier, StorageDuration storageDuration = eLocal);
   ObjTypeFunda(EType type, StorageDuration storageDuration);
 
-  virtual MatchType match(const ObjType& dst) const { return dst.match2(*this); }
+  virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
   using ObjType::match2;
-  virtual MatchType match2(const ObjTypeFunda& src) const;
+  virtual MatchType match2(const ObjTypeFunda& src, bool isRoot) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
 
   virtual bool is(EClass class_) const;
@@ -187,9 +187,9 @@ public:
   static std::list<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = NULL,
     const ObjType* arg2 = NULL, const ObjType* arg3 = NULL);
 
-  virtual MatchType match(const ObjType& dst) const { return dst.match2(*this); }
+  virtual MatchType match(const ObjType& dst, bool isLevel0) const;
   using ObjType::match2;
-  virtual MatchType match2(const ObjTypeFun& src) const;
+  virtual MatchType match2(const ObjTypeFun& src, bool isLevel0) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
   virtual AstValue* createDefaultAstValue() const;
   virtual llvm::Type* llvmType() const;

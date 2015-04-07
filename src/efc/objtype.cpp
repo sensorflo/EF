@@ -81,7 +81,11 @@ ObjTypeFunda::ObjTypeFunda(EType type, Qualifiers qualifiers,
 ObjTypeFunda::ObjTypeFunda(EType type, StorageDuration storageDuration) :
   ObjTypeFunda(type, eNoQualifier, storageDuration) {}
 
-ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& src) const {
+ObjType::MatchType ObjTypeFunda::match(const ObjType& dst, bool isLevel0) const {
+  return dst.match2(*this, isLevel0);
+}
+
+ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& src, bool isRoot) const {
   if (m_type!=src.m_type) { return eNoMatch; }
   if (m_qualifiers==src.m_qualifiers) { return eFullMatch; }
   if (m_qualifiers & eMutable) { return eMatchButAllQualifiersAreWeaker; }
@@ -278,7 +282,11 @@ ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType> >* args, shared_ptr<const 
   }
 }
 
-ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& src) const {
+ObjType::MatchType ObjTypeFun::match(const ObjType& dst, bool isLevel0) const {
+  return dst.match2(*this, isLevel0);
+}
+
+ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& src, bool isRoot) const {
   if (m_args->size() != src.m_args->size()) return eNoMatch;
   for (list<shared_ptr<const ObjType> >::const_iterator i=m_args->begin(), isrc=src.m_args->begin();
        i!=m_args->end();
