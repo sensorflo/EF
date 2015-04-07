@@ -109,25 +109,33 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
     match)) {
 
-  TEST_MATCH( "", ObjType::eFullMatch,
+  // fundamental type <-> fundamental type
+  // -------------------------------------
+  TEST_MATCH( "type and qualifier fully match", ObjType::eFullMatch,
     ObjTypeFunda(ObjTypeFunda::eInt), ObjTypeFunda(ObjTypeFunda::eInt) );
 
-  TEST_MATCH( "", ObjType::eFullMatch,
+  TEST_MATCH( "type and qualifier fully match", ObjType::eFullMatch,
     ObjTypeFunda(ObjTypeFunda::eBool), ObjTypeFunda(ObjTypeFunda::eBool) );
 
-  TEST_MATCH( "", ObjType::eNoMatch,
+  TEST_MATCH( "type mismatch", ObjType::eNoMatch,
     ObjTypeFunda(ObjTypeFunda::eBool), ObjTypeFunda(ObjTypeFunda::eInt) );
 
-  TEST_MATCH( "", ObjType::eMatchButAllQualifiersAreWeaker,
+  TEST_MATCH( "type matches, but dst has weaker qualifiers", ObjType::eMatchButAllQualifiersAreWeaker,
     ObjTypeFunda(ObjTypeFunda::eInt), ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable));
 
-  TEST_MATCH( "", ObjType::eMatchButAnyQualifierIsStronger,
+  TEST_MATCH( "type matches, but dst has stronger qualifiers", ObjType::eMatchButAnyQualifierIsStronger,
     ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), ObjTypeFunda(ObjTypeFunda::eInt));
 
-  TEST_MATCH( "", ObjType::eNoMatch,
+
+  // fundamental type <-> function
+  // -----------------------------------------
+  TEST_MATCH( "any fundamental type mismatches any function type", ObjType::eNoMatch,
     ObjTypeFunda(ObjTypeFunda::eInt),
     ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
+
+  // function <-> function
+  // ---------------------
   TEST_MATCH( "", ObjType::eFullMatch,
     ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
