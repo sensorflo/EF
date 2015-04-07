@@ -53,14 +53,14 @@ public:
 
   bool isVoid() const;
   bool isNoreturn() const;
-  bool matchesFully(const ObjType& other) const;
-  bool matchesSaufQualifiers(const ObjType& other) const;
+  bool matchesFully(const ObjType& dst) const;
+  bool matchesSaufQualifiers(const ObjType& dst) const;
   /** eMatchButAllQualifiersAreWeaker means that other has weaker qualifiers than
   this, likewise for eMatchButAnyQualifierIsStronger. */
-  virtual MatchType match(const ObjType& other) const = 0;
-  virtual MatchType match2(const ObjTypeFunda& other) const { return eNoMatch; }
-  virtual MatchType match2(const ObjTypePtr& other) const { return eNoMatch; }
-  virtual MatchType match2(const ObjTypeFun& other) const { return eNoMatch; }
+  virtual MatchType match(const ObjType& dst) const = 0;
+  virtual MatchType match2(const ObjTypeFunda& src) const { return eNoMatch; }
+  virtual MatchType match2(const ObjTypePtr& src) const { return eNoMatch; }
+  virtual MatchType match2(const ObjTypeFun& src) const { return eNoMatch; }
 
   virtual bool is(EClass class_) const =0;
   /** Size in bits */
@@ -86,8 +86,8 @@ public:
   virtual bool hasMember(int op) const = 0;
   virtual bool hasConstructor(const ObjType& other) const = 0;
 
-  static bool matchesFully_(const ObjType& rhs, const ObjType& lhs);
-  static bool matchesSaufQualifiers_(const ObjType& rhs, const ObjType& lhs);
+  static bool matchesFully_(const ObjType& src, const ObjType& dst);
+  static bool matchesSaufQualifiers_(const ObjType& src, const ObjType& dst);
 
 protected:
   ObjType(Qualifiers qualifiers) : m_qualifiers(qualifiers) {};
@@ -132,9 +132,9 @@ public:
   ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier, StorageDuration storageDuration = eLocal);
   ObjTypeFunda(EType type, StorageDuration storageDuration);
 
-  virtual MatchType match(const ObjType& other) const { return other.match2(*this); }
+  virtual MatchType match(const ObjType& dst) const { return dst.match2(*this); }
   using ObjType::match2;
-  virtual MatchType match2(const ObjTypeFunda& other) const;
+  virtual MatchType match2(const ObjTypeFunda& src) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
 
   virtual bool is(EClass class_) const;
@@ -187,9 +187,9 @@ public:
   static std::list<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = NULL,
     const ObjType* arg2 = NULL, const ObjType* arg3 = NULL);
 
-  virtual MatchType match(const ObjType& other) const { return other.match2(*this); }
+  virtual MatchType match(const ObjType& dst) const { return dst.match2(*this); }
   using ObjType::match2;
-  virtual MatchType match2(const ObjTypeFun& other) const;
+  virtual MatchType match2(const ObjTypeFun& src) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
   virtual AstValue* createDefaultAstValue() const;
   virtual llvm::Type* llvmType() const;

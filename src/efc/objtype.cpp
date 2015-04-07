@@ -33,12 +33,12 @@ bool ObjType::isNoreturn() const {
   return matchesFully(noreturnType);
 }
 
-bool ObjType::matchesFully(const ObjType& other) const {
-  return match(other) == eFullMatch;
+bool ObjType::matchesFully(const ObjType& dst) const {
+  return match(dst) == eFullMatch;
 }
 
-bool ObjType::matchesSaufQualifiers(const ObjType& other) const {
-  return this->match(other) != eNoMatch;
+bool ObjType::matchesSaufQualifiers(const ObjType& dst) const {
+  return this->match(dst) != eNoMatch;
 }
 
 basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::Qualifiers qualifiers) {
@@ -81,11 +81,9 @@ ObjTypeFunda::ObjTypeFunda(EType type, Qualifiers qualifiers,
 ObjTypeFunda::ObjTypeFunda(EType type, StorageDuration storageDuration) :
   ObjTypeFunda(type, eNoQualifier, storageDuration) {}
 
-ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& other) const {
-  if (m_type!=other.m_type) { return eNoMatch; }
-  if (m_qualifiers==other.m_qualifiers) { return eFullMatch; }
-  // note that in match2(...), 'this' and 'other' are swaped relative to
-  // match(...)
+ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& src) const {
+  if (m_type!=src.m_type) { return eNoMatch; }
+  if (m_qualifiers==src.m_qualifiers) { return eFullMatch; }
   if (m_qualifiers & eMutable) { return eMatchButAllQualifiersAreWeaker; }
   return eMatchButAnyQualifierIsStronger;
 }
@@ -280,14 +278,14 @@ ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType> >* args, shared_ptr<const 
   }
 }
 
-ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& other) const {
-  if (m_args->size() != other.m_args->size()) return eNoMatch;
-  for (list<shared_ptr<const ObjType> >::const_iterator i=m_args->begin(), iother=other.m_args->begin();
+ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& src) const {
+  if (m_args->size() != src.m_args->size()) return eNoMatch;
+  for (list<shared_ptr<const ObjType> >::const_iterator i=m_args->begin(), isrc=src.m_args->begin();
        i!=m_args->end();
-       ++i, ++iother) {
-    if ((*i)->match(**iother) != eFullMatch) return eNoMatch;
+       ++i, ++isrc) {
+    if ((*i)->match(**isrc) != eFullMatch) return eNoMatch;
   }
-  if (m_ret->match(*other.m_ret) != eFullMatch) return eNoMatch;
+  if (m_ret->match(*src.m_ret) != eFullMatch) return eNoMatch;
   return eFullMatch;
 }
 
