@@ -169,6 +169,7 @@ public:
   ObjTypePtr(std::shared_ptr<const ObjType> pointee,
     Qualifiers qualifiers = eNoQualifier, StorageDuration storageDuration = eLocal);
   ObjTypePtr(std::shared_ptr<const ObjType> pointee, StorageDuration storageDuration);
+  ObjTypePtr(const ObjTypePtr&);
 
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
   using ObjType::match2;

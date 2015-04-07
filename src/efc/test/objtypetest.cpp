@@ -293,6 +293,20 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   }
 
   {
+    ObjTypePtr src{ make_shared<ObjTypeFunda>(ObjTypeFunda::eInt) };
+    unique_ptr<ObjType> clone{src.clone()};
+    EXPECT_MATCHES_FULLY( src, *clone );
+  }
+
+  {
+    ObjTypePtr src{
+      make_shared<ObjTypePtr>(
+        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)) };
+    unique_ptr<ObjType> clone{src.clone()};
+    EXPECT_MATCHES_FULLY( src, *clone );
+  }
+
+  {
     ObjTypeFun src{
       ObjTypeFun::createArgs(),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt) };

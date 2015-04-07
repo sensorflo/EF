@@ -245,6 +245,11 @@ ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee,
   ObjTypePtr(pointee, eNoQualifier, storageDuration ) {
 }
 
+ObjTypePtr::ObjTypePtr(const ObjTypePtr& other) :
+  ObjTypeFunda{other},
+  m_pointee{other.m_pointee->clone()} {
+}
+
 ObjType::MatchType ObjTypePtr::match(const ObjType& dst, bool isLevel0) const {
   return dst.match2(*this, isLevel0);
 }
@@ -265,8 +270,7 @@ ObjType::MatchType ObjTypePtr::match2(const ObjTypePtr& src, bool isRoot) const 
 }
 
 ObjTypePtr* ObjTypePtr::clone() const {
-  assert(false); // not yet implemented
-  return nullptr;
+  return new ObjTypePtr{*this};
 };
 
 std::basic_ostream<char>& ObjTypePtr::printTo(
