@@ -126,9 +126,43 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   TEST_MATCH( "type matches, but dst has stronger qualifiers", ObjType::eMatchButAnyQualifierIsStronger,
     ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), ObjTypeFunda(ObjTypeFunda::eInt));
 
+  // pointer <-> pointer
+  // -------------------
+  TEST_MATCH( "full match", ObjType::eFullMatch,
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
-  // fundamental type <-> function
+  TEST_MATCH( "pointee type differs", ObjType::eNoMatch,
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)));
+
+  TEST_MATCH( "qualifier of level0 differs", ObjType::eMatchButAnyQualifierIsStronger,
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), ObjType::eMutable),
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
+
+  TEST_MATCH( "qualifier of level0 differs", ObjType::eMatchButAllQualifiersAreWeaker,
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), ObjType::eMutable));
+
+  TEST_MATCH( "qualifier of level1+ differs", ObjType::eNoMatch,
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable)),
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
+
+  TEST_MATCH( "qualifier of level1+ differs", ObjType::eNoMatch,
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable)));
+
+
+  // fundamental type <-> pointer <-> function
   // -----------------------------------------
+  TEST_MATCH( "any fundamental type mismatches any pointer type", ObjType::eNoMatch,
+    ObjTypeFunda(ObjTypeFunda::eInt),
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
+
+  TEST_MATCH( "any fundamental type mismatches any pointer type", ObjType::eNoMatch,
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+    ObjTypeFunda(ObjTypeFunda::eInt));
+
   TEST_MATCH( "any fundamental type mismatches any function type", ObjType::eNoMatch,
     ObjTypeFunda(ObjTypeFunda::eInt),
     ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));

@@ -244,6 +244,25 @@ ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee,
   ObjTypePtr(pointee, eNoQualifier, storageDuration ) {
 }
 
+ObjType::MatchType ObjTypePtr::match(const ObjType& dst, bool isLevel0) const {
+  return dst.match2(*this, isLevel0);
+}
+
+ObjType::MatchType ObjTypePtr::match2(const ObjTypePtr& src, bool isRoot) const {
+  //           dst    =    src
+  // level 0:  qualifiers irrelevant to decide whether its a match or not
+  // level 1+: currently: type and qualifiers must match completely 
+  //           in future: dst must have all stronger qualifiers == src must
+  //           have all weaker qualifiers
+  const auto pointeeMatch = m_pointee->match(*src.m_pointee.get(), false);
+  if ( pointeeMatch!=eFullMatch ) {
+    return eNoMatch;
+  }
+  // now we know pointee is a match
+
+  return ObjTypeFunda::match2(static_cast<const ObjTypeFunda&>(src), isRoot);
+}
+
 ObjTypePtr* ObjTypePtr::clone() const {
   assert(false); // not yet implemented
   return nullptr;

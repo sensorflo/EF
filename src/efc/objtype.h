@@ -166,6 +166,11 @@ public:
     Qualifiers qualifiers = eNoQualifier, StorageDuration storageDuration = eLocal);
   ObjTypePtr(std::shared_ptr<const ObjType> pointee, StorageDuration storageDuration);
 
+  virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
+  using ObjType::match2;
+  using ObjTypeFunda::match2;
+  virtual MatchType match2(const ObjTypePtr& src, bool isLevel0) const;
+
   virtual ObjTypePtr* clone() const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
 
