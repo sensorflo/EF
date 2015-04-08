@@ -1,5 +1,6 @@
-#ifndef AST_H
-#define AST_H
+#pragma once
+#include "entity.h"
+#include "object.h"
 #include "objtype.h"
 #include "access.h"
 #include "llvm/IR/Value.h"
@@ -13,32 +14,49 @@
 #include "astforwards.h"
 class AstConstVisitor;
 class AstVisitor;
-class SymbolTableEntry;
 class ErrorHandler;
 
 class AstNode {
 public:
-  AstNode(Access access = eRead) : m_access(access) {};
+  AstNode(Access access) : m_access{access} {};
   virtual ~AstNode() {};
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access, ErrorHandler& errorHandler);
+  virtual Entity& entity() const =0;
   std::string toStr() const;
 
 protected:
   Access m_access;
+};
+
+class AstValue : public AstNode {
+public:
+  AstValue(Access access = eRead) : AstNode{access} {};
+  const ObjType& objType() const; // { return object().objectType(); }
+  virtual Entity& entity() const { return object(); }
+  virtual Object& object() const =0;
+  virtual bool isCTConst() const { return false; }
+  void setAccess(Access access, ErrorHandler& errorHandler) override; 
+  // { object().addAccess(access); AstNode::setAccess(access); }
+}
 
   // decorations for IrGen
 public:
   virtual llvm::Value* irValue() = 0;
 };
 
-class AstValue : public AstNode {
+typedef AstValue AstObject;
+
+class AstObjType : public AstNode {
 public:
-  AstValue(Access access = eRead) : AstNode(access) {};
-  virtual const ObjType& objType() const =0;
-  virtual bool isCTConst() const { return false; }
+  virtual Entity& entity() const { return objType(); }
+  virtual ObjType& objType() const =0;
+  
+  // decorations for IrGen
+public:
+  llvm::Type* irType(); //{ return objType().llvmType(); }
 };
 
 class AstNop : public AstValue {
@@ -132,7 +150,7 @@ public:
   AstFunDecl(const std::string& name,
     std::list<AstArgDecl*>* args = NULL,
     std::shared_ptr<const ObjType> ret = nullptr,
-    std::shared_ptr<SymbolTableEntry> stentry = nullptr);
+    std::shared_ptr<Entity> stentry = nullptr);
   AstFunDecl(const std::string& name, AstArgDecl* arg1,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   ~AstFunDecl();
@@ -144,7 +162,7 @@ public:
   virtual const ObjType& objType() const;
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
-  virtual SymbolTableEntry* stentry() const { return m_stentry.get(); }
+  virtual Entity* stentry() const { return m_stentry.get(); }
 
 private:
   void initObjType();
@@ -153,7 +171,7 @@ private:
   /** We're the owner. Is garanteed to be non-null */
   std::list<AstArgDecl*>* const m_args;
   const std::shared_ptr<const ObjType> m_ret;
-  const std::shared_ptr<SymbolTableEntry> m_stentry;
+  const std::shared_ptr<Entity> m_stentry;
 
 // decorations for IrGen
 public:
@@ -168,14 +186,14 @@ public:
 class AstDataDecl : public AstValue {
 public:
   AstDataDecl(const std::string& name, ObjType* objType,
-    std::shared_ptr<SymbolTableEntry> stentry = nullptr);
+    std::shared_ptr<Entity> stentry = nullptr);
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
   virtual const ObjType& objType() const;
   virtual std::shared_ptr<const ObjType>& objTypeShareOwnership();
-  virtual SymbolTableEntry* stentry() const { return m_stentry.get(); }
-  virtual void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
+  virtual Entity* stentry() const { return m_stentry.get(); }
+  virtual void setStentry(std::shared_ptr<Entity> stentry);
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
   
 private:
@@ -183,7 +201,7 @@ private:
   /** Guaranteed to be non-null */
   std::shared_ptr<const ObjType> m_objType;
   /** NULL means this DataDecl was not yet put into the environment */
-  std::shared_ptr<SymbolTableEntry> m_stentry;
+  std::shared_ptr<Entity> m_stentry;
 
 // decorations for IrGen
 public:
@@ -269,13 +287,13 @@ public:
   const std::string& name() const { return m_name; }
   virtual const ObjType& objType() const;
   virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
-  virtual SymbolTableEntry* stentry() { return m_stentry.get(); }
-  virtual void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
+  virtual Entity* stentry() { return m_stentry.get(); }
+  virtual void setStentry(std::shared_ptr<Entity> stentry);
 
 private:
   const std::string m_name;
   /** We're not the owner, can be NULL */
-  std::shared_ptr<SymbolTableEntry> m_stentry;
+  std::shared_ptr<Entity> m_stentry;
 
 // decorations for IrGen
 public:
@@ -481,5 +499,3 @@ public:
   virtual llvm::Value* irValue() { static llvm::Value* v = NULL; return v; }
   virtual void setIrValue(llvm::Value*) { }
 };
-
-#endif

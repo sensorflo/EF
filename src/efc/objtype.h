@@ -1,5 +1,5 @@
-#ifndef OBJTYPE_H
-#define OBJTYPE_H
+#pragma once
+#include "entity.h"
 #include <string>
 #include <list>
 #include <iostream>
@@ -14,7 +14,7 @@ namespace llvm {
 }
 
 /** Abstract base class for all object types */
-class ObjType {
+class ObjType : public Entity {
 public:
   // works as bit flags
   enum Qualifiers {
@@ -184,4 +184,3 @@ private:
   const std::shared_ptr<const ObjType> m_ret;
 };
 
-#endif

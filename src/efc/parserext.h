@@ -5,10 +5,10 @@
 Parser extension: So bison's input file ef_yy can only contain tiny fragments
 of code. */
 
+#include "astforwards.h"
 #include "objtype.h"
 #include <list>
 
-#include "astforwards.h"
 class SymbolTableEntry;
 class Env;
 class ErrorHandler;

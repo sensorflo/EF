@@ -1,40 +1,11 @@
-#ifndef ENV_H
-#define ENV_H
-#include "objtype.h"
+#pragma once
+#include "entity.h"
 #include <string>
 #include <map>
 #include <list>
-#include <cassert>
 #include <memory>
 
-class ErrorHandler;
-namespace llvm {
-  class Value;
-}
-
-class SymbolTableEntry {
-public:
-  SymbolTableEntry(std::shared_ptr<const ObjType> objType);
-
-  const ObjType& objType() const { return *m_objType.get(); }
-  bool isDefined() const { return m_isDefined; }
-  void markAsDefined(ErrorHandler& errorHandler);
-
-private:
-  /** Is guaranteed to be non-null */
-  const std::shared_ptr<const ObjType> m_objType;
-  /** Opposed to only declared */
-  bool m_isDefined;
-
-  // decorations for IrGen
-public:
-  llvm::Value* valueIr() const;
-  void setValueIr(llvm::Value* valueIr);
-private:
-  llvm::Value* m_valueIr;
-};
-
-class SymbolTable : public std::map<std::string, std::shared_ptr<SymbolTableEntry> > {
+class EntityTable : public std::map<std::string, std::shared_ptr<Entity> > {
 public:
   typedef value_type KeyValue;
 };
@@ -49,18 +20,17 @@ public:
     Env& m_env;
   };
 
-  typedef std::pair<SymbolTable::iterator,bool> InsertRet;
+  typedef std::pair<EntityTable::iterator,bool> InsertRet;
 
   Env();
-  InsertRet insert(const std::string& name, std::shared_ptr<SymbolTableEntry> stentry);
-  InsertRet insert(const SymbolTable::KeyValue& keyValue);
-  void find(const std::string& name, std::shared_ptr<SymbolTableEntry>& stentry);
+  InsertRet insert(const std::string& name, std::shared_ptr<Entity> stentry);
+  InsertRet insert(const EntityTable::KeyValue& keyValue);
+  void find(const std::string& name, std::shared_ptr<Entity>& stentry);
   void pushScope();
   void popScope();
 
 private:
   /** symbol table stack. front() is top of stack */
-  std::list<SymbolTable> m_ststack;
+  std::list<EntityTable> m_ststack;
 };
 
-#endif

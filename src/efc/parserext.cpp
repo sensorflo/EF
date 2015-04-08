@@ -2,6 +2,7 @@
 #include "env.h"
 #include "ast.h"
 #include "errorhandler.h"
+#include "ast.h"
 #include <cassert>
 #include <stdexcept>
 #include "memoryext.h"
