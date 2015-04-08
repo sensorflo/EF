@@ -23,7 +23,7 @@ public:
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
   virtual Access access() const { return m_access; }
-  virtual void setAccess(Access access, ErrorHandler& errorHandler);
+  virtual void setAccess(Access access);
   std::string toStr() const;
 
 protected:
@@ -176,7 +176,6 @@ public:
   virtual std::shared_ptr<const ObjType>& objTypeShareOwnership();
   virtual SymbolTableEntry* stentry() const { return m_stentry.get(); }
   virtual void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
-  virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
   
 private:
   const std::string m_name;
@@ -212,7 +211,7 @@ public:
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   virtual AstValue& initValue() const;
   virtual const ObjType& objType() const;
-  virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
+
 private:
   /** We're the owner. Is garanteed to be non-null */
   AstDataDecl* const m_decl;
@@ -268,7 +267,6 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
   const std::string& name() const { return m_name; }
   virtual const ObjType& objType() const;
-  virtual void setAccess(Access access, ErrorHandler& ) { m_access = access; }
   virtual SymbolTableEntry* stentry() { return m_stentry.get(); }
   virtual void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
 
@@ -340,7 +338,6 @@ public:
   virtual ~AstOperator();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void setAccess(Access access, ErrorHandler& );
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
   virtual const ObjType& objType() const;
@@ -381,7 +378,6 @@ public:
   virtual ~AstIf();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual void setAccess(Access access, ErrorHandler& );
   AstValue& condition() const { return *m_condition; }
   AstValue& action() const { return *m_action; }
   AstValue* elseAction() const { return m_elseAction; }

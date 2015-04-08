@@ -7,10 +7,7 @@
 #include <stdexcept>
 using namespace std;
 
-void AstNode::setAccess(Access access, ErrorHandler& errorHandler) {
-  if ( access==eWrite ) {
-    Error::throwError(errorHandler, Error::eWriteToImmutable);
-  }
+void AstNode::setAccess(Access access) {
   m_access = access;
 }
 
@@ -351,13 +348,6 @@ AstOperator::EOperation AstOperator::toEOperation(const string& op) {
   }
 }
 
-void AstOperator::setAccess(Access access, ErrorHandler& errorHandler) {
-  if ( access==eWrite && (m_op!=eDotAssign && m_op!=eSeq) ) {
-    Error::throwError(errorHandler, Error::eWriteToImmutable);
-  }
-  m_access = access;
-}
-
 void AstOperator::setIrValue(llvm::Value* value) {
   assert(value);
   assert(!m_irValue); // it doesnt make sense to set it twice
@@ -414,13 +404,6 @@ const ObjType& AstIf::objType() const {
 void AstIf::setObjType(unique_ptr<ObjType> objType) {
   assert(!m_objType); // it doesn't make sense to set it twice
   m_objType = move(objType);
-}
-
-void AstIf::setAccess(Access access, ErrorHandler& errorHandler) {
-  if (access==eWrite && !m_elseAction) {
-    Error::throwError(errorHandler, Error::eWriteToImmutable);
-  }
-  m_access = access;
 }
 
 AstLoop::AstLoop(AstValue* cond, AstValue* body) :

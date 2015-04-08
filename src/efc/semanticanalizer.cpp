@@ -58,10 +58,10 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // Set EAccess of childs.
   {
     if (AstOperator::eAssignment == op.class_()) {
-      argschilds.front()->setAccess(eWrite, m_errorHandler);
+      argschilds.front()->setAccess(eWrite);
     } else if ( AstOperator::eSeq == op.op() ) {
-      argschilds.front()->setAccess(eIgnore, m_errorHandler);
-      argschilds.back()->setAccess(op.access(), m_errorHandler);
+      argschilds.front()->setAccess(eIgnore);
+      argschilds.back()->setAccess(op.access());
     }
   }
 
@@ -284,11 +284,11 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 void SemanticAnalizer::visit(AstIf& if_) {
   if_.condition().accept(*this);
 
-  if_.action().setAccess(if_.access(), m_errorHandler);
+  if_.action().setAccess(if_.access());
   if_.action().accept(*this);
 
   if (if_.elseAction()) {
-    if_.elseAction()->setAccess(if_.access(), m_errorHandler);
+    if_.elseAction()->setAccess(if_.access());
     if_.elseAction()->accept(*this);
   }
 
@@ -334,7 +334,7 @@ void SemanticAnalizer::visit(AstLoop& loop) {
   // access to condition is eRead, which we  need not explicitely set
   loop.condition().accept(*this);
 
-  loop.body().setAccess(eIgnore, m_errorHandler);
+  loop.body().setAccess(eIgnore);
   loop.body().accept(*this);
 
   if ( !loop.condition().objType().matchesSaufQualifiers(
