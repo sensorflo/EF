@@ -55,11 +55,14 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // Note that orrect number of arguments was already handled in AstOperator's
   // ctor; we're allowed to count on that.
 
+  const auto class_ = op.class_();
+  const auto opop = op.op();
+
   // Set EAccess of childs.
   {
-    if (AstOperator::eAssignment == op.class_()) {
+    if ( AstOperator::eAssignment == class_) {
       argschilds.front()->setAccess(eWrite);
-    } else if ( AstOperator::eSeq == op.op() ) {
+    } else if ( AstOperator::eSeq == opop ) {
       argschilds.front()->setAccess(eIgnore);
       argschilds.back()->setAccess(op.access());
     }
@@ -78,7 +81,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
         && !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eNoreturn))) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
       }
-    } else if ( op.class_() != AstOperator::eOther ) {
+    } else if ( class_ != AstOperator::eOther ) {
       if ( !lhs.matchesSaufQualifiers(rhs) ) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
       }
@@ -95,32 +98,32 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // because lhs does not support the requested operator. That includes trying
   // to read or do an operation from / with void or noreturn. Both cases are
   // handled elsewhere.
-  if ( op.class_() == AstOperator::eAssignment ) {
+  if ( class_ == AstOperator::eAssignment ) {
     if ( ! (argschilds.front()->objType().qualifiers() & ObjType::eMutable) ) {
       Error::throwError(m_errorHandler, Error::eWriteToImmutable);
     }
   }
 
   // Verify that the first argument has the operator as member function.
-  if ( op.op()!=AstOperator::eSeq // eSeq is a global operator, not a member function
-    && !argschilds.front()->objType().hasMember(op.op())) {
+  if ( opop!=AstOperator::eSeq // eSeq is a global operator, not a member function
+    && !argschilds.front()->objType().hasMember(opop)) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 
   // Report eUnreachableCode if the lhs of an sequence operator is of obj type
   // noreturn.  That is actually also true for other operators, but there the
   // error eNoSuchMember has higher priority.
-  if ( op.op()==AstOperator::eSeq ) {
+  if ( opop==AstOperator::eSeq ) {
     if ( argschilds.front()->objType().isNoreturn() ) {
       Error::throwError(m_errorHandler, Error::eUnreachableCode);
     }
   }
 
   // On eComputedValueNotUsed
-  if ( op.op()!=AstOperator::eSeq // computes no value
-    && op.op()!=AstOperator::eAnd // shirt circuit operator, is effectively flow control
-    && op.op()!=AstOperator::eOr  // dito
-    && op.class_()!=AstOperator::eAssignment // have side effects
+  if ( opop!=AstOperator::eSeq // computes no value
+    && opop!=AstOperator::eAnd // shirt circuit operator, is effectively flow control
+    && opop!=AstOperator::eOr  // dito
+    && class_!=AstOperator::eAssignment // have side effects
     && op.access()==eIgnore ) {
     Error::throwError(m_errorHandler, Error::eComputedValueNotUsed);
   }
@@ -128,10 +131,10 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // Set the obj type of this AstOperator node. It is a temporary object which
   // is always immutable.
   {
-    if ( op.class_() == AstOperator::eComparison ) {
+    if ( class_ == AstOperator::eComparison ) {
       op.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eBool));
-    } else if ( op.class_() == AstOperator::eAssignment ) {
-      if ( op.op() == AstOperator::eDotAssign ) {
+    } else if ( class_ == AstOperator::eAssignment ) {
+      if ( opop == AstOperator::eDotAssign ) {
         op.setObjType(unique_ptr<ObjType>(argschilds.front()->objType().clone()));
         // don't remove mutable qualifier
       } else {
@@ -139,7 +142,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
       }
     }
     // The obj type of the seq operator is exactly that of its rhs
-    else if ( op.op() == AstOperator::eSeq ) {
+    else if ( opop == AstOperator::eSeq ) {
       op.setObjType(unique_ptr<ObjType>(argschilds.back()->objType().clone()));
       // don't remove mutable qualifier
     }
