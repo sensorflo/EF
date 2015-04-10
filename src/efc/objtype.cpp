@@ -181,6 +181,7 @@ bool ObjTypeFunda::hasMember(int op) const {
   case AstOperator::eArithmetic: return is(eArithmetic);
   case AstOperator::eLogical: return m_type == eBool;
   case AstOperator::eComparison: return is(eScalar);
+  case AstOperator::eMemberAccess: return !is(eAbstract);
   case AstOperator::eOther: assert(false); return false;
   }
   assert(false);

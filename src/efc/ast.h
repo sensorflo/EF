@@ -317,6 +317,8 @@ public:
     eDiv = '/',
     eNot = '!',
     eSeq = ';',
+    eAddrOf = '&',
+    eDeref = '^',
     eAnd = 128,
     eOr,
     eEqualTo,
@@ -327,6 +329,7 @@ public:
     eArithmetic,
     eLogical,
     eComparison,
+    eMemberAccess,
     eOther
   };
   AstOperator(char op, AstCtList* args);

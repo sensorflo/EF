@@ -290,7 +290,8 @@ AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
   m_args(args ? args : new AstCtList),
   m_irValue(NULL) {
-  const size_t required_arity = op == eNot ? 1 : 2;
+  const size_t required_arity =
+    (op==eNot || op==eAddrOf || op==eDeref ) ? 1 : 2;
   assert( args->childs().size() == required_arity );
 }
 
@@ -330,6 +331,10 @@ AstOperator::EClass AstOperator::classOf(AstOperator::EOperation op) {
 
   case eEqualTo:
     return eComparison;
+
+  case eAddrOf:
+  case eDeref:
+    return eMemberAccess;
 
   case eSeq:
     return eOther;

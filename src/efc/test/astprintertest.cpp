@@ -45,6 +45,8 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "or(42 77)" , AstOperator("||"      , new AstNumber(42), new AstNumber(77)), spec);
   EXPECT_TOSTR_EQ( "or(42 77)" , AstOperator("or"      , new AstNumber(42), new AstNumber(77)), spec);
   EXPECT_TOSTR_EQ( ";(42 77)"  , AstOperator(';'       , new AstNumber(42), new AstNumber(77)), spec);;
+  EXPECT_TOSTR_EQ( "^(x)"      , AstOperator('^'       , new AstSymbol("x")), spec);;
+  EXPECT_TOSTR_EQ( "&(x)"      , AstOperator('&'       , new AstSymbol("x")), spec);;
 
   spec = "AstIf";
   EXPECT_TOSTR_EQ( "if(x 1)",

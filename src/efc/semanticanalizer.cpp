@@ -58,6 +58,8 @@ void SemanticAnalizer::visit(AstOperator& op) {
   const auto class_ = op.class_();
   const auto opop = op.op();
 
+  assert( AstOperator::eMemberAccess!=class_ ); // not yet implemented
+
   // Set EAccess of childs.
   {
     if ( AstOperator::eAssignment == class_) {

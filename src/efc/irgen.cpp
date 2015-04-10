@@ -158,6 +158,8 @@ void IrGen::visit(AstOperator& op) {
   const list<AstValue*>& argschilds = op.args().childs();
   Value* resultIr = NULL;
 
+  assert( AstOperator::eMemberAccess!=op.class_() ); // not yet implemented
+
   // unary operators
   if (op.op()==AstOperator::eNot) {
     resultIr = m_builder.CreateNot(callAcceptOn(*argschilds.front()), "not" );
