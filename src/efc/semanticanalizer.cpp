@@ -58,7 +58,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   const auto class_ = op.class_();
   const auto opop = op.op();
 
-  assert( AstOperator::eMemberAccess!=class_ ); // not yet implemented
+  assert( opop!=AstOperator::eDeref ); // not yet implemented
 
   // Set EAccess of childs.
   {
@@ -67,6 +67,8 @@ void SemanticAnalizer::visit(AstOperator& op) {
     } else if ( AstOperator::eSeq == opop ) {
       argschilds.front()->setAccess(eIgnore);
       argschilds.back()->setAccess(op.access());
+    } else if ( opop==AstOperator::eAddrOf ) {
+      argschilds.front()->setAccess(eTakeAddress);
     }
   }
 

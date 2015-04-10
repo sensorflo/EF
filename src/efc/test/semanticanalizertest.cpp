@@ -570,6 +570,24 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_an_addrof_operator,
+    THEN_the_access_value_of_the_AstNode_operand_is_eTakeAddr))
+{
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  AstValue* operand = new AstNumber(42);
+  unique_ptr<AstValue> ast{new AstOperator('&', operand)};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  EXPECT_EQ( eTakeAddress, operand->access()) << amendAst(ast);
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_access_to_a_bock,
     THEN_the_access_value_of_its_body_is_always_eRead))
 {
