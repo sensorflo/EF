@@ -7,11 +7,13 @@ Error::Error(Error::No no) :
 }
 
 void Error::throwError(ErrorHandler& errorHandler, No no) {
-  auto error = new Error(no);
-  errorHandler.add(error);
-  stringstream ss;
-  ss << *error;
-  throw BuildError(ss.str());
+  if ( !errorHandler.isReportingDisabledFor(no) ) {
+    auto error = new Error(no);
+    errorHandler.add(error);
+    stringstream ss;
+    ss << *error;
+    throw BuildError(ss.str());
+  }
 }
 
 const char* toStr(Error::No no) {
@@ -39,6 +41,18 @@ ostream& operator<<(ostream& os, Error::No no) {
 
 ostream& operator<<(ostream& os, const Error& error) {
   return os << error.no();
+}
+
+ErrorHandler::ErrorHandler() :
+  m_disabledErrors{} {
+}
+
+void ErrorHandler::disableReportingOf(Error::No no) {
+  m_disabledErrors[no] = true;
+}
+
+bool ErrorHandler::isReportingDisabledFor(Error::No no) const {
+  return m_disabledErrors[no];
 }
 
 ErrorHandler::~ErrorHandler() {

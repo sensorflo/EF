@@ -3,6 +3,7 @@
 #include <list>
 #include <ostream>
 #include <stdexcept>
+#include <array>
 
 class ErrorHandler;
 
@@ -25,8 +26,9 @@ public:
     eCnt
   };
 
-  /** Adds a new Error to ErrorHandler and throws an according BuildError. */
-  [[noreturn]] static void throwError(ErrorHandler& errorHandler, No no);
+  /** Unless given error is disabled, adds a new Error to ErrorHandler and
+  throws an according BuildError. */
+  static void throwError(ErrorHandler& errorHandler, No no);
 
   No no() const { return m_no; }
 
@@ -45,16 +47,20 @@ class ErrorHandler {
 public:
   typedef std::list<Error*> Container;
 
+  ErrorHandler();
   virtual ~ErrorHandler();
 
   /** Errorhandler overtakes ownership */
   void add(Error* error) { m_errors.push_back(error); }
   const Container& errors() const { return m_errors; }
   bool hasNoErrors() const { return m_errors.empty(); }
+  void disableReportingOf(Error::No no);
+  bool isReportingDisabledFor(Error::No no) const;
 
 private:
   /** We're the owner of the pointees */
   Container m_errors;
+  std::array<bool,Error::eCnt> m_disabledErrors;
 };
 
 std::ostream& operator<<(std::ostream& os, const ErrorHandler& errorHandler);
