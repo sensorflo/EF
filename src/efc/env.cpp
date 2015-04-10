@@ -8,6 +8,7 @@ using namespace llvm;
 SymbolTableEntry::SymbolTableEntry(shared_ptr<const ObjType> objType) :
   m_objType( (assert(objType.get()), move(objType))),
   m_isDefined(false),
+  m_objectWasModifiedOrRevealedAddr(false),
   m_valueIr(NULL) {}
 
 void SymbolTableEntry::markAsDefined(ErrorHandler& errorHandler) {
@@ -15,6 +16,16 @@ void SymbolTableEntry::markAsDefined(ErrorHandler& errorHandler) {
     Error::throwError(errorHandler, Error::eRedefinition);
   }
   m_isDefined = true;
+}
+
+void SymbolTableEntry::addAccessToObject(Access access) {
+  m_objectWasModifiedOrRevealedAddr =
+    m_objectWasModifiedOrRevealedAddr ||
+    access==eWrite || access==eTakeAddress;
+}
+
+bool SymbolTableEntry::objectWasModifiedOrRevealedAddr() const {
+  return m_objectWasModifiedOrRevealedAddr;
 }
 
 llvm::Value* SymbolTableEntry::valueIr() const {

@@ -22,6 +22,8 @@ public:
   virtual ~AstNode() {};
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
+  /** Access to this node. Contrast this with access to the object
+  refered to by this node. */
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access);
   std::string toStr() const;
@@ -39,6 +41,7 @@ public:
   AstValue(Access access = eRead) : AstNode(access) {};
   virtual const ObjType& objType() const =0;
   virtual bool isCTConst() const { return false; }
+  virtual bool objectWasModifiedOrRevealedAddr() const;
 };
 
 class AstNop : public AstValue {
@@ -110,6 +113,7 @@ public:
   virtual AstFunDecl& decl() const { return *m_decl; }
   virtual AstValue& body() const { return *m_body; }
   virtual const ObjType& objType() const;
+  virtual bool objectWasModifiedOrRevealedAddr() const;
 
 private:
   /** We're the owner. Is garanteed to be non-null */
@@ -145,6 +149,7 @@ public:
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
   virtual SymbolTableEntry* stentry() const { return m_stentry.get(); }
+  virtual bool objectWasModifiedOrRevealedAddr() const;
 
 private:
   void initObjType();
@@ -176,6 +181,7 @@ public:
   virtual std::shared_ptr<const ObjType>& objTypeShareOwnership();
   virtual SymbolTableEntry* stentry() const { return m_stentry.get(); }
   virtual void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
+  virtual bool objectWasModifiedOrRevealedAddr() const;
   
 private:
   const std::string m_name;
@@ -211,6 +217,7 @@ public:
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   virtual AstValue& initValue() const;
   virtual const ObjType& objType() const;
+  virtual bool objectWasModifiedOrRevealedAddr() const;
 
 private:
   /** We're the owner. Is garanteed to be non-null */
@@ -269,6 +276,7 @@ public:
   virtual const ObjType& objType() const;
   virtual SymbolTableEntry* stentry() { return m_stentry.get(); }
   virtual void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
+  virtual bool objectWasModifiedOrRevealedAddr() const;
 
 private:
   const std::string m_name;

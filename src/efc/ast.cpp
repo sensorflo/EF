@@ -15,6 +15,12 @@ string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
+/** Default implementation for AstValue's where there is a one-to-one
+relationship between AstValue and object. */
+bool AstValue::objectWasModifiedOrRevealedAddr() const {
+  return m_access==eWrite || m_access==eTakeAddress;
+}
+
 const ObjType& AstNop::objType() const {
   static const ObjTypeFunda voidObjType{ObjTypeFunda::eVoid};
   return voidObjType;
@@ -104,6 +110,10 @@ void AstFunDef::setIrFunction(llvm::Function* function) {
   m_irFunction = function;
 }
 
+bool AstFunDef::objectWasModifiedOrRevealedAddr() const {
+  return m_decl->stentry()->objectWasModifiedOrRevealedAddr();
+}
+
 const ObjType& AstFunDef::objType() const {
   return decl().objType();
 }
@@ -152,6 +162,11 @@ list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
   return args;
 }
 
+bool AstFunDecl::objectWasModifiedOrRevealedAddr() const {
+  assert(m_stentry);
+  return m_stentry->objectWasModifiedOrRevealedAddr();
+}
+
 void AstFunDecl::setIrValue(llvm::Value* value) {
   assert(value);
   assert(!m_irFunction);  // it doesnt make sense to set it twice
@@ -185,6 +200,11 @@ void AstDataDecl::setStentry(shared_ptr<SymbolTableEntry> stentry) {
   assert(stentry.get());
   assert(!m_stentry); // it makes no sense to set it twice
   m_stentry = move(stentry);
+}
+
+bool AstDataDecl::objectWasModifiedOrRevealedAddr() const {
+  assert(m_stentry);
+  return m_stentry->objectWasModifiedOrRevealedAddr();
 }
 
 void AstDataDecl::setIrValue(llvm::Value* value) {
@@ -230,6 +250,10 @@ AstValue& AstDataDef::initValue() const {
 
 const ObjType& AstDataDef::objType() const {
   return decl().objType();
+}
+
+bool AstDataDef::objectWasModifiedOrRevealedAddr() const {
+  return m_decl->stentry()->objectWasModifiedOrRevealedAddr();
 }
 
 void AstDataDef::setIrValue(llvm::Value* value) {
@@ -472,6 +496,11 @@ void AstSymbol::setStentry(shared_ptr<SymbolTableEntry> stentry) {
   assert(stentry);
   assert(!m_stentry.get()); // it makes no sense to set it twice
   m_stentry = move(stentry);
+}
+
+bool AstSymbol::objectWasModifiedOrRevealedAddr() const {
+  assert(m_stentry);
+  return m_stentry->objectWasModifiedOrRevealedAddr();
 }
 
 AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :

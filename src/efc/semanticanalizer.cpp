@@ -178,6 +178,7 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
   if (NULL==stentry) {
     Error::throwError(m_errorHandler, Error::eUnknownName);
   }
+  stentry->addAccessToObject(symbol.access());
   symbol.setStentry(move(stentry));
   postConditionCheck(symbol);
 }
@@ -233,12 +234,14 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
+  funDef.decl().stentry()->addAccessToObject(funDef.access());
   postConditionCheck(funDef);
 }
 
 void SemanticAnalizer::visit(AstFunDecl& funDecl) {
   // Note that visit(AstFundDef) does all of the work for the case AstFunDecl
   // is a child of AstFundDef.
+  funDecl.stentry()->addAccessToObject(funDecl.access());
   postConditionCheck(funDecl);
 }
 
@@ -267,6 +270,7 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
     dataDecl.setStentry(envs_stentry_ptr);
   }
 
+  dataDecl.stentry()->addAccessToObject(dataDecl.access());
   postConditionCheck(dataDecl);
 }
 
@@ -285,6 +289,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     && !dataDef.initValue().isCTConst() ) {
     Error::throwError(m_errorHandler, Error::eCTConstRequired);
   }
+  dataDef.decl().stentry()->addAccessToObject(dataDef.access());
   postConditionCheck(dataDef);
 }
 

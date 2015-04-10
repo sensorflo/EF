@@ -19,12 +19,15 @@ public:
   const ObjType& objType() const { return *m_objType.get(); }
   bool isDefined() const { return m_isDefined; }
   void markAsDefined(ErrorHandler& errorHandler);
+  void addAccessToObject(Access access);
+  bool objectWasModifiedOrRevealedAddr() const;
 
 private:
   /** Is guaranteed to be non-null */
   const std::shared_ptr<const ObjType> m_objType;
   /** Opposed to only declared */
   bool m_isDefined;
+  bool m_objectWasModifiedOrRevealedAddr;
 
   // decorations for IrGen
 public:

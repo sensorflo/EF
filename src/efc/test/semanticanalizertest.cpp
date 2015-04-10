@@ -588,6 +588,73 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_an_AstValue_whichs_object_is_never_modified_nor_its_address_is_taken,
+    THEN_the_target_object_remembers_that))
+{
+  string spec = "Example: a single AstNode, i.e. a single object";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    unique_ptr<AstValue> ast{new AstNumber(42)};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_FALSE( ast->objectWasModifiedOrRevealedAddr())
+      << amendSpec(spec) << amendAst(ast);
+  }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_modifying_or_address_taking_AstNode,
+    THEN_the_target_object_remembers_that))
+{
+  string spec = "Example: Address-of operator on a temporary object";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    AstValue* operand = new AstNumber(42);
+    unique_ptr<AstValue> ast{new AstOperator('&', operand)};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_TRUE( operand->objectWasModifiedOrRevealedAddr())
+      << amendSpec(spec) << amendAst(ast);
+  }
+
+  spec = "Example: Address-of operator on a named object, and the\n"
+    "objectWasModifiedOrRevealedAddr-queried AST node refers to that named\n"
+    "object";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    errorHandler.disableReportingOf(Error::eComputedValueNotUsed);
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    AstValue* symbol = new AstSymbol("x");
+    unique_ptr<AstValue> ast{
+      new AstOperator(';',
+        new AstOperator('&',
+          new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        symbol)};
+
+    // exercise
+    UUT.analyze(*ast.get());
+
+    // verify
+    EXPECT_TRUE( symbol->objectWasModifiedOrRevealedAddr())
+      << amendSpec(spec) << amendAst(ast);
+  }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_access_to_a_bock,
     THEN_the_access_value_of_its_body_is_always_eRead))
 {
