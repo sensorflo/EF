@@ -1622,6 +1622,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstSymbol("foo"),
         new AstSymbol("foo"))),
     Error::eNoSuchMember, spec);
+
+  spec = "Example: Dereference operator (^) with an non-pointer argument";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator('^', new AstNumber(0)),
+    Error::eNoSuchMember, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(

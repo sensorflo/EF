@@ -181,7 +181,10 @@ bool ObjTypeFunda::hasMember(int op) const {
   case AstOperator::eArithmetic: return is(eArithmetic);
   case AstOperator::eLogical: return m_type == eBool;
   case AstOperator::eComparison: return is(eScalar);
-  case AstOperator::eMemberAccess: return !is(eAbstract);
+  case AstOperator::eMemberAccess:
+    if      (op==AstOperator::eDeref)  return m_type == ePointer;
+    else if (op==AstOperator::eAddrOf) return !is(eAbstract);
+    else    assert(false);
   case AstOperator::eOther: assert(false); return false;
   }
   assert(false);
@@ -287,8 +290,9 @@ AstValue* ObjTypePtr::createDefaultAstValue() const {
 };
 
 bool ObjTypePtr::hasMember(int op) const {
-  assert(false); // not yet implemented
-  return false;
+  // currently there is no pointer arithmetic, and pointers can't be
+  // subtracted from each other
+  return op==AstOperator::eDeref;
 };
 
 ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret) :
