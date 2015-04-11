@@ -58,8 +58,6 @@ void SemanticAnalizer::visit(AstOperator& op) {
   const auto class_ = op.class_();
   const auto opop = op.op();
 
-  assert( opop!=AstOperator::eDeref ); // not yet implemented
-
   // Set EAccess of childs.
   {
     if ( AstOperator::eAssignment == class_) {
@@ -149,6 +147,17 @@ void SemanticAnalizer::visit(AstOperator& op) {
     else if ( opop == AstOperator::eSeq ) {
       op.setObjType(unique_ptr<ObjType>(argschilds.back()->objType().clone()));
       // don't remove mutable qualifier
+    } else if ( opop == AstOperator::eAddrOf) {
+      op.setObjType(
+        make_unique<ObjTypePtr>(
+          shared_ptr<ObjType>{argschilds.back()->objType().clone()}));
+    } else if ( opop == AstOperator::eDeref) {
+      // It is known that static cast is safe because it was checked before
+      // that the operand of the deref operator has the deref operator as
+      // member function.
+      const ObjTypePtr& opObjType =
+        static_cast<const ObjTypePtr&>(argschilds.back()->objType());
+      op.setObjType(unique_ptr<ObjType>(opObjType.pointee().clone()));
     }
     // For ther operands, the operator expression's objtype is, now that we
     // know the two operands have the same obj type, either operand's obj

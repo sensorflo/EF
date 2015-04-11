@@ -183,6 +183,8 @@ public:
 
   virtual bool hasMember(int op) const;
 
+  const ObjType& pointee() const;
+
 private:
   ObjTypePtr& operator=(const ObjTypePtr&) =delete; // for simplicity reasons
 

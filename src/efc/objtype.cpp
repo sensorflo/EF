@@ -295,6 +295,10 @@ bool ObjTypePtr::hasMember(int op) const {
   return op==AstOperator::eDeref;
 };
 
+const ObjType& ObjTypePtr::pointee() const {
+  return *m_pointee.get();
+};
+
 ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret) :
   ObjType{eNoQualifier},
   m_args{ args ?

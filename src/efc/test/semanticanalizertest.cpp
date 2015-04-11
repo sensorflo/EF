@@ -801,6 +801,48 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_addrOf_operator,
+    transform,
+    sets_the_objType_of_the_AstOperator_node_to_pointer_to_operands_type)) {
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  unique_ptr<AstValue> ast{
+    new AstOperator('&', new AstNumber(0, ObjTypeFunda::eInt))};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  ObjTypePtr expectedObjType{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
+  EXPECT_MATCHES_FULLY( expectedObjType, ast->objType()) << amendAst(ast);
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_deref_operator,
+    transform,
+    sets_the_objectType_of_the_AstOperator_node_)) {
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  unique_ptr<AstValue> ast{
+    new AstOperator('^',
+      new AstDataDecl("x",
+        new ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))))};
+
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+    amendAst(ast);
+}
+
 // aka temporary objects are immutable
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_non_dot_assignment_operator,
