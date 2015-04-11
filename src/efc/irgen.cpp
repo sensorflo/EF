@@ -155,14 +155,14 @@ void IrGen::visit(AstCtList&) {
 }
 
 void IrGen::visit(AstOperator& op) {
-  const list<AstValue*>& argschilds = op.args().childs();
-  Value* resultIr = NULL;
+  const auto& astOperands = op.args().childs();
+  Value* llvmResult = NULL;
 
   assert( AstOperator::eMemberAccess!=op.class_() ); // not yet implemented
 
   // unary operators
   if (op.op()==AstOperator::eNot) {
-    resultIr = m_builder.CreateNot(callAcceptOn(*argschilds.front()), "not" );
+    llvmResult = m_builder.CreateNot(callAcceptOn(*astOperands.front()), "not" );
   }
 
   // binary short circuit operators
@@ -175,19 +175,19 @@ void IrGen::visit(AstOperator& op) {
       opname + "_merge");
 
     // current/lhs BB:
-    auto lhsIr = callAcceptOn(*argschilds.front());
-    assert(lhsIr);
+    auto llvmLhs = callAcceptOn(*astOperands.front());
+    assert(llvmLhs);
     if ( op.op()==AstOperator::eAnd ) {
-      m_builder.CreateCondBr(lhsIr, rhsBB, mergeBB);
+      m_builder.CreateCondBr(llvmLhs, rhsBB, mergeBB);
     } else {
-      m_builder.CreateCondBr(lhsIr, mergeBB, rhsBB);
+      m_builder.CreateCondBr(llvmLhs, mergeBB, rhsBB);
     }
     BasicBlock* lhsLastBB = m_builder.GetInsertBlock();
 
     // rhsBB:
     functionIr->getBasicBlockList().push_back(rhsBB);
     m_builder.SetInsertPoint(rhsBB);
-    auto rhsIr = callAcceptOn(*argschilds.back());
+    auto llvmRhs = callAcceptOn(*astOperands.back());
     m_builder.CreateBr(mergeBB);
     BasicBlock* rhsLastBB = m_builder.GetInsertBlock();
 
@@ -197,46 +197,46 @@ void IrGen::visit(AstOperator& op) {
     PHINode* phi = m_builder.CreatePHI( Type::getInt1Ty(getGlobalContext()),
       2, opname);
     assert(phi);
-    phi->addIncoming(lhsIr, lhsLastBB);
-    phi->addIncoming(rhsIr, rhsLastBB);
-    resultIr = phi;
+    phi->addIncoming(llvmLhs, lhsLastBB);
+    phi->addIncoming(llvmRhs, rhsLastBB);
+    llvmResult = phi;
   }
 
   // binary non short circuit operators
   else {
-    auto lhsIr = callAcceptOn(*argschilds.front());
-    auto rhsIr = callAcceptOn(*argschilds.back());
+    auto llvmLhs = callAcceptOn(*astOperands.front());
+    auto llvmRhs = callAcceptOn(*astOperands.back());
     switch (op.op()) {
-    case AstOperator::eDotAssign:            m_builder.CreateStore (rhsIr, lhsIr);
-                                  resultIr = op.access()==eWrite ? lhsIr : rhsIr; break;
-    case AstOperator::eAssign   :            m_builder.CreateStore (rhsIr, lhsIr);
-                                  resultIr = m_abstractObject; break;
-    case AstOperator::eSeq      : resultIr = rhsIr; break;
+    case AstOperator::eDotAssign:            m_builder.CreateStore (llvmRhs, llvmLhs);
+                                  llvmResult = op.access()==eWrite ? llvmLhs : llvmRhs; break;
+    case AstOperator::eAssign   :            m_builder.CreateStore (llvmRhs, llvmLhs);
+                                  llvmResult = m_abstractObject; break;
+    case AstOperator::eSeq      : llvmResult = llvmRhs; break;
     default: 
-      if (argschilds.front()->objType().is(ObjType::eStoredAsIntegral)) {
+      if (astOperands.front()->objType().is(ObjType::eStoredAsIntegral)) {
         switch (op.op()) {
-        case AstOperator::eSub      : resultIr = m_builder.CreateSub   (lhsIr, rhsIr, "sub"); break;
-        case AstOperator::eAdd      : resultIr = m_builder.CreateAdd   (lhsIr, rhsIr, "add"); break;
-        case AstOperator::eMul      : resultIr = m_builder.CreateMul   (lhsIr, rhsIr, "mul"); break;
-        case AstOperator::eDiv      : resultIr = m_builder.CreateSDiv  (lhsIr, rhsIr, "div"); break;
-        case AstOperator::eEqualTo  : resultIr = m_builder.CreateICmpEQ(lhsIr, rhsIr, "cmp"); break;
+        case AstOperator::eSub      : llvmResult = m_builder.CreateSub   (llvmLhs, llvmRhs, "sub"); break;
+        case AstOperator::eAdd      : llvmResult = m_builder.CreateAdd   (llvmLhs, llvmRhs, "add"); break;
+        case AstOperator::eMul      : llvmResult = m_builder.CreateMul   (llvmLhs, llvmRhs, "mul"); break;
+        case AstOperator::eDiv      : llvmResult = m_builder.CreateSDiv  (llvmLhs, llvmRhs, "div"); break;
+        case AstOperator::eEqualTo  : llvmResult = m_builder.CreateICmpEQ(llvmLhs, llvmRhs, "cmp"); break;
         default: assert(false);
         }
       } else {
         switch (op.op()) {
-        case AstOperator::eSub      : resultIr = m_builder.CreateFSub   (lhsIr, rhsIr, "fsub"); break;
-        case AstOperator::eAdd      : resultIr = m_builder.CreateFAdd   (lhsIr, rhsIr, "add"); break;
-        case AstOperator::eMul      : resultIr = m_builder.CreateFMul   (lhsIr, rhsIr, "mul"); break;
-        case AstOperator::eDiv      : resultIr = m_builder.CreateFDiv   (lhsIr, rhsIr, "div"); break;
-        case AstOperator::eEqualTo  : resultIr = m_builder.CreateFCmpOEQ(lhsIr, rhsIr, "cmp"); break;
+        case AstOperator::eSub      : llvmResult = m_builder.CreateFSub   (llvmLhs, llvmRhs, "fsub"); break;
+        case AstOperator::eAdd      : llvmResult = m_builder.CreateFAdd   (llvmLhs, llvmRhs, "add"); break;
+        case AstOperator::eMul      : llvmResult = m_builder.CreateFMul   (llvmLhs, llvmRhs, "mul"); break;
+        case AstOperator::eDiv      : llvmResult = m_builder.CreateFDiv   (llvmLhs, llvmRhs, "div"); break;
+        case AstOperator::eEqualTo  : llvmResult = m_builder.CreateFCmpOEQ(llvmLhs, llvmRhs, "cmp"); break;
         default: assert(false);
         }
       }
     }
   }
 
-  assert(resultIr);
-  op.setIrValue(resultIr);
+  assert(llvmResult);
+  op.setIrValue(llvmResult);
 }
 
 void IrGen::visit(AstNumber& number) {
@@ -270,8 +270,8 @@ void IrGen::visit(AstSymbol& symbol) {
 
   else if ( stentry->objType().qualifiers() & ObjType::eMutable
     || stentry->objType().storageDuration() == ObjType::eStatic) {
-    // stentry->valueIr() is the pointer returned by alloca corresponding to
-    // the symbol
+    // write access wants the object's address as argument, thus return
+    // exactly that
     if (symbol.access()==eWrite) {
       resultIr = stentry->valueIr(); 
     } else {
@@ -300,21 +300,21 @@ void IrGen::visit(AstFunDef& funDef) {
     BasicBlock::Create(getGlobalContext(), "entry", functionIr));
 
   // Add all arguments to the symbol table and create their allocas.
-  Function::arg_iterator iterIr = functionIr->arg_begin();
-  list<AstArgDecl*>::const_iterator iterAst = funDef.decl().args().begin();
-  for (/*nop*/; iterIr != functionIr->arg_end(); ++iterIr, ++iterAst) {
-    AllocaInst* alloca = createAllocaInEntryBlock(functionIr,
-      (*iterAst)->name(), (*iterAst)->objType().llvmType());
-    m_builder.CreateStore(iterIr, alloca);
-    (*iterAst)->stentry()->setValueIr(alloca);
+  Function::arg_iterator llvmArgIter = functionIr->arg_begin();
+  list<AstArgDecl*>::const_iterator astArgIter = funDef.decl().args().begin();
+  for (/*nop*/; llvmArgIter != functionIr->arg_end(); ++llvmArgIter, ++astArgIter) {
+    AllocaInst* argAddr = createAllocaInEntryBlock(functionIr,
+      (*astArgIter)->name(), (*astArgIter)->objType().llvmType());
+    m_builder.CreateStore(llvmArgIter, argAddr);
+    (*astArgIter)->stentry()->setValueIr(argAddr);
   }
 
-  Value* ret = callAcceptOn( funDef.body());
-  assert( ret);
+  Value* bodyVal = callAcceptOn( funDef.body());
+  assert( bodyVal);
   if ( funDef.body().objType().isVoid() ) {
     m_builder.CreateRetVoid();
   } else if ( ! funDef.body().objType().isNoreturn() )  {
-    m_builder.CreateRet( ret);
+    m_builder.CreateRet( bodyVal);
   }
 
   if ( !m_BasicBlockStack.empty() ) {
@@ -336,31 +336,30 @@ void IrGen::visit(AstFunDecl& funDecl) {
   // now.
   if ( ! funDecl.stentry()->valueIr() ) {
     // create IR function with given name and signature
-    vector<Type*> argsIr;
-    for ( const auto& arg : funDecl.args() ) {
-      argsIr.push_back(arg->objType().llvmType());
+    vector<Type*> llvmArgs;
+    for ( const auto& astArg : funDecl.args() ) {
+      llvmArgs.push_back(astArg->objType().llvmType());
     }
-    Type* retTypeIr = funDecl.retObjType().llvmType();
-    FunctionType* functionTypeIr = FunctionType::get(retTypeIr, argsIr, false);
-    assert(functionTypeIr);
-    Function* functionIr = Function::Create( functionTypeIr,
+    auto llvmFunctionType = FunctionType::get(
+      funDecl.retObjType().llvmType(), llvmArgs, false);
+    auto llvmFunction = Function::Create( llvmFunctionType,
       Function::ExternalLinkage, funDecl.name(), m_module.get() );
-    assert(functionIr);
+    assert(llvmFunction);
 
     // If the names differ (see condition of if statement below) that means a
     // function with that name already existed, so LLVM automaticaly chose a new
     // name. That cannot be since above our environment said the name is unique.
-    assert(functionIr->getName() == funDecl.name());
+    assert(llvmFunction->getName() == funDecl.name());
 
     // set names of arguments of IR function
-    list<AstArgDecl*>::const_iterator iterArgsAst = funDecl.args().begin();
-    Function::arg_iterator iterArgsIr = functionIr->arg_begin();
-    for (/*nop*/; iterArgsAst!=funDecl.args().end(); ++iterArgsAst, ++iterArgsIr) {
-      iterArgsIr->setName((*iterArgsAst)->name());
+    auto astArgIter = funDecl.args().begin();
+    auto llvmArgIter = llvmFunction->arg_begin();
+    for (/*nop*/; astArgIter!=funDecl.args().end(); ++astArgIter, ++llvmArgIter) {
+      llvmArgIter->setName((*astArgIter)->name());
     }
 
-    funDecl.stentry()->setValueIr(functionIr);
-    funDecl.setIrFunction(functionIr);
+    funDecl.stentry()->setValueIr(llvmFunction);
+    funDecl.setIrFunction(llvmFunction);
   }
 
   // An earlier declaration of this function, i.e. one with the same stentry,
@@ -374,22 +373,21 @@ void IrGen::visit(AstFunCall& funCall) {
   Function* callee = dynamic_cast<Function*>(callAcceptOn(funCall.address()));
   assert(callee);
     
-  const list<AstValue*>& argsAst = funCall.args().childs();
+  const auto& astArgs = funCall.args().childs();
 
-  vector<Value*> argsIr;
-  for ( list<AstValue*>::const_iterator i = argsAst.begin();
-        i != argsAst.end(); ++i ) {
-    Value* argIr = callAcceptOn(**i);
-    assert(argIr);
-    argsIr.push_back(argIr);
+  vector<Value*> llvmArgs;
+  for ( const auto& astArg : astArgs ) {
+    Value* llvmArg = callAcceptOn(*astArg);
+    assert(llvmArg);
+    llvmArgs.push_back(llvmArg);
   }
 
   const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(funCall.address().objType());
   if ( objTypeFun.ret().isVoid() ) {
-    m_builder.CreateCall(callee, argsIr);
+    m_builder.CreateCall(callee, llvmArgs);
     funCall.setIrValue(m_abstractObject);
   } else {
-    funCall.setIrValue(m_builder.CreateCall(callee, argsIr, callee->getName()));
+    funCall.setIrValue(m_builder.CreateCall(callee, llvmArgs, callee->getName()));
   }
 }
 
@@ -414,23 +412,23 @@ void IrGen::visit(AstDataDef& dataDef) {
   assert(initValue);
   const ObjType& objType = dataDef.objType();
   if ( objType.storageDuration() == ObjType::eStatic ) {
-    GlobalVariable* variable = new GlobalVariable( *m_module, objType.llvmType(),
+    GlobalVariable* variableAddr = new GlobalVariable( *m_module, objType.llvmType(),
       ! objType.qualifiers() & ObjType::eMutable, GlobalValue::InternalLinkage,
       static_cast<Constant*>(initValue),
       dataDef.decl().name());
-    stentry->setValueIr(variable);
-    dataDef.setIrValue(dataDef.access()==eRead ? initValue : variable);
+    stentry->setValueIr(variableAddr);
+    dataDef.setIrValue(dataDef.access()==eRead ? initValue : variableAddr);
   } else {
     if ( objType.qualifiers() & ObjType::eMutable ) {
       Function* functionIr = m_builder.GetInsertBlock()->getParent();
       assert(functionIr);
-      AllocaInst* alloca =
+      AllocaInst* variableAddr =
         createAllocaInEntryBlock(functionIr, dataDef.decl().name(),
           objType.llvmType());
-      assert(alloca);
-      m_builder.CreateStore(initValue, alloca);
-      stentry->setValueIr(alloca);
-      dataDef.setIrValue(dataDef.access()==eRead ? initValue : alloca);
+      assert(variableAddr);
+      m_builder.CreateStore(initValue, variableAddr);
+      stentry->setValueIr(variableAddr);
+      dataDef.setIrValue(dataDef.access()==eRead ? initValue : variableAddr);
     } else {
       // KLUDGE: It is currently assumed that an immutable local data object
       // needs no storage and thus can be repressented as llvm::Value. However
@@ -528,17 +526,18 @@ void IrGen::visit(AstLoop& loop) {
 }
 
 void IrGen::visit(AstReturn& return_) {
-  Value* ret = callAcceptOn( return_.retVal());
-  assert( ret);
+  Value* retVal = callAcceptOn( return_.retVal());
+  assert( retVal);
   if ( return_.retVal().objType().isVoid() ) {
     m_builder.CreateRetVoid();
   } else {
-    m_builder.CreateRet( ret);
+    m_builder.CreateRet( retVal);
   }
   return_.setIrValue(m_abstractObject);
 }
 
-/** We want allocas in the entry block to facilitate llvm's mem2reg pass.*/
+/** \internal We want allocas in the entry block to facilitate llvm's mem2reg
+pass.*/
 AllocaInst* IrGen::createAllocaInEntryBlock(Function* functionIr,
   const string &varName, llvm::Type* type) {
   IRBuilder<> irBuilder(&functionIr->getEntryBlock(),
