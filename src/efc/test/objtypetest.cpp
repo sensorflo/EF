@@ -221,12 +221,14 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {ObjTypeFunda::eVoid, ObjTypeFunda::eChar, false},
     {ObjTypeFunda::eVoid, ObjTypeFunda::eInt, false},
     {ObjTypeFunda::eVoid, ObjTypeFunda::eDouble, false},
+    {ObjTypeFunda::eVoid, ObjTypeFunda::ePointer, false},
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eBool, false},
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eChar, false},
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eInt, false},
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eDouble, false},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::ePointer, false},
 
     // all concrete fundamental types
     // - can _not_ be constructed with an abstract type
@@ -237,24 +239,35 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {ObjTypeFunda::eBool, ObjTypeFunda::eChar, true},
     {ObjTypeFunda::eBool, ObjTypeFunda::eInt, true},
     {ObjTypeFunda::eBool, ObjTypeFunda::eDouble, true},
+    {ObjTypeFunda::eBool, ObjTypeFunda::ePointer, true},
     {ObjTypeFunda::eChar, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eChar, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eChar, ObjTypeFunda::eBool, true},
     {ObjTypeFunda::eChar, ObjTypeFunda::eChar, true},
     {ObjTypeFunda::eChar, ObjTypeFunda::eInt, true},
     {ObjTypeFunda::eChar, ObjTypeFunda::eDouble, true},
+    {ObjTypeFunda::eChar, ObjTypeFunda::ePointer, true},
     {ObjTypeFunda::eInt, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eInt, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eInt, ObjTypeFunda::eBool, true},
     {ObjTypeFunda::eInt, ObjTypeFunda::eChar, true},
     {ObjTypeFunda::eInt, ObjTypeFunda::eInt, true},
     {ObjTypeFunda::eInt, ObjTypeFunda::eDouble, true},
+    {ObjTypeFunda::eInt, ObjTypeFunda::eDouble, true},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eBool, true},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eChar, true},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eInt, true},
-    {ObjTypeFunda::eDouble, ObjTypeFunda::eDouble, true}};
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eDouble, true},
+    {ObjTypeFunda::eDouble, ObjTypeFunda::ePointer, true},
+    {ObjTypeFunda::ePointer, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::ePointer, ObjTypeFunda::eNoreturn, false},
+    {ObjTypeFunda::ePointer, ObjTypeFunda::eBool, true},
+    {ObjTypeFunda::ePointer, ObjTypeFunda::eChar, true},
+    {ObjTypeFunda::ePointer, ObjTypeFunda::eInt, true},
+    {ObjTypeFunda::ePointer, ObjTypeFunda::eDouble, true},
+    {ObjTypeFunda::ePointer, ObjTypeFunda::ePointer, true}};
 
   for ( const auto& inputSpec : inputSpecs ) {
     ObjTypeFunda UUT{ inputSpec.UUT };

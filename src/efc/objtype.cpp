@@ -201,9 +201,9 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
   case eBool: // fall through
   case eChar: // fall through
   case eDouble: // fall through
-  case eInt:
+  case eInt: // fall through
+  case ePointer:
     return (otherFunda.m_type != eVoid) && (otherFunda.m_type != eNoreturn);
-  default: assert(false);
   }
   return false;
 }
@@ -287,11 +287,6 @@ AstValue* ObjTypePtr::createDefaultAstValue() const {
 };
 
 bool ObjTypePtr::hasMember(int op) const {
-  assert(false); // not yet implemented
-  return false;
-};
-
-bool ObjTypePtr::hasConstructor(const ObjType& other) const {
   assert(false); // not yet implemented
   return false;
 };

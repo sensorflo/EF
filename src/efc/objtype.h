@@ -182,7 +182,6 @@ public:
   virtual AstValue* createDefaultAstValue() const;
 
   virtual bool hasMember(int op) const;
-  virtual bool hasConstructor(const ObjType& other) const;
 
 private:
   ObjTypePtr& operator=(const ObjTypePtr&) =delete; // for simplicity reasons
