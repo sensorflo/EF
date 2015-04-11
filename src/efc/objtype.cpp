@@ -285,8 +285,8 @@ std::basic_ostream<char>& ObjTypePtr::printTo(
 };
 
 AstValue* ObjTypePtr::createDefaultAstValue() const {
-  assert(false); // not yet implemented
-  return nullptr;
+  return new AstNumber(0,
+    new ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid)));
 };
 
 bool ObjTypePtr::hasMember(int op) const {

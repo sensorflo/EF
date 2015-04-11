@@ -437,15 +437,27 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
     createDefaultAstValue)) {
 
-  vector<ObjTypeFunda::EType> inputTypes = {
-    ObjTypeFunda::eBool, ObjTypeFunda::eChar, ObjTypeFunda::eInt,
-    ObjTypeFunda::eDouble};
+  // fundamental types
+  {
+    vector<ObjTypeFunda::EType> inputTypes = {
+      ObjTypeFunda::eBool, ObjTypeFunda::eChar, ObjTypeFunda::eInt,
+      ObjTypeFunda::eDouble};
 
-  for (const auto type : inputTypes ) {
-    unique_ptr<AstNumber> number{dynamic_cast<AstNumber*>(
-        ObjTypeFunda(type).createDefaultAstValue())};
-    EXPECT_TRUE( number != nullptr );
-    EXPECT_EQ( 0.0, number->value());
-    EXPECT_TRUE( number->objType().matchesFully(ObjTypeFunda(type)));
+    for (const auto type : inputTypes ) {
+      unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
+          ObjTypeFunda(type).createDefaultAstValue())};
+      EXPECT_TRUE( defaultValue != nullptr );
+      EXPECT_EQ( 0.0, defaultValue->value());
+      EXPECT_TRUE( defaultValue->objType().matchesFully(ObjTypeFunda(type)));
+    }
   }
+
+  // pointer to any type: default is 0 of type 'pointer to void'
+  ObjTypePtr UUT{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
+  unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
+      UUT.createDefaultAstValue())};
+  EXPECT_TRUE( defaultValue != nullptr );
+  EXPECT_EQ( 0.0, defaultValue->value());
+  ObjTypePtr expectedObjType{make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid)};
+  EXPECT_TRUE( defaultValue->objType().matchesFully(expectedObjType));
 }
