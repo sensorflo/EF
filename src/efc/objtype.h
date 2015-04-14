@@ -180,6 +180,7 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
 
   virtual AstValue* createDefaultAstValue() const;
+  virtual llvm::Type* llvmType() const;
 
   virtual bool hasMember(int op) const;
 

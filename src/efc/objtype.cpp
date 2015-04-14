@@ -169,7 +169,7 @@ llvm::Type* ObjTypeFunda::llvmType() const {
   case eInt: return Type::getInt32Ty(getGlobalContext());
   case eDouble: return Type::getDoubleTy(getGlobalContext());
   case eBool: return Type::getInt1Ty(getGlobalContext());
-  case ePointer: assert(false);  // not yet implemented
+  case ePointer: assert(false); // actually implemented by derived class
   };
   assert(false);
   return NULL;
@@ -288,6 +288,10 @@ AstValue* ObjTypePtr::createDefaultAstValue() const {
   return new AstNumber(0,
     new ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid)));
 };
+
+llvm::Type* ObjTypePtr::llvmType() const {
+  return PointerType::get(m_pointee->llvmType(), 0);
+}
 
 bool ObjTypePtr::hasMember(int op) const {
   // currently there is no pointer arithmetic, and pointers can't be

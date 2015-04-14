@@ -290,6 +290,50 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     2.5/2.0, "");
 }
 
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_an_addrOf_or_dereference_operator,
+    THEN_addrOf_returns_the_objects_address_as_pointer_AND_dereference_returns_the_object_pointed_to_by_an_pointer)) {
+
+  string spec = "Example: addrOf followed by dereferencing is a nop";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstOperator('^',
+      new AstOperator('&',
+        new AstDataDef(
+          new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+          new AstNumber(42, ObjTypeFunda::eInt)))),
+    42, "");
+
+  spec = "Example: when modifying an data object x through a pointer p to it, "
+    "then x has the new value";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstDataDef(
+        new AstDataDecl("p", new ObjTypePtr(
+            make_shared<ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable))),
+        new AstOperator('&', new AstSymbol("x"))),
+      new AstOperator("=",
+        new AstOperator('^', new AstSymbol("p")),
+        new AstNumber(42)),
+      new AstSymbol("x")),
+    42, "");
+
+  spec = "Example: Reading the value of a immutable local data object x\n"
+    "through a pointer p to it.";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstNumber(42, ObjTypeFunda::eInt)),
+      new AstDataDef(
+        new AstDataDecl("p", new ObjTypePtr(
+            make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+        new AstOperator('&', new AstSymbol("x"))),
+      new AstOperator('^', new AstSymbol("p"))),
+    42, "");
+}
+
 TEST(IrGenTest, MAKE_TEST_NAME(
     an_short_circuit_perator,
     genIrInImplicitMain,

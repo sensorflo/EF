@@ -158,11 +158,17 @@ void IrGen::visit(AstOperator& op) {
   const auto& astOperands = op.args().childs();
   Value* llvmResult = NULL;
 
-  assert( AstOperator::eMemberAccess!=op.class_() ); // not yet implemented
-
   // unary operators
   if (op.op()==AstOperator::eNot) {
     llvmResult = m_builder.CreateNot(callAcceptOn(*astOperands.front()), "not" );
+  } else if (op.op()==AstOperator::eAddrOf) {
+    llvmResult = callAcceptOn(*astOperands.front()); 
+  } else if (op.op()==AstOperator::eDeref) {
+    if (op.access()==eWrite || op.access()==eTakeAddress) {
+      llvmResult = callAcceptOn(*astOperands.front()); 
+    } else {
+      llvmResult = m_builder.CreateLoad(callAcceptOn(*astOperands.front()), "deref"); 
+    }
   }
 
   // binary short circuit operators
@@ -237,6 +243,7 @@ void IrGen::visit(AstOperator& op) {
 
   assert(llvmResult);
   op.setIrValue(llvmResult);
+  // as all nodes, setIrValue is no good for temporary objects which have addr taken. there we need to store it to memor.
 }
 
 void IrGen::visit(AstNumber& number) {
@@ -268,11 +275,9 @@ void IrGen::visit(AstSymbol& symbol) {
     resultIr = stentry->valueIr();
   }
 
-  else if ( stentry->objType().qualifiers() & ObjType::eMutable
+  else if ( stentry->objectWasModifiedOrRevealedAddr()
     || stentry->objType().storageDuration() == ObjType::eStatic) {
-    // write access wants the object's address as argument, thus return
-    // exactly that
-    if (symbol.access()==eWrite) {
+    if (symbol.access()==eWrite || symbol.access()==eTakeAddress) {
       resultIr = stentry->valueIr(); 
     } else {
       resultIr = m_builder.CreateLoad(stentry->valueIr(), symbol.name().c_str());
@@ -280,9 +285,6 @@ void IrGen::visit(AstSymbol& symbol) {
   }
 
   else {
-    // KLUDGE: It is currently assumed that an immutable local data object
-    // needs no storage and thus can be repressented as llvm::Value. See also
-    // visit of AstDataDecl.
     resultIr = stentry->valueIr();
   }
   symbol.setIrValue(resultIr);
@@ -303,10 +305,15 @@ void IrGen::visit(AstFunDef& funDef) {
   Function::arg_iterator llvmArgIter = functionIr->arg_begin();
   list<AstArgDecl*>::const_iterator astArgIter = funDef.decl().args().begin();
   for (/*nop*/; llvmArgIter != functionIr->arg_end(); ++llvmArgIter, ++astArgIter) {
-    AllocaInst* argAddr = createAllocaInEntryBlock(functionIr,
-      (*astArgIter)->name(), (*astArgIter)->objType().llvmType());
-    m_builder.CreateStore(llvmArgIter, argAddr);
-    (*astArgIter)->stentry()->setValueIr(argAddr);
+    auto stentry = (*astArgIter)->stentry();
+    if ( stentry->objectWasModifiedOrRevealedAddr() ) {
+      AllocaInst* argAddr = createAllocaInEntryBlock(functionIr,
+        (*astArgIter)->name(), stentry->objType().llvmType());
+      m_builder.CreateStore(llvmArgIter, argAddr);
+      stentry->setValueIr(argAddr);
+    } else {
+      stentry->setValueIr(llvmArgIter);
+    }
   }
 
   Value* bodyVal = callAcceptOn( funDef.body());
@@ -410,6 +417,7 @@ void IrGen::visit(AstDataDef& dataDef) {
   // trivial. For variables aka allocas first an alloca has to be created.
   Value* initValue = callAcceptOn(dataDef.initValue());
   assert(initValue);
+  const auto access = dataDef.access();
   const ObjType& objType = dataDef.objType();
   if ( objType.storageDuration() == ObjType::eStatic ) {
     GlobalVariable* variableAddr = new GlobalVariable( *m_module, objType.llvmType(),
@@ -417,9 +425,10 @@ void IrGen::visit(AstDataDef& dataDef) {
       static_cast<Constant*>(initValue),
       dataDef.decl().name());
     stentry->setValueIr(variableAddr);
-    dataDef.setIrValue(dataDef.access()==eRead ? initValue : variableAddr);
+    dataDef.setIrValue( access==eWrite || access==eTakeAddress ?
+      variableAddr : initValue);
   } else {
-    if ( objType.qualifiers() & ObjType::eMutable ) {
+    if ( stentry->objectWasModifiedOrRevealedAddr() ) {
       Function* functionIr = m_builder.GetInsertBlock()->getParent();
       assert(functionIr);
       AllocaInst* variableAddr =
@@ -428,12 +437,9 @@ void IrGen::visit(AstDataDef& dataDef) {
       assert(variableAddr);
       m_builder.CreateStore(initValue, variableAddr);
       stentry->setValueIr(variableAddr);
-      dataDef.setIrValue(dataDef.access()==eRead ? initValue : variableAddr);
+      dataDef.setIrValue( access==eWrite || access==eTakeAddress ?
+        variableAddr : initValue);
     } else {
-      // KLUDGE: It is currently assumed that an immutable local data object
-      // needs no storage and thus can be repressented as llvm::Value. However
-      // this is in general not true. It fails if its address is taken;
-      // currently there is no address of operator.
       stentry->setValueIr(initValue);
       dataDef.setIrValue(initValue);
     }
