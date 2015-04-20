@@ -1,4 +1,5 @@
 #include "driver.h"
+#include "ast.h"
 #include "errorhandler.h"
 #include "env.h"
 #include "semanticanalizer.h"
@@ -63,8 +64,13 @@ void Driver::compile() {
       throw runtime_error("parse failed");
     }
     assert(astAfterParse);
-    doSemanticAnalysis(*astAfterParse);
-    generateIr(*astAfterParse);
+
+    // It's currently implied that the module wants an implicit main method
+    AstValue* astAfterImplicitMain =
+      m_parserExt.mkMainFunDef( dynamic_cast<AstValue*>(astAfterParse));
+
+    doSemanticAnalysis(*astAfterImplicitMain);
+    generateIr(*astAfterImplicitMain);
   }
   catch (BuildError&) {
     // nop -- BuildError exception is handled below by printing any errors
@@ -86,10 +92,7 @@ void Driver::doSemanticAnalysis(AstNode& ast) {
 }
 
 void Driver::generateIr(AstNode& ast) {
-  // It's assumed that the module wants an implicit main method, thus
-  // a cast to AstValue is required
-  auto module = m_irGen.genIr(
-    *m_parserExt.mkMainFunDef( &dynamic_cast<AstValue&>(ast)));
+  auto module = m_irGen.genIr(ast);
   m_executionEngine = make_unique<ExecutionEngineApater>(move(module));
 }
 
