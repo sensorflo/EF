@@ -747,15 +747,21 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     a_function_declaration_and_a_matching_function_definition,
     genIr,
     succeeds)) {
+  // setup
   TestingIrGen UUT;
   ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-  EXPECT_NO_THROW(
-    UUT.genIr(
-      *new AstOperator(';',
+  unique_ptr<AstNode> ast{
+    new AstOperator(';',
+      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef(
         pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        pe.mkFunDef(
-          pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          new AstNumber(42)))));
+        new AstNumber(42)))};
+  UUT.m_semanticAnalizer.analyze(*ast.get());
+
+  // execute & verify
+  EXPECT_NO_THROW( UUT.genIr(*ast.get()));
+
+  // verify
   EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
 }
 
