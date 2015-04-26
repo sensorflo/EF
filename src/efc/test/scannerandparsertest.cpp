@@ -137,6 +137,26 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   spec = "! has lower precedence than function call ()";
   TEST_PARSE( "!foo()", "!(foo())", spec);
 
+  spec = "& is right associative.";
+  TEST_PARSE( "& & a", "&(&(a))", spec);
+
+  spec = "& and ! have equal precedence";
+  TEST_PARSE( "& ! a", "&(!(a))", spec);
+  TEST_PARSE( "! & a", "!(&(a))", spec);
+
+  spec = "& has lower precedence than function call ()";
+  TEST_PARSE( "&foo()", "&(foo())", spec);
+
+  spec = "^ is right associative.";
+  TEST_PARSE( "^ ^ a", "^(^(a))", spec);
+
+  spec = "^ and ! have equal precedence";
+  TEST_PARSE( "^ ! a", "^(!(a))", spec);
+  TEST_PARSE( "! ^ a", "!(^(a))", spec);
+
+  spec = "^ has lower precedence than function call ()";
+  TEST_PARSE( "^foo()", "^(foo())", spec);
+
   // precedence level group: binary * /
   spec = "* is left associative";
   TEST_PARSE( "a*b*c", "*(*(a b) c)", spec);

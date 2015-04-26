@@ -71,6 +71,8 @@
   PLUS "+"
   MINUS "-"
   STAR "*"
+  CARET "^"
+  AMPER "&"
   NOT "not"
   EXCL "!"
   AND "and"
@@ -100,7 +102,7 @@
       MINUS
 %left STAR
       SLASH
-%precedence EXCL NOT
+%precedence EXCL NOT AMPER CARET
 %precedence LPAREN
 
 
@@ -185,6 +187,7 @@ param_decl
   
 type
   : FUNDAMENTAL_TYPE                                { $$ = new ObjTypeFunda($1); }
+  | CARET type                                      { $$ = new ObjTypePtr(std::shared_ptr<ObjType>{$2}); }
   | ID                                              { assert(false); /* user defined names not yet supported; but I wanted to have ID already in grammar*/ }
   ;
 
@@ -222,6 +225,8 @@ operator_expr
   /* unary prefix */
   | NOT  sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
   | EXCL sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
+  | CARET sub_expr                                  { $$ = new AstOperator('^', $2); }
+  | AMPER sub_expr                                  { $$ = new AstOperator('&', $2); }
 
   /* binary operators */
   | sub_expr EQUAL       sub_expr                   { $$ = new AstOperator('=', $1, $3); }
