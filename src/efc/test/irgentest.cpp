@@ -849,6 +849,18 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstNumber(42)),
     42, spec);
 
+  spec = "Writing to the data object modifies it";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+        new AstNumber(42)),
+      new AstOperator('=',
+        new AstSymbol("foo"),
+        new AstNumber(77)),
+      new AstSymbol("foo")),
+    77, spec);
+
   spec = "Writing to the data definition expression modifies the defined data object.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
