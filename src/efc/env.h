@@ -1,6 +1,8 @@
 #ifndef ENV_H
 #define ENV_H
 #include "objtype.h"
+#include "llvm/IR/IRBuilder.h"
+#include <string>
 #include <string>
 #include <map>
 #include <list>
@@ -21,6 +23,7 @@ public:
   void markAsDefined(ErrorHandler& errorHandler);
   void addAccessToObject(Access access);
   bool objectWasModifiedOrRevealedAddr() const;
+  bool isStoredInMemory() const;
 
 private:
   /** Is guaranteed to be non-null */
@@ -31,10 +34,17 @@ private:
 
   // decorations for IrGen
 public:
-  llvm::Value* valueIr() const;
-  void setValueIr(llvm::Value* valueIr);
+  void irInitLocal(llvm::Value* irValue, llvm::IRBuilder<>& builder,
+    const std::string& name = "");
+  llvm::Value* irValue(llvm::IRBuilder<>& builder, const std::string& name = "") const;
+  void setIrValue(llvm::Value* irValue, llvm::IRBuilder<>& builder);
+  llvm::Value* irAddr() const;
+  void setIrAddr(llvm::Value* addr);
+
 private:
-  llvm::Value* m_valueIr;
+  /** is an irValue for isStoredInMemory() being false and an irAddr
+  otherwise */
+  llvm::Value* m_irValueOrAddr;
 };
 
 class SymbolTable : public std::map<std::string, std::shared_ptr<SymbolTableEntry> > {

@@ -3,6 +3,7 @@
 #include "astdefaultiterator.h"
 #include "env.h"
 #include "errorhandler.h"
+#include "objtype.h"
 #include "memoryext.h"
 using namespace std;
 
@@ -25,10 +26,19 @@ void SemanticAnalizer::visit(AstCast& cast) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 
+  // no need to set stentry since that is done by AST node itself
+
+  cast.stentry()->addAccessToObject(cast.access());
+
   postConditionCheck(cast);
 }
 
 void SemanticAnalizer::visit(AstNop& nop) {
+  // no need to set stentry since that is done by AST node itself
+
+  nop.stentry()->addAccessToObject(nop.access());
+
+  postConditionCheck(nop);
 }
 
 void SemanticAnalizer::visit(AstBlock& block) {
@@ -36,9 +46,13 @@ void SemanticAnalizer::visit(AstBlock& block) {
     block.body().accept(*this);
   }
 
-  auto objType = unique_ptr<ObjType>(block.body().objType().clone());
+  shared_ptr<ObjType> objType{block.body().objType().clone()};
   objType->removeQualifiers(ObjType::eMutable);
-  block.setObjType(move(objType));
+  block.setStentry(make_shared<SymbolTableEntry>(objType));
+
+  block.stentry()->addAccessToObject(block.access());
+
+  postConditionCheck(block);
 }
 
 void SemanticAnalizer::visit(AstCtList& ctList) {
@@ -130,53 +144,76 @@ void SemanticAnalizer::visit(AstOperator& op) {
     Error::throwError(m_errorHandler, Error::eComputedValueNotUsed);
   }
 
-  // Set the obj type of this AstOperator node. It is a temporary object which
-  // is always immutable.
+  // Set the obj type and optionally also already the stentry of this
+  // AstOperator node.
+  shared_ptr<ObjType> objType;
   {
+    // comparision ops store the result of their computation in a new a
+    // temporary object of type bool
     if ( class_ == AstOperator::eComparison ) {
-      op.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eBool));
-    } else if ( class_ == AstOperator::eAssignment ) {
-      if ( opop == AstOperator::eDotAssign ) {
-        op.setObjType(unique_ptr<ObjType>(argschilds.front()->objType().clone()));
-        // don't remove mutable qualifier
-      } else {
-        op.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eVoid));
-      }
+      objType = make_unique<ObjTypeFunda>(ObjTypeFunda::eBool);
     }
-    // The obj type of the seq operator is exactly that of its rhs
+    // The object denoted by the dot-assignment is exactly that of lhs
+    else if ( opop == AstOperator::eDotAssign ) {
+      op.setStentry(argschilds.front()->stentryAsSp());
+    }
+    // Assignment is always of object type void
+    else if ( opop == AstOperator::eAssign ) {
+      objType = make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid);
+    }
+    // The object denoted by the seq operator is exactly that of rhs
     else if ( opop == AstOperator::eSeq ) {
-      op.setObjType(unique_ptr<ObjType>(argschilds.back()->objType().clone()));
-      // don't remove mutable qualifier
-    } else if ( opop == AstOperator::eAddrOf) {
-      op.setObjType(
-        make_unique<ObjTypePtr>(
-          shared_ptr<ObjType>{argschilds.back()->objType().clone()}));
-    } else if ( opop == AstOperator::eDeref) {
+      op.setStentry(argschilds.back()->stentryAsSp());
+    }
+    // Addrof 
+    else if ( opop == AstOperator::eAddrOf) {
+      objType =
+        make_shared<ObjTypePtr>(
+          shared_ptr<ObjType>{argschilds.back()->objType().clone()});
+    }
+    // 
+    else if ( opop == AstOperator::eDeref) {
       // It is known that static cast is safe because it was checked before
       // that the operand of the deref operator has the deref operator as
       // member function.
       const ObjTypePtr& opObjType =
         static_cast<const ObjTypePtr&>(argschilds.back()->objType());
-      op.setObjType(unique_ptr<ObjType>(opObjType.pointee().clone()));
+      objType.reset(opObjType.pointee().clone());
+
+      // op.stentry is semantically a redundant copy of the stentry denoting
+      // the derefee. 'Copy' as good as we can. Since the address of the
+      // derefee object is obviously known (we're just dereferencing it), we
+      // know that the address of the derefee object has been taken.
+      op.setStentry(make_shared<SymbolTableEntry>(objType));
+      op.stentry()->addAccessToObject(eTakeAddress);    
     }
     // For ther operands, the operator expression's objtype is, now that we
     // know the two operands have the same obj type, either operand's obj
     // type.
     else {
-      auto objType = unique_ptr<ObjType>(argschilds.back()->objType().clone());
+      objType.reset(argschilds.back()->objType().clone());
       objType->removeQualifiers(ObjType::eMutable);
-      op.setObjType(move(objType));
-
     }
   }
+
+  // Some operators did already set op.stentry above, the others do it now
+  // here
+  if ( !op.stentry() ) {
+    op.setStentry(make_shared<SymbolTableEntry>(objType));
+  }
+  op.stentry()->addAccessToObject(op.access());
+
   postConditionCheck(op);
 }
 
 void SemanticAnalizer::visit(AstNumber& number) {
-  // should allready have been caught by scanner, thus assert.
-  // Intended to catch errors when AST is build by hand instead
-  // by parser, e.g. in tests.
+  // should allready have been caught by scanner, thus assert.  Intended to
+  // catch errors when AST is build by hand instead by parser, e.g. in tests.
   assert( number.objType().isValueInRange( number.value()));
+
+  // no need to set stentry since that is done by AST node itself
+
+  number.stentry()->addAccessToObject(number.access());
 
   postConditionCheck(number);
 }
@@ -211,15 +248,15 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
     }
   }
 
-  // ObjType must not be set, AstFunCall knows its own ObjType
+  funCall.createAndSetStEntryUsingRetObjType();
+
+  funCall.stentry()->addAccessToObject(funCall.access());
 
   postConditionCheck(funCall);
 }
 
 void SemanticAnalizer::visit(AstFunDef& funDef) {
   funDef.decl().accept(*this);
-
-  funDef.decl().stentry()->markAsDefined(m_errorHandler);
 
   {
     m_funRetObjTypes.push(&funDef.decl().retObjType());
@@ -243,7 +280,12 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
-  funDef.decl().stentry()->addAccessToObject(funDef.access());
+
+  funDef.setStentry( funDef.decl().stentryAsSp() );
+  funDef.stentry()->markAsDefined(m_errorHandler);
+
+  funDef.stentry()->addAccessToObject(funDef.access());
+
   postConditionCheck(funDef);
 }
 
@@ -264,19 +306,17 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
 
     // name is not yet in env, thus insert new symbol table entry
     if (insertRet.second) {
-      envs_stentry_ptr = make_shared<SymbolTableEntry>(
-        dataDecl.objTypeShareOwnership());
+      envs_stentry_ptr = dataDecl.createAndSetStEntryUsingDeclaredObjType();
     }
 
     // name is already in env: unless the type matches that is an error
     else {
       assert(envs_stentry_ptr.get());
-      if ( !envs_stentry_ptr->objType().matchesFully(dataDecl.objType()) ) {
+      if ( !envs_stentry_ptr->objType().matchesFully(dataDecl.declaredObjType()) ) {
         Error::throwError(m_errorHandler, Error::eIncompatibleRedaclaration);
       }
+      dataDecl.setStentry(envs_stentry_ptr);
     }
-
-    dataDecl.setStentry(envs_stentry_ptr);
   }
 
   dataDecl.stentry()->addAccessToObject(dataDecl.access());
@@ -289,8 +329,8 @@ void SemanticAnalizer::visit(AstArgDecl& argDecl) {
 
 void SemanticAnalizer::visit(AstDataDef& dataDef) {
   dataDef.decl().accept(*this);
-  dataDef.decl().stentry()->markAsDefined(m_errorHandler);
   dataDef.ctorArgs().accept(*this);
+
   if ( dataDef.decl().objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
@@ -298,7 +338,12 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     && !dataDef.initValue().isCTConst() ) {
     Error::throwError(m_errorHandler, Error::eCTConstRequired);
   }
-  dataDef.decl().stentry()->addAccessToObject(dataDef.access());
+
+  dataDef.setStentry( dataDef.decl().stentryAsSp() );
+  dataDef.stentry()->markAsDefined(m_errorHandler);
+
+  dataDef.stentry()->addAccessToObject(dataDef.access());
+
   postConditionCheck(dataDef);
 }
 
@@ -337,16 +382,20 @@ void SemanticAnalizer::visit(AstIf& if_) {
   // evaluated clause, i.e. it's not a new (immutable) temporary.  Now that we
   // know the two clauses have the same obj type, either clause's obj type can
   // be taken.
+  shared_ptr<ObjType> objType;
   if ( if_.elseAction() ) {
     if ( !actionIsOfTypeNoreturn ) {
-      if_.setObjType(unique_ptr<ObjType>(if_.action().objType().clone()));
+      objType.reset(if_.action().objType().clone());
     } else {
-      if_.setObjType(unique_ptr<ObjType>(if_.elseAction()->objType().clone()));
+      objType.reset(if_.elseAction()->objType().clone());
     }
     // don't remove mutable qualifier
   } else {
-    if_.setObjType(make_unique<ObjTypeFunda>(ObjTypeFunda::eVoid));
+    objType = make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid);
   }
+  if_.setStentry(make_shared<SymbolTableEntry>(objType));
+
+  if_.stentry()->addAccessToObject(if_.access());
 
   postConditionCheck(if_);
 }
@@ -363,7 +412,12 @@ void SemanticAnalizer::visit(AstLoop& loop) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
-  // loop's ObjType is always void and thus can't be set
+  // no need to set stentry since that is done by AST node itself
+  // loop's ObjType is always void
+
+  loop.stentry()->addAccessToObject(loop.access());
+
+  postConditionCheck(loop);
 }
 
 void SemanticAnalizer::visit(AstReturn& return_) {
@@ -374,6 +428,13 @@ void SemanticAnalizer::visit(AstReturn& return_) {
   if ( ! return_.retVal().objType().matchesSaufQualifiers( currentFunReturnType ) ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
+
+  // no need to set stentry since that is done by AST node itself
+  // return_'s ObjType is always eNoreturn
+
+  return_.stentry()->addAccessToObject(return_.access());
+
+  postConditionCheck(return_);
 }
 
 void SemanticAnalizer::callAcceptWithinNewScope(AstValue& node) {
@@ -382,5 +443,5 @@ void SemanticAnalizer::callAcceptWithinNewScope(AstValue& node) {
 }
 
 void SemanticAnalizer::postConditionCheck(const AstValue& node) {
-  assert((node.objType(),true)); // asserts internally if not defined
+  assert(node.stentry());
 }

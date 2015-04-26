@@ -93,7 +93,7 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, const ObjType* ret,
   list<AstArgDecl*>::const_iterator iterArgs = args->begin();
   list<shared_ptr<const ObjType> >* argsObjType = new list<shared_ptr<const ObjType> >;
   for (/*nop*/; iterArgs!=args->end(); ++iterArgs) {
-    argsObjType->push_back( (*iterArgs)->objTypeShareOwnership() );
+    argsObjType->push_back( (*iterArgs)->declaredObjTypeAsSp() );
   }
   auto objTypeRet = shared_ptr<const ObjType>(ret);
   auto objTypeFun = make_shared<const ObjTypeFun>( argsObjType, objTypeRet);

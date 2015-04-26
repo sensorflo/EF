@@ -98,11 +98,11 @@ void AstPrinter::visit(const AstFunDecl& funDecl) {
 }
 
 void AstPrinter::visit(const AstDataDecl& dataDecl) {
-  m_os << "decldata(" << dataDecl.name() << " " << dataDecl.objType() << ")";
+  m_os << "decldata(" << dataDecl.name() << " " << dataDecl.declaredObjType() << ")";
 }
 
 void AstPrinter::visit(const AstArgDecl& argDecl) {
-  m_os << "(" << argDecl.name() << " " << argDecl.objType() << ")";
+  m_os << "(" << argDecl.name() << " " << argDecl.declaredObjType() << ")";
 }
 
 void AstPrinter::visit(const AstDataDef& dataDef) {

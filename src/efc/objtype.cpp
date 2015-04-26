@@ -176,17 +176,42 @@ llvm::Type* ObjTypeFunda::llvmType() const {
 }
 
 bool ObjTypeFunda::hasMember(int op) const {
+  // general rules
+  // -------------
+  // Abstract objects have no members at all.
+  if (is(eAbstract)) {
+    return false;
+  }
+  // The addrof operator is applicable to every concrete (i.e. non-abstact)
+  // object. It's never a member function operator
+  else if (op==AstOperator::eAddrOf) {
+    return true;
+  }
+  // The sequence operator is a global operator, it's never a member function
+  // operator
+  else if (op==AstOperator::eSeq) {
+    assert(false);
+  }
+  
+  // rules specific per object type
+  // ------------------------------
+  // For abbreviation, summarazied / grouped by operator class and optionally
+  // by object type class
   switch (AstOperator::classOf(static_cast<AstOperator::EOperation>(op))) {
   case AstOperator::eAssignment: return is(eScalar);
   case AstOperator::eArithmetic: return is(eArithmetic);
   case AstOperator::eLogical: return m_type == eBool;
   case AstOperator::eComparison: return is(eScalar);
   case AstOperator::eMemberAccess:
+    // Currently there is no pointer arithmetic, and currently pointers can't
+    // be subtracted from each other, thus currently dereferencing is the only
+    // member function of the pointer type
     if      (op==AstOperator::eDeref)  return m_type == ePointer;
     else if (op==AstOperator::eAddrOf) return !is(eAbstract);
-    else    assert(false);
-  case AstOperator::eOther: assert(false); return false;
+    else    break;
+  case AstOperator::eOther: break;
   }
+
   assert(false);
   return false;
 }
@@ -292,12 +317,6 @@ AstValue* ObjTypePtr::createDefaultAstValue() const {
 llvm::Type* ObjTypePtr::llvmType() const {
   return PointerType::get(m_pointee->llvmType(), 0);
 }
-
-bool ObjTypePtr::hasMember(int op) const {
-  // currently there is no pointer arithmetic, and pointers can't be
-  // subtracted from each other
-  return op==AstOperator::eDeref;
-};
 
 const ObjType& ObjTypePtr::pointee() const {
   return *m_pointee.get();

@@ -160,13 +160,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   string spec = "Example: body contains a literal";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstBlock(new AstNumber(42)), 42, spec);
-
-  spec = "Example: body contains a local data def";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstBlock(
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstNumber(42))), 42, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -303,6 +296,17 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
           new AstNumber(42, ObjTypeFunda::eInt)))),
     42, "");
 
+  spec = "Example: addrOf followed by dereferencing is a nop";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstOperator('^',
+      new AstOperator('^',
+        new AstOperator('&',
+          new AstOperator('&',
+            new AstDataDef(
+              new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+              new AstNumber(42, ObjTypeFunda::eInt)))))),
+    42, "");
+
   spec = "Example: when modifying an data object x through a pointer p to it, "
     "then x has the new value";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -332,6 +336,27 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstOperator('&', new AstSymbol("x"))),
       new AstOperator('^', new AstSymbol("p"))),
     42, "");
+
+  spec = "Example: Address of a temporary object; a literal number";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("p", new ObjTypePtr(
+            make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+        new AstOperator('&', new AstNumber(42))),
+      new AstOperator('^', new AstSymbol("p"))),
+    42, spec);
+
+  spec = "Example: Address of a temproary object; an arithmetic operator";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    pe.mkOperatorTree(";",
+      new AstDataDef(
+        new AstDataDecl("p", new ObjTypePtr(
+            make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+        new AstOperator('&',
+          new AstOperator('+', new AstNumber(1), new AstNumber(2)))),
+      new AstOperator('^', new AstSymbol("p"))),
+    1+2, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(

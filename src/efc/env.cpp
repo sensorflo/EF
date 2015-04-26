@@ -9,7 +9,7 @@ SymbolTableEntry::SymbolTableEntry(shared_ptr<const ObjType> objType) :
   m_objType( (assert(objType.get()), move(objType))),
   m_isDefined(false),
   m_objectWasModifiedOrRevealedAddr(false),
-  m_valueIr(NULL) {}
+  m_irValueOrAddr(NULL) {}
 
 void SymbolTableEntry::markAsDefined(ErrorHandler& errorHandler) {
   if (m_isDefined) {
@@ -28,14 +28,53 @@ bool SymbolTableEntry::objectWasModifiedOrRevealedAddr() const {
   return m_objectWasModifiedOrRevealedAddr;
 }
 
-llvm::Value* SymbolTableEntry::valueIr() const {
-  return m_valueIr;
+bool SymbolTableEntry::isStoredInMemory() const {
+  return m_objType->storageDuration()!=ObjType::eLocal ||
+    m_objectWasModifiedOrRevealedAddr;
 }
 
-void SymbolTableEntry::setValueIr(llvm::Value* valueIr) {
-  assert(valueIr);
-  assert(!m_valueIr); // It doesn't make sense to set it twice
-  m_valueIr = valueIr;
+void SymbolTableEntry::irInitLocal(llvm::Value* irValue, llvm::IRBuilder<>& builder,
+  const std::string& name) {
+  assert( !m_irValueOrAddr );  // It doesn't make sense to set it twice
+  if ( isStoredInMemory() ) {
+    Function* functionIr = builder.GetInsertBlock()->getParent();
+    IRBuilder<> irBuilder(&functionIr->getEntryBlock(),
+      functionIr->getEntryBlock().begin());
+    m_irValueOrAddr = irBuilder.CreateAlloca(objType().llvmType(), 0, name);
+    builder.CreateStore(irValue, m_irValueOrAddr);
+  } else {
+    m_irValueOrAddr = irValue;
+  }
+}
+
+llvm::Value* SymbolTableEntry::irValue(llvm::IRBuilder<>& builder, const string& name) const {
+  assert( m_irValueOrAddr );
+  if ( isStoredInMemory() ) {
+    return builder.CreateLoad(m_irValueOrAddr, name);
+  } else {
+    return m_irValueOrAddr;
+  }
+}
+
+void SymbolTableEntry::setIrValue(llvm::Value* irValue, llvm::IRBuilder<>& builder) {
+  if ( isStoredInMemory() ) {
+    builder.CreateStore(irValue, m_irValueOrAddr);
+  } else {
+    assert(irValue);
+    assert(!m_irValueOrAddr); // It doesn't make sense to set it twice
+    m_irValueOrAddr = irValue;
+  }
+}
+
+llvm::Value* SymbolTableEntry::irAddr() const {
+  assert( isStoredInMemory() );
+  return m_irValueOrAddr;
+}
+
+void SymbolTableEntry::setIrAddr(llvm::Value* addr) {
+  assert( isStoredInMemory() );
+  assert( !m_irValueOrAddr ); // It doesn't make sense to set it twice
+  m_irValueOrAddr = addr;
 }
 
 Env::AutoScope::AutoScope(Env& env) : m_env(env) {

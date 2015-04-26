@@ -46,7 +46,7 @@ private:
   virtual void visit(AstLoop& loop);
   virtual void visit(AstReturn& return_);
 
-  llvm::Value* callAcceptOn(AstNode&);
+  llvm::Value* callAcceptOn(AstValue&);
 
   llvm::AllocaInst* createAllocaInEntryBlock(llvm::Function* functionIr,
     const std::string& varName, llvm::Type* type);

@@ -182,8 +182,6 @@ public:
   virtual AstValue* createDefaultAstValue() const;
   virtual llvm::Type* llvmType() const;
 
-  virtual bool hasMember(int op) const;
-
   const ObjType& pointee() const;
 
 private:

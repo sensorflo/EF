@@ -15,81 +15,75 @@ string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
-/** Default implementation for AstValue's where there is a one-to-one
-relationship between AstValue and object. */
+AstValue::AstValue(Access access, std::shared_ptr<SymbolTableEntry> stentry) :
+  AstNode(access),
+  m_stentry(move(stentry)) {
+}
+
+AstValue::AstValue(Access access) :
+  AstValue(access, nullptr) {
+}
+
+AstValue::AstValue(std::shared_ptr<SymbolTableEntry> stentry) :
+  AstValue(eRead, move(stentry)) {
+}
+
+AstValue::~AstValue() {
+}
+
+const ObjType& AstValue::objType() const {
+  assert(m_stentry);
+  return m_stentry->objType();
+}
+
 bool AstValue::objectWasModifiedOrRevealedAddr() const {
-  return m_access==eWrite || m_access==eTakeAddress;
+  assert(m_stentry);
+  return m_stentry->objectWasModifiedOrRevealedAddr();
 }
 
-const ObjType& AstNop::objType() const {
-  static const ObjTypeFunda voidObjType{ObjTypeFunda::eVoid};
-  return voidObjType;
+void AstValue::setStentry(shared_ptr<SymbolTableEntry> stentry) {
+  assert(stentry);
+  assert(!m_stentry.get()); // it makes no sense to set it twice
+  m_stentry = move(stentry);
 }
 
-void AstNop::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
+AstNop::AstNop() :
+  AstValue{
+    make_shared<SymbolTableEntry>(
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid))} {
 }
 
 AstBlock::AstBlock(AstValue* body) :
-  m_body(body),
-  m_irValue(nullptr) {
-  assert(m_body);
+  m_body(body) {
 }
 
-const ObjType& AstBlock::objType() const {
-  assert(m_objType.get());
-  return *m_objType.get();
-}
-
-void AstBlock::setObjType(std::unique_ptr<ObjType> objType) {
-  assert(objType);
-  assert(!m_objType); // it doesnt make sense to set it twice
-  m_objType = move(objType);
-}
-
-void AstBlock::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
+AstBlock::~AstBlock() {
 }
 
 AstCast::AstCast(ObjType* objType, AstValue* child) :
-  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
-  m_child(child ? child : new AstNumber(0)),
-  m_irValue(NULL) {
+  AstValue{
+    make_shared<SymbolTableEntry>(
+      shared_ptr<ObjType>{
+        objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)})},
+  m_child(child ? child : new AstNumber(0)) {
   assert(m_child);
-  assert(m_objType);
 
   // only currently for simplicity; the cast, as most expression, creates a
   // temporary object, and temporary objects are immutable
-  assert(!(m_objType->qualifiers() & ObjType::eMutable));
+  assert(!(objType->qualifiers() & ObjType::eMutable));
 }
 
 AstCast::AstCast(ObjTypeFunda::EType objType, AstValue* child) :
-  m_objType(new ObjTypeFunda(objType)),
-  m_child(child ? child : new AstNumber(0)),
-  m_irValue(NULL) {
-  assert(m_objType);
-  assert(m_child);
+  AstCast{new ObjTypeFunda(objType), child} {
 }
 
 AstCast::~AstCast() {
-  delete m_objType;
   delete m_child;
-}
-
-void AstCast::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
 }
 
 AstFunDef::AstFunDef(AstFunDecl* decl, AstValue* body) :
   m_decl(decl ? decl : new AstFunDecl("<unknown_name>")),
-  m_body(body ? body : new AstNumber(0)),
-  m_irFunction(NULL) {
+  m_body(body ? body : new AstNumber(0)) {
   assert(m_decl);
   assert(m_body);
 }
@@ -98,35 +92,14 @@ AstFunDef::~AstFunDef() {
   delete m_body;
 }
 
-void AstFunDef::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irFunction); // it doesnt make sense to set it twice
-  m_irFunction = dynamic_cast<llvm::Function*>(value);
-}
-
-void AstFunDef::setIrFunction(llvm::Function* function) {
-  assert(function);
-  assert(!m_irFunction); // it doesnt make sense to set it twice
-  m_irFunction = function;
-}
-
-bool AstFunDef::objectWasModifiedOrRevealedAddr() const {
-  return m_decl->stentry()->objectWasModifiedOrRevealedAddr();
-}
-
-const ObjType& AstFunDef::objType() const {
-  return decl().objType();
-}
-
 AstFunDecl::AstFunDecl(const string& name,
   list<AstArgDecl*>* args,
   shared_ptr<const ObjType> ret,
   shared_ptr<SymbolTableEntry> stentry) :
+  AstValue{move(stentry)},
   m_name(name),
   m_args(args ? args : new list<AstArgDecl*>()),
-  m_ret(ret ? move(ret) : make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
-  m_stentry(move(stentry)),
-  m_irFunction(NULL) {
+  m_ret(ret ? move(ret) : make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)) {
 }
 
 /** Same as overloaded ctor for convenience; it's easier to pass short
@@ -148,11 +121,6 @@ const ObjType& AstFunDecl::retObjType() const {
   return *m_ret;
 }
 
-const ObjType& AstFunDecl::objType() const {
-  assert(m_stentry);
-  return m_stentry->objType();
-}
-
 list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
   AstArgDecl* arg2, AstArgDecl* arg3) {
   list<AstArgDecl*>* args = new list<AstArgDecl*>;
@@ -162,62 +130,30 @@ list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
   return args;
 }
 
-bool AstFunDecl::objectWasModifiedOrRevealedAddr() const {
-  assert(m_stentry);
-  return m_stentry->objectWasModifiedOrRevealedAddr();
-}
-
-void AstFunDecl::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irFunction);  // it doesnt make sense to set it twice
-  m_irFunction = dynamic_cast<llvm::Function*>(value);
-}
-
-void AstFunDecl::setIrFunction(llvm::Function* function) {
-  assert(function);
-  assert(!m_irFunction);  // it doesnt make sense to set it twice
-  m_irFunction = function;
-}
-
-AstDataDecl::AstDataDecl(const string& name, ObjType* objType,
-  shared_ptr<SymbolTableEntry> stentry) :
+AstDataDecl::AstDataDecl(const string& name, const ObjType* declaredObjType) :
   m_name(name),
-  m_objType(objType ? shared_ptr<ObjType>(objType) :
-    make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
-  m_stentry(move(stentry)),
-  m_irValue(NULL) {
+  m_declaredObjType(declaredObjType ?
+    shared_ptr<const ObjType>(declaredObjType) :
+    make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)) {
 }
 
-const ObjType& AstDataDecl::objType() const {
-  return *m_objType.get();
+const ObjType& AstDataDecl::declaredObjType() const {
+  return *m_declaredObjType.get();
 }
 
-shared_ptr<const ObjType>& AstDataDecl::objTypeShareOwnership() {
-  return m_objType;
+shared_ptr<const ObjType>& AstDataDecl::declaredObjTypeAsSp() {
+  return m_declaredObjType;
 }
 
-void AstDataDecl::setStentry(shared_ptr<SymbolTableEntry> stentry) {
-  assert(stentry.get());
-  assert(!m_stentry); // it makes no sense to set it twice
-  m_stentry = move(stentry);
-}
-
-bool AstDataDecl::objectWasModifiedOrRevealedAddr() const {
-  assert(m_stentry);
-  return m_stentry->objectWasModifiedOrRevealedAddr();
-}
-
-void AstDataDecl::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
+shared_ptr<SymbolTableEntry>& AstDataDecl::createAndSetStEntryUsingDeclaredObjType() {
+  setStentry(make_shared<SymbolTableEntry>(m_declaredObjType));
+  return m_stentry;
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_ctorArgs(initValue ? new AstCtList(initValue) : new AstCtList()),
-  m_implicitInitializer(initValue ? NULL : m_decl->objType().createDefaultAstValue()),
-  m_irValue(NULL) {
+  m_implicitInitializer(initValue ? NULL : m_decl->declaredObjType().createDefaultAstValue()) {
   assert(m_decl);
   assert(m_ctorArgs);
 }
@@ -225,8 +161,7 @@ AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
 AstDataDef::AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs) :
   m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
   m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()),
-  m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_decl->objType().createDefaultAstValue()),
-  m_irValue(NULL) {
+  m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_decl->declaredObjType().createDefaultAstValue()) {
   assert(m_decl);
   assert(m_ctorArgs);
 }
@@ -248,27 +183,15 @@ AstValue& AstDataDef::initValue() const {
   }
 }
 
-const ObjType& AstDataDef::objType() const {
-  return decl().objType();
-}
-
-bool AstDataDef::objectWasModifiedOrRevealedAddr() const {
-  return m_decl->stentry()->objectWasModifiedOrRevealedAddr();
-}
-
-void AstDataDef::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
-}
-
 AstNumber::AstNumber(AstNumber::value_t value, ObjTypeFunda* objType) :
-  m_value(value),
-  m_objType(objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)),
-  m_irValue(NULL) {
-  assert(m_objType);
+  AstValue{
+    make_shared<SymbolTableEntry>(
+      objType ?
+      shared_ptr<const ObjType>{objType} :
+      make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt))},
+  m_value(value) {
   // A mutable literal makes no sense.
-  assert(!(m_objType->qualifiers() & ObjType::eMutable));
+  assert(!(AstValue::objType().qualifiers() & ObjType::eMutable));
 }
 
 AstNumber::AstNumber(AstNumber::value_t value, ObjTypeFunda::EType eType,
@@ -276,14 +199,8 @@ AstNumber::AstNumber(AstNumber::value_t value, ObjTypeFunda::EType eType,
   AstNumber(value, new ObjTypeFunda(eType, qualifiers)) {
 }
 
-AstNumber::~AstNumber() {
-  delete m_objType;
-}
-
-void AstNumber::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
+const ObjTypeFunda& AstNumber::objType() const {
+  return static_cast<const ObjTypeFunda&>(AstValue::objType());
 }
 
 const map<const string, const AstOperator::EOperation> AstOperator::m_opMap{
@@ -312,8 +229,7 @@ AstOperator::AstOperator(const string& op, AstCtList* args) :
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
-  m_args(args ? args : new AstCtList),
-  m_irValue(NULL) {
+  m_args(args ? args : new AstCtList) {
   const size_t required_arity =
     (op==eNot || op==eAddrOf || op==eDeref ) ? 1 : 2;
   assert( args->childs().size() == required_arity );
@@ -377,22 +293,6 @@ AstOperator::EOperation AstOperator::toEOperation(const string& op) {
   }
 }
 
-void AstOperator::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
-}
-
-const ObjType& AstOperator::objType() const {
-  assert(m_objType);
-  return *m_objType.get();
-}
-
-void AstOperator::setObjType(unique_ptr<ObjType> objType) {
-  assert(!m_objType); // it doesn't make sense to set it twice
-  m_objType = move(objType);
-}
-
 basic_ostream<char>& operator<<(basic_ostream<char>& os,
   AstOperator::EOperation op) {
   if (static_cast<int>(op)<128) {
@@ -407,8 +307,7 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
 AstIf::AstIf(AstValue* cond, AstValue* action, AstValue* elseAction) :
   m_condition(cond),
   m_action(action),
-  m_elseAction(elseAction),
-  m_irValue(NULL) {
+  m_elseAction(elseAction) {
   assert(m_condition);
   assert(m_action);
 }
@@ -419,26 +318,12 @@ AstIf::~AstIf() {
   delete m_elseAction;
 }
 
-void AstIf::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
-}
-
-const ObjType& AstIf::objType() const {
-  assert(m_objType);
-  return *m_objType.get();
-}
-
-void AstIf::setObjType(unique_ptr<ObjType> objType) {
-  assert(!m_objType); // it doesn't make sense to set it twice
-  m_objType = move(objType);
-}
-
 AstLoop::AstLoop(AstValue* cond, AstValue* body) :
+  AstValue{
+    make_shared<SymbolTableEntry>(
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid))},
   m_condition(cond),
-  m_body(body),
-  m_irValue(NULL) {
+  m_body(body) {
   assert(m_condition);
   assert(m_body);
 }
@@ -448,26 +333,15 @@ AstLoop::~AstLoop() {
   delete m_body;
 }
 
-const ObjType& AstLoop::objType() const {
-  static const ObjTypeFunda void_(ObjTypeFunda::eVoid);
-  return void_;
-}
-
-void AstLoop::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
-}
-
 AstReturn::AstReturn(AstValue* retVal) :
-  m_retVal(retVal),
-  m_irValue(NULL) {
+  AstValue{
+    make_shared<SymbolTableEntry>(
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eNoreturn))},
+  m_retVal(retVal) {
   assert(m_retVal);
 }
 
-const ObjType& AstReturn::objType() const {
-  static const ObjTypeFunda noretObjType(ObjTypeFunda::eNoreturn);
-  return noretObjType;
+AstReturn::~AstReturn() {
 }
 
 AstValue& AstReturn::retVal() const {
@@ -475,38 +349,9 @@ AstValue& AstReturn::retVal() const {
   return *m_retVal.get();
 }
 
-void AstReturn::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
-}
-
-void AstSymbol::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
-}
-
-const ObjType& AstSymbol::objType() const {
-  assert(m_stentry);
-  return m_stentry->objType();
-}
-
-void AstSymbol::setStentry(shared_ptr<SymbolTableEntry> stentry) {
-  assert(stentry);
-  assert(!m_stentry.get()); // it makes no sense to set it twice
-  m_stentry = move(stentry);
-}
-
-bool AstSymbol::objectWasModifiedOrRevealedAddr() const {
-  assert(m_stentry);
-  return m_stentry->objectWasModifiedOrRevealedAddr();
-}
-
 AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
   m_address(address ? address : new AstSymbol("")),
-  m_args(args ? args : new AstCtList()),
-  m_irValue(NULL) {
+  m_args(args ? args : new AstCtList()) {
   assert(m_address);
   assert(m_args);
 }
@@ -516,22 +361,13 @@ AstFunCall::~AstFunCall() {
   delete m_address;
 }
 
-void AstFunCall::setIrValue(llvm::Value* value) {
-  assert(value);
-  assert(!m_irValue); // it doesnt make sense to set it twice
-  m_irValue = value;
-}
-
-const ObjType& AstFunCall::objType() const {
-  if ( !m_ret ) {
-    const auto& objType = m_address->objType();
-    assert(typeid(objType)==typeid(ObjTypeFun));
-    const auto& objTypeFun = static_cast<const ObjTypeFun&>(objType);
-    auto objTypeRet = objTypeFun.ret().clone();
-    objTypeRet->removeQualifiers(ObjType::eMutable);
-    m_ret = unique_ptr<const ObjType>(objTypeRet);
-  }
-  return *m_ret;
+void AstFunCall::createAndSetStEntryUsingRetObjType() {
+  const auto& objType = m_address->objType();
+  assert(typeid(objType)==typeid(ObjTypeFun));
+  const auto& objTypeFun = static_cast<const ObjTypeFun&>(objType);
+  auto objTypeRet = objTypeFun.ret().clone();
+  objTypeRet->removeQualifiers(ObjType::eMutable);
+  setStentry(make_shared<SymbolTableEntry>(unique_ptr<const ObjType>{objTypeRet}));
 }
 
 /** The list's elements must be non-null */
@@ -595,7 +431,7 @@ AstCtList* AstCtList::Add(AstValue* child1, AstValue* child2, AstValue* child3) 
 const ObjType& AstCtList::objType() const {
   // AstCtList is never the operand of an expression, thus it doesn't has an
   // ObjType
-  assert(false); 
+  assert(false);
 }
 
 
