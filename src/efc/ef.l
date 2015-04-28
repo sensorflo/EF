@@ -3,13 +3,14 @@
 %option noyywrap nounput batch noinput 8bit full
 
 %{
+  #include "../scanner.h"
+  #include "../driver.h"
+  #include "parser.hpp"
   #include <cerrno>
   #include <climits>
   #include <cfloat>
   #include <cstdlib>
   #include <string>
-  #include "../driver.h"
-  #include "parser.hpp"
 
  // Work around an incompatibility in flex (at least versions
  // 2.5.31 through 2.5.33): it generates code that does

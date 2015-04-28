@@ -1,5 +1,5 @@
 #include "test.h"
-#include "../gensrc/parser.hpp"
+#include "../scanner.h"
 #include "driverontmpfile.h"
 using namespace testing;
 using namespace std;
