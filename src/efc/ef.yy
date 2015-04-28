@@ -10,14 +10,14 @@
 %define api.value.type variant
 %define parse.assert
 
+/* Declarations needed to declare semantic value types. Semantic values of
+tokens are also needed by scanner. */
 %code requires
 {
-  class Driver;
   #include "../ast.h"
-  #include "../objtype.h"
-  #include "../parserext.h"                        
 
-  class ObjType;
+  class ObjTypeFunda;
+
   struct NumberToken {
     NumberToken() : m_value(0), m_objType(NULL) {}
     NumberToken(AstNumber::value_t value, ObjTypeFunda* objType) : m_value(value), m_objType(objType) {}
@@ -26,8 +26,19 @@
   };
 }
 
-%param { Driver& driver }
-%parse-param { ParserExt& parserExt } { AstNode*& astRoot } 
+/* Declarations needed for declarations of the generated parser */
+%code requires
+{
+  class Driver;
+  class ParserExt;
+  class AstNode;
+
+  struct RawAstDataDecl;
+  struct RawAstDataDef;
+}
+
+%lex-param { Driver& driver }
+%parse-param { Driver& driver } { ParserExt& parserExt } { AstNode*& astRoot } 
 
 %locations
 %initial-action
@@ -40,7 +51,10 @@
 
 %code
 {
+  #include "../scanner.h"
   #include "../driver.h"
+  #include "../parserext.h"
+  #include "../objtype.h"
   using namespace std;
   using namespace yy;
 }

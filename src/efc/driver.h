@@ -1,11 +1,11 @@
 #ifndef DRIVER_H
 #define DRIVER_H
-#include "gensrc/parser.hpp"
 #include <string>
 #include <memory>
 
 namespace yy {
   class Parser; 
+  class location; 
 }
 class AstNode;
 class ErrorHandler;
@@ -14,9 +14,6 @@ class ParserExt;
 class SemanticAnalizer;
 class IrGen;
 class ExecutionEngineApater;
-
-#define YY_DECL yy::Parser::symbol_type yylex(Driver& driver)
-YY_DECL;
 
 /* Hosts the scanner, parser, semantic analyizer, IR builder etc. and drives
 those. The scanner has no own class; it is driven by it's global function

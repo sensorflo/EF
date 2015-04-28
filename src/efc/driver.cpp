@@ -1,4 +1,7 @@
 #include "driver.h"
+#include "gensrc/parser.hpp"
+#include "parserext.h"
+#include "scanner.h"
 #include "ast.h"
 #include "errorhandler.h"
 #include "env.h"
