@@ -15,7 +15,8 @@ tokens are also needed by scanner. */
 %code requires
 {
   #include "../generalvalue.h"
-  #include "../objtype.h"
+
+  class ObjTypeFunda;
 
   struct NumberToken {
     NumberToken() : m_value(0), m_objType(NULL) {}
