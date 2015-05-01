@@ -2,6 +2,8 @@
 #define AST_H
 #include "objtype.h"
 #include "access.h"
+#include "generalvalue.h"
+
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Function.h"
 #include <string>
@@ -177,22 +179,18 @@ private:
 /** Literal number */
 class AstNumber : public AstValue {
 public:
-  /** Universal type which is large enough for all currently supported EF
-  types. */
-  typedef double value_t;
-
-  AstNumber(value_t value, ObjTypeFunda* objType = NULL);
-  AstNumber(value_t value, ObjTypeFunda::EType eType,
+  AstNumber(GeneralValue value, ObjTypeFunda* objType = NULL);
+  AstNumber(GeneralValue value, ObjTypeFunda::EType eType,
     ObjTypeFunda::Qualifiers qualifiers = ObjTypeFunda::eNoQualifier);
 
  	const ObjTypeFunda& objType() const;
 
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  value_t value() const { return m_value; }
+  GeneralValue value() const { return m_value; }
   virtual bool isCTConst() const { return true; }
 private:
-  const value_t m_value;
+  const GeneralValue m_value;
 };
 
 class AstSymbol : public AstValue {

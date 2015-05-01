@@ -36,7 +36,7 @@ gensrc/parser.cpp $(GEN_HEADERS): ef.yy ast.h objtype.h parserext.h driver.h acc
 gensrc/scanner.cpp: ef.l driver.h gensrc/parser.hpp | gensrc
 	$(LEX) $(LFLAGS) -o $@ $<
 
-efc.h.pch: efc.h objtype.h access.h ast.h
+efc.h.pch: efc.h objtype.h access.h ast.h generalvalue.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
 out/%.o: gensrc/%.cpp efc.h.pch | out

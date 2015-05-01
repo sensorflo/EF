@@ -121,7 +121,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFun
     objType = new ObjTypeFunda(ObjTypeFunda::eInt);
   }
   return yy::Parser::make_NUMBER(
-    NumberToken(static_cast<AstNumber::value_t>(number), objType), loc);
+    NumberToken(static_cast<GeneralValue>(number), objType), loc);
 }
 
   /* punctuation */

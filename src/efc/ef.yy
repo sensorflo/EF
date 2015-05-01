@@ -14,14 +14,14 @@
 tokens are also needed by scanner. */
 %code requires
 {
-  #include "../ast.h"
+  #include "../generalvalue.h"
 
   class ObjTypeFunda;
 
   struct NumberToken {
     NumberToken() : m_value(0), m_objType(NULL) {}
-    NumberToken(AstNumber::value_t value, ObjTypeFunda* objType) : m_value(value), m_objType(objType) {}
-    AstNumber::value_t m_value;
+    NumberToken(GeneralValue value, ObjTypeFunda* objType) : m_value(value), m_objType(objType) {}
+    GeneralValue m_value;
     ObjTypeFunda* m_objType;
   };
 }
