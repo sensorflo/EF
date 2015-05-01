@@ -39,7 +39,7 @@ gensrc/%.cpp gensrc/%.hpp: %.yy | gensrc
     xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml;\
     exit $$yaccexitstatus
 
-gensrc/scanner.cpp: ef.l | gensrc
+gensrc/scanner.cpp: scanner.l | gensrc
 	$(LEX) $(LFLAGS) -o $@ $<
 
 # The author sadly doesn't know how to automatically make the dependencies,
