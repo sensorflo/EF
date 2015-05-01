@@ -17,8 +17,8 @@ out gensrc:
 # $1: file name of header file which has a precompiled version
 define build_cpp
 	$(CXX) -include $1 $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
-	@cp out/$*.d out/$*.P;
-	@sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	@cp out/$*.d out/$*.P; \
+	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	  -e '/^$$/ d' -e 's/$$/ :/' <out/$*.d >>out/$*.P;
 endef
 
@@ -33,10 +33,16 @@ EFC_OBJS = out/parser.o out/scanner.o $(patsubst %.cpp, out/%.o, $(EFC_SRCS))
 
 efc: out/efc
 
+# gensrc/scanner.hpp dependency problem: For unknown reasons, make did execute
+# rules which depend on gensrc/scanner.hpp before gensrc/scanner.hpp was
+# finished being built, altough actually the auto generated dependencies
+# (out/*.P) should prevent that. The current workaround is to make these rules
+# depend on out/parser.o.
 gensrc/%.cpp gensrc/%.hpp: %.yy | gensrc
 	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $<;\
     yaccexitstatus=$$?;\
     xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml;\
+    cp gensrc/parser.cpp gensrc/parser2.cpp;\
     exit $$yaccexitstatus
 
 gensrc/scanner.cpp: scanner.l | gensrc
@@ -50,7 +56,8 @@ efc.h.pch: efc.h objtype.h access.h ast.h generalvalue.h
 out/%.o: gensrc/%.cpp efc.h.pch | out
 	$(call build_cpp, efc.h)
 
-out/%.o: %.cpp efc.h.pch | out
+# regarding the dependency to out/parser.o, see comment of bison's rule
+out/%.o: %.cpp efc.h.pch out/parser.o | out
 	$(call build_cpp, efc.h)
 
 out/efc: $(EFC_OBJS)
@@ -78,7 +85,8 @@ runtest runefctest: out/efctest
 test/efctest.h.pch: test/efctest.h efc.h.pch test/test.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
-out/%.o: test/%.cpp test/efctest.h.pch | out
+# regarding the dependency to out/parser.o, see comment of bison's rule
+out/%.o: test/%.cpp test/efctest.h.pch out/parser.o | out
 	$(call build_cpp, test/efctest.h)
 
 out/libgtest.a: ${GTEST_DIR}/src/gtest-all.cc
