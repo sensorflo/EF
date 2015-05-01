@@ -25,9 +25,6 @@ endef
 # efc
 # ----------------------------------------------------------------------
 
-BISON_GEN := gensrc/parser.cpp gensrc/parser.hpp gensrc/stack.hh \
-  gensrc/position.hh gensrc/location.hh
-
 EFC_SRCS = driver.cpp parserext.cpp ast.cpp errorhandler.cpp objtype.cpp \
   astdefaultiterator.cpp env.cpp semanticanalizer.cpp irgen.cpp astprinter.cpp \
   efc.cpp executionengineadapter.cpp
@@ -36,7 +33,7 @@ EFC_OBJS = out/parser.o out/scanner.o $(patsubst %.cpp, out/%.o, $(EFC_SRCS))
 
 efc: out/efc
 
-$(BISON_GEN): ef.yy | gensrc
+gensrc/%.cpp gensrc/%.hpp: %.yy | gensrc
 	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $<;\
     yaccexitstatus=$$?;\
     xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml;\
