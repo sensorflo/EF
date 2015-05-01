@@ -183,7 +183,7 @@ AstValue& AstDataDef::initValue() const {
   }
 }
 
-AstNumber::AstNumber(AstNumber::value_t value, ObjTypeFunda* objType) :
+AstNumber::AstNumber(GeneralValue value, ObjTypeFunda* objType) :
   AstValue{
     make_shared<SymbolTableEntry>(
       objType ?
@@ -194,7 +194,7 @@ AstNumber::AstNumber(AstNumber::value_t value, ObjTypeFunda* objType) :
   assert(!(AstValue::objType().qualifiers() & ObjType::eMutable));
 }
 
-AstNumber::AstNumber(AstNumber::value_t value, ObjTypeFunda::EType eType,
+AstNumber::AstNumber(GeneralValue value, ObjTypeFunda::EType eType,
   ObjTypeFunda::Qualifiers qualifiers) :
   AstNumber(value, new ObjTypeFunda(eType, qualifiers)) {
 }
