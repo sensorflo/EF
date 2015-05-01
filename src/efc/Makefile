@@ -27,7 +27,7 @@ endef
 
 EFC_SRCS = driver.cpp parserext.cpp ast.cpp errorhandler.cpp objtype.cpp \
   astdefaultiterator.cpp env.cpp semanticanalizer.cpp irgen.cpp astprinter.cpp \
-  efc.cpp executionengineadapter.cpp
+  efc.cpp executionengineadapter.cpp parserapiext.cpp
 
 EFC_OBJS = out/parser.o out/scanner.o $(patsubst %.cpp, out/%.o, $(EFC_SRCS))
 

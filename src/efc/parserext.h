@@ -1,9 +1,11 @@
 #ifndef PARSEREXT_H
 #define PARSEREXT_H
-
 /** \file
-Parser extension: So bison's input file ef_yy can only contain tiny fragments
-of code. */
+yy::Parser implementation extension. So bison's input file ef.yy can only contain
+tiny fragments of code. Anything larger than tiny is implemented here and
+ef.yy should make only the call.
+
+ParserApiExt is similar, but extends the public interface of yy::Parser. */
 
 #include "objtype.h"
 #include <list>
@@ -27,6 +29,7 @@ struct RawAstDataDef {
   AstCtList* m_ctorArgs;
 };  
 
+/** See file's decription */
 class ParserExt {
 public:
   ParserExt(Env& env, ErrorHandler& errorHandler) : m_env(env),

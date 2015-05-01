@@ -40,6 +40,11 @@ tokens are also needed by scanner. */
 %lex-param { Driver& driver }
 %parse-param { Driver& driver } { ParserExt& parserExt } { AstNode*& astRoot } 
 
+%code provides
+{
+  #include "../parserapiext.h"
+}
+
 %locations
 %initial-action
 {
@@ -62,6 +67,7 @@ tokens are also needed by scanner. */
 %define api.token.prefix {TOK_}
 %token
   END_OF_FILE  0  "end of file"
+  TOKENLISTSTART "<TOKENLISTSTART>"
   END "end"
   DECL "decl"
   IF "if"
@@ -118,6 +124,8 @@ tokens are also needed by scanner. */
       SLASH
 %precedence EXCL NOT AMPER CARET
 %precedence LPAREN
+
+%token TOKENLISTEND "<TOKENLISTEND>"
 
 
 %type <AstCtList*> ct_list initializer pure2_standalone_expr_seq
