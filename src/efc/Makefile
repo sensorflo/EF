@@ -40,7 +40,7 @@ gensrc/%.cpp gensrc/%.hpp: %.yy | gensrc
     patch gensrc/parser.hpp < parser.hpp.patch;\
     exit $$yaccexitstatus
 
-gensrc/scanner.cpp: ef.l | gensrc
+gensrc/scanner.cpp: scanner.l | gensrc
 	$(LEX) $(LFLAGS) -o $@ $<
 
 # The author sadly doesn't know how to automatically make the dependencies,
