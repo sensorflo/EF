@@ -1,5 +1,8 @@
 #ifndef AST_H
 #define AST_H
+
+// If you change this list of header files, you must also modify the
+// analogous, redundant list in the Makefile
 #include "objtype.h"
 #include "access.h"
 #include "generalvalue.h"
