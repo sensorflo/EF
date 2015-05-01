@@ -13,6 +13,15 @@ out gensrc:
 	mkdir -p $@
 
 
+# Expands to commands which build a .cpp file
+# $1: file name of header file which has a precompiled version
+define build_cpp
+	$(CXX) -include $1 $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
+	@cp out/$*.d out/$*.P;
+	@sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	  -e '/^$$/ d' -e 's/$$/ :/' <out/$*.d >>out/$*.P;
+endef
+
 # efc
 # ----------------------------------------------------------------------
 
@@ -43,16 +52,10 @@ efc.h.pch: efc.h objtype.h access.h ast.h generalvalue.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
 out/%.o: gensrc/%.cpp efc.h.pch | out
-	$(CXX) -include efc.h $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
-	@cp out/$*.d out/$*.P; \
-		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-		-e '/^$$/ d' -e 's/$$/ :/' < out/$*.d >> out/$*.P;
+	$(call build_cpp, efc.h)
 
 out/%.o: %.cpp efc.h.pch | out
-	$(CXX) -include efc.h $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
-	@cp out/$*.d out/$*.P; \
-		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-		-e '/^$$/ d' -e 's/$$/ :/' < out/$*.d >> out/$*.P;
+	$(call build_cpp, efc.h)
 
 out/efc: $(EFC_OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
@@ -80,10 +83,7 @@ test/efctest.h.pch: test/efctest.h efc.h.pch test/test.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
 out/%.o: test/%.cpp test/efctest.h.pch | out
-	$(CXX) -include test/efctest.h $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
-	@cp out/$*.d out/$*.P; \
-		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-		-e '/^$$/ d' -e 's/$$/ :/' < out/$*.d >> out/$*.P;
+	$(call build_cpp, test/efctest.h)
 
 out/libgtest.a: ${GTEST_DIR}/src/gtest-all.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c -o out/gtest-all.o $<
