@@ -16,7 +16,8 @@ out gensrc:
 # efc
 # ----------------------------------------------------------------------
 
-GEN_HEADERS:=gensrc/parser.hpp gensrc/stack.hh gensrc/position.hh gensrc/location.hh
+BISON_GEN := gensrc/parser.cpp gensrc/parser.hpp gensrc/stack.hh \
+  gensrc/position.hh gensrc/location.hh
 
 EFC_SRCS = driver.cpp parserext.cpp ast.cpp errorhandler.cpp objtype.cpp \
   astdefaultiterator.cpp env.cpp semanticanalizer.cpp irgen.cpp astprinter.cpp \
@@ -26,16 +27,18 @@ EFC_OBJS = out/parser.o out/scanner.o $(patsubst %.cpp, out/%.o, $(EFC_SRCS))
 
 efc: out/efc
 
-gensrc/parser.cpp $(GEN_HEADERS): ef.yy ast.h objtype.h parserext.h driver.h access.h astforwards.h | gensrc
+$(BISON_GEN): ef.yy | gensrc
 	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $<;\
     yaccexitstatus=$$?;\
     xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml;\
     patch gensrc/parser.hpp < parser.hpp.patch;\
     exit $$yaccexitstatus
 
-gensrc/scanner.cpp: ef.l driver.h gensrc/parser.hpp | gensrc
+gensrc/scanner.cpp: ef.l | gensrc
 	$(LEX) $(LFLAGS) -o $@ $<
 
+# The author sadly doesn't know how to automatically make the dependencies,
+# that's why they are written explicitely and redundantely.
 efc.h.pch: efc.h objtype.h access.h ast.h generalvalue.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
@@ -71,6 +74,8 @@ test efctest: out/efctest
 runtest runefctest: out/efctest
 	$<
 
+# The author sadly doesn't know how to automatically make the dependencies,
+# that's why they are written explicitely and redundantely.
 test/efctest.h.pch: test/efctest.h efc.h.pch test/test.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 

@@ -1,5 +1,9 @@
 #ifndef OBJTYPE_H
 #define OBJTYPE_H
+
+// If you change this list of header files, you must also modify the
+// analogous, redundant list in the Makefile
+
 #include <string>
 #include <list>
 #include <iostream>
