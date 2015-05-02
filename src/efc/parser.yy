@@ -11,7 +11,7 @@
 %define parse.assert
 
 /* Declarations needed to declare semantic value types. Semantic values of
-tokens are also needed by scanner. */
+tokens are also needed by specializations of TokenStream. */
 %code requires
 {
   #include "../generalvalue.h"
@@ -32,15 +32,16 @@ tokens are also needed by scanner. */
   class Driver;
   class ParserExt;
   class AstNode;
+  class TokenStream;
 
   struct RawAstDataDecl;
   struct RawAstDataDef;
 }
 
-/** Defines signature for the lex familiy of functions. This signature is
-reduntaly defined by YYLEX_SIGNATURE and by %lex-param of bison's input file */
-%lex-param { Driver& driver }
-%parse-param { Driver& driver } { ParserExt& parserExt } { AstNode*& astRoot } 
+/** \internal Signature of yylex is redundantely defined here by %lex-param
+and by declaration of free function yylex */
+%lex-param { TokenStream& tokenStream }
+%parse-param { TokenStream& tokenStream } { Driver& driver } { ParserExt& parserExt } { AstNode*& astRoot }
 
 %code provides
 {
@@ -58,12 +59,17 @@ reduntaly defined by YYLEX_SIGNATURE and by %lex-param of bison's input file */
 
 %code
 {
-  #include "../scanner.h"
   #include "../driver.h"
   #include "../parserext.h"
   #include "../objtype.h"
   using namespace std;
   using namespace yy;
+
+  /** \internal Signature is redundantely defined here and by %lex-param of
+  bison's .yy input file. The only reason for the existence of the free
+  function yylex is that the author doesn't know how to make bison's generated
+  parser use tokenStream directly */
+  yy::Parser::symbol_type yylex(TokenStream& tokenStream);
 }
 
 %define api.token.prefix {TOK_}
@@ -370,8 +376,13 @@ naked_return
 /* Epilogue section
 ----------------------------------------------------------------------*/
 %%
+#include "../tokenstream.h"
 
 void yy::Parser::error(const location_type& loc, const std::string& msg)
 {
   driver.error(loc, msg);
+}
+
+yy::Parser::symbol_type yylex(TokenStream& tokenStream) {
+  return tokenStream.pop();
 }
