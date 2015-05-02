@@ -31,6 +31,7 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_gotError(false),
   m_gotWarning(false),
   m_ostream(ostream ? *ostream : cerr),
+  m_scanner(make_unique<Scanner>(*this)),
   m_astRoot(NULL),
   m_parserExt(*new ParserExt(m_env, m_errorHandler)),
   m_parser(new Parser(*this, m_parserExt, m_astRoot)),
@@ -56,6 +57,10 @@ Driver::~Driver() {
   delete &m_parserExt;
   delete &m_env;
   delete &m_errorHandler;
+}
+
+Scanner& Driver::scanner() {
+  return *m_scanner;
 }
 
 /** Compile = scann & parse & do semantic analysis & generate IR. */

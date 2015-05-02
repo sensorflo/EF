@@ -14,6 +14,7 @@ class ParserExt;
 class SemanticAnalizer;
 class IrGen;
 class ExecutionEngineApater;
+class Scanner;
 
 /* Hosts the scanner, parser, semantic analyizer, IR builder etc. and drives
 those. The scanner has no own class; it is driven by it's global function
@@ -23,6 +24,8 @@ public:
   Driver(const std::string& fileName, std::basic_ostream<char>* ostream = NULL);
   virtual ~Driver();
   
+  Scanner& scanner();
+
   void compile();
   int scannAndParse(AstNode*& ast);
   void doSemanticAnalysis(AstNode& ast);
@@ -53,6 +56,7 @@ private:
   bool m_gotWarning;
   /** We're _not_ the owner */
   std::basic_ostream<char>& m_ostream;
+  std::unique_ptr<Scanner> m_scanner;
   AstNode* m_astRoot;
   ParserExt& m_parserExt;
   /** We're the owner. Guaranteed to be non-NULL */
