@@ -167,7 +167,7 @@ opt
 %start program;
 
 program
-  : block_expr END_OF_FILE                          { driver.astRoot() = $1; }
+  : block_expr END_OF_FILE                          { astRoot = $1; }
   ;
 
 block_expr
