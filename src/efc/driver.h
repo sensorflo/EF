@@ -39,7 +39,6 @@ public:
   void exitInternError(const yy::location& loc, const std::string& msg);
   void exitInternError(const std::string& msg);
 
-  AstNode*& astRoot() { return m_astRoot; }
   std::string& fileName() { return m_fileName; }
   bool gotError() const { return m_gotError; }
   bool gotWarning() const { return m_gotWarning; }
