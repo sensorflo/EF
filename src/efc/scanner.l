@@ -174,8 +174,25 @@ Scanner::Scanner(Driver& driver) :
   m_driver(driver) {
 };
 
+Parser::symbol_type& Scanner::front() {
+  ensureThereIsAFront();
+  return *m_front;
+}
+
 Parser::symbol_type Scanner::pop() {
-  return yylex_raw(m_driver);
+  Parser::symbol_type ret(front());
+  shift();
+  return ret;
+}
+
+void Scanner::shift() {
+  m_front = make_unique<Parser::symbol_type>(yylex_raw(m_driver));
+}
+
+void Scanner::ensureThereIsAFront() {
+  if ( !m_front ) {
+    shift();
+  }
 }
 
 YYLEX_SIGNATURE(yylex) {

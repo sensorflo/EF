@@ -319,3 +319,33 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   spec = "border case example: stars inside comment";
   TEST_SCANNER( "/* foo**bar */", spec);
 }
+
+TEST(ScannerTest, MAKE_TEST_NAME2(
+    WHEN_front_is_called_repeatedly,
+    THEN_it_always_returns_the_front_token_without_removing_it)) {
+
+  string spec = "Trivial example";
+  {
+    DriverOnTmpFile driver( "foo" );
+    Scanner& UUT = driver.scanner(); 
+    EXPECT_EQ(Parser::token::TOK_ID, UUT.front().token());
+    EXPECT_EQ(Parser::token::TOK_ID, UUT.front().token());
+  }
+
+  spec = "Example: Collaboration with pop: first front, then pop";
+  {
+    DriverOnTmpFile driver( "foo" );
+    Scanner& UUT = driver.scanner(); 
+    EXPECT_EQ(Parser::token::TOK_ID, UUT.front().token());
+    EXPECT_EQ(Parser::token::TOK_ID, UUT.pop().token());
+    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.front().token());
+  }
+
+  spec = "Example: Collaboration with pop: first pop, then front";
+  {
+    DriverOnTmpFile driver( "foo 3" );
+    Scanner& UUT = driver.scanner(); 
+    UUT.pop();
+    EXPECT_EQ(Parser::token::TOK_NUMBER, UUT.front().token());
+  }
+}

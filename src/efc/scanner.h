@@ -9,11 +9,16 @@ class Scanner {
 public:
   Scanner(Driver& driver);
 
+  /** Returns reference to front token without removing it */
+  yy::Parser::symbol_type& front();
   /** Removes and returns front token */
   yy::Parser::symbol_type pop();
 
 private:
+  void shift();
+  void ensureThereIsAFront();
   Driver& m_driver;
+  std::unique_ptr<yy::Parser::symbol_type> m_front;
 };
 
 
