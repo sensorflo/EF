@@ -43,36 +43,51 @@ void testScanner(const string& input,
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     an_empty_file,
-    yylex,
-    returns_TOK_END_OF_FILE_AND_succeeds)) {
+    pop,
+    returns_TOK_END_OF_FILE)) {
   TEST_SCANNER( "", "" );
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_keyword,
-    yylex,
-    returns_token_of_that_keyword_notably_opposed_to_token_for_id_AND_succeeds)) {
+    pop,
+    returns_the_token_associated_with_that_keyword)) {
+  // just a few examples, don't test every known keyword
   TEST_SCANNER( "if", "", Parser::token::TOK_IF);
+  TEST_SCANNER( "elif", "", Parser::token::TOK_ELIF);
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    an_id_consisting_of_concatenated_keywords,
-    yylex,
-    returns_TOK_ID_AND_succeeds)) {
-  TEST_SCANNER( "ifelse", "", Parser::token::TOK_ID);
+    an_id,
+    pop,
+    returns_TOK_ID_AND_the_ids_name_as_semantic_value_AND_succeeds)) {
+  {
+    DriverOnTmpFile driver( "foo" );
+    Scanner& UUT = driver.scanner(); 
+    Parser::symbol_type st = UUT.pop();
+    EXPECT_EQ(Parser::token::TOK_ID, st.token() );
+    EXPECT_EQ("foo", st.value.as<string>());
+    EXPECT_FALSE( driver.d().gotError() );
+  }
+
+  string spec = "Example: An identifier composed of parts which each for"
+    "itself is a keyword";
+  TEST_SCANNER( "ifelse", spec, Parser::token::TOK_ID);
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    keywords_separated_by_blanks,
-    yylex_is_called_repeatedly,
-    returns_the_keywords_tokens_AND_succeeds)) {
+    lexemes_separated_by_white_space_characters,
+    pop_is_called_repeatedly,
+    returns_the_sequence_of_tokens_associated_with_each_lexeme)) {
   TEST_SCANNER( "if else", "", Parser::token::TOK_IF, Parser::token::TOK_ELSE);
+  TEST_SCANNER( "foo bar", "", Parser::token::TOK_ID, Parser::token::TOK_ID);
+  TEST_SCANNER( "if foo", "", Parser::token::TOK_IF, Parser::token::TOK_ID);
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_char,
-    yylex,
-    returns_TOK_NUMBER_AND_the_char_s_value_and_it_s_type_as_semantic_value_AND_succeeds)) {
+    pop,
+    returns_TOK_NUMBER_AND_the_char_s_value_and_it_s_type_as_semantic_value)) {
 
   DriverOnTmpFile driver( "'x'" );
   Scanner& UUT = driver.scanner(); 
@@ -90,8 +105,8 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_number,
-    yylex,
-    returns_TOK_NUMBER_AND_the_number_s_value_and_it_s_type_as_semantic_value_AND_succeeds)) {
+    pop,
+    returns_TOK_NUMBER_AND_the_number_s_value_and_it_s_type_as_semantic_value)) {
 
   string spec = "Example: a literal integral value";
   {
@@ -128,8 +143,8 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     the_literal_false,
-    yylex,
-    returns_TOK_NUMBER_WITH_the_semantic_value_0_as_value_and_bool_as_type_AND_succeeds)) {
+    pop,
+    returns_TOK_NUMBER_WITH_the_semantic_value_0_as_value_and_bool_as_type)) {
   DriverOnTmpFile driver( "false" );
   Scanner& UUT = driver.scanner(); 
 
@@ -146,8 +161,8 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     the_literal_true,
-    yylex,
-    returns_TOK_NUMBER_WITH_the_semantic_value_1_as_value_and_bool_as_type_AND_succeeds)) {
+    pop,
+    returns_TOK_NUMBER_WITH_the_semantic_value_1_as_value_and_bool_as_type)) {
   DriverOnTmpFile driver( "true" );
   Scanner& UUT = driver.scanner(); 
 
@@ -164,7 +179,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_number_WITH_an_unknown_suffix,
-    yylex,
+    pop,
     returns_TOK_NUMBER_AND_fails)) {
   stringstream errorStream;
   DriverOnTmpFile driver( "42if", &errorStream);
@@ -175,27 +190,8 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    an_id,
-    yylex,
-    returns_TOK_ID_AND_the_ids_name_as_semantic_value_AND_succeeds)) {
-  DriverOnTmpFile driver( "foo" );
-  Scanner& UUT = driver.scanner(); 
-  Parser::symbol_type st = UUT.pop();
-  EXPECT_EQ(Parser::token::TOK_ID, st.token() );
-  EXPECT_EQ("foo", st.value.as<string>());
-  EXPECT_FALSE( driver.d().gotError() );
-}
-
-TEST(ScannerTest, MAKE_TEST_NAME(
-    a_colon_followed_by_an_equal_without_blanks_inbetween,
-    yylex_is_called,
-    returns_the_single_token_COLON_EQUAL_opposed_to_the_two_separate_tokens_COLON_and_EQUAL)) {
-  TEST_SCANNER( ":=", "", Parser::token::TOK_COLON_EQUAL);
-}
-
-TEST(ScannerTest, MAKE_TEST_NAME(
     an_operator_in_call_syntax,
-    yylex_is_called,
+    pop_is_called,
     returns_the_single_token_OP_NAME_AND_the_oparators_char_as_semantic_value)) {
 
   string spec = "trivial example";
@@ -233,15 +229,22 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
+    a_colon_followed_by_an_equal_without_blanks_inbetween,
+    pop_is_called,
+    returns_the_single_token_COLON_EQUAL_opposed_to_the_two_separate_tokens_COLON_and_EQUAL)) {
+  TEST_SCANNER( ":=", "", Parser::token::TOK_COLON_EQUAL);
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
     a_colon_followed_by_blanks_followed_by_an_equal,
-    yylex_is_called_repeatedly,
+    pop_is_called_repeatedly,
     returns_two_separate_tokens_COLON_and_EQUAL_opposed_to_the_single_token_COLON_EQUAL)) {
   TEST_SCANNER( ": =", "", Parser::token::TOK_COLON, Parser::token::TOK_EQUAL);
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_program_containing_a_single_line_comment_which_is_defined_by_two_slashes_upto_and_inclusive_next_newline_or_end_of_file,
-    yylex_is_called_repeatedly,
+    pop_is_called_repeatedly,
     returns_a_token_sequence_which_ignores_the_comment)) {
 
   string spec = "Trivial example";
@@ -265,7 +268,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_program_containing_a_single_line_comment_which_is_defined_by_a_hash_followed_by_exlamation_mark_upto_and_inclusive_next_newline_or_end_of_file,
-    yylex_is_called_repeatedly,
+    pop_is_called_repeatedly,
     returns_a_token_sequence_which_ignores_the_comment)) {
 
   string spec = "Trivial example";
@@ -289,7 +292,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_program_containing_a_multi_line_comment_which_is_defined_as_everything_between_sharp_star_and_star_sharp,
-    yylex_is_called_repeatedly,
+    pop_is_called_repeatedly,
     returns_a_token_sequence_which_ignores_the_comment)) {
 
   string spec = "trivial example";
