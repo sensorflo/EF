@@ -37,6 +37,8 @@ tokens are also needed by scanner. */
   struct RawAstDataDef;
 }
 
+/** Defines signature for the lex familiy of functions. This signature is
+reduntaly defined by YYLEX_SIGNATURE and by %lex-param of bison's input file */
 %lex-param { Driver& driver }
 %parse-param { Driver& driver } { ParserExt& parserExt } { AstNode*& astRoot } 
 

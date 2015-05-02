@@ -43,6 +43,7 @@ public:
     m_driver(m_tmpFile.fileName(), ostream) {};
   operator Driver&() { return m_driver; }
   Driver& d() { return m_driver; }
+  Scanner& scanner() { return m_driver.scanner(); }
 private:
   TmpFile m_tmpFile;
   Driver m_driver;
