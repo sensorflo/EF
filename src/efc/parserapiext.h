@@ -35,3 +35,8 @@ namespace yy {
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   yy::Parser::token_type t);
 }
+
+namespace std {
+std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
+  const std::vector<yy::Parser::token_type>& tokens);
+}

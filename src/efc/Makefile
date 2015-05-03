@@ -78,7 +78,7 @@ EFCTEST_TESTS_SRCS = errorhandlertest.cpp objtypetest.cpp parserexttest.cpp	\
   driversystemtest.cpp semanticanalizertest.cpp irgentest.cpp	\
   tutorialstest.cpp
 
-EFCTEST_TESTHELPERS_SRCS = literaltokenstream.cpp
+EFCTEST_TESTHELPERS_SRCS = literaltokenstream.cpp tokentesthelper.cpp
 
 EFCTEST_TESTS_TESTHELPERS_SRCS = literaltokenstreamtest.cpp
 
