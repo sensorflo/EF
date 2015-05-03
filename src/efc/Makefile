@@ -30,7 +30,9 @@ EFC_SRCS = driver.cpp parserext.cpp ast.cpp errorhandler.cpp objtype.cpp \
   astdefaultiterator.cpp env.cpp semanticanalizer.cpp irgen.cpp astprinter.cpp \
   efc.cpp executionengineadapter.cpp parserapiext.cpp
 
-EFC_OBJS = out/parser.o out/scanner.o $(patsubst %.cpp, out/%.o, $(EFC_SRCS))
+EFC_GEN_SRCS = parser.cpp scanner.cpp
+
+EFC_OBJS = $(patsubst %.cpp, out/%.o, $(EFC_SRCS) $(EFC_GEN_SRCS))
 
 efc: out/efc
 
@@ -79,12 +81,6 @@ EFCTEST_TESTS_SRCS = errorhandlertest.cpp objtypetest.cpp parserexttest.cpp	\
 EFCTEST_TESTHELPERS_SRCS =
 
 EFCTEST_TESTS_TESTHELPERS_SRCS =
-
-EFCTEST_SRCS = \
-  $(EFCTEST_ROOT_SRCS) \
-  $(patsubst %, tests/%, $(EFCTEST_TESTS_SRCS)) \
-  $(patsubst %, testhelpers/%, $(EFCTEST_TESTHELPERS_SRCS)) \
-  $(patsubst %, tests/testhelpers/%, $(EFCTEST_TESTS_TESTHELPERS_SRCS)) \
 
 EFCTEST_OBJS = $(patsubst %.cpp, out/%.o, \
   $(EFCTEST_ROOT_SRCS) $(EFCTEST_TESTS_SRCS) $(EFCTEST_TESTHELPERS_SRCS) \
@@ -148,5 +144,8 @@ clean:
 .PHONY: all efc test efctest runtest runefctest
 
 -include $(EFC_SRCS:%.cpp=out/%.P)
--include $(EFCTEST_SRCS:%.cpp=out/%.P)
-
+-include $(EFC_GEN_SRCS:%.cpp=out/%.P)
+-include $(EFCTEST_ROOT_SRCS:%.cpp=out/%.P)
+-include $(EFCTEST_TESTS_SRCS:%.cpp=out/%.P)
+-include $(EFCTEST_TESTHELPERS_SRCS:%.cpp=out/%.P)
+-include $(EFCTEST_TESTS_TESTHELPERS_SRCS:%.cpp=out/%.P)
