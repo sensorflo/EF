@@ -13,6 +13,8 @@ ParserExt is similar, but extends the private implementation details of
 Parser. */
 class ParserApiExt {
 public:
+  static void initTokenNames();
+
   static const char* tokenName(yy::Parser::token_type t);
 
   template<typename SemanticValueType>
@@ -20,8 +22,6 @@ public:
   static yy::Parser::symbol_type makeToken(yy::Parser::token_type tt);
 
 private:
-  static void initTokenNames();
-
   /** Redundant copy of yy::Parser::yytname_.
   \internal The author did not knew how to access the private member
   yy::Parser::yytname_ to be able to print tokens. A redundant copy seemed the

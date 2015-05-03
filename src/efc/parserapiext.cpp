@@ -87,6 +87,8 @@ Parser::symbol_type ParserApiExt::makeToken(Parser::token_type tt) {
   }
 }
 
+/** Is not required to be called explicitely. But it helps to dedect errors
+earlier. */
 void ParserApiExt::initTokenNames() {
   if (!m_TokenNames.empty()) {
     return;
