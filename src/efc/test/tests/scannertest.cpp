@@ -1,6 +1,7 @@
 #include "test.h"
 #include "../scanner.h"
 #include "driverontmpfile.h"
+#include "tokentesthelper.h"
 #include <string>
 #include <vector>
 using namespace testing;
@@ -35,17 +36,17 @@ void testScanner(const string& input,
 }
 
 /** Analogous to testScanner, see there */
-#define TEST_SCANNER(input, spec, ... )                              \
+#define TEST_SCANNER(input, spec, expectedTokens )                   \
   {                                                                  \
     SCOPED_TRACE("testScanner called from here (via TEST_SCANNER)"); \
-    testScanner(input, spec, {__VA_ARGS__} );                        \
+    testScanner(input, spec, expectedTokens );                       \
   }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     an_empty_file,
     pop,
     returns_TOK_END_OF_FILE)) {
-  TEST_SCANNER( "", "" );
+  TEST_SCANNER( "", "", TOKIL0());
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -53,8 +54,8 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     pop,
     returns_the_token_associated_with_that_keyword)) {
   // just a few examples, don't test every known keyword
-  TEST_SCANNER( "if", "", Parser::token::TOK_IF);
-  TEST_SCANNER( "elif", "", Parser::token::TOK_ELIF);
+  TEST_SCANNER( "if", "", TOKIL1(TOK_IF));
+  TEST_SCANNER( "elif", "", TOKIL1(TOK_ELIF));
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -65,23 +66,23 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     DriverOnTmpFile driver( "foo" );
     Scanner& UUT = driver.scanner(); 
     Parser::symbol_type st = UUT.pop();
-    EXPECT_EQ(Parser::token::TOK_ID, st.token() );
+    EXPECT_TOK_EQ(TOK_ID, st );
     EXPECT_EQ("foo", st.value.as<string>());
     EXPECT_FALSE( driver.d().gotError() );
   }
 
   string spec = "Example: An identifier composed of parts which each for"
     "itself is a keyword";
-  TEST_SCANNER( "ifelse", spec, Parser::token::TOK_ID);
+  TEST_SCANNER( "ifelse", spec, TOKIL1(TOK_ID));
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     lexemes_separated_by_white_space_characters,
     pop_is_called_repeatedly,
     returns_the_sequence_of_tokens_associated_with_each_lexeme)) {
-  TEST_SCANNER( "if else", "", Parser::token::TOK_IF, Parser::token::TOK_ELSE);
-  TEST_SCANNER( "foo bar", "", Parser::token::TOK_ID, Parser::token::TOK_ID);
-  TEST_SCANNER( "if foo", "", Parser::token::TOK_IF, Parser::token::TOK_ID);
+  TEST_SCANNER( "if else", "", TOKIL2(TOK_IF, TOK_ELSE));
+  TEST_SCANNER( "foo bar", "", TOKIL2(TOK_ID, TOK_ID));
+  TEST_SCANNER( "if foo", "", TOKIL2(TOK_IF, TOK_ID));
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -93,12 +94,12 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   Scanner& UUT = driver.scanner(); 
 
   Parser::symbol_type st = UUT.pop();
-  EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
+  EXPECT_TOK_EQ(TOK_NUMBER, st);
   EXPECT_EQ('x', st.value.as<NumberToken>().m_value );
   ObjTypeFunda expectedType(ObjTypeFunda::eChar);
   EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
 
-  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.pop().token() );
+  EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop());
 
   EXPECT_FALSE( driver.d().gotError() );
 }
@@ -114,12 +115,12 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     Scanner& UUT = driver.scanner(); 
 
     Parser::symbol_type st = UUT.pop();
-    EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
+    EXPECT_TOK_EQ(TOK_NUMBER, st);
     EXPECT_EQ(42, st.value.as<NumberToken>().m_value );
     ObjTypeFunda expectedType(ObjTypeFunda::eInt);
     EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
 
-    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.pop().token() );
+    EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 
     EXPECT_FALSE( driver.d().gotError() );
   }
@@ -130,12 +131,12 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     Scanner& UUT = driver.scanner(); 
 
     Parser::symbol_type st = UUT.pop();
-    EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
+    EXPECT_TOK_EQ(TOK_NUMBER, st);
     EXPECT_EQ(42.77, st.value.as<NumberToken>().m_value );
     ObjTypeFunda expectedType(ObjTypeFunda::eDouble);
     EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
 
-    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.pop().token() );
+    EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 
     EXPECT_FALSE( driver.d().gotError() );
   }
@@ -149,12 +150,12 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   Scanner& UUT = driver.scanner(); 
 
   Parser::symbol_type st = UUT.pop();
-  EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
+  EXPECT_TOK_EQ(TOK_NUMBER, st);
   EXPECT_EQ(0, st.value.as<NumberToken>().m_value );
   ObjTypeFunda expectedType(ObjTypeFunda::eBool);
   EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
 
-  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.pop().token() );
+  EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 
   EXPECT_FALSE( driver.d().gotError() );
 }
@@ -167,12 +168,12 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   Scanner& UUT = driver.scanner(); 
 
   Parser::symbol_type st = UUT.pop();
-  EXPECT_EQ(Parser::token::TOK_NUMBER, st.token());
+  EXPECT_TOK_EQ(TOK_NUMBER, st);
   EXPECT_EQ(1, st.value.as<NumberToken>().m_value );
   ObjTypeFunda expectedType(ObjTypeFunda::eBool);
   EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
 
-  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.pop().token() );
+  EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 
   EXPECT_FALSE( driver.d().gotError() );
 }
@@ -184,9 +185,9 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   stringstream errorStream;
   DriverOnTmpFile driver( "42if", &errorStream);
   Scanner& UUT = driver.scanner(); 
-  EXPECT_EQ(Parser::token::TOK_NUMBER, UUT.pop().token() );
+  EXPECT_TOK_EQ(TOK_NUMBER, UUT.pop() );
   EXPECT_TRUE( driver.d().gotError() );
-  EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.pop().token() );
+  EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -199,9 +200,9 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     DriverOnTmpFile driver( "op*" );
     Scanner& UUT = driver.scanner(); 
     Parser::symbol_type st = UUT.pop();
-    EXPECT_EQ(Parser::token::TOK_OP_NAME, st.token() ) << amendSpec(spec);
+    EXPECT_TOK_EQ(TOK_OP_NAME, st ) << amendSpec(spec);
     EXPECT_EQ("*", st.value.as<string>()) << amendSpec(spec);
-    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.pop().token() ) << amendSpec(spec);
+    EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
 
@@ -210,9 +211,9 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     DriverOnTmpFile driver( "op&&" );
     Scanner& UUT = driver.scanner(); 
     Parser::symbol_type st = UUT.pop();
-    EXPECT_EQ(Parser::token::TOK_OP_NAME, st.token() ) << amendSpec(spec);
+    EXPECT_TOK_EQ(TOK_OP_NAME, st ) << amendSpec(spec);
     EXPECT_EQ("&&", st.value.as<string>()) << amendSpec(spec);
-    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.pop().token() ) << amendSpec(spec);
+    EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
 
@@ -221,9 +222,9 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     DriverOnTmpFile driver( "op_and" );
     Scanner& UUT = driver.scanner(); 
     Parser::symbol_type st = UUT.pop();
-    EXPECT_EQ(Parser::token::TOK_OP_NAME, st.token() ) << amendSpec(spec);
+    EXPECT_TOK_EQ(TOK_OP_NAME, st ) << amendSpec(spec);
     EXPECT_EQ("and", st.value.as<string>()) << amendSpec(spec);
-    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.pop().token() ) << amendSpec(spec);
+    EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() ) << amendSpec(spec);
     EXPECT_FALSE( driver.d().gotError() ) << amendSpec(spec);
   }
 }
@@ -232,14 +233,14 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     a_colon_followed_by_an_equal_without_blanks_inbetween,
     pop_is_called,
     returns_the_single_token_COLON_EQUAL_opposed_to_the_two_separate_tokens_COLON_and_EQUAL)) {
-  TEST_SCANNER( ":=", "", Parser::token::TOK_COLON_EQUAL);
+  TEST_SCANNER( ":=", "", TOKIL1(TOK_COLON_EQUAL));
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_colon_followed_by_blanks_followed_by_an_equal,
     pop_is_called_repeatedly,
     returns_two_separate_tokens_COLON_and_EQUAL_opposed_to_the_single_token_COLON_EQUAL)) {
-  TEST_SCANNER( ": =", "", Parser::token::TOK_COLON, Parser::token::TOK_EQUAL);
+  TEST_SCANNER( ": =", "", TOKIL2(TOK_COLON, TOK_EQUAL));
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -248,22 +249,20 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     returns_a_token_sequence_which_ignores_the_comment)) {
 
   string spec = "Trivial example";
-  TEST_SCANNER( "//foo\n", spec );
+  TEST_SCANNER( "//foo\n", spec, TOKIL0());
 
   spec = "Simple example";
-  TEST_SCANNER( "if //foo\n if", spec,
-    Parser::token::TOK_IF, Parser::token::TOK_IF );
+  TEST_SCANNER( "if //foo\n if", spec, TOKIL2(TOK_IF, TOK_IF));
 
   spec = "Border case example: // are the last two chars before the newline";
-  TEST_SCANNER( "if //\n if", spec,
-    Parser::token::TOK_IF, Parser::token::TOK_IF );
+  TEST_SCANNER( "if //\n if", spec, TOKIL2(TOK_IF, TOK_IF));
 
   spec = "Border case example: the single line comment is on the last line"
     "of the file which is not delimited by newline";
-  TEST_SCANNER( "if //foo", spec, Parser::token::TOK_IF);
+  TEST_SCANNER( "if //foo", spec, TOKIL1(TOK_IF));
 
   spec = "Border case example: // are the last two chars in the file";
-  TEST_SCANNER( "if //", spec, Parser::token::TOK_IF);
+  TEST_SCANNER( "if //", spec, TOKIL1(TOK_IF));
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -272,22 +271,20 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     returns_a_token_sequence_which_ignores_the_comment)) {
 
   string spec = "Trivial example";
-  TEST_SCANNER( "#!foo\n", spec);
+  TEST_SCANNER( "#!foo\n", spec, TOKIL0());
 
   spec = "Simple example";
-  TEST_SCANNER( "if #!foo\n if", spec,
-    Parser::token::TOK_IF, Parser::token::TOK_IF);
+  TEST_SCANNER( "if #!foo\n if", spec, TOKIL2(TOK_IF, TOK_IF));
 
   spec = "Border case example: #! are the last two chars before the newline";
-  TEST_SCANNER( "if #!\n if", spec,
-    Parser::token::TOK_IF, Parser::token::TOK_IF);
+  TEST_SCANNER( "if #!\n if", spec, TOKIL2(TOK_IF, TOK_IF));
 
   spec = "Border case example: the single line comment is on the last line"
     "of the file which is not delimited by newline";
-  TEST_SCANNER( "if #!foo", spec,  Parser::token::TOK_IF);
+  TEST_SCANNER( "if #!foo", spec, TOKIL1(TOK_IF));
 
   spec = "Border case example: #! are the last two chars in the file";
-  TEST_SCANNER( "if #!", spec,  Parser::token::TOK_IF);
+  TEST_SCANNER( "if #!", spec, TOKIL1(TOK_IF));
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -296,28 +293,25 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     returns_a_token_sequence_which_ignores_the_comment)) {
 
   string spec = "trivial example";
-  TEST_SCANNER( "/*foo*/", spec);
+  TEST_SCANNER( "/*foo*/", spec, TOKIL0());
 
   spec = "simple example";
-  TEST_SCANNER( "x /*foo*/ y", spec,
-    Parser::token::TOK_ID, Parser::token::TOK_ID);
+  TEST_SCANNER( "x /*foo*/ y", spec, TOKIL2(TOK_ID, TOK_ID));
 
   spec = "example: comment contains newlines";
-  TEST_SCANNER( "x /*foo\nbar*/ y", spec,
-    Parser::token::TOK_ID, Parser::token::TOK_ID);
+  TEST_SCANNER( "x /*foo\nbar*/ y", spec, TOKIL2(TOK_ID, TOK_ID));
 
   spec = "example: comment contains *";
-  TEST_SCANNER( "x /* foo*bar */ y", spec,
-    Parser::token::TOK_ID, Parser::token::TOK_ID);
+  TEST_SCANNER( "x /* foo*bar */ y", spec, TOKIL2(TOK_ID, TOK_ID));
 
   spec = "border case example: empty comment";
-  TEST_SCANNER( "/**/", spec);
+  TEST_SCANNER( "/**/", spec, TOKIL0());
 
   spec = "border case example: only stars inside comment";
-  TEST_SCANNER( "/***/", spec);
+  TEST_SCANNER( "/***/", spec, TOKIL0());
 
   spec = "border case example: stars inside comment";
-  TEST_SCANNER( "/* foo**bar */", spec);
+  TEST_SCANNER( "/* foo**bar */", spec, TOKIL0());
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME2(
@@ -328,17 +322,17 @@ TEST(ScannerTest, MAKE_TEST_NAME2(
   {
     DriverOnTmpFile driver( "foo" );
     Scanner& UUT = driver.scanner(); 
-    EXPECT_EQ(Parser::token::TOK_ID, UUT.front().token());
-    EXPECT_EQ(Parser::token::TOK_ID, UUT.front().token());
+    EXPECT_TOK_EQ(TOK_ID, UUT.front());
+    EXPECT_TOK_EQ(TOK_ID, UUT.front());
   }
 
   spec = "Example: Collaboration with pop: first front, then pop";
   {
     DriverOnTmpFile driver( "foo" );
     Scanner& UUT = driver.scanner(); 
-    EXPECT_EQ(Parser::token::TOK_ID, UUT.front().token());
-    EXPECT_EQ(Parser::token::TOK_ID, UUT.pop().token());
-    EXPECT_EQ(Parser::token::TOK_END_OF_FILE, UUT.front().token());
+    EXPECT_TOK_EQ(TOK_ID, UUT.front());
+    EXPECT_TOK_EQ(TOK_ID, UUT.pop());
+    EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.front());
   }
 
   spec = "Example: Collaboration with pop: first pop, then front";
@@ -346,6 +340,6 @@ TEST(ScannerTest, MAKE_TEST_NAME2(
     DriverOnTmpFile driver( "foo 3" );
     Scanner& UUT = driver.scanner(); 
     UUT.pop();
-    EXPECT_EQ(Parser::token::TOK_NUMBER, UUT.front().token());
+    EXPECT_TOK_EQ(TOK_NUMBER, UUT.front());
   }
 }
