@@ -18,6 +18,14 @@ Parser::symbol_type ParserApiExt::makeTokenT(Parser::token_type tt) {
   return Parser::symbol_type(tt, SemanticValueType{}, Parser::location_type());
 }
 
+#include "tokenstream.h"
+Parser::symbol_type lksjsljsB(TokenStream& m_input) {
+  while (m_input.front().token()==Parser::token::TOK_ELSE) {
+    m_input.pop();
+  }
+  return m_input.pop();
+}
+
 /** Returns a new Parser::symbol_type with the semantic value member and the
 location member being default initialized */
 Parser::symbol_type ParserApiExt::makeToken(Parser::token_type tt) {
@@ -85,6 +93,9 @@ Parser::symbol_type ParserApiExt::makeToken(Parser::token_type tt) {
   case Parser::token::TOK_NUMBER:
     return makeTokenT<NumberToken>(tt);
   }
+
+  assert(false);
+  return Parser::symbol_type(tt, Parser::location_type());
 }
 
 /** Is not required to be called explicitely. But it helps to dedect errors
