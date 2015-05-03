@@ -15,6 +15,10 @@ class ParserApiExt {
 public:
   static const char* tokenName(yy::Parser::token_type t);
 
+  template<typename SemanticValueType>
+  static yy::Parser::symbol_type makeTokenT(yy::Parser::token_type tt);
+  static yy::Parser::symbol_type makeToken(yy::Parser::token_type tt);
+
 private:
   static void initTokenNames();
 

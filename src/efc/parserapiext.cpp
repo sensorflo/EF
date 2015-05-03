@@ -12,6 +12,81 @@ const char* ParserApiExt::tokenName(Parser::token_type t) {
   return m_TokenNames.at(t);
 }
 
+/** Analogous to makeToken */
+template<typename SemanticValueType>
+Parser::symbol_type ParserApiExt::makeTokenT(Parser::token_type tt) {
+  return Parser::symbol_type(tt, SemanticValueType{}, Parser::location_type());
+}
+
+/** Returns a new Parser::symbol_type with the semantic value member and the
+location member being default initialized */
+Parser::symbol_type ParserApiExt::makeToken(Parser::token_type tt) {
+  // mapping Parser::token_type -> semantic data type is redundant to Bison's
+  // %token declarations which define the data type of sematic values.  Thus
+  // also redundant to various fragments in the generated files parser.hpp /
+  // parser.cpp. The author did not see any possibility to make use of
+  // anything within parser.hpp / parser.cpp.
+  switch(tt) {
+  case Parser::token::TOK_TOKENLISTSTART:
+  case Parser::token::TOK_TOKENLISTEND:
+    assert(false);
+    // fall through
+
+  case Parser::token::TOK_END_OF_FILE:
+  case Parser::token::TOK_END:
+  case Parser::token::TOK_DECL:
+  case Parser::token::TOK_IF:
+  case Parser::token::TOK_ELIF:
+  case Parser::token::TOK_ELSE:
+  case Parser::token::TOK_WHILE:
+  case Parser::token::TOK_FUN:
+  case Parser::token::TOK_VAL:
+  case Parser::token::TOK_VAR:
+  case Parser::token::TOK_RAW_NEW:
+  case Parser::token::TOK_RAW_DELETE:
+  case Parser::token::TOK_NOP:
+  case Parser::token::TOK_RETURN:
+  case Parser::token::TOK_EQUAL:
+  case Parser::token::TOK_DOT_EQUAL:
+  case Parser::token::TOK_COLON_EQUAL:
+  case Parser::token::TOK_COMMA:
+  case Parser::token::TOK_SEMICOLON:
+  case Parser::token::TOK_DOLLAR:
+  case Parser::token::TOK_COLON:
+  case Parser::token::TOK_PLUS:
+  case Parser::token::TOK_MINUS:
+  case Parser::token::TOK_STAR:
+  case Parser::token::TOK_CARET:
+  case Parser::token::TOK_AMPER:
+  case Parser::token::TOK_NOT:
+  case Parser::token::TOK_EXCL:
+  case Parser::token::TOK_AND:
+  case Parser::token::TOK_AMPER_AMPER:
+  case Parser::token::TOK_OR:
+  case Parser::token::TOK_PIPE_PIPE:
+  case Parser::token::TOK_EQUAL_EQUAL:
+  case Parser::token::TOK_SLASH:
+  case Parser::token::TOK_G_LPAREN:
+  case Parser::token::TOK_LPAREN:
+  case Parser::token::TOK_RPAREN:
+  case Parser::token::TOK_LBRACE:
+  case Parser::token::TOK_RBRACE:
+  case Parser::token::TOK_ARROW:
+  case Parser::token::TOK_ASSIGNEMENT:
+    return Parser::symbol_type(tt, Parser::location_type());
+
+  case Parser::token::TOK_FUNDAMENTAL_TYPE:
+    return makeTokenT<ObjTypeFunda::EType>(tt);
+
+  case Parser::token::TOK_OP_NAME:
+  case Parser::token::TOK_ID:
+    return makeTokenT<string>(tt);
+
+  case Parser::token::TOK_NUMBER:
+    return makeTokenT<NumberToken>(tt);
+  }
+}
+
 void ParserApiExt::initTokenNames() {
   if (!m_TokenNames.empty()) {
     return;

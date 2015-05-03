@@ -78,9 +78,9 @@ EFCTEST_TESTS_SRCS = errorhandlertest.cpp objtypetest.cpp parserexttest.cpp	\
   driversystemtest.cpp semanticanalizertest.cpp irgentest.cpp	\
   tutorialstest.cpp
 
-EFCTEST_TESTHELPERS_SRCS =
+EFCTEST_TESTHELPERS_SRCS = literaltokenstream.cpp
 
-EFCTEST_TESTS_TESTHELPERS_SRCS =
+EFCTEST_TESTS_TESTHELPERS_SRCS = literaltokenstreamtest.cpp
 
 EFCTEST_OBJS = $(patsubst %.cpp, out/%.o, \
   $(EFCTEST_ROOT_SRCS) $(EFCTEST_TESTS_SRCS) $(EFCTEST_TESTHELPERS_SRCS) \
