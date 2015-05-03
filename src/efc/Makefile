@@ -15,8 +15,9 @@ out gensrc:
 
 # Expands to commands which build a .cpp file
 # $1: file name of header file which has a precompiled version
+# $2: additional CXXFLAGS / CPPFLAGS
 define build_cpp
-	$(CXX) -include $1 $(CXXFLAGS) $(CPPFLAGS) -c -MD -o $@ $<
+	$(CXX) -include $1 $(CXXFLAGS) $(CPPFLAGS) $2 -c -MD -o $@ $<
 	@cp out/$*.d out/$*.P; \
 	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	  -e '/^$$/ d' -e 's/$$/ :/' <out/$*.d >>out/$*.P;
@@ -68,12 +69,26 @@ out/efc: $(EFC_OBJS)
 # efctest
 # ----------------------------------------------------------------------
 
-EFCTEST_SRCS = errorhandlertest.cpp objtypetest.cpp parserexttest.cpp	\
+EFCTEST_ROOT_SRCS = gtestprinter.cpp test.cpp efctest.cpp
+
+EFCTEST_TESTS_SRCS = errorhandlertest.cpp objtypetest.cpp parserexttest.cpp	\
   scannertest.cpp scannerandparsertest.cpp astprintertest.cpp	\
   driversystemtest.cpp semanticanalizertest.cpp irgentest.cpp	\
-  gtestprinter.cpp test.cpp tutorialstest.cpp efctest.cpp
+  tutorialstest.cpp
 
-EFCTEST_OBJS = $(patsubst %.cpp, out/%.o, $(EFCTEST_SRCS))
+EFCTEST_TESTHELPERS_SRCS =
+
+EFCTEST_TESTS_TESTHELPERS_SRCS =
+
+EFCTEST_SRCS = \
+  $(EFCTEST_ROOT_SRCS) \
+  $(patsubst %, tests/%, $(EFCTEST_TESTS_SRCS)) \
+  $(patsubst %, testhelpers/%, $(EFCTEST_TESTHELPERS_SRCS)) \
+  $(patsubst %, tests/testhelpers/%, $(EFCTEST_TESTS_TESTHELPERS_SRCS)) \
+
+EFCTEST_OBJS = $(patsubst %.cpp, out/%.o, \
+  $(EFCTEST_ROOT_SRCS) $(EFCTEST_TESTS_SRCS) $(EFCTEST_TESTHELPERS_SRCS) \
+  $(EFCTEST_TESTS_TESTHELPERS_SRCS))
 
 test efctest: out/efctest
 
@@ -87,7 +102,17 @@ test/efctest.h.pch: test/efctest.h efc.h.pch test/test.h
 
 # regarding the dependency to out/parser.o, see comment of bison's rule
 out/%.o: test/%.cpp test/efctest.h.pch out/parser.o | out
-	$(call build_cpp, test/efctest.h)
+	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers)
+
+out/%.o: test/tests/%.cpp test/efctest.h.pch out/parser.o | out
+	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers)
+
+out/%.o: test/testhelpers/%.cpp test/efctest.h.pch out/parser.o | out
+	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers)
+
+out/%.o: test/tests/testhelpers/%.cpp test/efctest.h.pch out/parser.o | out
+	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers)
+
 
 out/libgtest.a: ${GTEST_DIR}/src/gtest-all.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c -o out/gtest-all.o $<
