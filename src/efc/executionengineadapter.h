@@ -30,6 +30,7 @@ public:
 
 private:
   llvm::Module& m_module;
+  /** Guaranteed to be non-null. We're _not_ the owner. */
   llvm::ExecutionEngine* m_executionEngine;
 };
 
