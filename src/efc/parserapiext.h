@@ -13,17 +13,41 @@ ParserExt is similar, but extends the private implementation details of
 Parser. */
 class ParserApiExt {
 public:
-  static void initTokenNames();
+  static void initTokenAttrs();
 
   static const char* tokenName(yy::Parser::token_type t);
 
+  template<typename SemanticValueType>
+  static yy::Parser::symbol_type makeTokenT(yy::Parser::token_type tt);
+  static yy::Parser::symbol_type makeToken(yy::Parser::token_type tt);
+
 private:
-  /** Redundant copy of yy::Parser::yytname_.
-  \internal The author did not knew how to access the private member
-  yy::Parser::yytname_ to be able to print tokens. A redundant copy seemed the
-  best among all the bad solutions since the tokens do not change that
-  often */
-  static std::vector<const char*> m_TokenNames;
+  enum SemanticValueType {
+    SVTInvalid,
+    SVTVoid,
+    SVTFundamentalType,
+    SVTString,
+    SVTNumberToken
+  };
+  struct TokenTypeAttr {
+    TokenTypeAttr(const char* name, SemanticValueType svt);
+    TokenTypeAttr();
+    const char* m_name;
+    SemanticValueType m_semanticValueType;
+  };
+  /** Redundant copy information allready stored in yy::Parser.
+
+  m_TokenAttrs[].m_name is redundant to yy::Parser::yytname_. The author did
+  not knew how to access the private member yy::Parser::yytname_ to be able to
+  print tokens. A redundant copy seemed the best among all the bad solutions
+  since the tokens do not change that often
+
+  mapping Parser::token_type -> semantic data type is redundant to Bison's
+  %token declarations which define the data type of sematic values. Thus
+  also redundant to various fragments in the generated files parser.hpp /
+  parser.cpp. The author did not see any possibility to make use of
+  anything within parser.hpp / parser.cpp. */
+  static std::vector<TokenTypeAttr> m_TokenAttrs;
   static std::vector<char> m_OneCharTokenNames;
 };
 

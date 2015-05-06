@@ -6,7 +6,7 @@ using namespace testing;
 
 int main(int argc, char** argv) {
   IrGen::staticOneTimeInit();
-  ParserApiExt::initTokenNames();
+  ParserApiExt::initTokenAttrs();
   InitGoogleTest(&argc, argv);
   TestEventListeners& listeners = ::UnitTest::GetInstance()->listeners();
   delete listeners.Release(listeners.default_result_printer());
