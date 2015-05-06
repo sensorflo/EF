@@ -94,6 +94,7 @@ and by declaration of free function yylex */
   COLON_EQUAL ":="
   COMMA ","
   SEMICOLON ";"
+  NEWLINE "newline"
   DOLLAR "$"
   COLON ":"
   PLUS "+"

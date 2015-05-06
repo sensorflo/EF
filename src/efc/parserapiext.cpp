@@ -75,6 +75,7 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_COLON_EQUAL, {"COLON_EQUAL", SVTVoid}},
     { Parser::token::TOK_COMMA, {"COMMA", SVTVoid}},
     { Parser::token::TOK_SEMICOLON, {"SEMICOLON", SVTVoid}},
+    { Parser::token::TOK_NEWLINE, {"NEWLINE", SVTVoid}},
     { Parser::token::TOK_DOLLAR, {"DOLLAR", SVTVoid}},
     { Parser::token::TOK_COLON, {"COLON", SVTVoid}},
     { Parser::token::TOK_PLUS, {"PLUS", SVTVoid}},
