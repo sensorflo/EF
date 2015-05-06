@@ -8,7 +8,6 @@
 #include "../errorhandler.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Module.h"
-#include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include <memory>
 using namespace testing;

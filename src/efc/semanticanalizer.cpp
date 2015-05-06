@@ -151,7 +151,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
     // comparision ops store the result of their computation in a new a
     // temporary object of type bool
     if ( class_ == AstOperator::eComparison ) {
-      objType = make_unique<ObjTypeFunda>(ObjTypeFunda::eBool);
+      objType = std::make_unique<ObjTypeFunda>(ObjTypeFunda::eBool);
     }
     // The object denoted by the dot-assignment is exactly that of lhs
     else if ( opop == AstOperator::eDotAssign ) {

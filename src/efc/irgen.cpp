@@ -2,6 +2,7 @@
 #include "ast.h"
 #include "env.h"
 #include "errorhandler.h"
+#include "llvm/Support/TargetSelect.h"
 #include "llvm/IR/Value.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
@@ -21,6 +22,8 @@ Value* const IrGen::m_abstractObject = reinterpret_cast<Value*>(0xFFFFFFFF);
 
 void IrGen::staticOneTimeInit() {
   InitializeNativeTarget();
+  InitializeNativeTargetAsmPrinter();
+  InitializeNativeTargetAsmParser();
 }
 
 IrGen::IrGen(ErrorHandler& errorHandler) :
@@ -33,7 +36,7 @@ implict LLVM module associated with this IrGen object.  At the top level of
 the AST, only declarations or definitions are allowed.
 \pre SemanticAnalizer must have massaged the AST and the Env */
 unique_ptr<Module> IrGen::genIr(AstNode& root) {
-  m_module = make_unique<Module>("Main", getGlobalContext());
+  m_module = std::make_unique<Module>("Main", getGlobalContext());
 
   root.accept(*this);
 

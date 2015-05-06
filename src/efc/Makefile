@@ -1,6 +1,6 @@
 CXXFLAGS += `llvm-config --cxxflags | sed 's/-fno-exceptions\|-DNDEBUG//g'` -O0 -Wall -Werror -std=c++11 -Wno-deprecated-register #-pedantic
 LDFLAGS += `llvm-config --ldflags`
-LIBS += `llvm-config --libs core jit native interpreter --system-libs | sed 's/-ledit//g'`
+LIBS += `llvm-config --libs core mcjit native interpreter --system-libs | sed 's/-ledit//g'`
 CXX = clang++
 LEX = flex
 YACC = bison

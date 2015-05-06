@@ -19,6 +19,7 @@ public:
 
   template<typename TRet = int, typename...TArgs>
   TRet jitExecFunction(const std::string& name, TArgs...args) {
+    m_executionEngine->finalizeObject();
     void* functionVoidPtr =
       m_executionEngine->getPointerToFunction(m_module.getFunction(name));
     assert(functionVoidPtr);
@@ -29,8 +30,7 @@ public:
 
 private:
   llvm::Module& m_module;
-  std::string m_errStr;
-  std::unique_ptr<llvm::ExecutionEngine> m_executionEngine;
+  llvm::ExecutionEngine* m_executionEngine;
 };
 
 #endif

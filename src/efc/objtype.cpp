@@ -325,8 +325,8 @@ const ObjType& ObjTypePtr::pointee() const {
 ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret) :
   ObjType{eNoQualifier},
   m_args{ args ?
-      unique_ptr<list<shared_ptr<const ObjType>>>{args} :
-    make_unique<list<shared_ptr<const ObjType>>>()},
+      std::unique_ptr<list<shared_ptr<const ObjType>>>{args} :
+    std::make_unique<list<shared_ptr<const ObjType>>>()},
   m_ret{ ret ? move(ret) : make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt)} {
   assert(m_args);
   assert(m_ret);
@@ -337,7 +337,7 @@ ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType>>* args, shared_ptr<const O
 
 ObjTypeFun::ObjTypeFun(const ObjTypeFun& other) :
   ObjType{other},
-  m_args{make_unique<list<shared_ptr<const ObjType>>>()},
+  m_args{std::make_unique<list<shared_ptr<const ObjType>>>()},
   m_ret{other.m_ret->clone()} {
   for ( const auto& srcArg : *other.m_args  ) {
     m_args->push_back(shared_ptr<ObjType>{srcArg->clone()});

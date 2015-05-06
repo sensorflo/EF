@@ -93,7 +93,7 @@ void Driver::doSemanticAnalysis(AstNode& ast) {
 
 void Driver::generateIr(AstNode& ast) {
   auto module = m_irGen.genIr(ast);
-  m_executionEngine = make_unique<ExecutionEngineApater>(move(module));
+  m_executionEngine = std::make_unique<ExecutionEngineApater>(move(module));
 }
 
 int Driver::jitExecMain() {
