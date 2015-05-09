@@ -13,9 +13,17 @@ ParserExt is similar, but extends the private implementation details of
 Parser. */
 class ParserApiExt {
 public:
+  enum TokenClass {
+    TKStarter,
+    TKSeparator,
+    TKDelimiter,
+    TKComponentOrAmbigous,
+    TKNewline,
+  };
   static void initTokenAttrs();
 
   static const char* tokenName(yy::Parser::token_type t);
+  static TokenClass tokenClass(yy::Parser::token_type t);
 
   template<typename SemanticValueType>
   static yy::Parser::symbol_type makeTokenT(yy::Parser::token_type tt);
@@ -30,10 +38,11 @@ private:
     SVTNumberToken
   };
   struct TokenTypeAttr {
-    TokenTypeAttr(const char* name, SemanticValueType svt);
+    TokenTypeAttr(const char* name, SemanticValueType svt, TokenClass tc);
     TokenTypeAttr();
     const char* m_name;
     SemanticValueType m_semanticValueType;
+    TokenClass m_tokenClass;
   };
   /** Redundant copy information allready stored in yy::Parser.
 
