@@ -30,6 +30,7 @@ gensrc/parser.cpp $(GEN_HEADERS): ef.yy ast.h objtype.h parserext.h driver.h acc
 	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $<;\
     yaccexitstatus=$$?;\
     xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml;\
+    patch gensrc/parser.hpp < parser.hpp.patch;\
     exit $$yaccexitstatus
 
 gensrc/scanner.cpp: ef.l driver.h gensrc/parser.hpp | gensrc
