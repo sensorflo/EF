@@ -28,7 +28,8 @@ endef
 
 EFC_SRCS = driver.cpp parserext.cpp ast.cpp errorhandler.cpp objtype.cpp \
   astdefaultiterator.cpp env.cpp semanticanalizer.cpp irgen.cpp astprinter.cpp \
-  efc.cpp executionengineadapter.cpp parserapiext.cpp
+  efc.cpp executionengineadapter.cpp parserapiext.cpp tokenstreamlookahead.cpp \
+  tokenfilter.cpp
 
 EFC_GEN_SRCS = parser.cpp scanner.cpp
 
@@ -76,7 +77,7 @@ EFCTEST_ROOT_SRCS = gtestprinter.cpp test.cpp efctest.cpp
 EFCTEST_TESTS_SRCS = errorhandlertest.cpp objtypetest.cpp parserexttest.cpp	\
   scannertest.cpp scannerandparsertest.cpp astprintertest.cpp	\
   driversystemtest.cpp semanticanalizertest.cpp irgentest.cpp	\
-  tutorialstest.cpp
+  tutorialstest.cpp tokenstreamlookaheadtest.cpp tokenfiltertest.cpp
 
 EFCTEST_TESTHELPERS_SRCS = literaltokenstream.cpp tokentesthelper.cpp
 
