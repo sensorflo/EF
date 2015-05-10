@@ -15,7 +15,6 @@
 #include <errno.h>
 #include <string.h>
 #include <stdexcept>
-#include "memoryext.h"
 using namespace std;
 using namespace yy;
 

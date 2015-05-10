@@ -14,7 +14,6 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <sstream>
-#include "memoryext.h"
 using namespace std;
 using namespace llvm;
 

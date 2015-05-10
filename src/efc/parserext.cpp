@@ -4,7 +4,6 @@
 #include "errorhandler.h"
 #include <cassert>
 #include <stdexcept>
-#include "memoryext.h"
 using namespace std;
 
 /** Turns the AstCtList in an AstOperator tree with at most two childs per

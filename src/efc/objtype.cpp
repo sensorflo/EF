@@ -3,7 +3,6 @@
 #include "llvm/IR/LLVMContext.h"
 #include <cassert>
 #include <sstream>
-#include "memoryext.h"
 using namespace std;
 using namespace llvm;
 

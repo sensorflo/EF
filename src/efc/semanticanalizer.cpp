@@ -4,7 +4,6 @@
 #include "env.h"
 #include "errorhandler.h"
 #include "objtype.h"
-#include "memoryext.h"
 using namespace std;
 
 SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
