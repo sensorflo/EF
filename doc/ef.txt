@@ -1294,11 +1294,11 @@ class.  Maybe use keyword +meth+ instead of +fun+.  That also makes
 documentation more easy.  I.e. terms used in documentation correspond more to
 terms used in code / in the syntax of the language.
 
-==== Virtual
+==== Virtual / override / non-virtual / final
 
 Keyword +virtual+ (or +new_virtual+?) to introduce a _new_ virtual method
 which does not yet exit in the base class / interfaces with that name and
-signature.  This is the default, i.e. +virtual+ can be omitted.
+signature.
 
 Keyword +override+ to override a virtual method.  It is an error if there is
 no virtual method of the same name and signature in the hierarchy.
@@ -1306,30 +1306,32 @@ no virtual method of the same name and signature in the hierarchy.
 Keyword +non_virtual+ to declare a method non virtual.  It is an error if a
 method of the same name exists in the hierarchy.
 
+What can EF do to make it more likely to declare certain methods as
+destructors and clone correctly, which in most cases should be virtual?
+
 Have a keyword (say +force_call_on_override+) for a method which forces
 methods overriding this method either need to call it or explicitly say that
 they know they don't need to call the super class.  E.g. Java's clone or
 finalize methods could need that, probably also methods doing assignments or
 testing for equivalence, or Dragon's calibrate method.
 
-
-==== Final
+Have a keyword which forces each sub type (including sub sub ... types) to
+override the given method. E.g. for +hashCode+, +clone+, +equals+, ....
 
 A +final+ method cannot be overriden by a subclass.  Only applicable to
 virtual methods.  Can make the code more performant if the compiler can deduce
 the dynamic type and from that can deduce that it is a final method and thus
 the virtual table indirection can be omitted.
 
-.Discussion of whether or not final should be provided
+In test (equals debug?) mode friends can override non-virtual and final
+virtual methods.  Naturally this means that in test mode, also non-virtual
+methods must have an entry in the vtable anyway.  Also it probably means that
+the virtual / non-virtual difference shall not affect name lookup.  A test
+double TDX for class X could inherit from X and overrides _all_ its
+methods. To facilitate overriding all methods, a modifier could be added to
+the inheritance so the compiler gives an error if a method is not overriden. 
 
-Only (?) usable in security related areas, and those should achieve their
-goals by other means.  Final is bad for unit testing.  It's bad from the point
-of view that the author of class A shall not dictate others how to use it.  On
-the other hand it
 
-EF shall not dictate what it is `good' and what is `bad', it only provides
-tools which can be good and its up to the user to decide when its appropriate
-to use them.
 
 ==== FinalAndDelete
 
@@ -1352,10 +1354,14 @@ can't be reopened as in C&plus;&plus;
 
 
 [[convenience_method]]
-==== Convenience method
+==== Convenience method / non-member methods
 A convenience method does has the same access rights as anything outside the
 class, i.e. can only access public members, but can be called as a true
 member.
+
+At least those declared inside a class can be virtual. Each class in the type
+hierarchy can choose whether it's overriden implementation of virtual foo is a
+member or a non-member.
 
 Motivation:
 
@@ -1452,6 +1458,17 @@ argument_.
 
 === Overloaded Operators
 
+For lookup simplicity, a operator must be on the interface of its first
+parameter's type.  Either by 1) declaring it within the definition of the
+first argument's type or 2) by a global `function' (see <<no_name_yet>>) where
+the lhs argument is never implicitely casted.  In the case of 2, to use the
+operator, the name of the operator must be +imported+. *to-do*: What are the
+implications to never casting the first argument considering that for builtin
+types, for binary operators, both arguments are widened to a common
+type. Maybe don't look it like this, look at it like: ++int::operator+(const
+double&)++ _internally_ first widens ++*this++ to double, and
+++double::operator+(const int&)++ _internally_ first widens the rhs argument.
+
 A class A can define two methods for a given binary operator and a given
 other-operand-type: Where A is the lhs (and the other is the rhs), and vice
 versa.  Also, in case the operation is implemented in a commutative way, only
@@ -1472,7 +1489,7 @@ fun_name_operator =
     unary_prefix_postfix_operator 'this | ## unary prefix operator
     unary_prefix_operator 'this | 
     'this unary_prefix_postfix_operator | ## unary postfix operator
-    'this unary_postfix_operator
+    'this unary_postfix_Operator
   );
 binary_operator = \+ | \* | 'and | ...;
 unary_prefix_operator = ...;
@@ -1481,6 +1498,39 @@ unary_prefix_postfix_operator = `++ | `-- ;
 ----------------------------------------------------------------------
 
 See also ``Properties of some standard methods/operators''.
+
+
+[[gobal_functions]]
+=== Global functions
+
+Consider dissallowing them, only allow class static methods. Note that this
+would also disallow operator overloading.  I think the rules to disambuguite
+when looking up a name (e.g. see ADL in C&plus;&plus;, its not that hard that
+e.g. a template implementation accidentaly picks up the wrong implementation
+of an operator, `need' for references in case of operator overloading) are
+just too complicated; as programmer a mistake is made to easy.
+
+Global functions can only be accessed via their containing type (and that only
+via its containing package). Use +import+ (which dedects naming conflicts at
+build time when it is build-time-executed) to be relieved to always
+explicitely state such `namespace' prefixes.
+
+
+[[no_name_yet]]
+=== Global functions being part, call syntactically only, of another's class interface
+
+In addition to the normal properties of global functions, those can be made
+part of another's class interface.  E.g. via an +import+ statement (which as
+always detects naming conflicts when it is build-time-executed).  *to-do*:
+Naming: Distinguish between 1) the core interface which is the classic pure
+interface, which can't be modified after declaration, and can be used as a
+base type and thus for polymorphism, and 2) The extended interface where a
+client can (import-)add class static methods where the first argument is of
+compatible type to the extended interface.
+
+Via that mechanisms, in a built-in form, global math functions could also be
+made part of arithmetic types interfaces.  E.g. instead +sin(i)+ one could
+write +i.sin()+ or even +3.sin()+.
 
 
 [[code_chunk_call]]
@@ -1689,10 +1739,18 @@ stored return value of the 1st call.
 Probably part of the more general copy <<elision>>.
 
 
-== Modules
+== Modules aka Packages
 Do it as in D / Java / Python, have modules, opposed to the concept of C /
-C&plus;&plus; with header / source files.  Currently this document uses the
-terms `library' and `module' interchangeably.
+C&plus;&plus; with `header' files (containing declarations) and `source' files
+containing definitions.  Currently this document uses the terms `library' and
+`module' and `package' interchangeably.
+
+Make package a tree hierarchy. That is unlike Java, where its a flat
+`hierarchy'.
+
+Then public classes are accessible from any package, private classes are
+accessible only from the current package, and protected classes are accessible
+from the current package and all it's subpackages.
 
 
 [[exchanging_module_impl]]
@@ -2294,7 +2352,13 @@ non-public fields.
 fun_name_dtor = `~this | 'dtor | 'destructor;
 ----------------------------------------------------------------------
 
-How to call the destructor explicitly? 
+How to prevent the case that an object is destructed polymorphically, but the
+static type of the pointee has a non-virtual destructor?  Only making it
+protected is not really good enough, the whole hierarchy starting at the base
+can accidentaly call the destructor polymorphically.  1) New access level, say
++subtype+, meaning only the parent object being of a subtype can call the
+destructor.  2) A destructor must always be virtual; make it final when you
+want to omit the cost of virtual methods.
 
 
 [[assignment]]
@@ -2302,6 +2366,10 @@ How to call the destructor explicitly?
 
 *to-do*:
 
+- Consider letting it return void.  Helps against accidentaly assigning
+  instead comparing, typically within conditionals of flow control
+  constructs.  In case temporaries are mutable, helps against accidentaly
+  assigning to them.
 - The code shall be required to explicitly state which of these sub-types an
   assignment is: copy assignment, move assignment, cast (copy) assignment,
   cast move assignment, other.  See also <<constructor>> which has a similar
@@ -2413,6 +2481,34 @@ See chapter <<code_chunks>>.
 - In the declaration of a member, one can state whether and what
   gutters/setters are (auto) generated [mind the different access].  The
   implementation is automatic or user given.
+
+
+=== class inheritance / implementing interfaces / sub typing
+
+Differentiate:
+
+- public / protected / private class inheritance, i.e. inherit implementations
+  of base class and optionaly override overideable methods
+
+- Sub typing only, public (object) interface inheritance: the derived class
+  implements the public interface of the base class from scratch, without
+  inheriting the base class' implementation. Note that the public interface of
+  the base class is in general a tree of interfaces of further sub types,
+  `any' of the methods being implemented. This is not possible if any of the
+  base class' methods is non-virtual -- however in debug mode friend classes
+  can derive also in that case.
+
+A given class X can state, e.g. with the keyword +final+, that it's not
+designed to be a base class for class inheritance. Concrete classes
+(i.e. non-abstract (which naturally includes pure abstract)) are by default
+`final'. In debug mode, friend classes can inherit nevertheless. That
+facilitates the creation of test doubles. That is not possible in release mode
+to facilitate optimizations which turn virtual method calls into non-virtual
+method calls. However note that it's probably better if test doubles use
+sub-typing exclusively, without class inheritance. That's also because EF
+shall facilitate creating test doubles for 3rd party classes where the test
+double cannot be made a friend of.
+
 
 
 === Invariants
@@ -3417,4 +3513,4 @@ std::tuple<const int&,const double&>(i,j) = gettwo();
 //  LocalWords:  del foreach OverrideAndDelete Inmutable endof Structs vals
 //  LocalWords:  allocator allocators addr TCppStd IEC params param jumptable
 //  LocalWords:  funt tfun prvalue unstored xvalue glvalue autoimpl nothrow
-//  LocalWords:  tnull
+//  LocalWords:  tnull subtype
