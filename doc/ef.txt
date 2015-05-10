@@ -382,6 +382,17 @@ expression.  See chapter <<expressions>>.
 program = sa_expr;
 ----------------------------------------------------------------------
 
+Each file is/contains (at least by default) one single class.  I.e. top level
+data objects are members of that class, top level code chunks are members of
+that class.  To declare something in global namespace, use a keyword,
+e.g. `global'.  That saves one level of indentation for the most often
+occurring case.  
+
+A directory (at least by default) is a module aka package. 
+
+Or alternatively, file extension defines whether this file defines a class or
+a module.
+
 
 == Lexical structure
 
