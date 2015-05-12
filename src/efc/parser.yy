@@ -91,9 +91,11 @@ and by declaration of free function yylex */
   ENDOF "endof"
   DECL "decl"
   IF "if"
+  THEN "then"
   ELIF "elif"
   ELSE "else"
   WHILE "while"
+  DO "do"
   FUN "fun"
   VAL "val"
   VAR "var"
@@ -162,7 +164,7 @@ and by declaration of free function yylex */
 %type <AstFunDecl*> naked_fun_decl
 %type <AstFunDef*> naked_fun_def
 %type <ObjType*> type opt_colon_type opt_ret_type
-%type <ConditionActionPair> condition_action_pair
+%type <ConditionActionPair> condition_action_pair_then
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -242,8 +244,15 @@ opt_colon
   | COLON
   ;
 
-condition_action_sep
-  : NEWLINE
+condition_action_then_sep
+  : THEN
+  | NEWLINE
+  | COLON
+  ;
+
+condition_action_do_sep
+  : DO
+  | NEWLINE
   | COLON
   ;
 
@@ -376,26 +385,31 @@ valvar
   ;
 
 naked_if
-  : condition_action_pair opt_else                                   { $$ = new AstBlock(new AstIf(($1).m_condition, ($1).m_action, $2)); }
-  | condition_action_pair elif_chain                                 { $$ = new AstBlock(new AstIf(($1).m_condition, ($1).m_action, $2)); }
+  : condition_action_pair_then opt_else                              { $$ = new AstBlock(new AstIf(($1).m_condition, ($1).m_action, $2)); }
+  | condition_action_pair_then elif_chain                            { $$ = new AstBlock(new AstIf(($1).m_condition, ($1).m_action, $2)); }
   ;
 
 elif_chain
-  : ELIF condition_action_pair opt_else                              { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }  
-  | ELIF condition_action_pair elif_chain                            { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }
+  : ELIF condition_action_pair_then opt_else                         { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }  
+  | ELIF condition_action_pair_then elif_chain                       { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }
   ;  
 
 opt_else
   : %empty                                                           { $$ = NULL; }
-  | ELSE block_expr                                                  { $$ = $2; }
+  | else_sep block_expr                                              { $$ = $2; }
+  ;
+
+else_sep
+  : ELSE
+  | COLON
   ;
 
 naked_while
-  : condition_action_pair                                            { $$ = new AstBlock(new AstLoop($1.m_condition, $1.m_action)); }
+  : standalone_expr condition_action_do_sep block_expr               { $$ = new AstBlock(new AstLoop($1, $3)); }
   ;
 
-condition_action_pair
-  : standalone_expr condition_action_sep block_expr                  { $$ = ConditionActionPair{ $1, $3}; }
+condition_action_pair_then
+  : standalone_expr condition_action_then_sep block_expr             { $$ = ConditionActionPair{ $1, $3}; }
   ;
 
 naked_return

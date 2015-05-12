@@ -53,10 +53,10 @@ foo1 := if x==y: x else y$
 // ----------------------------------------------------------------------
 // 
 // The following ifs are equivalent
-if   x==y: x else y $      
-if($ x==y: x else y )      
-if   x==y: x else y end
-if   x==y: x else y endof if$
+if   x==y:     x else y $      
+if($ x==y:     x:     y )      
+if   x==y then x else y end
+if   x==y then x else y endof if$
 
 // Also operators can be written in the call syntax.
 // operator syntax       call syntax

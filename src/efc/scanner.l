@@ -55,9 +55,11 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 
   /* non-type keywords */
 if                  return yy::Parser::make_IF(loc);
+then                return yy::Parser::make_THEN(loc);
 elif                return yy::Parser::make_ELIF(loc);
 else                return yy::Parser::make_ELSE(loc);
 while               return yy::Parser::make_WHILE(loc);
+do                  return yy::Parser::make_DO(loc);
 fun                 return yy::Parser::make_FUN(loc);
 val                 return yy::Parser::make_VAL(loc);
 var                 return yy::Parser::make_VAR(loc);

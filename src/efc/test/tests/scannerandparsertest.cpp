@@ -504,6 +504,17 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_ifelse_flow_control_expression,
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
+
+  // common used variations
+  TEST_PARSE( "if     x \n   1        $"  , "if(x 1)", "");
+  TEST_PARSE( "if     x :    1        $"  , "if(x 1)", "");
+  TEST_PARSE( "if     x then 1        end", "if(x 1)", "");
+  TEST_PARSE( "if ($  x :    1        )"  , "if(x 1)", "");
+  TEST_PARSE( "if     x \n   1 else 2 $"  , "if(x 1 2)", "");
+  TEST_PARSE( "if     x :    1 else 2 $"  , "if(x 1 2)", "");
+  TEST_PARSE( "if     x then 1 else 2 end", "if(x 1 2)", "");
+  TEST_PARSE( "if ($  x :    1 :    2 )"  , "if(x 1 2)", "");
+
   // toggling 1) no elif part, one elif part, two elif parts
   // toggling 2) without/with else part
   // toggling 3) syntax 'if...;' vs 'if(...)' vs 'if...end if;' 
@@ -516,8 +527,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "if  x\n1                            endof if$", "if(x 1)", "");
   TEST_PARSE( "if  x: 1                     else 2         $", "if(x 1 2)", "");
   TEST_PARSE( "if  x\n1                     else 2         $", "if(x 1 2)", "");
-  TEST_PARSE( "if($x: 1                     else 2         )", "if(x 1 2)", "");
-  TEST_PARSE( "if($x\n1                     else 2         )", "if(x 1 2)", "");
+  TEST_PARSE( "if($x: 1                     :    2         )", "if(x 1 2)", "");
+  TEST_PARSE( "if($x\n1                     :    2         )", "if(x 1 2)", "");
   TEST_PARSE( "if  x: 1                     else 2 endof if$", "if(x 1 2)", "");
   TEST_PARSE( "if  x\n1                     else 2 endof if$", "if(x 1 2)", "");
   TEST_PARSE( "if  x: 1 elif y: 2                          $", "if(x 1 if(y 2))", "");
@@ -528,8 +539,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "if  x\n1 elif y\n2                  endof if$", "if(x 1 if(y 2))", "");
   TEST_PARSE( "if  x: 1 elif y: 2           else 3         $", "if(x 1 if(y 2 3))", "");
   TEST_PARSE( "if  x\n1 elif y\n2           else 3         $", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if($x: 1 elif y: 2           else 3         )", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if($x\n1 elif y\n2           else 3         )", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if($x: 1 elif y: 2           :    3         )", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if($x\n1 elif y\n2           :    3         )", "if(x 1 if(y 2 3))", "");
   TEST_PARSE( "if  x: 1 elif y: 2           else 3 endof if$", "if(x 1 if(y 2 3))", "");
   TEST_PARSE( "if  x\n1 elif y\n2           else 3 endof if$", "if(x 1 if(y 2 3))", "");
   TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3                $", "if(x 1 if(y 2 if(z 3)))", "");
@@ -540,8 +551,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3        endof if$", "if(x 1 if(y 2 if(z 3)))", "");
   TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4         $", "if(x 1 if(y 2 if(z 3 4)))", "");
   TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3 else 4         $", "if(x 1 if(y 2 if(z 3 4)))", "");
-  TEST_PARSE( "if($x: 1 elif y: 2 elif z: 3 else 4         )", "if(x 1 if(y 2 if(z 3 4)))", "");
-  TEST_PARSE( "if($x\n1 elif y\n2 elif z\n3 else 4         )", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if($x: 1 elif y: 2 elif z: 3 :    4         )", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if($x\n1 elif y\n2 elif z\n3 :    4         )", "if(x 1 if(y 2 if(z 3 4)))", "");
   TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4 endof if$", "if(x 1 if(y 2 if(z 3 4)))", "");
   TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3 else 4 endof if$", "if(x 1 if(y 2 if(z 3 4)))", "");
 }
@@ -550,6 +561,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_loop_control_expression,
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "while  x: y$", "while(x y)", "");
-  TEST_PARSE( "while($x: y)", "while(x y)", "");
+  TEST_PARSE( "while    x :  y $"  , "while(x y)", "");
+  TEST_PARSE( "while    x do y end", "while(x y)", "");
+  TEST_PARSE( "while ($ x :  y )"  , "while(x y)", "");
 }

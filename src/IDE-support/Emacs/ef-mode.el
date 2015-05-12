@@ -36,7 +36,7 @@
 ;;; Code
 (defconst ef-font-lock-keywords
   (list
-   "\\b\\(fun\\|val\\|var\\|decl\\|nop\\|if\\|elif\\|else\\|unless\\|for\\|foreach\\|in\\|while\\|until\\|do\\|throws\\|ret\\|goto\\|break\\|continue\\|noinit\\|end\\|endof\\|raw_new\\|raw_delete\\|mi_end\\|true\\|false\\)\\b"
+   "\\b\\(fun\\|val\\|var\\|decl\\|nop\\|if\\|elif\\|else\\|unless\\|for\\|foreach\\|in\\|while\\|until\\|do\\|throws\\|ret\\|goto\\|break\\|continue\\|noinit\\|end\\|endof\\|raw_new\\|raw_delete\\|mi_end\\|true\\|false\\|then\\)\\b"
    (list (concat "\\bfun"                                       ; fun
                  "\\(?:[ \t\r\n]*($[ \t\r\n]*\\|[ \t\r\n]+\\)"  ; ($ or blank
                  "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)\\b[ \t\r\n]*"  ; id
