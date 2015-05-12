@@ -218,7 +218,7 @@ ct_list
 
 pure_ct_list
   : standalone_expr                                 { $$ = new std::list<AstValue*>(); ($$)->push_back($1); }
-  | pure_ct_list opt_comma standalone_expr          { ($1)->push_back($3); std::swap($$,$1); }
+  | pure_ct_list COMMA standalone_expr              { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 pure_naked_param_ct_list
