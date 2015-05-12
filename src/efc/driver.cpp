@@ -2,6 +2,7 @@
 #include "gensrc/parser.hpp"
 #include "parserext.h"
 #include "scanner.h"
+#include "tokenfilter.h"
 #include "ast.h"
 #include "errorhandler.h"
 #include "env.h"
@@ -30,10 +31,11 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_gotError(false),
   m_gotWarning(false),
   m_ostream(ostream ? *ostream : cerr),
-  m_scanner(make_unique<Scanner>(*this)),
+  m_scanner(std::make_unique<Scanner>(*this)),
+  m_tokenFilter(std::make_unique<TokenFilter>(*m_scanner.get())),
   m_astRoot(NULL),
   m_parserExt(*new ParserExt(m_env, m_errorHandler)),
-  m_parser(new Parser(this->scanner(), *this, m_parserExt, m_astRoot)),
+  m_parser(new Parser(*m_tokenFilter.get(), *this, m_parserExt, m_astRoot)),
   m_irGen(*new IrGen(m_errorHandler)),
   m_semanticAnalizer(*new SemanticAnalizer(m_env, m_errorHandler)) {
 

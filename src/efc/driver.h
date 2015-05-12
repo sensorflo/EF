@@ -15,6 +15,7 @@ class SemanticAnalizer;
 class IrGen;
 class ExecutionEngineApater;
 class Scanner;
+class TokenFilter;
 
 /* Hosts the scanner, parser, semantic analyizer, IR builder etc. and drives
 those. The scanner has no own class; it is driven by it's global function
@@ -57,6 +58,7 @@ private:
   /** We're _not_ the owner */
   std::basic_ostream<char>& m_ostream;
   std::unique_ptr<Scanner> m_scanner;
+  std::unique_ptr<TokenFilter> m_tokenFilter;
   AstNode* m_astRoot;
   ParserExt& m_parserExt;
   /** We're the owner. Guaranteed to be non-NULL */
