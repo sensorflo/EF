@@ -10,8 +10,8 @@
 %define api.value.type variant
 %define parse.assert
 
-/* Declarations needed to declare semantic value types. Semantic values of
-tokens are also needed by specializations of TokenStream. */
+/* Declarations and definitions needed to declare semantic value types used in
+tokens produced by scanner. */
 %code requires
 {
   #include "../generalvalue.h"
@@ -26,16 +26,27 @@ tokens are also needed by specializations of TokenStream. */
   };
 }
 
-/* Declarations needed for declarations of the generated parser */
+/* Further declarations and definitions needed to declare semantic value
+types, which however are only used for non-terminal symbols, i.e. which the
+scanner doesn't need to know */
+%code requires
+{
+  struct RawAstDataDecl;
+  struct RawAstDataDef;
+  struct ConditionActionPair {
+    AstValue* m_condition;
+    AstValue* m_action;
+  };
+}
+
+/* Further declarations and definitions needed to declare the generated parser
+*/
 %code requires
 {
   class Driver;
   class ParserExt;
   class AstNode;
   class TokenStream;
-
-  struct RawAstDataDecl;
-  struct RawAstDataDef;
 }
 
 /** \internal Signature of yylex is redundantely defined here by %lex-param
@@ -140,7 +151,7 @@ and by declaration of free function yylex */
 %type <AstCtList*> ct_list initializer pure2_standalone_expr_seq
 %type <std::list<AstArgDecl*>*> pure_naked_param_ct_list
 %type <std::list<AstValue*>*> pure_ct_list
-%type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif opt_else naked_return naked_while
+%type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifiers> valvar
 %type <RawAstDataDecl*> naked_data_decl
@@ -148,6 +159,7 @@ and by declaration of free function yylex */
 %type <AstFunDecl*> naked_fun_decl
 %type <AstFunDef*> naked_fun_def
 %type <ObjType*> type opt_colon_type opt_ret_type
+%type <ConditionActionPair> condition_action_pair
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -351,13 +363,13 @@ valvar
   ;
 
 naked_if
-  : standalone_expr opt_colon block_expr opt_else                    { $$ = new AstBlock(new AstIf($1, $3, $4)); }
-  | standalone_expr opt_colon block_expr elif                        { $$ = new AstBlock(new AstIf($1, $3, $4)); }
+  : condition_action_pair opt_else                                   { $$ = new AstBlock(new AstIf(($1).m_condition, ($1).m_action, $2)); }
+  | condition_action_pair elif_chain                                 { $$ = new AstBlock(new AstIf(($1).m_condition, ($1).m_action, $2)); }
   ;
 
-elif
-  : ELIF standalone_expr opt_colon block_expr opt_else               { $$ = new AstBlock(new AstIf($2, $4, $5)); }  
-  | ELIF standalone_expr opt_colon block_expr elif                   { $$ = new AstBlock(new AstIf($2, $4, $5)); }
+elif_chain
+  : ELIF condition_action_pair opt_else                              { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }  
+  | ELIF condition_action_pair elif_chain                            { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }
   ;  
 
 opt_else
@@ -366,7 +378,11 @@ opt_else
   ;
 
 naked_while
-  : standalone_expr opt_colon block_expr                             { $$ = new AstBlock(new AstLoop($1, $3)); }
+  : condition_action_pair                                            { $$ = new AstBlock(new AstLoop($1.m_condition, $1.m_action)); }
+  ;
+
+condition_action_pair
+  : standalone_expr opt_colon block_expr                             { $$ = ConditionActionPair{ $1, $3}; }
   ;
 
 naked_return
