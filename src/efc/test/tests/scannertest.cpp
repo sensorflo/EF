@@ -49,6 +49,21 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   TEST_SCANNER( "", "", TOKIL0());
 }
 
+TEST(ScannerTest, MAKE_TEST_NAME2(
+    GIVEN_horizontal_white_spaces,
+    THEN_they_are_discarded)) {
+  TEST_SCANNER( " \t", "", TOKIL0());
+}
+
+// Note that the TokenFilter which sits between Scanner and Parser will filter
+// out some NEWLINE tokens.
+TEST(ScannerTest, MAKE_TEST_NAME(
+    a_newline,
+    pop,
+    returns_TOK_NEWLINE)) {
+  TEST_SCANNER( "\n", "", TOKIL1(TOK_NEWLINE));
+}
+
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_keyword,
     pop,
@@ -246,16 +261,16 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_program_containing_a_single_line_comment_which_is_defined_by_two_slashes_upto_and_inclusive_next_newline_or_end_of_file,
     pop_is_called_repeatedly,
-    returns_a_token_sequence_which_ignores_the_comment)) {
+    returns_a_token_sequence_which_ignores_the_comment_BUT_still_generates_NEWLINE_tokens)) {
 
   string spec = "Trivial example";
-  TEST_SCANNER( "//foo\n", spec, TOKIL0());
+  TEST_SCANNER( "//foo\n", spec, TOKIL1(TOK_NEWLINE));
 
   spec = "Simple example";
-  TEST_SCANNER( "if //foo\n if", spec, TOKIL2(TOK_IF, TOK_IF));
+  TEST_SCANNER( "if //foo\n if", spec, TOKIL3(TOK_IF, TOK_NEWLINE, TOK_IF));
 
   spec = "Border case example: // are the last two chars before the newline";
-  TEST_SCANNER( "if //\n if", spec, TOKIL2(TOK_IF, TOK_IF));
+  TEST_SCANNER( "if //\n if", spec, TOKIL3(TOK_IF, TOK_NEWLINE, TOK_IF));
 
   spec = "Border case example: the single line comment is on the last line"
     "of the file which is not delimited by newline";
@@ -268,16 +283,16 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_program_containing_a_single_line_comment_which_is_defined_by_a_hash_followed_by_exlamation_mark_upto_and_inclusive_next_newline_or_end_of_file,
     pop_is_called_repeatedly,
-    returns_a_token_sequence_which_ignores_the_comment)) {
+    returns_a_token_sequence_which_ignores_the_comment_BUT_still_generates_NEWLINE_tokens)) {
 
   string spec = "Trivial example";
-  TEST_SCANNER( "#!foo\n", spec, TOKIL0());
+  TEST_SCANNER( "#!foo\n", spec, TOKIL1(TOK_NEWLINE));
 
   spec = "Simple example";
-  TEST_SCANNER( "if #!foo\n if", spec, TOKIL2(TOK_IF, TOK_IF));
+  TEST_SCANNER( "if #!foo\n if", spec, TOKIL3(TOK_IF, TOK_NEWLINE, TOK_IF));
 
   spec = "Border case example: #! are the last two chars before the newline";
-  TEST_SCANNER( "if #!\n if", spec, TOKIL2(TOK_IF, TOK_IF));
+  TEST_SCANNER( "if #!\n if", spec, TOKIL3(TOK_IF, TOK_NEWLINE, TOK_IF));
 
   spec = "Border case example: the single line comment is on the last line"
     "of the file which is not delimited by newline";

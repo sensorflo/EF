@@ -51,7 +51,7 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 #![^\n]*            loc.step();
 \/\*[^*]*(\*+[^#*]+)*\*+\/   loc.step();
 [ \t]+              loc.step();
-[\n]+               loc.lines(yyleng); loc.step();
+[\n]+               loc.lines(yyleng); loc.step(); return yy::Parser::make_NEWLINE(loc);
 
   /* non-type keywords */
 if                  return yy::Parser::make_IF(loc);

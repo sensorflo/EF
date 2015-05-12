@@ -198,8 +198,8 @@ block_expr
 /* Note that the trailing 'seq_operator' is not really a sequence operator,
 i.e. it does not build an expression sequence */
 standalone_expr_seq
-  : standalone_expr seq_operator                    { std::swap($$,$1); }
-  | pure2_standalone_expr_seq seq_operator          { $$ = parserExt.mkOperatorTree(";", $1); }
+  : standalone_expr opt_seq_operator                       { std::swap($$,$1); }
+  | pure2_standalone_expr_seq opt_seq_operator             { $$ = parserExt.mkOperatorTree(";", $1); }
   ;
 
 pure2_standalone_expr_seq
@@ -241,6 +241,11 @@ opt_colon
   | COLON
   ;
 
+condition_action_sep
+  : NEWLINE
+  | COLON
+  ;
+
 opt_colon_type
   : opt_colon                                       { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
   | COLON type                                      { std::swap($$, $2); }
@@ -252,7 +257,13 @@ opt_comma
   ;
 
 seq_operator
+  : NEWLINE
+  | SEMICOLON
+  ;
+
+opt_seq_operator
   : %empty
+  | NEWLINE
   | SEMICOLON
   ;
 
@@ -384,7 +395,7 @@ naked_while
   ;
 
 condition_action_pair
-  : standalone_expr opt_colon block_expr                             { $$ = ConditionActionPair{ $1, $3}; }
+  : standalone_expr condition_action_sep block_expr                  { $$ = ConditionActionPair{ $1, $3}; }
   ;
 
 naked_return

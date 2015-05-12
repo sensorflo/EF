@@ -241,17 +241,17 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "a =  b := c", "=(a data(decldata(b int) (c)))", spec);
 
   // precedence level group: binary sequence operator (; or adjancted standalone expression)
-  spec = "sequence operator (; or adjancted standalone expression) is left associative";
-  TEST_PARSE( "a;b;c", ";(;(a b) c)", spec);
-  TEST_PARSE( "a;b c", ";(;(a b) c)", spec);
-  TEST_PARSE( "a b;c", ";(;(a b) c)", spec);
-  TEST_PARSE( "a b c", ";(;(a b) c)", spec);
+  spec = "sequence operator (; or newline) is left associative";
+  TEST_PARSE( "a ;  b ;  c", ";(;(a b) c)", spec);
+  TEST_PARSE( "a ;  b \n c", ";(;(a b) c)", spec);
+  TEST_PARSE( "a \n b ;  c", ";(;(a b) c)", spec);
+  TEST_PARSE( "a \n b \n c", ";(;(a b) c)", spec);
 
-  spec = "sequence operator (; or adjancted standalone expression) has lower precedence than =";
-  TEST_PARSE( "a ; b = c", ";(a =(b c))", spec);
-  TEST_PARSE( "a   b = c", ";(a =(b c))", spec);
-  TEST_PARSE( "a = b ; c", ";(=(a b) c)", spec);
-  TEST_PARSE( "a = b   c", ";(=(a b) c)", spec);
+  spec = "sequence operator (; or newline) has lower precedence than =";
+  TEST_PARSE( "a ;  b =  c", ";(a =(b c))", spec);
+  TEST_PARSE( "a \n b =  c", ";(a =(b c))", spec);
+  TEST_PARSE( "a =  b ;  c", ";(=(a b) c)", spec);
+  TEST_PARSE( "a =  b \n c", ";(=(a b) c)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -260,10 +260,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "g(1+2)*g(3-4)/5", "/(*(+(1 2) -(3 4)) 5)",
     "g(...) group: 1) overwrites precedence and 2) turns sub_expr into exp");
-  TEST_PARSE( "g(1 2)", ";(1 2)",
-    "g(...) group can contain not only a sub_expr but also an expr");
-  TEST_PARSE( "g(1 2)*3", "*(;(1 2) 3)",
-    "g(...) group can contain not only a sub_expr but also an expr");
+  TEST_PARSE( "g(1 ; 2)", ";(1 2)",
+    "g(...) group can contain not only a sub_expr but also an sa expr seq");
+  TEST_PARSE( "g(1 ; 2)*3", "*(;(1 2) 3)",
+    "g(...) group can contain not only a sub_expr but also an sa expr seq");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -352,8 +352,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "fun foo: () int ,= 42 end foo$", "fun(declfun(foo () int) 42)", spec);
 
   spec = "example with zero arguments and simple but not trivial body";
-  TEST_PARSE( "fun foo: () int ,= 42 1+2$", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
-  TEST_PARSE( "fun(foo: () int ,= 42 1+2)", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
+  TEST_PARSE( "fun foo: () int ,= 42; 1+2$", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
+  TEST_PARSE( "fun(foo: () int ,= 42; 1+2)", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
 
   spec = "example with one argument and trivial body";
   TEST_PARSE( "fun foo: (arg1:int) int ,= 42$", "fun(declfun(foo ((arg1 mut-int)) int) 42)", spec);
@@ -485,41 +485,41 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   // toggling 3) syntax 'if...;' vs 'if(...)' vs 'if...end if;' 
   // toggling 4) with/without colon after condition
   TEST_PARSE( "if  x: 1                                  $", "if(x 1)", "");
-  TEST_PARSE( "if  x  1                                  $", "if(x 1)", "");
+  TEST_PARSE( "if  x\n1                                  $", "if(x 1)", "");
   TEST_PARSE( "if( x: 1                                  )", "if(x 1)", "");
-  TEST_PARSE( "if( x  1                                  )", "if(x 1)", "");
+  TEST_PARSE( "if( x\n1                                  )", "if(x 1)", "");
   TEST_PARSE( "if  x: 1                            end if$", "if(x 1)", "");
-  TEST_PARSE( "if  x  1                            end if$", "if(x 1)", "");
+  TEST_PARSE( "if  x\n1                            end if$", "if(x 1)", "");
   TEST_PARSE( "if  x: 1                     else 2       $", "if(x 1 2)", "");
-  TEST_PARSE( "if  x  1                     else 2       $", "if(x 1 2)", "");
+  TEST_PARSE( "if  x\n1                     else 2       $", "if(x 1 2)", "");
   TEST_PARSE( "if( x: 1                     else 2       )", "if(x 1 2)", "");
-  TEST_PARSE( "if( x  1                     else 2       )", "if(x 1 2)", "");
+  TEST_PARSE( "if( x\n1                     else 2       )", "if(x 1 2)", "");
   TEST_PARSE( "if  x: 1                     else 2 end if$", "if(x 1 2)", "");
-  TEST_PARSE( "if  x  1                     else 2 end if$", "if(x 1 2)", "");
+  TEST_PARSE( "if  x\n1                     else 2 end if$", "if(x 1 2)", "");
   TEST_PARSE( "if  x: 1 elif y: 2                        $", "if(x 1 if(y 2))", "");
-  TEST_PARSE( "if  x  1 elif y  2                        $", "if(x 1 if(y 2))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2                        $", "if(x 1 if(y 2))", "");
   TEST_PARSE( "if( x: 1 elif y: 2                        )", "if(x 1 if(y 2))", "");
-  TEST_PARSE( "if( x  1 elif y  2                        )", "if(x 1 if(y 2))", "");
+  TEST_PARSE( "if( x\n1 elif y\n2                        )", "if(x 1 if(y 2))", "");
   TEST_PARSE( "if  x: 1 elif y: 2                  end if$", "if(x 1 if(y 2))", "");
-  TEST_PARSE( "if  x  1 elif y  2                  end if$", "if(x 1 if(y 2))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2                  end if$", "if(x 1 if(y 2))", "");
   TEST_PARSE( "if  x: 1 elif y: 2           else 3       $", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if  x  1 elif y  2           else 3       $", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2           else 3       $", "if(x 1 if(y 2 3))", "");
   TEST_PARSE( "if( x: 1 elif y: 2           else 3       )", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if( x  1 elif y  2           else 3       )", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if( x\n1 elif y\n2           else 3       )", "if(x 1 if(y 2 3))", "");
   TEST_PARSE( "if  x: 1 elif y: 2           else 3 end if$", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if  x  1 elif y  2           else 3 end if$", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2           else 3 end if$", "if(x 1 if(y 2 3))", "");
   TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3              $", "if(x 1 if(y 2 if(z 3)))", "");
-  TEST_PARSE( "if  x  1 elif y  2 elif z  3              $", "if(x 1 if(y 2 if(z 3)))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3              $", "if(x 1 if(y 2 if(z 3)))", "");
   TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3              )", "if(x 1 if(y 2 if(z 3)))", "");
-  TEST_PARSE( "if( x  1 elif y  2 elif z  3              )", "if(x 1 if(y 2 if(z 3)))", "");
+  TEST_PARSE( "if( x\n1 elif y\n2 elif z\n3              )", "if(x 1 if(y 2 if(z 3)))", "");
   TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3        end if$", "if(x 1 if(y 2 if(z 3)))", "");
-  TEST_PARSE( "if  x  1 elif y  2 elif z  3        end if$", "if(x 1 if(y 2 if(z 3)))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3        end if$", "if(x 1 if(y 2 if(z 3)))", "");
   TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4       $", "if(x 1 if(y 2 if(z 3 4)))", "");
-  TEST_PARSE( "if  x  1 elif y  2 elif z  3 else 4       $", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3 else 4       $", "if(x 1 if(y 2 if(z 3 4)))", "");
   TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3 else 4       )", "if(x 1 if(y 2 if(z 3 4)))", "");
-  TEST_PARSE( "if( x  1 elif y  2 elif z  3 else 4       )", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if( x\n1 elif y\n2 elif z\n3 else 4       )", "if(x 1 if(y 2 if(z 3 4)))", "");
   TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4 end if$", "if(x 1 if(y 2 if(z 3 4)))", "");
-  TEST_PARSE( "if  x  1 elif y  2 elif z  3 else 4 end if$", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3 else 4 end if$", "if(x 1 if(y 2 if(z 3 4)))", "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
