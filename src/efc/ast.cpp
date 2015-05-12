@@ -230,7 +230,7 @@ AstOperator::AstOperator(const string& op, AstCtList* args) :
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
   m_args(args ? args : new AstCtList) {
-  if ( '-' == m_op ) {
+  if ( '-' == m_op || '+' == m_op ) {
     const auto argCnt = args->childs().size();
     assert( argCnt==1 || argCnt==2 );
   } else {

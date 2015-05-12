@@ -249,11 +249,17 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator('-', new AstNumber(42)),
     -42, "");
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstOperator('+', new AstNumber(42)),
+    +42, "");
 
   // unary - with double operands
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
     new AstOperator('-', new AstNumber(42.5, ObjTypeFunda::eDouble)),
     -42.5, "");
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
+    new AstOperator('+', new AstNumber(42.5, ObjTypeFunda::eDouble)),
+    +42.5, "");
 
   // binary + - * / with int operands
   TEST_GEN_IR_IN_IMPLICIT_MAIN(

@@ -284,6 +284,7 @@ operator_expr
   | CARET sub_expr                                  { $$ = new AstOperator('^', $2); }
   | AMPER sub_expr                                  { $$ = new AstOperator('&', $2); }
   | MINUS sub_expr                                  { $$ = new AstOperator('-', $2); }
+  | PLUS sub_expr                                   { $$ = new AstOperator('+', $2); }
 
   /* binary operators */
   | sub_expr EQUAL       sub_expr                   { $$ = new AstOperator('=', $1, $3); }

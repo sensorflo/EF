@@ -266,12 +266,14 @@ void IrGen::visit(AstOperator& op) {
       auto llvmZero = ConstantInt::get(getGlobalContext(), APInt(objType.size(), 0));
       switch (op.op()) {
       case '-': llvmResult = m_builder.CreateSub   (llvmZero, llvmOperand, "neg"); break;
+      case '+': llvmResult = llvmOperand; break;
       default: assert(false);
       }
     } else {
       auto llvmZero = ConstantFP::get(getGlobalContext(), APFloat(0.0));
       switch (op.op()) {
       case '-': llvmResult = m_builder.CreateFSub  (llvmZero, llvmOperand, "fneg"); break;
+      case '+': llvmResult = llvmOperand; break;
       default: assert(false);
       }
     }
