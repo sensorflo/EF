@@ -88,6 +88,7 @@ and by declaration of free function yylex */
   END_OF_FILE  0  "end of file"
   TOKENLISTSTART "<TOKENLISTSTART>"
   END "end"
+  ENDOF "endof"
   DECL "decl"
   IF "if"
   ELIF "elif"
@@ -122,6 +123,7 @@ and by declaration of free function yylex */
   EQUAL_EQUAL "=="
   COMMA_EQUAL ",="
   LPAREN_EQUAL "(="
+  LPAREN_DOLLAR "($"
   SLASH "/"
   G_LPAREN "g("
   LPAREN "("
@@ -323,18 +325,15 @@ list_expr
 /* keyword argument list open delimiter */
 kwao
   : %empty
-  | LPAREN
+  | LPAREN_DOLLAR
   ;
 
 /* keyword argument list close delimiter */
 kwac
-  : kwac_raw
-  | END id_or_keyword kwac_raw
-  ;      
-
-kwac_raw
-  : RPAREN
-  | DOLLAR
+  : DOLLAR
+  | RPAREN
+  | END
+  | ENDOF id_or_keyword DOLLAR
   ;
 
 id_or_keyword

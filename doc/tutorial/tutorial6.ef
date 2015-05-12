@@ -33,13 +33,13 @@ foo1 := if x==y: x else y$
 //                                                  miter
 // foo    (        a       ,     b     ,       c      )
 // if              a       :     b    else     c      $
-// if     (        a       :     b    else     c      )
-// if              a       :     b    else     c   end if
+// if     ($       a       :     b    else     c      )
+// if              a       :     b    else     c      end
 // [               a       ,     b     ,       c      ]  
 // ------------------------------
 // 
 // The pattern is always: A leading `function name'. Followed by an optional
-// argument list open delimiter (left parenthesis).  Followed by an argument list
+// argument list open delimiter ("($").  Followed by an argument list
 // where the elements are separated by separators.  The valid separators are
 // specific to the specific `function name' (e.g. commas or colons or keywords
 // such as +elif+ or +else+).  The list expression is closed / delimited by an
@@ -47,15 +47,16 @@ foo1 := if x==y: x else y$
 // 
 // ----------------------------------------------------------------------
 // call = fun_name args_open_del naked_arg_list args_close_del;
-// args_open_del  = [\(];
+// args_open_del  = ["($"];
 // naked_arg_list = (arg1 separator{-})* 
-// args_close_del = ['end ...] ( \) | \$ );
+// args_close_del = \) | \$ | "end" | "endof" ... \$;
 // ----------------------------------------------------------------------
 // 
 // The following ifs are equivalent
 if   x==y: x else y $      
-if ( x==y: x else y )      
-if   x==y: x else y end if$
+if($ x==y: x else y )      
+if   x==y: x else y end
+if   x==y: x else y endof if$
 
 // Also operators can be written in the call syntax.
 // operator syntax       call syntax

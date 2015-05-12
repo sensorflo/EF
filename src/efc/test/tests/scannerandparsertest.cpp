@@ -72,10 +72,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_return_expression,
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "return 42$", "return(42)", "trivial example");
-  TEST_PARSE( "return(42)", "return(42)", "trivial example");
-  TEST_PARSE( "return$", "return(nop)", "");
-  TEST_PARSE( "return()", "return(nop)", "");
+  TEST_PARSE( "return  42$", "return(42)", "trivial example");
+  TEST_PARSE( "return($42)", "return(42)", "trivial example");
+  TEST_PARSE( "return$"    , "return(nop)", "");
+  TEST_PARSE( "return($)"  , "return(nop)", "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -323,30 +323,32 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
   string spec = "example with zero arguments and explicit return type";
-  //Toggling 1) 'keyword...;' vs 'keyword(...)' vs 'keyword...end...;' syntax
-  TEST_PARSE( "decl fun foo:() int$"         , "declfun(foo () int)", spec);
-  TEST_PARSE( "decl(fun foo:() int)"         , "declfun(foo () int)", spec);
-  TEST_PARSE( "decl fun foo:() int end foo$" , "declfun(foo () int)", spec);
+  //Toggling 1) 'keyword...;' vs 'keyword(...)' vs 'keyword...end' vs
+  //'keyword...endof...$' syntax
+  TEST_PARSE( "decl  fun foo:() int$"           , "declfun(foo () int)", spec);
+  TEST_PARSE( "decl($fun foo:() int)"           , "declfun(foo () int)", spec);
+  TEST_PARSE( "decl  fun foo:() int end"        , "declfun(foo () int)", spec);
+  TEST_PARSE( "decl  fun foo:() int endof foo$" , "declfun(foo () int)", spec);
 
   spec = "example with one argument and explicity return type";
   //Toggling 1) 'keyword...;' vs 'keyword(...)' syntax
-  TEST_PARSE( "decl fun foo:(arg1:int) int$", "declfun(foo ((arg1 mut-int)) int)", spec);
-  TEST_PARSE( "decl(fun foo:(arg1:int) int)", "declfun(foo ((arg1 mut-int)) int)", spec);
+  TEST_PARSE( "decl  fun foo:(arg1:int) int$", "declfun(foo ((arg1 mut-int)) int)", spec);
+  TEST_PARSE( "decl($fun foo:(arg1:int) int)", "declfun(foo ((arg1 mut-int)) int)", spec);
 
   spec = "example with two arguments and explicity return type\n";
   //Toggling 1) 'keyword...;' vs 'keyword(...)' syntax
-  TEST_PARSE( "decl fun foo:(arg1:int, arg2:int) int$", "declfun(foo ((arg1 mut-int) (arg2 mut-int)) int)", spec);
-  TEST_PARSE( "decl(fun foo:(arg1:int, arg2:int) int)", "declfun(foo ((arg1 mut-int) (arg2 mut-int)) int)", spec);
+  TEST_PARSE( "decl  fun foo:(arg1:int, arg2:int) int$", "declfun(foo ((arg1 mut-int) (arg2 mut-int)) int)", spec);
+  TEST_PARSE( "decl($fun foo:(arg1:int, arg2:int) int)", "declfun(foo ((arg1 mut-int) (arg2 mut-int)) int)", spec);
 
   spec = "example with implicit return type";
   //Toggling 1) zero (int two variants) vs one parameter
   //Toggling 2) 'keyword...;' vs 'keyword(...)' syntax
-  TEST_PARSE( "decl fun foo:           int$", "declfun(foo () int)", spec);
-  TEST_PARSE( "decl fun foo:()         int$", "declfun(foo () int)", spec);
-  TEST_PARSE( "decl fun foo:(arg1:int) int$", "declfun(foo ((arg1 mut-int)) int)", spec);
-  TEST_PARSE( "decl(fun foo:           int)", "declfun(foo () int)", spec);
-  TEST_PARSE( "decl(fun foo:()         int)", "declfun(foo () int)", spec);
-  TEST_PARSE( "decl(fun foo:(arg1:int) int)", "declfun(foo ((arg1 mut-int)) int)", spec);
+  TEST_PARSE( "decl  fun foo:           int$", "declfun(foo () int)", spec);
+  TEST_PARSE( "decl  fun foo:()         int$", "declfun(foo () int)", spec);
+  TEST_PARSE( "decl  fun foo:(arg1:int) int$", "declfun(foo ((arg1 mut-int)) int)", spec);
+  TEST_PARSE( "decl($fun foo:           int)", "declfun(foo () int)", spec);
+  TEST_PARSE( "decl($fun foo:()         int)", "declfun(foo () int)", spec);
+  TEST_PARSE( "decl($fun foo:(arg1:int) int)", "declfun(foo ((arg1 mut-int)) int)", spec);
 
   spec = "should allow trailing comma in argument list";
   TEST_PARSE( "decl fun foo:(arg1:int,) int$", "declfun(foo ((arg1 mut-int)) int)", spec);
@@ -366,18 +368,19 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "example with zero arguments and trivial body";
-  TEST_PARSE( "fun foo: () int ,= 42$"        , "fun(declfun(foo () int) 42)", spec);
-  TEST_PARSE( "fun foo: () bool,= true$"      , "fun(declfun(foo () bool) 1bool)", spec);
-  TEST_PARSE( "fun(foo: () int ,= 42)"        , "fun(declfun(foo () int) 42)", spec);
-  TEST_PARSE( "fun foo: () int ,= 42 end foo$", "fun(declfun(foo () int) 42)", spec);
+  TEST_PARSE( "fun  foo: () int ,= 42$"          , "fun(declfun(foo () int) 42)", spec);
+  TEST_PARSE( "fun  foo: () bool,= true$"        , "fun(declfun(foo () bool) 1bool)", spec);
+  TEST_PARSE( "fun($foo: () int ,= 42)"          , "fun(declfun(foo () int) 42)", spec);
+  TEST_PARSE( "fun  foo: () int ,= 42 end"       , "fun(declfun(foo () int) 42)", spec);
+  TEST_PARSE( "fun  foo: () int ,= 42 endof foo$", "fun(declfun(foo () int) 42)", spec);
 
   spec = "example with zero arguments and simple but not trivial body";
-  TEST_PARSE( "fun foo: () int ,= 42; 1+2$", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
-  TEST_PARSE( "fun(foo: () int ,= 42; 1+2)", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
+  TEST_PARSE( "fun  foo: () int ,= 42; 1+2$", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
+  TEST_PARSE( "fun($foo: () int ,= 42; 1+2)", "fun(declfun(foo () int) ;(42 +(1 2)))", spec);
 
   spec = "example with one argument and trivial body";
-  TEST_PARSE( "fun foo: (arg1:int) int ,= 42$", "fun(declfun(foo ((arg1 mut-int)) int) 42)", spec);
-  TEST_PARSE( "fun(foo: (arg1:int) int ,= 42)", "fun(declfun(foo ((arg1 mut-int)) int) 42)", spec);
+  TEST_PARSE( "fun  foo: (arg1:int) int ,= 42$", "fun(declfun(foo ((arg1 mut-int)) int) 42)", spec);
+  TEST_PARSE( "fun($foo: (arg1:int) int ,= 42)", "fun(declfun(foo ((arg1 mut-int)) int) 42)", spec);
 
   spec = "should allow trailing comma in argument list";
   TEST_PARSE( "fun foo: (arg1:int,) int ,= 42$", "fun(declfun(foo ((arg1 mut-int)) int) 42)", spec);
@@ -412,67 +415,68 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   //Toggling 2) 'keyword...;' vs 'keyword(...)' vs 'keyword...end...;' syntax
   //Toggling 3) initializer behind id vs initializer behind type
   //Toggling 4) val vs var
-  TEST_PARSE( "val foo: int  ,= 42$"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo: bool ,= true$"        , "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val foo:      ,= 42$"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo       ,= 42$"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val(foo: int  ,= 42)"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val(foo: bool ,= true)"        , "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val(foo:      ,= 42)"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val(foo       ,= 42)"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo: int  ,= 42 end foo$"  , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo: bool ,= true end foo$", "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val foo:      ,= 42 end foo$"  , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo       ,= 42 end foo$"  , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo : int  ,= 42   $"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo : bool ,= true $"         , "data(decldata(foo bool) (1bool))", spec);
+  TEST_PARSE( "val    foo :      ,= 42   $"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo        ,= 42   $"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val ($ foo : int  ,= 42   )"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val ($ foo : bool ,= true )"         , "data(decldata(foo bool) (1bool))", spec);
+  TEST_PARSE( "val ($ foo :      ,= 42   )"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val ($ foo        ,= 42   )"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo : int  ,= 42   end"       , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo : bool ,= true end"       , "data(decldata(foo bool) (1bool))", spec);
+  TEST_PARSE( "val    foo :      ,= 42   end"       , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo        ,= 42   end"       , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo : int  ,= 42   endof foo$", "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo : bool ,= true endof foo$", "data(decldata(foo bool) (1bool))", spec);
+  TEST_PARSE( "val    foo :      ,= 42   endof foo$", "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo        ,= 42   endof foo$", "data(decldata(foo int) (42))", spec);
 
-  TEST_PARSE( "val foo ,= 42: int $"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo ,= true: bool$"        , "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val foo ,= 42:     $"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo ,= 42      $"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val(foo ,= 42: int )"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val(foo ,= true: bool)"        , "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val(foo ,= 42:     )"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val(foo ,= 42      )"          , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo ,= 42: int  end foo$"  , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo ,= true: bool end foo$", "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val foo ,= 42:      end foo$"  , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo ,= 42       end foo$"  , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo ,= 42   : int  $"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo ,= true : bool $"         , "data(decldata(foo bool) (1bool))", spec);
+  TEST_PARSE( "val    foo ,= 42   :      $"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo ,= 42          $"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val ($ foo ,= 42   : int  )"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val ($ foo ,= true : bool )"         , "data(decldata(foo bool) (1bool))", spec);
+  TEST_PARSE( "val ($ foo ,= 42   :      )"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val ($ foo ,= 42          )"         , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo ,= 42   : int  end"       , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo ,= true : bool end"       , "data(decldata(foo bool) (1bool))", spec);
+  TEST_PARSE( "val    foo ,= 42   :      end"       , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo ,= 42          end"       , "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo ,= 42   : int  endof foo$", "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo ,= true : bool endof foo$", "data(decldata(foo bool) (1bool))", spec);
+  TEST_PARSE( "val    foo ,= 42   :      endof foo$", "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo ,= 42          endof foo$", "data(decldata(foo int) (42))", spec);
 
-  TEST_PARSE( "var foo: int  ,= 42$"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var foo: bool ,= true$"        , "data(decldata(foo mut-bool) (1bool))", spec);
-  TEST_PARSE( "var foo:      ,= 42$"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var foo       ,= 42$"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var(foo: int  ,= 42)"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var(foo: bool ,= true)"        , "data(decldata(foo mut-bool) (1bool))", spec);
-  TEST_PARSE( "var(foo:      ,= 42)"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var(foo       ,= 42)"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var foo: int  ,= 42 end foo$"  , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var foo: bool ,= true end foo$", "data(decldata(foo mut-bool) (1bool))", spec);
-  TEST_PARSE( "var foo:      ,= 42 end foo$"  , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var foo       ,= 42 end foo$"  , "data(decldata(foo mut-int) (42))", spec);
-
-  TEST_PARSE( "var foo ,= 42: int $"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var foo ,= true: bool$"        , "data(decldata(foo mut-bool) (1bool))", spec);
-  TEST_PARSE( "var foo ,= 42:     $"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var foo ,= 42      $"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var(foo ,= 42: int )"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var(foo ,= true: bool)"        , "data(decldata(foo mut-bool) (1bool))", spec);
-  TEST_PARSE( "var(foo ,= 42:     )"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var(foo ,= 42      )"          , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var foo ,= 42: int  end foo$"  , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var foo ,= true: bool end foo$", "data(decldata(foo mut-bool) (1bool))", spec);
-  TEST_PARSE( "var foo ,= 42:      end foo$"  , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var foo ,= 42       end foo$"  , "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var    foo : int  ,= 42   $"         , "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var    foo : bool ,= true $"         , "data(decldata(foo mut-bool) (1bool))", spec);
+  TEST_PARSE( "var    foo :      ,= 42   $"         , "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var    foo        ,= 42   $"         , "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var ($ foo : int  ,= 42   )"         , "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var ($ foo : bool ,= true )"         , "data(decldata(foo mut-bool) (1bool))", spec);
+  TEST_PARSE( "var ($ foo :      ,= 42   )"         , "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var ($ foo        ,= 42   )"         , "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var    foo : int  ,= 42   end"       , "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var    foo : bool ,= true end"       , "data(decldata(foo mut-bool) (1bool))", spec);
+  TEST_PARSE( "var    foo :      ,= 42   end"       , "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var    foo        ,= 42   end"       , "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var    foo : int  ,= 42   endof foo$", "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var    foo : bool ,= true endof foo$", "data(decldata(foo mut-bool) (1bool))", spec);
+  TEST_PARSE( "var    foo :      ,= 42   endof foo$", "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var    foo        ,= 42   endof foo$", "data(decldata(foo mut-int) (42))", spec);
 
   spec = "trivial example with implicit init value";
-  //Toggling 1) 'keyword...;' vs 'keyword(...)' vs 'keyword...end...;' syntax
+  //Toggling 1) 'keyword...;' vs 'keyword(...)' vs 'keyword...end' vs
+  //'keyword...endof...$' syntax
   //Toggling 2) val vs var
-  TEST_PARSE( "val foo:int$"        , "data(decldata(foo int) ())", spec);
-  TEST_PARSE( "val(foo:int)"        , "data(decldata(foo int) ())", spec);
-  TEST_PARSE( "val foo:int end foo$", "data(decldata(foo int) ())", spec);
-  TEST_PARSE( "var foo:int$"        , "data(decldata(foo mut-int) ())", spec);
-  TEST_PARSE( "var(foo:int)"        , "data(decldata(foo mut-int) ())", spec);
-  TEST_PARSE( "var foo:int end foo$", "data(decldata(foo mut-int) ())", spec);
+  TEST_PARSE( "val    foo :int $"         , "data(decldata(foo int) ())", spec);
+  TEST_PARSE( "val ($ foo :int )"         , "data(decldata(foo int) ())", spec);
+  TEST_PARSE( "val    foo :int end"       , "data(decldata(foo int) ())", spec);
+  TEST_PARSE( "val    foo :int endof foo$", "data(decldata(foo int) ())", spec);
+  TEST_PARSE( "var    foo :int $"         , "data(decldata(foo mut-int) ())", spec);
+  TEST_PARSE( "var ($ foo :int )"         , "data(decldata(foo mut-int) ())", spec);
+  TEST_PARSE( "var    foo :int endof foo$", "data(decldata(foo mut-int) ())", spec);
 
   spec = "trivial example with constructor call style initializer";
   TEST_PARSE( "val foo(=42) : int      $", "data(decldata(foo int) (42))", spec);
@@ -504,48 +508,48 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   // toggling 2) without/with else part
   // toggling 3) syntax 'if...;' vs 'if(...)' vs 'if...end if;' 
   // toggling 4) with/without colon after condition
-  TEST_PARSE( "if  x: 1                                  $", "if(x 1)", "");
-  TEST_PARSE( "if  x\n1                                  $", "if(x 1)", "");
-  TEST_PARSE( "if( x: 1                                  )", "if(x 1)", "");
-  TEST_PARSE( "if( x\n1                                  )", "if(x 1)", "");
-  TEST_PARSE( "if  x: 1                            end if$", "if(x 1)", "");
-  TEST_PARSE( "if  x\n1                            end if$", "if(x 1)", "");
-  TEST_PARSE( "if  x: 1                     else 2       $", "if(x 1 2)", "");
-  TEST_PARSE( "if  x\n1                     else 2       $", "if(x 1 2)", "");
-  TEST_PARSE( "if( x: 1                     else 2       )", "if(x 1 2)", "");
-  TEST_PARSE( "if( x\n1                     else 2       )", "if(x 1 2)", "");
-  TEST_PARSE( "if  x: 1                     else 2 end if$", "if(x 1 2)", "");
-  TEST_PARSE( "if  x\n1                     else 2 end if$", "if(x 1 2)", "");
-  TEST_PARSE( "if  x: 1 elif y: 2                        $", "if(x 1 if(y 2))", "");
-  TEST_PARSE( "if  x\n1 elif y\n2                        $", "if(x 1 if(y 2))", "");
-  TEST_PARSE( "if( x: 1 elif y: 2                        )", "if(x 1 if(y 2))", "");
-  TEST_PARSE( "if( x\n1 elif y\n2                        )", "if(x 1 if(y 2))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2                  end if$", "if(x 1 if(y 2))", "");
-  TEST_PARSE( "if  x\n1 elif y\n2                  end if$", "if(x 1 if(y 2))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2           else 3       $", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if  x\n1 elif y\n2           else 3       $", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if( x: 1 elif y: 2           else 3       )", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if( x\n1 elif y\n2           else 3       )", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2           else 3 end if$", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if  x\n1 elif y\n2           else 3 end if$", "if(x 1 if(y 2 3))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3              $", "if(x 1 if(y 2 if(z 3)))", "");
-  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3              $", "if(x 1 if(y 2 if(z 3)))", "");
-  TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3              )", "if(x 1 if(y 2 if(z 3)))", "");
-  TEST_PARSE( "if( x\n1 elif y\n2 elif z\n3              )", "if(x 1 if(y 2 if(z 3)))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3        end if$", "if(x 1 if(y 2 if(z 3)))", "");
-  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3        end if$", "if(x 1 if(y 2 if(z 3)))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4       $", "if(x 1 if(y 2 if(z 3 4)))", "");
-  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3 else 4       $", "if(x 1 if(y 2 if(z 3 4)))", "");
-  TEST_PARSE( "if( x: 1 elif y: 2 elif z: 3 else 4       )", "if(x 1 if(y 2 if(z 3 4)))", "");
-  TEST_PARSE( "if( x\n1 elif y\n2 elif z\n3 else 4       )", "if(x 1 if(y 2 if(z 3 4)))", "");
-  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4 end if$", "if(x 1 if(y 2 if(z 3 4)))", "");
-  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3 else 4 end if$", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if  x: 1                                    $", "if(x 1)", "");
+  TEST_PARSE( "if  x\n1                                    $", "if(x 1)", "");
+  TEST_PARSE( "if($x: 1                                    )", "if(x 1)", "");
+  TEST_PARSE( "if($x\n1                                    )", "if(x 1)", "");
+  TEST_PARSE( "if  x: 1                            endof if$", "if(x 1)", "");
+  TEST_PARSE( "if  x\n1                            endof if$", "if(x 1)", "");
+  TEST_PARSE( "if  x: 1                     else 2         $", "if(x 1 2)", "");
+  TEST_PARSE( "if  x\n1                     else 2         $", "if(x 1 2)", "");
+  TEST_PARSE( "if($x: 1                     else 2         )", "if(x 1 2)", "");
+  TEST_PARSE( "if($x\n1                     else 2         )", "if(x 1 2)", "");
+  TEST_PARSE( "if  x: 1                     else 2 endof if$", "if(x 1 2)", "");
+  TEST_PARSE( "if  x\n1                     else 2 endof if$", "if(x 1 2)", "");
+  TEST_PARSE( "if  x: 1 elif y: 2                          $", "if(x 1 if(y 2))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2                          $", "if(x 1 if(y 2))", "");
+  TEST_PARSE( "if($x: 1 elif y: 2                          )", "if(x 1 if(y 2))", "");
+  TEST_PARSE( "if($x\n1 elif y\n2                          )", "if(x 1 if(y 2))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2                  endof if$", "if(x 1 if(y 2))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2                  endof if$", "if(x 1 if(y 2))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2           else 3         $", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2           else 3         $", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if($x: 1 elif y: 2           else 3         )", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if($x\n1 elif y\n2           else 3         )", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2           else 3 endof if$", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2           else 3 endof if$", "if(x 1 if(y 2 3))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3                $", "if(x 1 if(y 2 if(z 3)))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3                $", "if(x 1 if(y 2 if(z 3)))", "");
+  TEST_PARSE( "if($x: 1 elif y: 2 elif z: 3                )", "if(x 1 if(y 2 if(z 3)))", "");
+  TEST_PARSE( "if($x\n1 elif y\n2 elif z\n3                )", "if(x 1 if(y 2 if(z 3)))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3        endof if$", "if(x 1 if(y 2 if(z 3)))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3        endof if$", "if(x 1 if(y 2 if(z 3)))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4         $", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3 else 4         $", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if($x: 1 elif y: 2 elif z: 3 else 4         )", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if($x\n1 elif y\n2 elif z\n3 else 4         )", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if  x: 1 elif y: 2 elif z: 3 else 4 endof if$", "if(x 1 if(y 2 if(z 3 4)))", "");
+  TEST_PARSE( "if  x\n1 elif y\n2 elif z\n3 else 4 endof if$", "if(x 1 if(y 2 if(z 3 4)))", "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_loop_control_expression,
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "while x: y$", "while(x y)", "");
-  TEST_PARSE( "while(x: y)", "while(x y)", "");
+  TEST_PARSE( "while  x: y$", "while(x y)", "");
+  TEST_PARSE( "while($x: y)", "while(x y)", "");
 }

@@ -36,19 +36,20 @@
 ;;; Code
 (defconst ef-font-lock-keywords
   (list
-   "\\b\\(fun\\|val\\|var\\|decl\\|nop\\|if\\|elif\\|else\\|unless\\|for\\|foreach\\|in\\|while\\|until\\|do\\|throws\\|ret\\|goto\\|break\\|continue\\|noinit\\|end\\|raw_new\\|raw_delete\\|mi_end\\|true\\|false\\)\\b"
-   (list (concat "\\bfun[ \t\r\n]+"
-                 "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)\\b[ \t\r\n]*"
-                 "\\(?::[ \t\r\n]*\\)?"
-                 "\\(?:([ \t\r\n]*"
+   "\\b\\(fun\\|val\\|var\\|decl\\|nop\\|if\\|elif\\|else\\|unless\\|for\\|foreach\\|in\\|while\\|until\\|do\\|throws\\|ret\\|goto\\|break\\|continue\\|noinit\\|end\\|endof\\|raw_new\\|raw_delete\\|mi_end\\|true\\|false\\)\\b"
+   (list (concat "\\bfun"                                       ; fun
+                 "\\(?:[ \t\r\n]*($[ \t\r\n]*\\|[ \t\r\n]+\\)"  ; ($ or blank
+                 "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)\\b[ \t\r\n]*"  ; id
+                 "\\(?::[ \t\r\n]*\\)?"                         ; :
+                 "\\(?:([ \t\r\n]*"                             ; (
                    "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\),[ \t\r\n]*\\)?"
                    "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\),[ \t\r\n]*\\)?"
                    "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\),[ \t\r\n]*\\)?"
                    "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\),[ \t\r\n]*\\)?"
                    "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\)\\)?"
-                 ")[ \t\r\n]*\\)?"
-                 "\\([^,$()]*?\\)[ \t\r\n]*"
-                 "[,$]")
+                 ")[ \t\r\n]*\\)?"           ; )
+                 "\\([^,$()]*?\\)[ \t\r\n]*" ; rettype
+                 "[,$]")                     ; ,= or $
          '(1 font-lock-function-name-face)
          '(2 font-lock-variable-name-face nil t) '(3 font-lock-type-face nil t)
          '(4 font-lock-variable-name-face nil t) '(5 font-lock-type-face nil t)
@@ -58,9 +59,10 @@
          '(12 font-lock-type-face))
    (list "->[ \t\r\n]*\\(.*?\\)\\(?:is\\|throws\\|,=\\)"
          '(1 font-lock-type-face))
-   (list (concat "\\_<\\(?:val\\|var\\)[ \t\r\n]+"
-                 "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*"
-                 "\\(?:,=[^:$]*\\)?"
+   (list (concat "\\_<\\(?:val\\|var\\)"                       ; val|var
+                 "\\(?:[ \t\r\n]*($[ \t\r\n]*\\|[ \t\r\n]+\\)" ; ($ or blank
+                 "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*"    ; id
+                 "\\(?:,=[^:$]*\\)?"                           ; ,=
                  "\\(?:"
                    ":[ \t\r\n]*"
                    "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*\\)?"
@@ -88,7 +90,8 @@
                  ":[ \t\r\n]*"
                  "fun\\b")
          '(1 font-lock-function-name-face))
-   (cons "[$:;]\\|->\\|,=" font-lock-semi-unimportant)
+   (cons "[:;]\\|->\\|,=" font-lock-semi-unimportant)
+   (list "\\(?:^\\|[^(]\\)\\(\\$\\)" '(1 font-lock-semi-unimportant))
    (list "\\(?:^\\|[^a-zA-Z_]\\)\\([0-9]+\\(?:\\.[0-9]*\\)?\\)"
          '(1 font-lock-constant-face))))
 

@@ -65,6 +65,7 @@ void ParserApiExt::initTokenAttrs() {
   const map<Parser::token::yytokentype, TokenTypeAttr> m {
     { Parser::token::TOK_END_OF_FILE, {"END_OF_FILE", SVTVoid, TKDelimiter}},
     { Parser::token::TOK_END, {"END", SVTVoid, TKDelimiter}},
+    { Parser::token::TOK_ENDOF, {"ENDOF", SVTVoid, TKSeparator}},
     { Parser::token::TOK_DECL, {"DECL", SVTVoid, TKStarter}},
     { Parser::token::TOK_IF, {"IF", SVTVoid, TKStarter}},
     { Parser::token::TOK_ELIF, {"ELIF", SVTVoid, TKSeparator}},
@@ -99,6 +100,7 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_EQUAL_EQUAL, {"EQUAL_EQUAL", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_COMMA_EQUAL, {"COMMA_EQUAL", SVTVoid, TKSeparator}},
     { Parser::token::TOK_LPAREN_EQUAL, {"LPAREN_LPAREN", SVTVoid, TKSeparator}},
+    { Parser::token::TOK_LPAREN_DOLLAR, {"LPAREN_DOLLAR", SVTVoid, TKSeparator}},
     { Parser::token::TOK_SLASH, {"SLASH", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_G_LPAREN, {"G_LPAREN", SVTVoid, TKStarter}},
     { Parser::token::TOK_LPAREN, {"LPAREN", SVTVoid, TKStarter}},

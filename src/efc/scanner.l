@@ -63,6 +63,7 @@ val                 return yy::Parser::make_VAL(loc);
 var                 return yy::Parser::make_VAR(loc);
 decl                return yy::Parser::make_DECL(loc);
 end                 return yy::Parser::make_END(loc);
+endof               return yy::Parser::make_ENDOF(loc);
 not                 return yy::Parser::make_NOT(loc);
 and                 return yy::Parser::make_AND(loc);
 or                  return yy::Parser::make_OR(loc);
@@ -137,6 +138,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFun
 ".="                return yy::Parser::make_DOT_EQUAL(loc);
 ",="                return yy::Parser::make_COMMA_EQUAL(loc);
 "(="                return yy::Parser::make_LPAREN_EQUAL(loc);
+"($"                return yy::Parser::make_LPAREN_DOLLAR(loc);
 op([-+*/!]|&&|"||"|"=="|"_and"|"_or"|"_not"|"_new"|"_delete") {
   char* start = yytext + 2;     // skip "op"
   if (*start == '_') ++start;   // skip '_'

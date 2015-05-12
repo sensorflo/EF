@@ -518,7 +518,7 @@ name  list            sepa-        sepa-         close
                                                  miter
 if              a       :     b    else     c      $
 if     (        a       :     b    else     c      )
-if              a       :     b    else     c   end if
+if              a       :     b    else     c      end
 [               a       ,     b     ,       c      ]  
 {               a       ,     b     ,       c      }  
 ------------------------------
@@ -539,7 +539,7 @@ args_open_del  = [\(];
 naked_arg_list = (argument argument_separator{l?})*;
 argument_separator = ... ; ## depends on concrete list
 args_close_del = \) | \$ | 'end |
-  'endof (id | \( id* \) );
+  'endof (id | \( id* \) ) \$;
 ----------------------------------------------------------------------
 
 The spirit of the ++endof++ close delimiter variant is to provide a way to
