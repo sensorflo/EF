@@ -125,7 +125,6 @@ and by declaration of free function yylex */
   LPAREN_EQUAL "(="
   LPAREN_DOLLAR "($"
   SLASH "/"
-  G_LPAREN "g("
   LPAREN "("
   RPAREN ")"
   LBRACE "{"
@@ -306,7 +305,7 @@ operator_expr
 primary_expr
   : list_expr                                       { std::swap($$,$1); }
   | NUMBER                                          { $$ = new AstNumber($1.m_value, $1.m_objType); }
-  | G_LPAREN standalone_expr_seq RPAREN             { $$ = $2; }
+  | LPAREN standalone_expr_seq RPAREN               { $$ = $2; }
   | ID                                              { $$ = new AstSymbol($1); }
   | NOP                                             { $$ = new AstNop(); }
   ;

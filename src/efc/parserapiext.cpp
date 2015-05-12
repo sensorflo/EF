@@ -102,7 +102,6 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_LPAREN_EQUAL, {"LPAREN_LPAREN", SVTVoid, TKSeparator}},
     { Parser::token::TOK_LPAREN_DOLLAR, {"LPAREN_DOLLAR", SVTVoid, TKSeparator}},
     { Parser::token::TOK_SLASH, {"SLASH", SVTVoid, TKComponentOrAmbigous}},
-    { Parser::token::TOK_G_LPAREN, {"G_LPAREN", SVTVoid, TKStarter}},
     { Parser::token::TOK_LPAREN, {"LPAREN", SVTVoid, TKStarter}},
     { Parser::token::TOK_RPAREN, {"RPAREN", SVTVoid, TKDelimiter}},
     { Parser::token::TOK_LBRACE, {"LBRACE", SVTVoid, TKStarter}},

@@ -679,10 +679,6 @@ Style guidelines:
 
 - Of a given standalone expression sequence, either all sequence operator
   tokens are either semicolons, or all are newlines.
-- The blank `token' cannot be used if its rhs and lhs are on the same line.
-  Note that this helps to prevent the accidental invocation of an operator
-  list (e.g. ++-(...)++) where the user wrongly used parentheses ++(...)++
-  instead ++g(...)++to group a sub expression.
 
 
 [[block]]
@@ -783,17 +779,9 @@ See also:
 
 === Grouping sub expressions / overriding precedence
 
-++g(...)++ groups expressions to override precedence.  Most other languages
-use just regular parentheses.  
-
 ----------------------------------------------------------------------
-group_expr = "g(" standalone_expr_seq \);
+group_expr = "(" standalone_expr_seq \);
 ----------------------------------------------------------------------
-
-Rational for not using normal parentheses: parentheses are already used for
-many things: as function call operator, as part of the +new+ operator
-expression and in list expressions as delimiters.  If parentheses are also
-used for grouping, there too many ambiguities. 
 
 
 [[compile_time_type]]
@@ -853,7 +841,7 @@ type_expr =
 
 type_expr_indirection =
   identifier | ## name of a custom type
-  "g(" type_expr \) |  ## to change precedence of type expr operators
+  "(" type_expr \) |  ## to change precedence of type expr operators
                        ## maybe not needed now, but maybe in future
   explicit_type_expr;
 --------------------------------------------------
@@ -1543,13 +1531,6 @@ ct_list = (sub_expr \,{l?})*;
 Note that a function call as a whole looks like an <<list_expr>>, but actually
 is an operator expression.  Its rhs is an expression delivering an code object, and
 its lhs is an argument list.
-
-Style guideline: before the opening parenthesis of a function call there might
-not be any white-spaces, at least no vertical white-spaces.  Motivations: 1)
-consistent `style' 2) make it unlikely that a programmer wrongly uses
-++(...)++ instead ++g(...)++, thus accidentaly programs a function call.  For
-consistency reasons, that guideline probably should also apply to the opening
-parenthesis of list expressions.
 
 
 ==== Argument passing with key => value pairs

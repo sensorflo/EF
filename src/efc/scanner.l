@@ -162,9 +162,6 @@ op([-+*/!]|&&|"||"|"=="|"_and"|"_or"|"_not"|"_new"|"_delete") {
 "{"                 return yy::Parser::make_LBRACE(loc);
 "}"                 return yy::Parser::make_RBRACE(loc);
 
-  /* keyword-punctuation mixed */
-"g("                return yy::Parser::make_G_LPAREN(loc);
-
   /* misc */
 {ID}                return yy::Parser::make_ID(yytext, loc);
 <<EOF>>             return yy::Parser::make_END_OF_FILE(loc);
