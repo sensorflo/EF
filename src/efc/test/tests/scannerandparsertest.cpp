@@ -127,7 +127,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   string spec = "function call () is right associative";
   TEST_PARSE( "foo(a)(b)", "foo(a)(b)", spec);
 
-  // precedence level group: unary prefix not
+  // precedence level group: unary prefix not & ^ -
   spec = "! aka 'not' is right associative. ! and 'not' are synonyms";
   TEST_PARSE( "not not a", "!(!(a))", spec);
   TEST_PARSE( "not !   a", "!(!(a))", spec);
@@ -156,6 +156,16 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   spec = "^ has lower precedence than function call ()";
   TEST_PARSE( "^foo()", "^(foo())", spec);
+
+  spec = "unary - is right associative.";
+  TEST_PARSE( "- - a", "-(-(a))", spec);
+
+  spec = "unary - and ! have equal precedence";
+  TEST_PARSE( "- ! a", "-(!(a))", spec);
+  TEST_PARSE( "! - a", "!(-(a))", spec);
+
+  spec = "- has lower precedence than function call ()";
+  TEST_PARSE( "-foo()", "-(foo())", spec);
 
   // precedence level group: binary * /
   spec = "* is left associative";

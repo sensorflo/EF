@@ -157,7 +157,7 @@ void IrGen::visit(AstOperator& op) {
   const auto& astOperands = op.args().childs();
   Value* llvmResult = NULL;
 
-  // unary operators
+  // unary non-arithmetic operators
   if (op.op()==AstOperator::eNot) {
     llvmResult = m_builder.CreateNot(callAcceptOn(*astOperands.front()), "not" );
   } else if (op.op()==AstOperator::eAddrOf) {
@@ -171,7 +171,7 @@ void IrGen::visit(AstOperator& op) {
     op.stentry()->setIrAddr(llvmAddrOfDerefee);
   }
 
-  // binary short circuit operators
+  // binary logical short circuit operators
   else if (op.op()==AstOperator::eAnd || op.op()==AstOperator::eOr) {
     const string opname = op.op()==AstOperator::eAnd ? "and" : "or";
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
@@ -230,7 +230,7 @@ void IrGen::visit(AstOperator& op) {
   }
 
   // binary arithmetic operators
-  else {
+  else if (astOperands.size()==2) {
     auto llvmLhs = callAcceptOn(*astOperands.front());
     auto llvmRhs = callAcceptOn(*astOperands.back());
     if (astOperands.front()->objType().is(ObjType::eStoredAsIntegral)) {
@@ -252,6 +252,30 @@ void IrGen::visit(AstOperator& op) {
       default: assert(false);
       }
     }
+    assert(llvmResult);
+  }
+
+  // unary arithmetic operators
+  else  {
+    assert(astOperands.size()==1);
+    const auto& operand = astOperands.front();
+    const auto& objType = operand->objType();
+    auto llvmOperand = callAcceptOn(*operand);
+
+    if (objType.is(ObjType::eStoredAsIntegral)) {
+      auto llvmZero = ConstantInt::get(getGlobalContext(), APInt(objType.size(), 0));
+      switch (op.op()) {
+      case '-': llvmResult = m_builder.CreateSub   (llvmZero, llvmOperand, "neg"); break;
+      default: assert(false);
+      }
+    } else {
+      auto llvmZero = ConstantFP::get(getGlobalContext(), APFloat(0.0));
+      switch (op.op()) {
+      case '-': llvmResult = m_builder.CreateFSub  (llvmZero, llvmOperand, "fneg"); break;
+      default: assert(false);
+      }
+    }
+    assert(llvmResult);
   }
 
   if ( llvmResult ) {

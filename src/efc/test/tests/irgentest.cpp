@@ -245,7 +245,17 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       new AstNumber(77.0, ObjTypeFunda::eDouble)),
     42.5==77.0, "");
 
-  // + - * / with int operands
+  // unary - with int operands
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstOperator('-', new AstNumber(42)),
+    -42, "");
+
+  // unary - with double operands
+  TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
+    new AstOperator('-', new AstNumber(42.5, ObjTypeFunda::eDouble)),
+    -42.5, "");
+
+  // binary + - * / with int operands
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator('+', new AstNumber(1), new AstNumber(2)),
     1+2, "");
@@ -259,7 +269,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstOperator('/', new AstNumber(6), new AstNumber(3)),
     6/3, "");
 
-  // + - * / with double operands
+  // binary + - * / with double operands
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
     new AstOperator('+',
       new AstNumber(1.1, ObjTypeFunda::eDouble),

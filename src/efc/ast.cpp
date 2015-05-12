@@ -230,9 +230,14 @@ AstOperator::AstOperator(const string& op, AstCtList* args) :
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
   m_args(args ? args : new AstCtList) {
-  const size_t required_arity =
-    (op==eNot || op==eAddrOf || op==eDeref ) ? 1 : 2;
-  assert( args->childs().size() == required_arity );
+  if ( '-' == m_op ) {
+    const auto argCnt = args->childs().size();
+    assert( argCnt==1 || argCnt==2 );
+  } else {
+    const size_t required_arity =
+      (op==eNot || op==eAddrOf || op==eDeref ) ? 1 : 2;
+    assert( args->childs().size() == required_arity );
+  }
 }
 
 AstOperator::AstOperator(char op, AstValue* operand1, AstValue* operand2) :
