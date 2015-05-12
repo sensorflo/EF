@@ -113,6 +113,7 @@ Turning on EF mode runs the normal hook `ef-mode-hook'."
   (modify-syntax-entry ?\n ">")
   (modify-syntax-entry ?\r ">")
   (modify-syntax-entry ?_ "_")
+  (modify-syntax-entry ?$ ".")
   (set (make-local-variable 'parse-sexp-lookup-properties) t)
   (set (make-local-variable 'syntax-propertize-function)
        (syntax-propertize-via-font-lock ef-font-lock-syntactic-keywords))
