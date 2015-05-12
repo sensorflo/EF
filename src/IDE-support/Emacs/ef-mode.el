@@ -47,8 +47,8 @@
                    "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\),[ \t\r\n]*\\)?"
                    "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*\\([^,()]*?\\)\\)?"
                  ")[ \t\r\n]*\\)?"
-                 "\\([^=$()]*?\\)[ \t\r\n]*"
-                 "[=$]")
+                 "\\([^,$()]*?\\)[ \t\r\n]*"
+                 "[,$]")
          '(1 font-lock-function-name-face)
          '(2 font-lock-variable-name-face nil t) '(3 font-lock-type-face nil t)
          '(4 font-lock-variable-name-face nil t) '(5 font-lock-type-face nil t)
@@ -56,11 +56,11 @@
          '(8 font-lock-variable-name-face nil t) '(9 font-lock-type-face nil t)
          '(10 font-lock-variable-name-face nil t) '(11 font-lock-type-face nil t)
          '(12 font-lock-type-face))
-   (list "->[ \t\r\n]*\\(.*?\\)\\(?:is\\|throws\\|=\\)"
+   (list "->[ \t\r\n]*\\(.*?\\)\\(?:is\\|throws\\|,=\\)"
          '(1 font-lock-type-face))
    (list (concat "\\_<\\(?:val\\|var\\)[ \t\r\n]+"
                  "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*"
-                 "\\(?:=[^:$]*\\)?"
+                 "\\(?:,=[^:$]*\\)?"
                  "\\(?:"
                    ":[ \t\r\n]*"
                    "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*\\)?"
@@ -69,8 +69,8 @@
          '(2 font-lock-type-face nil t))
    (list (concat "\\_<raw_new\\_>[ \t\n]*"
                  "\\(?:([ \t\n]*\\)?"
-                 "\\([^=(]*?\\)"
-                 "[=(]")
+                 "\\(.*?\\)"
+                 "\\(?:,=\\|(=\\|\\$\\)")
          '(1 font-lock-type-face))
    (list "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*:[ \t\r\n]*="
          '(1 font-lock-variable-name-face))
@@ -88,7 +88,7 @@
                  ":[ \t\r\n]*"
                  "fun\\b")
          '(1 font-lock-function-name-face))
-   (cons "[$:;]\\|->" font-lock-semi-unimportant)
+   (cons "[$:;]\\|->\\|,=" font-lock-semi-unimportant)
    (list "\\(?:^\\|[^a-zA-Z_]\\)\\([0-9]+\\(?:\\.[0-9]*\\)?\\)"
          '(1 font-lock-constant-face))))
 

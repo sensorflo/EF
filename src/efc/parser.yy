@@ -120,6 +120,8 @@ and by declaration of free function yylex */
   OR "or"
   PIPE_PIPE "||"
   EQUAL_EQUAL "=="
+  COMMA_EQUAL ",="
+  LPAREN_EQUAL "(="
   SLASH "/"
   G_LPAREN "g("
   LPAREN "("
@@ -338,7 +340,7 @@ naked_data_def
   ;
 
 naked_fun_def
-  : naked_fun_decl EQUAL block_expr                                  { $$ = parserExt.mkFunDef($1, $3); }
+  : naked_fun_decl COMMA_EQUAL block_expr                            { $$ = parserExt.mkFunDef($1, $3); }
   ;
   
 naked_fun_decl
@@ -353,8 +355,8 @@ opt_ret_type
   ;
 
 initializer
-  : EQUAL standalone_expr                                            { $$ = new AstCtList($2); }
-  | EQUAL LPAREN ct_list RPAREN                                      { swap($$,$3); }
+  : COMMA_EQUAL standalone_expr                                      { $$ = new AstCtList($2); }
+  | LPAREN_EQUAL ct_list RPAREN                                      { swap($$,$2); }
   ;
 
 valvar

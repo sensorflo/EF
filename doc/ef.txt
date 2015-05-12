@@ -940,8 +940,8 @@ iterator.
 
 ----------------------------------------------------------------------
 var a({1,1,2,3,5}) : raw[5]int$
-var a : raw[5]int = {1,1,2,3,5}$
-var pa : raw*raw[5]int = new raw[5]int({1,1,2,3,5})$
+var a : raw[5]int ,= {1,1,2,3,5}$
+var pa : raw*raw[5]int ,= new raw[5]int({1,1,2,3,5})$
 ----------------------------------------------------------------------
 
 *to-do*: 
@@ -1399,7 +1399,7 @@ The +fun+ list expression defines or declares a new code object of function
 type.
 
 ----------------------------------------------------------------------
-fun_obj_def_expr = 'fun [\(] fun_name naked_fun_type_parameterized \= fun_impl args_close_del;
+fun_obj_def_expr = 'fun [\(] fun_name naked_fun_type_parameterized ",=" fun_impl args_close_del;
 
 fun_name = new_identifier | fun_name_operator | fun_name_ctor | fun_name_dtor;
 
@@ -1602,15 +1602,15 @@ Maybe since in EF everything is an expression, thus also function definitions,
 that already qualifies as lambda.  
 
 --------------------------------------------------
-sort(my_collection, fun(a:int,b:int)=a<b$);
+sort(my_collection, fun(a:int,b:int),=a<b$);
 
 ## the type of the arguments is known to the compiler because sort expects a
 ## function with two ints
-sort(my_collection, fun(x,y)=x<y$);
+sort(my_collection, fun(x,y),=x<y$);
 
 ## also the names of the parameters can be left away, then the names used
 ## in the declaration of sort must be used. 
-sort(my_collection, fun=a<b$);
+sort(my_collection, fun,=a<b$);
 --------------------------------------------------
 
 *to-do*:
@@ -1979,7 +1979,7 @@ data_obj_def_list_expr =
   ( \: type_expr
     'is data_obj_modifier*
   )*
-  [\= sub_expr]
+  [",=" sub_expr]
   args_close_del; 
 
 naked_data_obj_decl = 
@@ -2012,7 +2012,7 @@ The syntax to initialize a data object is always is composed of the following
 enclosing expression list, and it introduces an argument being an initializer.
 
 ----------------------------------------------------------------------
-initializer = \= (
+initializer = ",=" (
   arg_list |
   sub_expr | ## short for "(sub_expr)"
   'nop_init | 'laterctor);
@@ -2067,7 +2067,7 @@ Keywords in a flow control expression that promise that a given object will be
 initialized -- written to it at least once before reading from it.  That also
 would be a use case for the the example that a flow control expression as a
 whole returns already the desired initializer, but the when its a long
-multiline flow control expression, then ++var i : int = if ....$$++ may look
+multiline flow control expression, then ++var i : int ,= if ....$$++ may look
 awkward (on the other side that's just a matter of taste, which is also a
 matter of being used to such constructs).
 

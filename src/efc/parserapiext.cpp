@@ -97,6 +97,8 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_OR, {"OR", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_PIPE_PIPE, {"PIPE_PIPE", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_EQUAL_EQUAL, {"EQUAL_EQUAL", SVTVoid, TKComponentOrAmbigous}},
+    { Parser::token::TOK_COMMA_EQUAL, {"COMMA_EQUAL", SVTVoid, TKSeparator}},
+    { Parser::token::TOK_LPAREN_EQUAL, {"LPAREN_LPAREN", SVTVoid, TKSeparator}},
     { Parser::token::TOK_SLASH, {"SLASH", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_G_LPAREN, {"G_LPAREN", SVTVoid, TKStarter}},
     { Parser::token::TOK_LPAREN, {"LPAREN", SVTVoid, TKStarter}},

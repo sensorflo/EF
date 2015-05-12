@@ -19,7 +19,7 @@
 // The colon after a condition is optional. The guideline is leave it away when
 // code continues on the next line and to use it when code continues on the
 // same line. There can be zero or more elif parts. The else part is optional.
-fun factorial:(x:int) int =
+fun factorial:(x:int) int ,=
   if 0==x
     x * factorial(x-1)
   else

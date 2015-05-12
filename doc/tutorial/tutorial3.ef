@@ -20,9 +20,9 @@
 // immutable (aka const) variable. 'Data object' is the generic term for
 // variable and value. The initializer can be after the identifier or after the
 // type.
-fun square_minus_four:(x:int) int =
-   val square: int = x * x$
-   var tmp = square - 1 :int$
+fun square_minus_four:(x:int) int ,=
+   val square: int ,= x * x$
+   var tmp ,= square - 1 :int$
    tmp = tmp - 1
    tmp = tmp - 1;
    tmp - 1;
@@ -36,9 +36,9 @@ $
 // The current version of EF cannot really do type inference, but since the
 // only type currently is int, deducing the correct type is trivial since its
 // always int.
-fun square_minus_four_v2:(x:int) int =
+fun square_minus_four_v2:(x:int) int ,=
    square := x * x
-   var tmp: = square - 1$
+   var tmp: ,= square - 1$
    tmp - 3
 $
 
