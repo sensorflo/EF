@@ -124,7 +124,8 @@ out/efctest: $(filter-out out/efc.o, $(EFC_OBJS)) $(EFCTEST_OBJS) out/libgtest.a
 
 doc: out/specs.html
 
-out/specs.html: test/*.cpp | out
+out/specs.html: $(patsubst %, test/tests/%, $(EFCTEST_TESTS_SRCS)) \
+  $(patsubst %, test/tests/testhelpers/%, $(EFCTEST_TESTS_TESTHELPERS_SRCS)) | out
 	-if type testdox >/dev/null ; then\
 		if type asciidoc >/dev/null ; then\
 			testdox -f asciidoc $^ | asciidoc -a toc -o $@ -;\
