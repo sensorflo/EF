@@ -90,7 +90,7 @@
                  ":[ \t\r\n]*"
                  "fun\\b")
          '(1 font-lock-function-name-face))
-   (list "\\([;:]\\)[ \t]*\\(?://\\|$\\)" '(1 font-lock-semi-unimportant))
+   (list "\\([;:]\\|,=\\)[ \t]*\\(?://\\|$\\)" '(1 font-lock-semi-unimportant))
    (list "\\(?:^\\|[^(]\\)\\(\\$\\)[ \t]*\\(//\\|$\\)[ \t]*\\(?://\\|$\\)" '(1 font-lock-semi-unimportant))
    (list "\\(?:^\\|[^a-zA-Z_]\\)\\([0-9]+\\(?:\\.[0-9]*\\)?\\)"
          '(1 font-lock-constant-face))))
