@@ -1,5 +1,4 @@
-#ifndef SEMANTICANALIZER_H
-#define SEMANTICANALIZER_H
+#pragma once
 #include "astvisitor.h"
 #include <cstddef>
 #include <stack>
@@ -42,5 +41,3 @@ private:
   ErrorHandler& m_errorHandler;
   std::stack<const ObjType*> m_funRetObjTypes;
 };
-
-#endif

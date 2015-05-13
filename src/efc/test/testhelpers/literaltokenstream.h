@@ -13,4 +13,3 @@ private:
   const size_t m_size;
   std::unique_ptr<yy::Parser::symbol_type[]> const m_stream;
 };
-

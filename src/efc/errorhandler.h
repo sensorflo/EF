@@ -1,5 +1,4 @@
-#ifndef ERRORHANDLER_H
-#define ERRORHANDLER_H
+#pragma once
 #include <list>
 #include <ostream>
 #include <stdexcept>
@@ -83,5 +82,3 @@ private:
   friend class Error;
   BuildError(const std::string& what);
 };
-
-#endif

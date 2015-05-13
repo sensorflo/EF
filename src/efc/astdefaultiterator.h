@@ -1,5 +1,4 @@
-#ifndef ASTDEFAULTITERATOR_H
-#define ASTDEFAULTITERATOR_H
+#pragma once
 #include "astvisitor.h"
 
 
@@ -31,5 +30,3 @@ public:
 private:
   AstVisitor& m_visitor;
 };
-
-#endif

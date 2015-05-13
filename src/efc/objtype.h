@@ -1,6 +1,4 @@
-#ifndef OBJTYPE_H
-#define OBJTYPE_H
-
+#pragma once
 // If you change this list of header files, you must also modify the
 // analogous, redundant list in the Makefile
 
@@ -230,5 +228,3 @@ private:
   const std::unique_ptr<std::list<std::shared_ptr<const ObjType>>> m_args;
   const std::shared_ptr<const ObjType> m_ret;
 };
-
-#endif

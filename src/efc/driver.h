@@ -1,5 +1,4 @@
-#ifndef DRIVER_H
-#define DRIVER_H
+#pragma once
 #include <string>
 #include <memory>
 
@@ -67,5 +66,3 @@ private:
   SemanticAnalizer& m_semanticAnalizer;
   std::unique_ptr<ExecutionEngineApater> m_executionEngine;
 };
-  
-#endif

@@ -1,5 +1,4 @@
-#ifndef IR_GEN_H
-#define IR_GEN_H
+#pragma once
 #include "objtype.h"
 #include "access.h"
 #include "astvisitor.h"
@@ -63,5 +62,3 @@ private:
   which means '(accidentaly) not (yet) set)'. */
   static llvm::Value* const m_abstractObject;
 };
-
-#endif

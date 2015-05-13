@@ -1,5 +1,4 @@
-#ifndef PARSEREXT_H
-#define PARSEREXT_H
+#pragma once
 /** \file
 yy::Parser implementation extension. So bison's input file ef.yy can only contain
 tiny fragments of code. Anything larger than tiny is implemented here and
@@ -59,5 +58,3 @@ private:
   Env& m_env;
   ErrorHandler& m_errorHandler;
 };
-
-#endif

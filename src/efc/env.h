@@ -1,5 +1,4 @@
-#ifndef ENV_H
-#define ENV_H
+#pragma once
 #include "objtype.h"
 #include "llvm/IR/IRBuilder.h"
 #include <string>
@@ -75,5 +74,3 @@ private:
   /** symbol table stack. front() is top of stack */
   std::list<SymbolTable> m_ststack;
 };
-
-#endif

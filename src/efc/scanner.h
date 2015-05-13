@@ -14,4 +14,3 @@ public:
 private:
   Driver& m_driver;
 };
-

@@ -1,5 +1,4 @@
-#ifndef EXECUTION_ENGINE_ADAPTER_H
-#define EXECUTION_ENGINE_ADAPTER_H
+#pragma once
 #include "llvm/IR/Module.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include <string>
@@ -33,5 +32,3 @@ private:
   /** Guaranteed to be non-null. We're _not_ the owner. */
   llvm::ExecutionEngine* m_executionEngine;
 };
-
-#endif

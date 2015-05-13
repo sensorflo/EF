@@ -35,4 +35,3 @@ public:
 private:
   llvm::Value* m_valueIr;
 };
-

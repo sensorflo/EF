@@ -1,5 +1,4 @@
-#ifndef ASTPRINTER_H
-#define ASTPRINTER_H
+#pragma once
 #include "astvisitor.h"
 #include <iostream>
 
@@ -31,5 +30,3 @@ private:
   
   std::basic_ostream<char>& m_os;
 };
-
-#endif

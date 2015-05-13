@@ -1,6 +1,4 @@
-#ifndef ASTFORWARDS_H
-#define ASTFORWARDS_H
-
+#pragma once
 class AstNop;
 class AstBlock;
 class AstNode;
@@ -19,5 +17,3 @@ class AstDataDef;
 class AstIf;
 class AstLoop;
 class AstReturn;
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef GTEST_PRINTER_H
-#define GTEST_PRINTER_H
+#pragma once
 #include "gtest/gtest.h"
 #include <string>
 
@@ -30,5 +29,3 @@ private:
   static void PrintFailedTests(const testing::UnitTest& unit_test);
   std::string m_testName;
 };
-
-#endif

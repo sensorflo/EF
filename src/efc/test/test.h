@@ -1,5 +1,4 @@
-#ifndef TEST_H
-#define TEST_H
+#pragma once
 #include "gtest/gtest.h"
 #include <string>
 #include <memory>
@@ -60,5 +59,3 @@ std::string amend(const ErrorHandler& errorHandler);
 
 #define EXPECT_MATCHES_SAUF_QUALIFIERS( expected_obj_type, actual_obj_type )      \
   EXPECT_PRED2( ObjType::matchesSaufQualifiers_, expected_obj_type, actual_obj_type )
-
-#endif

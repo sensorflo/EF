@@ -1,6 +1,4 @@
-#ifndef ACCESS_H
-#define ACCESS_H
-
+#pragma once
 #include <iostream>
 #include <cassert>
 
@@ -16,6 +14,3 @@ inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   default: assert(false); return os;
   }
 }
-
-
-#endif

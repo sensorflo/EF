@@ -1,6 +1,4 @@
-#ifndef DRIVERONTMPFILE_H
-#define DRIVERONTMPFILE_H
-
+#pragma once
 #include "../driver.h"
 #include "../env.h"
 #include <string>
@@ -48,5 +46,3 @@ private:
   TmpFile m_tmpFile;
   Driver m_driver;
 };
-
-#endif

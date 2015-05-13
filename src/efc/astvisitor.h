@@ -1,6 +1,4 @@
-#ifndef ASTVISITOR_H
-#define ASTVISITOR_H
-
+#pragma once
 #include "astforwards.h"
 
 class AstVisitor {
@@ -44,5 +42,3 @@ public:
   virtual void visit(const AstLoop& loop) =0;
   virtual void visit(const AstReturn& return_) =0;
 };
-
-#endif

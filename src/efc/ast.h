@@ -1,6 +1,4 @@
-#ifndef AST_H
-#define AST_H
-
+#pragma once
 // If you change this list of header files, you must also modify the
 // analogous, redundant list in the Makefile
 #include "objtype.h"
@@ -359,5 +357,3 @@ private:
   std::list<AstValue*>*const m_childs;
   bool m_owner = true;
 };
-
-#endif
