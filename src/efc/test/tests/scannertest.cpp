@@ -340,3 +340,15 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   spec = "border case example: stars inside comment";
   TEST_SCANNER( "/* foo**bar */", spec, TOKIL0());
 }
+
+TEST(ScannerTest, MAKE_TEST_NAME2(
+    GIVEN_a_multiline_comment,
+    THEN_the_following_token_has_the_correct_location_info)) {
+  DriverOnTmpFile driver("/*\n*/\n42");
+  Scanner& UUT = driver.scanner(); 
+  const auto& actualPosition = UUT.pop().location.begin;
+  EXPECT_EQ(
+    position(actualPosition.filename, 3, 1),
+    actualPosition);
+}
+

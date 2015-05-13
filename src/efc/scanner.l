@@ -32,6 +32,8 @@
  void yyinitializeParserLoc(string* filename) {
    loc.initialize(filename);
  }
+
+ int charCount(const char*, char ch);
 %}
 
   /* identifier */
@@ -49,7 +51,7 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
   /* comments and blanks. They are all skiped and thus produce no token. */
 \/\/[^\n]*          loc.step();
 #![^\n]*            loc.step();
-\/\*[^*]*(\*+[^#*]+)*\*+\/   loc.step();
+\/\*[^*]*(\*+[^#*]+)*\*+\/  loc.step(); loc.lines(charCount(yytext, '\n'));
 [ \t]+              loc.step();
 [\n]+               loc.lines(yyleng); loc.step(); return yy::Parser::make_NEWLINE(loc);
 \\[ \t]*((\/\/|#!)[^\n]*)?\n		loc.lines(1); loc.step();
@@ -181,3 +183,12 @@ Parser::symbol_type Scanner::pop() {
   return yylex_raw(m_driver);
 }
 
+int charCount(const char* p, char ch) {
+  int cnt = 0;
+  for ( /*nop*/; *p!='\0'; ++p) {
+    if (*p==ch) {
+      ++cnt;
+    }
+  }
+  return cnt;
+}
