@@ -58,10 +58,21 @@ TEST(ScannerTest, MAKE_TEST_NAME2(
 // Note that the TokenFilter which sits between Scanner and Parser will filter
 // out some NEWLINE tokens.
 TEST(ScannerTest, MAKE_TEST_NAME(
-    a_newline,
+    an_unescaped_newline,
     pop,
     returns_TOK_NEWLINE)) {
   TEST_SCANNER( "\n", "", TOKIL1(TOK_NEWLINE));
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
+    a_backslash_escaped_newline,
+    pop,
+    discards_the_backslash_and_the_newline_and_any_horizontal_whites_and_any_one_line_comment_inbetween)) {
+  TEST_SCANNER( "\\\n", "", TOKIL0());
+  TEST_SCANNER( "\\ \t \n", "", TOKIL0());
+  TEST_SCANNER( "\\ \t //foo\n", "", TOKIL0());
+  TEST_SCANNER( "\\ \t #!foo\n", "", TOKIL0());
+  // see also the test for multiline comments
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -313,7 +324,8 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   spec = "simple example";
   TEST_SCANNER( "x /*foo*/ y", spec, TOKIL2(TOK_ID, TOK_ID));
 
-  spec = "example: comment contains newlines";
+  spec = "example: comment contains newlines. A NEWLINE token is _not_ "
+    "generated.";
   TEST_SCANNER( "x /*foo\nbar*/ y", spec, TOKIL2(TOK_ID, TOK_ID));
 
   spec = "example: comment contains *";
