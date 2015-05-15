@@ -230,7 +230,7 @@ pure_naked_param_ct_list
   ;
 
 param_decl
-  : ID COLON type                                   { $$ = new AstArgDecl($1, &(($3)->addQualifiers(ObjType::eMutable))); }
+  : ID COLON type                                   { $$ = new AstArgDecl($1, $3); }
   ;
   
 type

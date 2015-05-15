@@ -469,7 +469,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         "foo",
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
-      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)))),
+      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
     Error::eRedefinition, spec);
 
   spec = "Example: two functions";

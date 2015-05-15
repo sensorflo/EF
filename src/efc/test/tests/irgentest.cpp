@@ -1131,7 +1131,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         pe.mkFunDecl(
           "foo",
           new ObjTypeFunda(ObjTypeFunda::eVoid),
-          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
         new AstOperator('=',
           new AstSymbol("x"),
           new AstNumber(77))),

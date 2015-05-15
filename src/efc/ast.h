@@ -151,8 +151,8 @@ private:
 
 class AstArgDecl : public AstDataDecl {
 public:
-  AstArgDecl(const std::string& name, ObjType* objType) :
-    AstDataDecl(name, &objType->addQualifiers(ObjType::eMutable)) {};
+  AstArgDecl(const std::string& name, const ObjType* declaredObjType) :
+    AstDataDecl(name, declaredObjType) {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 };

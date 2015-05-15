@@ -88,8 +88,8 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "declfun(foo () int)", AstFunDecl("foo"), spec);
   EXPECT_TOSTR_EQ( "declfun(foo () int)", AstFunDecl("foo", new list<AstArgDecl*>()), spec);
   EXPECT_TOSTR_EQ( "declfun(foo () bool)", AstFunDecl("foo", new list<AstArgDecl*>(), make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)), spec);
-  EXPECT_TOSTR_EQ( "declfun(foo ((arg1 mut-int)) int)", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))), spec);
-  EXPECT_TOSTR_EQ( "declfun(foo ((arg1 mut-int) (arg2 mut-int)) int)", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))), spec);
+  EXPECT_TOSTR_EQ( "declfun(foo ((arg1 int)) int)", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))), spec);
+  EXPECT_TOSTR_EQ( "declfun(foo ((arg1 int) (arg2 int)) int)", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))), spec);
 
   spec = "AstFunDef";
   EXPECT_TOSTR_EQ( "fun(declfun(foo () int) 42)", AstFunDef(new AstFunDecl("foo"),new AstNumber(42)), spec);
