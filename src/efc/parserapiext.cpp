@@ -112,6 +112,7 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_FUNDAMENTAL_TYPE, {"FUNDAMENTAL_TYPE", SVTFundamentalType, TKComponentOrAmbigous}},
     { Parser::token::TOK_OP_NAME, {"OP_NAME", SVTString, TKStarter}},
     { Parser::token::TOK_ID, {"ID", SVTString, TKComponentOrAmbigous}},
+    { Parser::token::TOK_MUT, {"MUT", SVTVoid, TKSeparator}},
     { Parser::token::TOK_NUMBER, {"NUMBER", SVTNumberToken, TKComponentOrAmbigous}}};
   for (const auto kv: m) {
     m_TokenAttrs.at(kv.first) = kv.second;

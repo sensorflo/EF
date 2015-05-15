@@ -61,14 +61,15 @@
          '(1 font-lock-type-face))
    (list (concat "\\_<\\(?:val\\|var\\)"                       ; val|var
                  "\\(?:[ \t\r\n]*($[ \t\r\n]*\\|[ \t\r\n]+\\)" ; ($ or blank
-                 "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*"    ; id
-                 "\\(?:,=[^:$]*\\)?"                           ; ,=
-                 "\\(?:"
-                   ":[ \t\r\n]*"
-                   "\\(?:\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*\\)?"
-                 "\\)?")               
-         '(1 font-lock-variable-name-face)
-         '(2 font-lock-type-face nil t))
+                 "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)[ \t\r\n]*")   ; id
+         '(1 font-lock-variable-name-face))
+   (list (concat "\\_<\\(?:val\\|var\\)\\_>"                   ; val|var
+                 "\\(?:[ \t\r\n]*($[ \t\r\n]*\\|[ \t\r\n]+\\)" ; ($ or blank
+                 "[^$)]*?"
+                 ":[ \t\r\n]*"
+                 "\\(.*?\\)[ \t\r\n]*"
+                 "\\(?:,=\\|[$)]\\|\\bend\\b\\|\\bendof\\b\\)")
+         '(1 font-lock-type-face nil t))
    (list (concat "\\_<raw_new\\_>[ \t\n]*"
                  "\\(?:([ \t\n]*\\)?"
                  "\\(.*?\\)"

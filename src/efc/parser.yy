@@ -132,6 +132,7 @@ and by declaration of free function yylex */
   LBRACE "{"
   RBRACE "}"
   ARROW "->"
+  MUT "mut"
 ;
 
 %token <ObjTypeFunda::EType> FUNDAMENTAL_TYPE
@@ -158,7 +159,7 @@ and by declaration of free function yylex */
 %type <std::list<AstValue*>*> pure_ct_list
 %type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstArgDecl*> param_decl
-%type <ObjType::Qualifiers> valvar
+%type <ObjType::Qualifiers> valvar type_qualifier
 %type <RawAstDataDecl*> naked_data_decl
 %type <RawAstDataDef*> naked_data_def
 %type <AstFunDecl*> naked_fun_decl
@@ -236,7 +237,12 @@ param_decl
 type
   : FUNDAMENTAL_TYPE                                { $$ = new ObjTypeFunda($1); }
   | CARET type                                      { $$ = new ObjTypePtr(std::shared_ptr<ObjType>{$2}); }
+  | type_qualifier type                             { ($2)->addQualifiers($1); std::swap($$, $2); }
   | ID                                              { assert(false); /* user defined names not yet supported; but I wanted to have ID already in grammar*/ }
+  ;
+
+type_qualifier
+  : MUT                                             { $$ = ObjType::eMutable; }
   ;
 
 opt_colon

@@ -76,6 +76,7 @@ raw_new             return yy::Parser::make_RAW_NEW(loc);
 raw_delete          return yy::Parser::make_RAW_DELETE(loc);
 nop                 return yy::Parser::make_NOP(loc);
 return              return yy::Parser::make_RETURN(loc);
+mut                 return yy::Parser::make_MUT(loc);
 
 
   /* type keywords */

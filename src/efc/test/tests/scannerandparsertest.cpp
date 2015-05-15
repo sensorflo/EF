@@ -352,6 +352,12 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   spec = "should allow trailing comma in argument list";
   TEST_PARSE( "decl fun foo:(arg1:int,) int$", "declfun(foo ((arg1 int)) int)", spec);
+
+  spec = "example: mutable parameter";
+  TEST_PARSE( "decl  fun foo:(arg1:mut int) int$", "declfun(foo ((arg1 mut-int)) int)", spec);
+
+  spec = "example: mutable return-type (is currently an semantic error though)";
+  TEST_PARSE( "decl  fun foo:(arg1:int) mut int$", "declfun(foo ((arg1 int)) mut-int)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -495,6 +501,9 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     "two arguments is irrelevant here.";
   TEST_PARSE( "val foo (=42,77) :int         $", "data(decldata(foo int) (42 77))", spec);
   TEST_PARSE( "val foo          :int (=42,77)$", "data(decldata(foo int) (42 77))", spec);
+
+  spec = "muttable qualifier";
+  TEST_PARSE( "val foo :mut int$", "data(decldata(foo mut-int) ())", spec);
 
   spec = "short version with implicit type";
   TEST_PARSE( "foo:=42", "data(decldata(foo int) (42))", spec);
