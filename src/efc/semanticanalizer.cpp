@@ -291,6 +291,9 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 void SemanticAnalizer::visit(AstFunDecl& funDecl) {
   // Note that visit(AstFundDef) does all of the work for the case AstFunDecl
   // is a child of AstFundDef.
+  if ( funDecl.retObjType().qualifiers() & ObjType::eMutable ) {
+    Error::throwError(m_errorHandler, Error::eRetTypeCantHaveMutQualifier);
+  }
   funDecl.stentry()->addAccessToObject(funDecl.access());
   postConditionCheck(funDecl);
 }

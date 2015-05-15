@@ -22,6 +22,7 @@ public:
     eUnreachableCode,
     eComputedValueNotUsed,
     eCTConstRequired,
+    eRetTypeCantHaveMutQualifier,
     eCnt
   };
 

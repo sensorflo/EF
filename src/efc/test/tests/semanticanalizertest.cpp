@@ -951,30 +951,6 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), funCall->objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
-
-  spec = "Example: function with no args returning 'mutable' int -> "
-    "obj type of expession is still immutable as all temporary objects.";
-  {
-    // setup
-    Env env;
-    ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    AstFunCall* funCall = new AstFunCall(new AstSymbol("foo"));
-    unique_ptr<AstValue> ast{
-      new AstOperator(';',
-        pe.mkFunDef(
-          pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
-          new AstNumber(0, ObjTypeFunda::eBool)),
-        funCall)};
-
-    // exercise
-    UUT.analyze(*ast.get());
-
-    // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), funCall->objType()) <<
-      amendAst(ast) << amendSpec(spec);
-  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -1791,4 +1767,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstNumber(77)),
       new AstNumber(11)),
     Error::eComputedValueNotUsed, spec)
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+    GIVEN_a_return_type_with_mutable_qualifier,
+    THEN_eRetTypeCantHaveMutQualifier_is_reported,
+    BECAUSE_currently_temporary_objects_are_always_immutable)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+    Error::eRetTypeCantHaveMutQualifier, "");
+
 }
