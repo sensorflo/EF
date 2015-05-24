@@ -440,6 +440,17 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_redeclaration_with_non_matching_storage_duration,
+    transform,
+    reports_eIncompatibleRedeclaration)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstOperator(';',
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjTypeFunda::eLocal)),
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjTypeFunda::eStatic))),
+    Error::eIncompatibleRedeclaration, "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     redefinition_of_an_object_which_means_same_name_and_same_type,
     transform,
     reports_an_eRedefinition)) {

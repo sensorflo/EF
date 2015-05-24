@@ -314,7 +314,12 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
     // name is already in env: unless the type matches that is an error
     else {
       assert(envs_stentry_ptr.get());
-      if ( !envs_stentry_ptr->objType().matchesFully(dataDecl.declaredObjType()) ) {
+      const auto objTypeMatchesFully =
+        envs_stentry_ptr->objType().matchesFully(dataDecl.declaredObjType());
+      const auto storageDurationMatches =
+        envs_stentry_ptr->objType().storageDuration() ==
+        dataDecl.declaredObjType().storageDuration();
+      if ( !objTypeMatchesFully || !storageDurationMatches ) {
         Error::throwError(m_errorHandler, Error::eIncompatibleRedeclaration);
       }
       dataDecl.setStentry(envs_stentry_ptr);
