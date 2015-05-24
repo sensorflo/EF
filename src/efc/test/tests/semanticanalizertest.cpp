@@ -228,8 +228,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Env env;
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
-    auto objType = new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic);
-    unique_ptr<AstNode> ast(new AstDataDecl("x", objType));
+    auto objType = new ObjTypeFunda(ObjTypeFunda::eInt);
+    unique_ptr<AstNode> ast(new AstDataDecl("x", objType, StorageDuration::eStatic));
 
     // exercise
     UUT.analyze(*ast);
@@ -250,7 +250,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     new AstOperator(';',
       pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic)),
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt),
+          StorageDuration::eStatic),
         new AstFunCall(new AstSymbol("foo")))),
     Error::eCTConstRequired, "");
 }
@@ -288,7 +289,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     new AstOperator(';',
       new AstSymbol("x"),
       new AstDataDecl("x",
-        new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic))),
+        new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic)),
     Error::eUnknownName, "");
 }
 
@@ -365,8 +366,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     TestingSemanticAnalizer UUT(env, errorHandler);
     unique_ptr<AstValue> ast{
       new AstOperator(';',
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic)),
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic)))};
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic),
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic))};
 
     // exercise
     UUT.analyze(*ast.get());
@@ -376,7 +377,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     shared_ptr<SymbolTableEntry> stentry;
     env.find("x", stentry);
     EXPECT_TRUE( stentry.get() ) << amendAst(ast);
-    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic), stentry->objType() );
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), stentry->objType() );
   }
 }
 
@@ -445,8 +446,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     reports_eIncompatibleRedeclaration)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjTypeFunda::eLocal)),
-      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjTypeFunda::eStatic))),
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eLocal),
+      new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic)),
     Error::eIncompatibleRedeclaration, "");
 }
 

@@ -60,26 +60,13 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::MatchType mt) 
   }
 }
 
-basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::StorageDuration sd) {
-  switch (sd) {
-  case ObjType::eLocal: return os;
-  case ObjType::eStatic: return os << "static";
-  default: assert(false); return os;
-  }
-  return os;
-}
-
-ObjTypeFunda::ObjTypeFunda(EType type, Qualifiers qualifiers,
-  StorageDuration storageDuration)  :
-  ObjType(qualifiers), m_type(type), m_storageDuration(storageDuration) {
+ObjTypeFunda::ObjTypeFunda(EType type, Qualifiers qualifiers)  :
+  ObjType(qualifiers), m_type(type) {
   if ( type==eVoid ) {
     assert( qualifiers == eNoQualifier );
   }
   // same for eNoret
 }
-
-ObjTypeFunda::ObjTypeFunda(EType type, StorageDuration storageDuration) :
-  ObjTypeFunda(type, eNoQualifier, storageDuration) {}
 
 ObjType::MatchType ObjTypeFunda::match(const ObjType& dst, bool isLevel0) const {
   return dst.match2(*this, isLevel0);
@@ -93,9 +80,6 @@ ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& src, bool isRoot) co
 }
 
 basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
-  if (m_storageDuration != eLocal) {
-    os << m_storageDuration << "-";
-  }
   if (eMutable & m_qualifiers) {
     os << "mut-";
   }
@@ -261,16 +245,10 @@ bool ObjType::matchesSaufQualifiers_(const ObjType& rhs, const ObjType& lhs) {
   return rhs.matchesSaufQualifiers(lhs);
 }
 
-ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee, Qualifiers qualifiers,
-  StorageDuration storageDuration) :
-  ObjTypeFunda(ePointer, qualifiers, storageDuration),
+ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee, Qualifiers qualifiers) :
+  ObjTypeFunda(ePointer, qualifiers),
   m_pointee(move(pointee)) {
   assert(m_pointee);
-}
-
-ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee,
-  StorageDuration storageDuration) :
-  ObjTypePtr(pointee, eNoQualifier, storageDuration ) {
 }
 
 ObjTypePtr::ObjTypePtr(const ObjTypePtr& other) :

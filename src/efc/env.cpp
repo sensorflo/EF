@@ -5,8 +5,10 @@
 using namespace std;
 using namespace llvm;
 
-SymbolTableEntry::SymbolTableEntry(shared_ptr<const ObjType> objType) :
+SymbolTableEntry::SymbolTableEntry(shared_ptr<const ObjType> objType,
+  StorageDuration storageDuration) :
   m_objType( (assert(objType.get()), move(objType))),
+  m_storageDuration(storageDuration),
   m_isDefined(false),
   m_objectIsModifiedOrRevealsAddr(false),
   m_irValueOrAddr(NULL) {}
@@ -29,7 +31,7 @@ bool SymbolTableEntry::objectIsModifiedOrRevealsAddr() const {
 }
 
 bool SymbolTableEntry::isStoredInMemory() const {
-  return m_objType->storageDuration()!=ObjType::eLocal ||
+  return m_storageDuration!=StorageDuration::eLocal ||
     m_objectIsModifiedOrRevealsAddr;
 }
 

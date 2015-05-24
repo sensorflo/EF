@@ -67,7 +67,8 @@ AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifiers qualifiers,
 
   AstDataDecl* astDataDecl = new AstDataDecl(
     rawAstDataDecl->m_name,
-    &(rawAstDataDecl->m_objType->addQualifiers(qualifiers)));
+    &(rawAstDataDecl->m_objType->addQualifiers(qualifiers)),
+    StorageDuration::eLocal);
   delete rawAstDataDecl;
   rawAstDataDecl = NULL;
   return astDataDecl;
@@ -105,7 +106,8 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, const ObjType* ret,
   shared_ptr<SymbolTableEntry>& stIterStEntry = stIter->second;
   bool wasAlreadyInMap = !insertRet.second;
   if (!wasAlreadyInMap) {
-    stIterStEntry = make_shared<SymbolTableEntry>(move(objTypeFun));
+    stIterStEntry = make_shared<SymbolTableEntry>(move(objTypeFun),
+      StorageDuration::eStatic);
   } else {
     assert(stIterStEntry.get());
     if ( !stIterStEntry->objType().matchesFully(*objTypeFun) ) {

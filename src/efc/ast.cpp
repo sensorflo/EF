@@ -50,7 +50,8 @@ void AstValue::setStentry(shared_ptr<SymbolTableEntry> stentry) {
 AstNop::AstNop() :
   AstValue{
     make_shared<SymbolTableEntry>(
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid))} {
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid),
+      StorageDuration::eLocal)} {
 }
 
 AstBlock::AstBlock(AstValue* body) :
@@ -64,7 +65,8 @@ AstCast::AstCast(ObjType* objType, AstValue* child) :
   AstValue{
     make_shared<SymbolTableEntry>(
       shared_ptr<ObjType>{
-        objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)})},
+        objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)},
+      StorageDuration::eLocal)},
   m_child(child ? child : new AstNumber(0)) {
   assert(m_child);
 
@@ -130,11 +132,13 @@ list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
   return args;
 }
 
-AstDataDecl::AstDataDecl(const string& name, const ObjType* declaredObjType) :
+AstDataDecl::AstDataDecl(const string& name, const ObjType* declaredObjType,
+  StorageDuration declaredStorageDuration) :
   m_name(name),
   m_declaredObjType(declaredObjType ?
     shared_ptr<const ObjType>(declaredObjType) :
-    make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)) {
+    make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+  m_declaredStorageDuration(declaredStorageDuration) {
 }
 
 const ObjType& AstDataDecl::declaredObjType() const {
@@ -145,13 +149,20 @@ shared_ptr<const ObjType>& AstDataDecl::declaredObjTypeAsSp() {
   return m_declaredObjType;
 }
 
+StorageDuration AstDataDecl::declaredStorageDuration() const {
+  return m_declaredStorageDuration;
+}
+
 shared_ptr<SymbolTableEntry>& AstDataDecl::createAndSetStEntryUsingDeclaredObjType() {
-  setStentry(make_shared<SymbolTableEntry>(m_declaredObjType));
+  setStentry(make_shared<SymbolTableEntry>(m_declaredObjType, m_declaredStorageDuration));
   return m_stentry;
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
-  m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
+  m_decl(decl ? decl : new AstDataDecl(
+      "<unknown_name>",
+      new ObjTypeFunda(ObjTypeFunda::eInt),
+      StorageDuration::eLocal)),
   m_ctorArgs(initValue ? new AstCtList(initValue) : new AstCtList()),
   m_implicitInitializer(initValue ? NULL : m_decl->declaredObjType().createDefaultAstValue()) {
   assert(m_decl);
@@ -159,7 +170,10 @@ AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
 }
 
 AstDataDef::AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs) :
-  m_decl(decl ? decl : new AstDataDecl("<unknown_name>", new ObjTypeFunda(ObjTypeFunda::eInt))),
+  m_decl(decl ? decl : new AstDataDecl(
+      "<unknown_name>",
+      new ObjTypeFunda(ObjTypeFunda::eInt),
+      StorageDuration::eLocal)),
   m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()),
   m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_decl->declaredObjType().createDefaultAstValue()) {
   assert(m_decl);
@@ -188,7 +202,8 @@ AstNumber::AstNumber(GeneralValue value, ObjTypeFunda* objType) :
     make_shared<SymbolTableEntry>(
       objType ?
       shared_ptr<const ObjType>{objType} :
-      make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt))},
+      make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt),
+      StorageDuration::eLocal)},
   m_value(value) {
   // A mutable literal makes no sense.
   assert(!(AstValue::objType().qualifiers() & ObjType::eMutable));
@@ -326,7 +341,8 @@ AstIf::~AstIf() {
 AstLoop::AstLoop(AstValue* cond, AstValue* body) :
   AstValue{
     make_shared<SymbolTableEntry>(
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid))},
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid),
+      StorageDuration::eLocal)},
   m_condition(cond),
   m_body(body) {
   assert(m_condition);
@@ -341,7 +357,8 @@ AstLoop::~AstLoop() {
 AstReturn::AstReturn(AstValue* retVal) :
   AstValue{
     make_shared<SymbolTableEntry>(
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eNoreturn))},
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eNoreturn),
+      StorageDuration::eLocal)},
   m_retVal(retVal) {
   assert(m_retVal);
 }
@@ -372,7 +389,9 @@ void AstFunCall::createAndSetStEntryUsingRetObjType() {
   const auto& objTypeFun = static_cast<const ObjTypeFun&>(objType);
   auto objTypeRet = objTypeFun.ret().clone();
   objTypeRet->removeQualifiers(ObjType::eMutable);
-  setStentry(make_shared<SymbolTableEntry>(unique_ptr<const ObjType>{objTypeRet}));
+  setStentry(make_shared<SymbolTableEntry>(
+      unique_ptr<const ObjType>{objTypeRet},
+      StorageDuration::eLocal));
 }
 
 /** The list's elements must be non-null */

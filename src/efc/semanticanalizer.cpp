@@ -47,7 +47,7 @@ void SemanticAnalizer::visit(AstBlock& block) {
 
   shared_ptr<ObjType> objType{block.body().objType().clone()};
   objType->removeQualifiers(ObjType::eMutable);
-  block.setStentry(make_shared<SymbolTableEntry>(objType));
+  block.setStentry(make_shared<SymbolTableEntry>(objType, StorageDuration::eLocal));
 
   block.stentry()->addAccessToObject(block.access());
 
@@ -183,7 +183,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
       // the derefee. 'Copy' as good as we can. Since the address of the
       // derefee object is obviously known (we're just dereferencing it), we
       // know that the address of the derefee object has been taken.
-      op.setStentry(make_shared<SymbolTableEntry>(objType));
+      op.setStentry(make_shared<SymbolTableEntry>(objType, StorageDuration::eUnknown));
       op.stentry()->addAccessToObject(eTakeAddress);    
     }
     // For ther operands, the operator expression's objtype is, now that we
@@ -198,7 +198,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // Some operators did already set op.stentry above, the others do it now
   // here
   if ( !op.stentry() ) {
-    op.setStentry(make_shared<SymbolTableEntry>(objType));
+    op.setStentry(make_shared<SymbolTableEntry>(objType, StorageDuration::eLocal));
   }
   op.stentry()->addAccessToObject(op.access());
 
@@ -317,8 +317,8 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
       const auto objTypeMatchesFully =
         envs_stentry_ptr->objType().matchesFully(dataDecl.declaredObjType());
       const auto storageDurationMatches =
-        envs_stentry_ptr->objType().storageDuration() ==
-        dataDecl.declaredObjType().storageDuration();
+        envs_stentry_ptr->storageDuration() ==
+        dataDecl.declaredStorageDuration();
       if ( !objTypeMatchesFully || !storageDurationMatches ) {
         Error::throwError(m_errorHandler, Error::eIncompatibleRedeclaration);
       }
@@ -341,7 +341,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
   if ( dataDef.decl().objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
-  if ( dataDef.decl().objType().storageDuration() == ObjType::eStatic
+  if ( dataDef.decl().stentry()->storageDuration() == StorageDuration::eStatic
     && !dataDef.initValue().isCTConst() ) {
     Error::throwError(m_errorHandler, Error::eCTConstRequired);
   }
@@ -400,7 +400,7 @@ void SemanticAnalizer::visit(AstIf& if_) {
   } else {
     objType = make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid);
   }
-  if_.setStentry(make_shared<SymbolTableEntry>(objType));
+  if_.setStentry(make_shared<SymbolTableEntry>(objType, StorageDuration::eLocal));
 
   if_.stentry()->addAccessToObject(if_.access());
 

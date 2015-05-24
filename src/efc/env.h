@@ -1,5 +1,6 @@
 #pragma once
 #include "objtype.h"
+#include "storageduration.h"
 #include "llvm/IR/IRBuilder.h"
 #include <string>
 #include <string>
@@ -15,18 +16,26 @@ namespace llvm {
 
 class SymbolTableEntry {
 public:
-  SymbolTableEntry(std::shared_ptr<const ObjType> objType);
+  SymbolTableEntry(std::shared_ptr<const ObjType> objType,
+    StorageDuration storageDuration);
 
   const ObjType& objType() const { return *m_objType.get(); }
+  StorageDuration storageDuration() const { return m_storageDuration; }
   bool isDefined() const { return m_isDefined; }
   void markAsDefined(ErrorHandler& errorHandler);
   void addAccessToObject(Access access);
   bool objectIsModifiedOrRevealsAddr() const;
+  /** Semantically every non-abstract object is stored in memory. However
+  certain objects can be optimized to live only as an SSA
+  value. `isStoredInMemory' is both in the sense of `must be stored in memory'
+  (equals `can't be optimized to be a SSA value only') and `actually is stored
+  in memory'. */
   bool isStoredInMemory() const;
 
 private:
   /** Is guaranteed to be non-null */
   const std::shared_ptr<const ObjType> m_objType;
+  const StorageDuration m_storageDuration;
   /** Opposed to only declared */
   bool m_isDefined;
   bool m_objectIsModifiedOrRevealsAddr;

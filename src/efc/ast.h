@@ -4,6 +4,7 @@
 #include "objtype.h"
 #include "access.h"
 #include "generalvalue.h"
+#include "storageduration.h"
 
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Function.h"
@@ -135,24 +136,27 @@ private:
 
 class AstDataDecl : public AstValue {
 public:
-  AstDataDecl(const std::string& name, const ObjType* declaredObjType);
+  AstDataDecl(const std::string& name, const ObjType* declaredObjType,
+    StorageDuration declaredStorageDuration = StorageDuration::eLocal);
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
 
   const ObjType& declaredObjType() const;
   std::shared_ptr<const ObjType>& declaredObjTypeAsSp();
+  StorageDuration declaredStorageDuration() const;
   std::shared_ptr<SymbolTableEntry>& createAndSetStEntryUsingDeclaredObjType();  
 
 private:
   const std::string m_name;
   std::shared_ptr<const ObjType> m_declaredObjType;
+  const StorageDuration m_declaredStorageDuration;
 };
 
 class AstArgDecl : public AstDataDecl {
 public:
   AstArgDecl(const std::string& name, const ObjType* declaredObjType) :
-    AstDataDecl(name, declaredObjType) {};
+    AstDataDecl(name, declaredObjType, StorageDuration::eLocal) {};
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 };

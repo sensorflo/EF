@@ -920,14 +920,14 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   string spec = "Example: immutable static data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstDataDef(
-      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic)),
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic),
       new AstNumber(42)),
     42, "");
 
   spec = "Example: mutable static data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstDataDef(
-      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable, ObjType::eStatic)),
+      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic),
       new AstNumber(42)),
     42, "");
 }
@@ -941,7 +941,7 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
     pe.mkOperatorTree(";",
       new AstDataDef(
         new AstDataDecl("spy_sum",
-          new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable, ObjType::eStatic))),
+          new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic)),
 
       pe.mkFunDef(
         pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eVoid)),
@@ -950,7 +950,7 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
             // Init UUT with true. This test is about that this happens _not_
             // when control flow reaches this place
             new AstDataDecl("UUT",
-              new ObjTypeFunda(ObjTypeFunda::eBool, ObjTypeFunda::eMutable, ObjType::eStatic)),
+              new ObjTypeFunda(ObjTypeFunda::eBool, ObjTypeFunda::eMutable), StorageDuration::eStatic),
             new AstNumber(1, ObjTypeFunda::eBool)),
           new AstIf(
             new AstSymbol("UUT"), // true only the first time ...
@@ -1049,7 +1049,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
       new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic)),
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic),
         new AstNumber(42)),
       new AstSymbol("x")),
     42, spec);
@@ -1058,7 +1058,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
       new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable, ObjType::eStatic)),
+        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic),
         new AstNumber(42)),
       new AstSymbol("x")),
     42, spec);
@@ -1096,7 +1096,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
       new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable, ObjType::eStatic)),
+        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic),
         new AstNumber(42)),
       new AstOperator('=',
         new AstSymbol("foo"),

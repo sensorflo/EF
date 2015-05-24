@@ -33,25 +33,15 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   EXPECT_EQ("noreturn", ObjTypeFunda(ObjTypeFunda::eNoreturn).toStr());
   EXPECT_EQ("char", ObjTypeFunda(ObjTypeFunda::eChar).toStr());
   EXPECT_EQ("mut-char", ObjTypeFunda(ObjTypeFunda::eChar, ObjType::eMutable).toStr());
-  EXPECT_EQ("static-char", ObjTypeFunda(ObjTypeFunda::eChar, ObjType::eStatic).toStr());
-  EXPECT_EQ("static-mut-char", ObjTypeFunda(ObjTypeFunda::eChar, ObjType::eMutable, ObjType::eStatic).toStr());
   EXPECT_EQ("int", ObjTypeFunda(ObjTypeFunda::eInt).toStr());
   EXPECT_EQ("mut-int", ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).toStr());
-  EXPECT_EQ("static-int", ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eStatic).toStr());
-  EXPECT_EQ("static-mut-int", ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable, ObjType::eStatic).toStr());
   EXPECT_EQ("bool", ObjTypeFunda(ObjTypeFunda::eBool).toStr());
   EXPECT_EQ("mut-bool", ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable).toStr());
-  EXPECT_EQ("static-bool", ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eStatic).toStr());
-  EXPECT_EQ("static-mut-bool", ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable, ObjType::eStatic).toStr());
   EXPECT_EQ("double", ObjTypeFunda(ObjTypeFunda::eDouble).toStr());
   EXPECT_EQ("mut-double", ObjTypeFunda(ObjTypeFunda::eDouble, ObjType::eMutable).toStr());
-  EXPECT_EQ("static-double", ObjTypeFunda(ObjTypeFunda::eDouble, ObjType::eStatic).toStr());
-  EXPECT_EQ("static-mut-double", ObjTypeFunda(ObjTypeFunda::eDouble, ObjType::eMutable, ObjType::eStatic).toStr());
 
   // pointer type
   EXPECT_EQ("raw^int", ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
-  EXPECT_EQ("static-mut-raw^int",
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), ObjType::eMutable, ObjType::eStatic).toStr());
 
   // function type
   EXPECT_EQ("fun(() int)",

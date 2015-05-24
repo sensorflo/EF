@@ -43,11 +43,6 @@ public:
 
     eFunction
   };
-  enum StorageDuration {
-    eLocal,
-    eStatic
-  };
-
   virtual ~ObjType() {};
 
   ObjType& addQualifiers(Qualifiers qualifiers);
@@ -74,8 +69,6 @@ public:
   std::string toStr() const;
 
   Qualifiers qualifiers() const { return m_qualifiers; }
-
-  virtual StorageDuration storageDuration() const = 0;
 
   /** asserts in case of there is no default AstValue */
   virtual AstValue* createDefaultAstValue() const = 0;
@@ -112,9 +105,6 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   ObjType::MatchType mt);
 
-std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  ObjType::StorageDuration sd);
-
 
 /** Fundamental type (int, bool, double etc) and also pointer type. 'General
 scalar' (note that it also includes abstract objects) might be a better
@@ -134,8 +124,7 @@ public:
       ePointer
   };
 
-  ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier, StorageDuration storageDuration = eLocal);
-  ObjTypeFunda(EType type, StorageDuration storageDuration);
+  ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier);
 
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
   using ObjType::match2;
@@ -146,8 +135,6 @@ public:
   virtual int size() const;
 
   virtual ObjTypeFunda* clone() const;
-
-  virtual StorageDuration storageDuration() const { return m_storageDuration; }
 
   EType type() const { return m_type; }
   virtual AstValue* createDefaultAstValue() const;
@@ -161,7 +148,6 @@ public:
 private:
   ObjTypeFunda& operator=(const ObjTypeFunda&) =delete; // for simplicity reasons
   const EType m_type;
-  const StorageDuration m_storageDuration;
 };
 
 
@@ -169,8 +155,7 @@ private:
 class ObjTypePtr : public ObjTypeFunda {
 public:
   ObjTypePtr(std::shared_ptr<const ObjType> pointee,
-    Qualifiers qualifiers = eNoQualifier, StorageDuration storageDuration = eLocal);
-  ObjTypePtr(std::shared_ptr<const ObjType> pointee, StorageDuration storageDuration);
+    Qualifiers qualifiers = eNoQualifier);
   ObjTypePtr(const ObjTypePtr&);
 
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
@@ -213,7 +198,6 @@ public:
 
   virtual bool is(EClass class_) const;
   virtual int size() const { return -1;}
-  virtual StorageDuration storageDuration() const { return eStatic; }
 
   virtual ObjTypeFun* clone() const;
 

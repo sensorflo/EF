@@ -426,7 +426,7 @@ void IrGen::visit(AstDataDef& dataDef) {
   assert(initValue);
   const ObjType& objType = dataDef.objType();
 
-  if ( objType.storageDuration() == ObjType::eStatic ) {
+  if ( stentry->storageDuration() == StorageDuration::eStatic ) {
     GlobalVariable* variableAddr = new GlobalVariable( *m_module, objType.llvmType(),
       ! objType.qualifiers() & ObjType::eMutable, GlobalValue::InternalLinkage,
       static_cast<Constant*>(initValue),
