@@ -12,7 +12,7 @@ public:
   enum No {
     eNone,
     eUnknownName,
-    eIncompatibleRedaclaration,
+    eIncompatibleRedeclaration,
     eRedefinition,
     eWriteToImmutable,
     eNoImplicitConversion,

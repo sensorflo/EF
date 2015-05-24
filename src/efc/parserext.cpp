@@ -109,7 +109,7 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, const ObjType* ret,
   } else {
     assert(stIterStEntry.get());
     if ( !stIterStEntry->objType().matchesFully(*objTypeFun) ) {
-      Error::throwError(m_errorHandler, Error::eIncompatibleRedaclaration);
+      Error::throwError(m_errorHandler, Error::eIncompatibleRedeclaration);
     }
   }
 

@@ -415,28 +415,28 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_redeclaration_with_non_matching_type,
     transform,
-    reports_eIncompatibleRedaclaration)) {
+    reports_eIncompatibleRedeclaration)) {
 
   string spec = "Example: two different fundamental types";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
-    Error::eIncompatibleRedaclaration, spec);
+    Error::eIncompatibleRedeclaration, spec);
 
   spec = "Example: first function type, then fundamental type";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
       pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))),
-    Error::eIncompatibleRedaclaration, spec);
+    Error::eIncompatibleRedeclaration, spec);
 
   spec = "Example: First fundamental type, then function type";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))),
-    Error::eIncompatibleRedaclaration, spec);
+    Error::eIncompatibleRedeclaration, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(

@@ -315,7 +315,7 @@ void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
     else {
       assert(envs_stentry_ptr.get());
       if ( !envs_stentry_ptr->objType().matchesFully(dataDecl.declaredObjType()) ) {
-        Error::throwError(m_errorHandler, Error::eIncompatibleRedaclaration);
+        Error::throwError(m_errorHandler, Error::eIncompatibleRedeclaration);
       }
       dataDecl.setStentry(envs_stentry_ptr);
     }
