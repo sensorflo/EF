@@ -77,7 +77,8 @@ EFCTEST_ROOT_SRCS = gtestprinter.cpp test.cpp efctest.cpp
 EFCTEST_TESTS_SRCS = errorhandlertest.cpp objtypetest.cpp parserexttest.cpp	\
   scannertest.cpp scannerandparsertest.cpp astprintertest.cpp	\
   driversystemtest.cpp semanticanalizertest.cpp irgentest.cpp	\
-  tutorialstest.cpp tokenstreamlookaheadtest.cpp tokenfiltertest.cpp
+  tutorialstest.cpp tokenstreamlookaheadtest.cpp tokenfiltertest.cpp \
+  envtest.cpp
 
 EFCTEST_TESTHELPERS_SRCS = literaltokenstream.cpp tokentesthelper.cpp
 

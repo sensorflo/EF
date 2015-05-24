@@ -4,9 +4,10 @@
 using namespace testing;
 using namespace std;
 
-SymbolTableEntry* createASymbolTableEntry() {
-  return new SymbolTableEntry(
-    make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt));
+shared_ptr<SymbolTableEntry> createASymbolTableEntry() {
+  return make_shared<SymbolTableEntry>(
+    make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt),
+    StorageDuration::eLocal);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME2(
@@ -28,7 +29,7 @@ TEST(EnvTest, MAKE_TEST_NAME(
   SymbolTable::KeyValue allreadyInsertedPair = make_pair("x", createASymbolTableEntry());
   Env UUT;
   UUT.insert(allreadyInsertedPair.first, allreadyInsertedPair.second);
-  SymbolTableEntry* anotherStEntry = createASymbolTableEntry();
+  auto anotherStEntry = createASymbolTableEntry();
 
   // exercise
   Env::InsertRet ret = UUT.insert("x", anotherStEntry);
@@ -36,9 +37,6 @@ TEST(EnvTest, MAKE_TEST_NAME(
   // verify
   EXPECT_EQ( allreadyInsertedPair, *ret.first );
   EXPECT_FALSE( ret.second );
-
-  // teardown
-  delete anotherStEntry;
 }
 
 TEST(EnvTest, MAKE_TEST_NAME(
@@ -47,7 +45,7 @@ TEST(EnvTest, MAKE_TEST_NAME(
     returns_a_pointer_to_the_symbol_table_entry)) {
   // setup
   string name = "x";
-  SymbolTableEntry* stEntry = createASymbolTableEntry();
+  auto stEntry = createASymbolTableEntry();
   Env UUT;
 
   // exercise
@@ -64,7 +62,9 @@ TEST(EnvTest, MAKE_TEST_NAME2(
     find_WITH_an_nonexisting_name,
     returns_NULL)) {
   Env UUT;
-  EXPECT_TRUE( NULL==UUT.find("x") );
+  shared_ptr<SymbolTableEntry> foundStentry;
+  UUT.find("x", foundStentry);
+  EXPECT_TRUE( NULL==foundStentry.get() );
 }
 
 TEST(EnvTest, MAKE_TEST_NAME4(
@@ -93,17 +93,18 @@ TEST(EnvTest, MAKE_TEST_NAME4(
     because_the_new_scope_did_not_add_a_new_x_which_would_shadow_the_old_x)) {
   // setup
   string name = "x";
-  SymbolTableEntry* stEntry = createASymbolTableEntry();
+  auto stEntry = createASymbolTableEntry();
+  shared_ptr<SymbolTableEntry> foundStentry;
   Env UUT;
   UUT.insert(name, stEntry);
 
   // exercise
   UUT.pushScope();
-  SymbolTableEntry* returnedStEntry = UUT.find(name);
+  UUT.find(name, foundStentry);
 
   // verify
-  EXPECT_TRUE( NULL!=returnedStEntry );
-  EXPECT_EQ( stEntry, returnedStEntry );
+  EXPECT_TRUE( NULL!=foundStentry );
+  EXPECT_EQ( stEntry, foundStentry );
 }
 
 TEST(EnvTest, MAKE_TEST_NAME(
@@ -113,17 +114,18 @@ TEST(EnvTest, MAKE_TEST_NAME(
 
   // setup
   Env UUT;
-  SymbolTableEntry* stEntryOuter = createASymbolTableEntry();
+  auto stEntryOuter = createASymbolTableEntry();
   UUT.insert("x", stEntryOuter);
   UUT.pushScope();
-  UUT.insert("x", createASymbolTableEntry()); // inner symbol table entry
+  UUT.insert("x", createASymbolTableEntry()); // inner symbol table entr
+  shared_ptr<SymbolTableEntry> foundStentry;
 
   // exercise
   UUT.popScope();
-  SymbolTableEntry* returnedStEntry = UUT.find("x");
+  UUT.find("x", foundStentry);
 
   // verify
-  EXPECT_TRUE( NULL!=returnedStEntry );
-  EXPECT_EQ( stEntryOuter, returnedStEntry );
+  EXPECT_TRUE( NULL!=foundStentry );
+  EXPECT_EQ( stEntryOuter, foundStentry );
 }
 
