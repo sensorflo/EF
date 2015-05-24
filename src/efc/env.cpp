@@ -2,6 +2,7 @@
 #include "errorhandler.h"
 #include "llvm/IR/Value.h"
 #include <cassert>
+#include <sstream>
 using namespace std;
 using namespace llvm;
 
@@ -33,6 +34,12 @@ bool SymbolTableEntry::objectIsModifiedOrRevealsAddr() const {
 bool SymbolTableEntry::isStoredInMemory() const {
   return m_storageDuration!=StorageDuration::eLocal ||
     m_objectIsModifiedOrRevealsAddr;
+}
+
+string SymbolTableEntry::toStr() const {
+  ostringstream ss;
+  ss << *this;
+  return ss.str();
 }
 
 void SymbolTableEntry::irInitLocal(llvm::Value* irValue, llvm::IRBuilder<>& builder,
@@ -79,6 +86,15 @@ void SymbolTableEntry::setIrAddr(llvm::Value* addr) {
   m_irValueOrAddr = addr;
 }
 
+basic_ostream<char>& operator<<(basic_ostream<char>& os,
+  const SymbolTableEntry& stentry) {
+  if ( stentry.storageDuration()!=StorageDuration::eLocal ) {
+    os << stentry.storageDuration() << "/";
+  }
+  os << stentry.objType();
+  return os;
+}
+  
 Env::AutoScope::AutoScope(Env& env) : m_env(env) {
   m_env.pushScope();
 }

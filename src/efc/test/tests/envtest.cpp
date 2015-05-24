@@ -10,6 +10,13 @@ shared_ptr<SymbolTableEntry> createASymbolTableEntry() {
     StorageDuration::eLocal);
 }
 
+TEST(EnvTest, MAKE_TEST_NAME1(
+    toStr)) {
+  auto ot = make_shared<ObjTypeFunda>(ObjTypeFunda::eInt);
+  EXPECT_EQ( SymbolTableEntry(ot, StorageDuration::eLocal).toStr(), "int" );
+  EXPECT_EQ( SymbolTableEntry(ot, StorageDuration::eStatic).toStr(), "static/int" );
+}
+
 TEST(EnvTest, MAKE_TEST_NAME2(
     insert_WITH_name_x,
     returns_a_pair_with_the_first_being_an_iterator_to_the_inserted_pair_and_the_second_being_true)) {

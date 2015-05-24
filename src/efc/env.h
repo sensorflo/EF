@@ -3,7 +3,7 @@
 #include "storageduration.h"
 #include "llvm/IR/IRBuilder.h"
 #include <string>
-#include <string>
+#include <ostream>
 #include <map>
 #include <list>
 #include <cassert>
@@ -14,6 +14,10 @@ namespace llvm {
   class Value;
 }
 
+/** Currently it is two things; should eventually be splitted in these two. 
+- Object: 
+- Symbol table entry: for objects having a name and thus are in the symbol
+  table. Contains a pointer to its object. */
 class SymbolTableEntry {
 public:
   SymbolTableEntry(std::shared_ptr<const ObjType> objType,
@@ -31,6 +35,7 @@ public:
   (equals `can't be optimized to be a SSA value only') and `actually is stored
   in memory'. */
   bool isStoredInMemory() const;
+  std::string toStr() const;
 
 private:
   /** Is guaranteed to be non-null */
@@ -54,6 +59,10 @@ private:
   otherwise */
   llvm::Value* m_irValueOrAddr;
 };
+
+/** Only for the Object part of SymbolTableEntry */
+std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
+  const SymbolTableEntry& stentry);
 
 class SymbolTable : public std::map<std::string, std::shared_ptr<SymbolTableEntry> > {
 public:
