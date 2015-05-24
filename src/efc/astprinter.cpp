@@ -98,7 +98,11 @@ void AstPrinter::visit(const AstFunDecl& funDecl) {
 }
 
 void AstPrinter::visit(const AstDataDecl& dataDecl) {
-  m_os << "decldata(" << dataDecl.name() << " " << dataDecl.declaredObjType() << ")";
+  m_os << "decldata(" << dataDecl.name() << " ";
+  if ( dataDecl.declaredStorageDuration()!=StorageDuration::eLocal ) {
+    m_os << dataDecl.declaredStorageDuration() << "/";
+  }
+  m_os << dataDecl.declaredObjType() << ")";
 }
 
 void AstPrinter::visit(const AstArgDecl& argDecl) {

@@ -77,6 +77,9 @@ raw_delete          return yy::Parser::make_RAW_DELETE(loc);
 nop                 return yy::Parser::make_NOP(loc);
 return              return yy::Parser::make_RETURN(loc);
 mut                 return yy::Parser::make_MUT(loc);
+is                  return yy::Parser::make_IS(loc);
+static              return yy::Parser::make_STATIC(loc);
+local               return yy::Parser::make_LOCAL(loc);
 
 
   /* type keywords */

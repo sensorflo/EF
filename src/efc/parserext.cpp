@@ -68,7 +68,7 @@ AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifiers qualifiers,
   AstDataDecl* astDataDecl = new AstDataDecl(
     rawAstDataDecl->m_name,
     &(rawAstDataDecl->m_objType->addQualifiers(qualifiers)),
-    StorageDuration::eLocal);
+    rawAstDataDecl->m_storageDuration);
   delete rawAstDataDecl;
   rawAstDataDecl = NULL;
   return astDataDecl;

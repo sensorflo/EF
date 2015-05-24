@@ -505,6 +505,9 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   spec = "muttable qualifier";
   TEST_PARSE( "val foo :mut int$", "data(decldata(foo mut-int) ())", spec);
 
+  spec = "(process) static storage duration";
+  TEST_PARSE( "val foo :int is static$", "data(decldata(foo static/int) ())", spec);
+
   spec = "short version with implicit type";
   TEST_PARSE( "foo:=42", "data(decldata(foo int) (42))", spec);
 }

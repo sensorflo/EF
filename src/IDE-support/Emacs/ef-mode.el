@@ -36,7 +36,7 @@
 ;;; Code
 (defconst ef-font-lock-keywords
   (list
-   "\\b\\(fun\\|val\\|var\\|decl\\|nop\\|if\\|elif\\|else\\|unless\\|for\\|foreach\\|in\\|while\\|until\\|do\\|throws\\|ret\\|goto\\|break\\|continue\\|noinit\\|end\\|endof\\|raw_new\\|raw_delete\\|mi_end\\|true\\|false\\|then\\)\\b"
+   "\\b\\(fun\\|val\\|var\\|decl\\|nop\\|if\\|elif\\|else\\|unless\\|for\\|foreach\\|in\\|while\\|until\\|do\\|throws\\|ret\\|goto\\|break\\|continue\\|noinit\\|end\\|endof\\|raw_new\\|raw_delete\\|mi_end\\|true\\|false\\|then\\|static\\|local\\|is\\)\\b"
    (list (concat "\\bfun"                                       ; fun
                  "\\(?:[ \t\r\n]*($[ \t\r\n]*\\|[ \t\r\n]+\\)"  ; ($ or blank
                  "\\([a-zA-Z0-9][a-zA-Z0-9_]*\\)\\b[ \t\r\n]*"  ; id
@@ -68,6 +68,7 @@
                  "[^$)]*?"
                  ":[ \t\r\n]*"
                  "\\(.*?\\)[ \t\r\n]*"
+                 "\\(?:is[ \t\r\n]+\\(?:static\\|local\\)[ \t\r\n]*\\)?"
                  "\\(?:,=\\|[$)]\\|\\bend\\b\\|\\bendof\\b\\)")
          '(1 font-lock-type-face nil t))
    (list (concat "\\_<raw_new\\_>[ \t\n]*"

@@ -17,6 +17,7 @@ tokens produced by scanner. */
   #include "../generalvalue.h"
 
   class ObjTypeFunda;
+  enum class StorageDuration: int;
 
   struct NumberToken {
     NumberToken() : m_value(0), m_objType(NULL) {}
@@ -73,6 +74,7 @@ and by declaration of free function yylex */
   #include "../driver.h"
   #include "../parserext.h"
   #include "../objtype.h"
+  #include "../storageduration.h"
   using namespace std;
   using namespace yy;
 
@@ -133,6 +135,9 @@ and by declaration of free function yylex */
   RBRACE "}"
   ARROW "->"
   MUT "mut"
+  IS "is"
+  STATIC "static"
+  LOCAL "local"
 ;
 
 %token <ObjTypeFunda::EType> FUNDAMENTAL_TYPE
@@ -160,6 +165,7 @@ and by declaration of free function yylex */
 %type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifiers> valvar type_qualifier
+%type <StorageDuration> opt_storage_duration storage_duration
 %type <RawAstDataDecl*> naked_data_decl
 %type <RawAstDataDef*> naked_data_def
 %type <AstFunDecl*> naked_fun_decl
@@ -243,6 +249,16 @@ type
 
 type_qualifier
   : MUT                                             { $$ = ObjType::eMutable; }
+  ;
+
+opt_storage_duration
+  : %empty                                          { $$ = StorageDuration::eLocal; }
+  | storage_duration                                { swap($$, $1); }
+  ;
+
+storage_duration
+  : IS STATIC                                       { $$ = StorageDuration::eStatic; }
+  | IS LOCAL                                        { $$ = StorageDuration::eLocal; }
   ;
 
 opt_colon
@@ -355,14 +371,14 @@ id_or_keyword
   ;
 
 naked_data_decl
-  : ID COLON type                                                    { $$ = new RawAstDataDecl($1, $3); }
-  | ID COLON                                                         { $$ = new RawAstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt)); }
+  : ID COLON type opt_storage_duration                               { $$ = new RawAstDataDecl($1, $3, $4); }
+  | ID COLON      opt_storage_duration                               { $$ = new RawAstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt), $3); }
   ;
 
 naked_data_def
   : naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
   | naked_data_decl initializer                                      { $$ = new RawAstDataDef($1, $2); }
-  | ID initializer opt_colon_type                                    { $$ = new RawAstDataDef(new RawAstDataDecl($1, $3), $2); }
+  | ID initializer opt_colon_type opt_storage_duration               { $$ = new RawAstDataDef(new RawAstDataDecl($1, $3, $4), $2); }
   ;
 
 naked_fun_def

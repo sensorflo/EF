@@ -7,6 +7,7 @@ ef.yy should make only the call.
 ParserApiExt is similar, but extends the public interface of yy::Parser. */
 
 #include "objtype.h"
+#include "storageduration.h"
 #include <list>
 
 #include "astforwards.h"
@@ -15,10 +16,12 @@ class Env;
 class ErrorHandler;
 
 struct RawAstDataDecl {
-  RawAstDataDecl(const std::string& name, ObjType* objType) :
-    m_name(name), m_objType(objType) {};
+  RawAstDataDecl(const std::string& name, ObjType* objType,
+    StorageDuration storageDuration) :
+    m_name(name), m_objType(objType), m_storageDuration(storageDuration) {};
   std::string m_name;
   ObjType* m_objType;
+  StorageDuration m_storageDuration;
 };  
 
 struct RawAstDataDef {
