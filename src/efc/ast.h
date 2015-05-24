@@ -52,7 +52,7 @@ public:
   std::shared_ptr<SymbolTableEntry>& stentryAsSp() { return m_stentry; }
  	void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
  	const ObjType& objType() const;
-  bool objectWasModifiedOrRevealedAddr() const;
+  bool objectIsModifiedOrRevealsAddr() const;
   
 protected:
   std::shared_ptr<SymbolTableEntry> m_stentry;

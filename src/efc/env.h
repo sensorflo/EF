@@ -21,7 +21,7 @@ public:
   bool isDefined() const { return m_isDefined; }
   void markAsDefined(ErrorHandler& errorHandler);
   void addAccessToObject(Access access);
-  bool objectWasModifiedOrRevealedAddr() const;
+  bool objectIsModifiedOrRevealsAddr() const;
   bool isStoredInMemory() const;
 
 private:
@@ -29,7 +29,7 @@ private:
   const std::shared_ptr<const ObjType> m_objType;
   /** Opposed to only declared */
   bool m_isDefined;
-  bool m_objectWasModifiedOrRevealedAddr;
+  bool m_objectIsModifiedOrRevealsAddr;
 
   // decorations for IrGen
 public:

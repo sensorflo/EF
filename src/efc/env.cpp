@@ -8,7 +8,7 @@ using namespace llvm;
 SymbolTableEntry::SymbolTableEntry(shared_ptr<const ObjType> objType) :
   m_objType( (assert(objType.get()), move(objType))),
   m_isDefined(false),
-  m_objectWasModifiedOrRevealedAddr(false),
+  m_objectIsModifiedOrRevealsAddr(false),
   m_irValueOrAddr(NULL) {}
 
 void SymbolTableEntry::markAsDefined(ErrorHandler& errorHandler) {
@@ -19,18 +19,18 @@ void SymbolTableEntry::markAsDefined(ErrorHandler& errorHandler) {
 }
 
 void SymbolTableEntry::addAccessToObject(Access access) {
-  m_objectWasModifiedOrRevealedAddr =
-    m_objectWasModifiedOrRevealedAddr ||
+  m_objectIsModifiedOrRevealsAddr =
+    m_objectIsModifiedOrRevealsAddr ||
     access==eWrite || access==eTakeAddress;
 }
 
-bool SymbolTableEntry::objectWasModifiedOrRevealedAddr() const {
-  return m_objectWasModifiedOrRevealedAddr;
+bool SymbolTableEntry::objectIsModifiedOrRevealsAddr() const {
+  return m_objectIsModifiedOrRevealsAddr;
 }
 
 bool SymbolTableEntry::isStoredInMemory() const {
   return m_objType->storageDuration()!=ObjType::eLocal ||
-    m_objectWasModifiedOrRevealedAddr;
+    m_objectIsModifiedOrRevealsAddr;
 }
 
 void SymbolTableEntry::irInitLocal(llvm::Value* irValue, llvm::IRBuilder<>& builder,

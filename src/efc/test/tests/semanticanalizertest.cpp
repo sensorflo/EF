@@ -603,7 +603,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_FALSE( ast->objectWasModifiedOrRevealedAddr())
+    EXPECT_FALSE( ast->objectIsModifiedOrRevealsAddr())
       << amendSpec(spec) << amendAst(ast);
   }
 }
@@ -625,12 +625,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_TRUE( operand->objectWasModifiedOrRevealedAddr())
+    EXPECT_TRUE( operand->objectIsModifiedOrRevealsAddr())
       << amendSpec(spec) << amendAst(ast);
   }
 
   spec = "Example: Address-of operator on a named object, and the\n"
-    "objectWasModifiedOrRevealedAddr-queried AST node refers to that named\n"
+    "objectIsModifiedOrRevealsAddr-queried AST node refers to that named\n"
     "object";
   {
     // setup
@@ -649,7 +649,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_TRUE( symbol->objectWasModifiedOrRevealedAddr())
+    EXPECT_TRUE( symbol->objectIsModifiedOrRevealsAddr())
       << amendSpec(spec) << amendAst(ast);
   }
 }

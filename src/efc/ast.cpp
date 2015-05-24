@@ -36,9 +36,9 @@ const ObjType& AstValue::objType() const {
   return m_stentry->objType();
 }
 
-bool AstValue::objectWasModifiedOrRevealedAddr() const {
+bool AstValue::objectIsModifiedOrRevealsAddr() const {
   assert(m_stentry);
-  return m_stentry->objectWasModifiedOrRevealedAddr();
+  return m_stentry->objectIsModifiedOrRevealsAddr();
 }
 
 void AstValue::setStentry(shared_ptr<SymbolTableEntry> stentry) {
