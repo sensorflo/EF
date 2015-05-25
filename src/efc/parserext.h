@@ -14,19 +14,26 @@ ParserApiExt is similar, but extends the public interface of yy::Parser. */
 class SymbolTableEntry;
 class Env;
 class ErrorHandler;
+class ParserExt;
 
-struct RawAstDataDecl {
+class RawAstDataDecl {
+public:
   RawAstDataDecl(const std::string& name, ObjType* objType,
-    StorageDuration storageDuration) :
-    m_name(name), m_objType(objType), m_storageDuration(storageDuration) {};
+    StorageDuration storageDuration);
+
+private:
+  friend ParserExt;
   std::string m_name;
   ObjType* m_objType;
   StorageDuration m_storageDuration;
 };  
 
-struct RawAstDataDef {
-  RawAstDataDef(RawAstDataDecl* decl, AstCtList* ctorArgs = NULL) :
-    m_decl(decl), m_ctorArgs(ctorArgs) {};
+class RawAstDataDef {
+public:
+  RawAstDataDef(RawAstDataDecl* decl, AstCtList* ctorArgs = NULL);
+
+private:
+  friend ParserExt;
   RawAstDataDecl* m_decl;
   AstCtList* m_ctorArgs;
 };  
@@ -34,8 +41,7 @@ struct RawAstDataDef {
 /** See file's decription */
 class ParserExt {
 public:
-  ParserExt(Env& env, ErrorHandler& errorHandler) : m_env(env),
-    m_errorHandler(errorHandler) {}
+  ParserExt(Env& env, ErrorHandler& errorHandler);
 
   AstOperator* mkOperatorTree(const std::string& op, AstCtList* args);
   AstOperator* mkOperatorTree(const std::string& op, AstValue* child1,

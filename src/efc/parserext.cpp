@@ -6,6 +6,19 @@
 #include <stdexcept>
 using namespace std;
 
+RawAstDataDecl::RawAstDataDecl(const std::string& name, ObjType* objType,
+  StorageDuration storageDuration) :
+  m_name(name), m_objType(objType), m_storageDuration(storageDuration) {
+}
+
+RawAstDataDef::RawAstDataDef(RawAstDataDecl* decl, AstCtList* ctorArgs) :
+  m_decl(decl), m_ctorArgs(ctorArgs) {
+}
+
+ParserExt::ParserExt(Env& env, ErrorHandler& errorHandler) :
+  m_env(env), m_errorHandler(errorHandler) {
+}
+
 /** Turns the AstCtList in an AstOperator tree with at most two childs per
 node.  The AstCtList object is deleted, its ex-childs are now owned by their
 respective AstOperator parent. */

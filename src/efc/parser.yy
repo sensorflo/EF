@@ -32,8 +32,8 @@ types, which however are only used for non-terminal symbols, i.e. which the
 scanner doesn't need to know */
 %code requires
 {
-  struct RawAstDataDecl;
-  struct RawAstDataDef;
+  class RawAstDataDecl;
+  class RawAstDataDef;
   struct ConditionActionPair {
     AstValue* m_condition;
     AstValue* m_action;
