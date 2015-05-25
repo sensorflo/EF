@@ -41,7 +41,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   EXPECT_EQ("mut-double", ObjTypeFunda(ObjTypeFunda::eDouble, ObjType::eMutable).toStr());
 
   // pointer type
-  EXPECT_EQ("raw^int", ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
+  EXPECT_EQ("raw*int", ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
 
   // function type
   EXPECT_EQ("fun(() int)",

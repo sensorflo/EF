@@ -161,7 +161,6 @@ op([-+*/!]|&&|"||"|"=="|"_and"|"_or"|"_not"|"_new"|"_delete") {
 "+"                 return yy::Parser::make_PLUS(loc);
 "-"                 return yy::Parser::make_MINUS(loc);
 "*"                 return yy::Parser::make_STAR(loc);
-"^"                 return yy::Parser::make_CARET(loc);
 "&"                 return yy::Parser::make_AMPER(loc);
 "/"                 return yy::Parser::make_SLASH(loc);
 "!"                 return yy::Parser::make_EXCL(loc);

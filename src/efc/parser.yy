@@ -116,7 +116,6 @@ and by declaration of free function yylex */
   PLUS "+"
   MINUS "-"
   STAR "*"
-  CARET "^"
   AMPER "&"
   NOT "not"
   EXCL "!"
@@ -153,7 +152,7 @@ and by declaration of free function yylex */
       MINUS
 %left STAR
       SLASH
-%precedence EXCL NOT AMPER CARET
+%precedence EXCL NOT AMPER
 %precedence LPAREN
 
 %token TOKENLISTEND "<TOKENLISTEND>"
@@ -242,7 +241,7 @@ param_decl
   
 type
   : FUNDAMENTAL_TYPE                                { $$ = new ObjTypeFunda($1); }
-  | CARET type                                      { $$ = new ObjTypePtr(std::shared_ptr<ObjType>{$2}); }
+  | STAR type                                       { $$ = new ObjTypePtr(std::shared_ptr<ObjType>{$2}); }
   | type_qualifier type                             { ($2)->addQualifiers($1); std::swap($$, $2); }
   | ID                                              { assert(false); /* user defined names not yet supported; but I wanted to have ID already in grammar*/ }
   ;
@@ -313,7 +312,7 @@ operator_expr
   /* unary prefix */
   | NOT  sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
   | EXCL sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
-  | CARET sub_expr                                  { $$ = new AstOperator('^', $2); }
+  | STAR sub_expr                                   { $$ = new AstOperator(AstOperator::eDeref, $2); }
   | AMPER sub_expr                                  { $$ = new AstOperator('&', $2); }
   | MINUS sub_expr                                  { $$ = new AstOperator('-', $2); }
   | PLUS sub_expr                                   { $$ = new AstOperator('+', $2); }

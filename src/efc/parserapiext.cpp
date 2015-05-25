@@ -91,7 +91,6 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_PLUS, {"PLUS", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_MINUS, {"MINUS", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_STAR, {"STAR", SVTVoid, TKComponentOrAmbigous}},
-    { Parser::token::TOK_CARET, {"CARET", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_AMPER, {"AMPER", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_NOT, {"NOT", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_EXCL, {"EXCL", SVTVoid, TKComponentOrAmbigous}},

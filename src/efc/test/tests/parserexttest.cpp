@@ -19,8 +19,8 @@ TEST(ParserExtTest, MAKE_TEST_NAME2(
     AstCtList* ctList = new AstCtList(
       new AstNumber(42),
       new AstNumber(77));
-    unique_ptr<AstValue> opTree{ UUT.mkOperatorTree("*", ctList) };
-    EXPECT_EQ( "*(42 77)", opTree->toStr()) << amendSpec(spec) <<
+    unique_ptr<AstValue> opTree{ UUT.mkOperatorTree("/", ctList) };
+    EXPECT_EQ( "/(42 77)", opTree->toStr()) << amendSpec(spec) <<
       "CtList: " << ctList->toStr();
   }
 

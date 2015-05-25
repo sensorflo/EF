@@ -234,7 +234,8 @@ const map<const AstOperator::EOperation, const std::string> AstOperator::m_opRev
   {eAnd, "and"},
   {eOr, "or"},
   {eEqualTo, "=="},
-  {eDotAssign, ".="}};
+  {eDotAssign, ".="},
+  {eDeref, "*"}};
 
 AstOperator::AstOperator(char op, AstCtList* args) :
   AstOperator(static_cast<EOperation>(op), args) {};
@@ -303,8 +304,17 @@ AstOperator::EClass AstOperator::classOf(AstOperator::EOperation op) {
   return eOther;
 }
 
+AstOperator::EOperation AstOperator::toEOperationPreferingBinary(const string& op) {
+  if ( op=="*" ) {
+    return eMul;
+  } else {
+    return toEOperation(op);
+  }
+}
+
 AstOperator::EOperation AstOperator::toEOperation(const string& op) {
   if (op.size()==1) {
+    assert(op[0]!='*'); // '*' is ambigous: either eMul or eDeref
     return static_cast<EOperation>(op[0]);
   } else {
     auto i = m_opMap.find(op);

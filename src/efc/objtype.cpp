@@ -90,7 +90,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
   case eDouble: os << "double"; break;
-  case ePointer: os << "raw^"; break;
+  case ePointer: os << "raw*"; break;
   };
   return os;
 }

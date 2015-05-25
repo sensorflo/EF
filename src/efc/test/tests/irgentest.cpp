@@ -304,7 +304,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 
   string spec = "Example: addrOf followed by dereferencing is a nop";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('^',
+    new AstOperator(AstOperator::eDeref,
       new AstOperator('&',
         new AstDataDef(
           new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -313,8 +313,8 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 
   spec = "Example: addrOf followed by dereferencing is a nop";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstOperator('^',
-      new AstOperator('^',
+    new AstOperator(AstOperator::eDeref,
+      new AstOperator(AstOperator::eDeref,
         new AstOperator('&',
           new AstOperator('&',
             new AstDataDef(
@@ -333,7 +333,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
             make_shared<ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable))),
         new AstOperator('&', new AstSymbol("x"))),
       new AstOperator("=",
-        new AstOperator('^', new AstSymbol("p")),
+        new AstOperator(AstOperator::eDeref, new AstSymbol("p")),
         new AstNumber(42)),
       new AstSymbol("x")),
     42, "");
@@ -349,7 +349,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstDataDecl("p", new ObjTypePtr(
             make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
         new AstOperator('&', new AstSymbol("x"))),
-      new AstOperator('^', new AstSymbol("p"))),
+      new AstOperator(AstOperator::eDeref, new AstSymbol("p"))),
     42, "");
 
   spec = "Example: Address of a temporary object; a literal number";
@@ -359,7 +359,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstDataDecl("p", new ObjTypePtr(
             make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
         new AstOperator('&', new AstNumber(42))),
-      new AstOperator('^', new AstSymbol("p"))),
+      new AstOperator(AstOperator::eDeref, new AstSymbol("p"))),
     42, spec);
 
   spec = "Example: Address of a temproary object; an arithmetic operator";
@@ -370,7 +370,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
             make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
         new AstOperator('&',
           new AstOperator('+', new AstNumber(1), new AstNumber(2)))),
-      new AstOperator('^', new AstSymbol("p"))),
+      new AstOperator(AstOperator::eDeref, new AstSymbol("p"))),
     1+2, "");
 }
 

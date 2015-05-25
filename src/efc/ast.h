@@ -235,16 +235,16 @@ public:
     eAssign = '=',
     eAdd = '+',
     eSub = '-',
-    eMul = '*',
+    eMul = '*', // '*' is ambigous. can also mean eDeref
     eDiv = '/',
     eNot = '!',
     eSeq = ';',
     eAddrOf = '&',
-    eDeref = '^',
     eAnd = 128,
     eOr,
     eEqualTo,
-    eDotAssign
+    eDotAssign,
+    eDeref
   };
   enum EClass {
     eAssignment,
@@ -267,6 +267,9 @@ public:
   AstCtList& args() const { return *m_args; }
   EClass class_() const;
   static EClass classOf(AstOperator::EOperation op);
+  /** In case of ambiguity, chooses the binary operator */
+  static EOperation toEOperationPreferingBinary(const std::string& op);
+  /** In case of ambiguity asserts */
   static EOperation toEOperation(const std::string& op);
 
 private:

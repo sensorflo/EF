@@ -12,7 +12,7 @@ respective AstOperator parent. */
 AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args) {
   assert(args);
   args->releaseOwnership();
-  const AstOperator::EOperation op = AstOperator::toEOperation(op_as_str);
+  const auto op = AstOperator::toEOperationPreferingBinary(op_as_str);
   AstOperator* tree = NULL;
 
   // unary operator

@@ -843,7 +843,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   TestingSemanticAnalizer UUT(env, errorHandler);
   ParserExt pe(UUT.m_env, UUT.m_errorHandler);
   unique_ptr<AstValue> ast{
-    new AstOperator('^',
+    new AstOperator(AstOperator::eDeref,
       new AstDataDecl("x",
         new ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))))};
 
@@ -1653,9 +1653,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstSymbol("foo"))),
     Error::eNoSuchMember, spec);
 
-  spec = "Example: Dereference operator (^) with an non-pointer argument";
+  spec = "Example: Dereference operator (*) with an non-pointer argument";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator('^', new AstNumber(0)),
+    new AstOperator(AstOperator::eDeref, new AstNumber(0)),
     Error::eNoSuchMember, spec);
 }
 
