@@ -42,7 +42,7 @@ efc: out/efc
 # finished being built, altough actually the auto generated dependencies
 # (out/*.P) should prevent that. The current workaround is to make these rules
 # depend on out/parser.o.
-gensrc/%.cpp gensrc/%.hpp: %.yy | gensrc
+gensrc/%.cpp gensrc/%.hpp: %.yy parser.hpp.patch | gensrc
 	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $<;\
     yaccexitstatus=$$?;\
     xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml;\
