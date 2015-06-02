@@ -18,9 +18,9 @@ class ParserExt;
 
 class RawAstDataDef {
 public:
-  RawAstDataDef();
-  RawAstDataDef(const std::string& name, AstCtList* ctorArgs,
-    ObjType* objType, StorageDuration storageDuration);
+  RawAstDataDef(ErrorHandler& errorHandler);
+  RawAstDataDef(ErrorHandler& errorHandler, const std::string& name,
+    AstCtList* ctorArgs, ObjType* objType, StorageDuration storageDuration);
 
   void setName(const std::string& name);
   void setCtorArgs(AstCtList* ctorArgs);
@@ -29,11 +29,13 @@ public:
 
 private:
   friend ParserExt;
+  ErrorHandler& m_errorHandler;
   std::string m_name;
   AstCtList* m_ctorArgs;
   ObjType* m_objType;
+  bool m_isStorageDurationDefined;
   StorageDuration m_storageDuration;
-};  
+};
 
 /** See file's decription */
 class ParserExt {

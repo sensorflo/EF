@@ -31,6 +31,7 @@ const char* toStr(Error::No no) {
   case Error::eComputedValueNotUsed: return "eComputedValueNotUsed";
   case Error::eCTConstRequired: return "eCTConstRequired";
   case Error::eRetTypeCantHaveMutQualifier: return "eRetTypeCantHaveMutQualifier";
+  case Error::eSameArgWasDefinedMultipleTimes: return "eSameArgWasDefinedMultipleTimes";
   case Error::eCnt: return "<unknown>";
   }
   return "<unknown>";

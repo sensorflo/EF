@@ -64,6 +64,10 @@ Scanner& Driver::scanner() {
   return *m_scanner;
 }
 
+ErrorHandler& Driver::errorHandler() {
+  return m_errorHandler;
+}
+
 /** Compile = scann & parse & do semantic analysis & generate IR. */
 void Driver::compile() {
   try {

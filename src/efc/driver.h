@@ -25,6 +25,7 @@ public:
   virtual ~Driver();
   
   Scanner& scanner();
+  ErrorHandler& errorHandler();
 
   void compile();
   int scannAndParse(AstNode*& ast);

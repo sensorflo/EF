@@ -376,12 +376,12 @@ id_or_keyword
   ;
 
 naked_data_def
-  : ID initializer_special_arg opt_type_arg opt_storage_duration_arg { $$ = new RawAstDataDef($1, $2, $3, $4); }
+  : ID initializer_special_arg opt_type_arg opt_storage_duration_arg { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $3, $4); }
   | ID data_def_args                                                 { $2->setName($1); swap($$,$2); }
   ;
 
 data_def_args
-  : %empty                                                           { $$ = new RawAstDataDef(); }
+  : %empty                                                           { $$ = new RawAstDataDef(parserExt.errorHandler()); }
   | data_def_args initializer_arg                                    { ($1)->setCtorArgs($2); swap($$,$1); }
   | data_def_args type_arg                                           { ($1)->setObjType($2); swap($$,$1); }
   | data_def_args storage_duration_arg                               { ($1)->setStorageDuration($2); swap($$,$1); }

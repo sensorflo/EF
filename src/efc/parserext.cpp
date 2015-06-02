@@ -6,33 +6,50 @@
 #include <stdexcept>
 using namespace std;
 
-RawAstDataDef::RawAstDataDef() :
+RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler) :
+  m_errorHandler{errorHandler},
   m_ctorArgs{},
   m_objType{},
+  m_isStorageDurationDefined{false},
   m_storageDuration{StorageDuration::eLocal} {
 }
 
-RawAstDataDef::RawAstDataDef(const std::string& name,
+RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler, const std::string& name,
   AstCtList* ctorArgs, ObjType* objType, StorageDuration storageDuration) :
+  m_errorHandler{errorHandler},
   m_name(name),
   m_ctorArgs(ctorArgs),
   m_objType(objType),
+  m_isStorageDurationDefined(false),
   m_storageDuration(storageDuration) {
 }
 
 void RawAstDataDef::setName(const std::string& name) {
+  if ( !m_name.empty() ) {
+    Error::throwError(m_errorHandler, Error::eSameArgWasDefinedMultipleTimes);
+  }
   m_name = name;
 }
 
 void RawAstDataDef::setCtorArgs(AstCtList* ctorArgs) {
+  if ( m_ctorArgs ) {
+    Error::throwError(m_errorHandler, Error::eSameArgWasDefinedMultipleTimes);
+  }
   m_ctorArgs = ctorArgs;
 }
 
 void RawAstDataDef::setObjType(ObjType* objType) {
+  if ( m_objType ) {
+    Error::throwError(m_errorHandler, Error::eSameArgWasDefinedMultipleTimes);
+  }
   m_objType = objType;
 }
 
 void RawAstDataDef::setStorageDuration(StorageDuration storageDuration) {
+  if ( m_isStorageDurationDefined ) {
+    Error::throwError(m_errorHandler, Error::eSameArgWasDefinedMultipleTimes);
+  }
+  m_isStorageDurationDefined = true;
   m_storageDuration = storageDuration;
 }
 

@@ -23,6 +23,7 @@ public:
     eComputedValueNotUsed,
     eCTConstRequired,
     eRetTypeCantHaveMutQualifier,
+    eSameArgWasDefinedMultipleTimes,
     eCnt
   };
 

@@ -1,6 +1,7 @@
 #include "test.h"
 #include "driverontmpfile.h"
 #include "../ast.h"
+#include "../errorhandler.h"
 #include "../gensrc/parser.hpp"
 using namespace testing;
 using namespace std;
@@ -24,6 +25,60 @@ string explainParseErrorCode(int errorCode) {
   else
     return "parser failed for unknown reason\n";
 }
+
+void testParseReportsError(const string efProgram, Error::No expectedErrorNo,
+  const string& spec) {
+  // setup
+  DriverOnTmpFile driver(efProgram);
+  AstNode* dummy = NULL;
+  bool foreignThrow = false;
+  string excptionwhat;
+
+  // exercise
+  try {
+    driver.d().scannAndParse(dummy);
+  }
+
+  // verify that ...
+
+  // ... no foreign exception is thrown
+  catch (BuildError& ) { /* nop */  }
+  catch (exception& e) { foreignThrow = true; excptionwhat = e.what(); }
+  catch (exception* e) { foreignThrow = true; if ( e ) { excptionwhat = e->what(); } }
+  catch (...)          { foreignThrow = true; }
+  EXPECT_FALSE( foreignThrow ) <<
+    amendSpec(spec) << amend(driver.d().errorHandler()) << amendEfProgram(efProgram) <<
+    "\nexceptionwhat: " << excptionwhat;
+
+
+  // ... as expected no error was reported
+  const ErrorHandler::Container& errors = driver.d().errorHandler().errors();
+  if ( expectedErrorNo == Error::eNone ) {
+    EXPECT_TRUE(errors.empty()) <<
+      "Expecting no error\n" <<
+      amendSpec(spec) << amend(driver.d().errorHandler()) << amendEfProgram(efProgram);
+  }
+
+  else {
+    // ... only exactly one error is reported
+    EXPECT_EQ(1, errors.size()) <<
+      "Expecting exactly one error\n" <<
+      amendSpec(spec) << amend(driver.d().errorHandler()) << amendEfProgram(efProgram);
+
+    // ... and that that one error has the expected ErrorNo
+    if ( ! errors.empty() ) {
+      EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
+        amendSpec(spec) << amend(driver.d().errorHandler()) << amendEfProgram(efProgram);;
+    }
+  }
+}
+
+#define TEST_PARSE_REPORTS_ERROR(efProgram, expectedErrorNo, spec)     \
+  {                                                                     \
+    SCOPED_TRACE("testParseReportsError called from here (via TEST_PARSE_REPORTS_ERROR)"); \
+    static_assert(expectedErrorNo != Error::eNone, "");                 \
+    testParseReportsError(efProgram, expectedErrorNo, spec);                  \
+  }
 
 void testParse(const string& efProgram, const string& expectedAst,
   const string& spec = "") {
@@ -510,6 +565,21 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   spec = "short version with implicit type";
   TEST_PARSE( "foo:=42", "data(decldata(foo int) (42))", spec);
+}
+
+// note that it is a semantic error, not a grammar error
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    a_data_definition_WITH_multiple_same_arg,
+    scannAndParse,
+    reports_eSameArgWasDefinedMultipleTimes) ) {
+  TEST_PARSE_REPORTS_ERROR(
+    "val foo ,=42 ,=42$", Error::eSameArgWasDefinedMultipleTimes, "");
+  TEST_PARSE_REPORTS_ERROR(
+    "val foo (=42,77) (=42,77)$", Error::eSameArgWasDefinedMultipleTimes, "");
+  TEST_PARSE_REPORTS_ERROR(
+    "val foo :int :int$", Error::eSameArgWasDefinedMultipleTimes, "");
+  TEST_PARSE_REPORTS_ERROR(
+    "val foo is static is static$", Error::eSameArgWasDefinedMultipleTimes, "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
