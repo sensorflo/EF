@@ -32,7 +32,6 @@ types, which however are only used for non-terminal symbols, i.e. which the
 scanner doesn't need to know */
 %code requires
 {
-  class RawAstDataDecl;
   class RawAstDataDef;
   struct ConditionActionPair {
     AstValue* m_condition;
@@ -158,18 +157,17 @@ and by declaration of free function yylex */
 %token TOKENLISTEND "<TOKENLISTEND>"
 
 
-%type <AstCtList*> ct_list initializer pure2_standalone_expr_seq
+%type <AstCtList*> ct_list initializer_arg initializer_special_arg pure2_standalone_expr_seq
 %type <std::list<AstArgDecl*>*> pure_naked_param_ct_list
 %type <std::list<AstValue*>*> pure_ct_list
 %type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstArgDecl*> param_decl
 %type <ObjType::Qualifiers> valvar type_qualifier
-%type <StorageDuration> opt_storage_duration storage_duration
-%type <RawAstDataDecl*> naked_data_decl
-%type <RawAstDataDef*> naked_data_def
+%type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
+%type <RawAstDataDef*> naked_data_def data_def_args
 %type <AstFunDecl*> naked_fun_decl
 %type <AstFunDef*> naked_fun_def
-%type <ObjType*> type opt_colon_type opt_ret_type
+%type <ObjType*> type opt_type type_arg opt_type_arg opt_ret_type
 %type <ConditionActionPair> condition_action_pair_then
 
 /* Grammar rules section
@@ -246,23 +244,36 @@ type
   | ID                                              { assert(false); /* user defined names not yet supported; but I wanted to have ID already in grammar*/ }
   ;
 
+opt_type
+  : %empty                                          { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
+  | type                                            { swap($$,$1); }
+  ;
+
+type_arg
+  : COLON opt_type                                  { swap($$,$2); }
+  ;
+
+opt_type_arg
+  : %empty                                          { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
+  | type_arg                                        { swap($$,$1); }
+  ;
+
 type_qualifier
   : MUT                                             { $$ = ObjType::eMutable; }
   ;
 
-opt_storage_duration
-  : %empty                                          { $$ = StorageDuration::eLocal; }
-  | storage_duration                                { swap($$, $1); }
-  ;
-
 storage_duration
-  : IS STATIC                                       { $$ = StorageDuration::eStatic; }
-  | IS LOCAL                                        { $$ = StorageDuration::eLocal; }
+  : STATIC                                          { $$ = StorageDuration::eStatic; }
+  | LOCAL                                           { $$ = StorageDuration::eLocal; }
   ;
 
-opt_colon
-  : %empty
-  | COLON
+storage_duration_arg
+  : IS storage_duration                             { swap($$, $2); }
+  ;
+
+opt_storage_duration_arg
+  : %empty                                          { $$ = StorageDuration::eLocal; }
+  | storage_duration_arg                            { swap($$, $1); }
   ;
 
 condition_action_then_sep
@@ -275,11 +286,6 @@ condition_action_do_sep
   : DO
   | NEWLINE
   | COLON
-  ;
-
-opt_colon_type
-  : opt_colon                                       { $$ = new ObjTypeFunda(ObjTypeFunda::eInt); }
-  | COLON type                                      { std::swap($$, $2); }
   ;
 
 opt_comma
@@ -347,7 +353,7 @@ list_expr
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
   | WHILE kwao naked_while kwac                     { std::swap($$,$3); }
   | RETURN kwao naked_return kwac                   { $$ = $3; }
-  | RAW_NEW kwao type initializer kwac              { $$ = NULL; }
+  | RAW_NEW kwao type initializer_arg kwac          { $$ = NULL; }
   | RAW_DELETE kwao sub_expr kwac                   { $$ = NULL; }
   ;
 
@@ -369,15 +375,16 @@ id_or_keyword
   : ID | IF | ELIF | ELSE | FUN | VAL | VAR | DECL | END | NOT | AND | OR | FUNDAMENTAL_TYPE
   ;
 
-naked_data_decl
-  : ID COLON type opt_storage_duration                               { $$ = new RawAstDataDecl($1, $3, $4); }
-  | ID COLON      opt_storage_duration                               { $$ = new RawAstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt), $3); }
+naked_data_def
+  : ID initializer_special_arg opt_type_arg opt_storage_duration_arg { $$ = new RawAstDataDef($1, $2, $3, $4); }
+  | ID data_def_args                                                 { $2->setName($1); swap($$,$2); }
   ;
 
-naked_data_def
-  : naked_data_decl                                                  { $$ = new RawAstDataDef($1); }
-  | naked_data_decl initializer                                      { $$ = new RawAstDataDef($1, $2); }
-  | ID initializer opt_colon_type opt_storage_duration               { $$ = new RawAstDataDef(new RawAstDataDecl($1, $3, $4), $2); }
+data_def_args
+  : %empty                                                           { $$ = new RawAstDataDef(); }
+  | data_def_args initializer_arg                                    { ($1)->setCtorArgs($2); swap($$,$1); }
+  | data_def_args type_arg                                           { ($1)->setObjType($2); swap($$,$1); }
+  | data_def_args storage_duration_arg                               { ($1)->setStorageDuration($2); swap($$,$1); }
   ;
 
 naked_fun_def
@@ -395,9 +402,14 @@ opt_ret_type
   | type                                                             { swap($$,$1); }
   ;
 
-initializer
+initializer_arg
   : COMMA_EQUAL standalone_expr                                      { $$ = new AstCtList($2); }
   | LPAREN_EQUAL ct_list RPAREN                                      { swap($$,$2); }
+  ;
+
+initializer_special_arg
+  : equal_as_sep standalone_expr                                     { $$ = new AstCtList($2); }
+  | lparen_as_sep ct_list RPAREN                                     { swap($$,$2); }
   ;
 
 valvar
@@ -436,6 +448,19 @@ condition_action_pair_then
 naked_return
   : %empty                                                           { $$ = new AstReturn(new AstNop()); }
   | standalone_expr                                                  { $$ = new AstReturn($1); }
+  ;
+
+equal_as_sep
+  : opt_newline EQUAL opt_newline
+  ;
+
+lparen_as_sep
+  : opt_newline LPAREN
+  ;
+
+opt_newline
+  : %empty
+  | NEWLINE
   ;
 
 /* Epilogue section

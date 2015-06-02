@@ -6,13 +6,34 @@
 #include <stdexcept>
 using namespace std;
 
-RawAstDataDecl::RawAstDataDecl(const std::string& name, ObjType* objType,
-  StorageDuration storageDuration) :
-  m_name(name), m_objType(objType), m_storageDuration(storageDuration) {
+RawAstDataDef::RawAstDataDef() :
+  m_ctorArgs{},
+  m_objType{},
+  m_storageDuration{StorageDuration::eLocal} {
 }
 
-RawAstDataDef::RawAstDataDef(RawAstDataDecl* decl, AstCtList* ctorArgs) :
-  m_decl(decl), m_ctorArgs(ctorArgs) {
+RawAstDataDef::RawAstDataDef(const std::string& name,
+  AstCtList* ctorArgs, ObjType* objType, StorageDuration storageDuration) :
+  m_name(name),
+  m_ctorArgs(ctorArgs),
+  m_objType(objType),
+  m_storageDuration(storageDuration) {
+}
+
+void RawAstDataDef::setName(const std::string& name) {
+  m_name = name;
+}
+
+void RawAstDataDef::setCtorArgs(AstCtList* ctorArgs) {
+  m_ctorArgs = ctorArgs;
+}
+
+void RawAstDataDef::setObjType(ObjType* objType) {
+  m_objType = objType;
+}
+
+void RawAstDataDef::setStorageDuration(StorageDuration storageDuration) {
+  m_storageDuration = storageDuration;
 }
 
 ParserExt::ParserExt(Env& env, ErrorHandler& errorHandler) :
@@ -70,32 +91,23 @@ AstOperator* ParserExt::mkOperatorTree(const string& op, AstValue* child1,
       child6));
 }
 
-AstDataDecl* ParserExt::mkDataDecl(ObjType::Qualifiers qualifiers,
-  RawAstDataDecl*& rawAstDataDecl) {
-  assert(rawAstDataDecl);
-  assert(rawAstDataDecl->m_objType);
+AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
+  RawAstDataDef*& rawAstDataDef) {
+
+  assert(rawAstDataDef);
+  assert(!rawAstDataDef->m_name.empty());
+  if (!rawAstDataDef->m_objType) {
+    rawAstDataDef->m_objType = new ObjTypeFunda(ObjTypeFunda::eInt);
+  }
 
   // add to environment everything except local data objects. Currently there
   // are only local data objects, so currently there is nothing todo.
 
-  AstDataDecl* astDataDecl = new AstDataDecl(
-    rawAstDataDecl->m_name,
-    &(rawAstDataDecl->m_objType->addQualifiers(qualifiers)),
-    rawAstDataDecl->m_storageDuration);
-  delete rawAstDataDecl;
-  rawAstDataDecl = NULL;
-  return astDataDecl;
-}
-
-AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
-  RawAstDataDef*& rawAstDataDef) {
-  assert(rawAstDataDef);
-  AstDataDef* astDataDef = new AstDataDef(
-    mkDataDecl(qualifiers, rawAstDataDef->m_decl),
-    rawAstDataDef->m_ctorArgs);
-  delete rawAstDataDef;
-  rawAstDataDef = NULL;
-  return astDataDef;
+  auto decl = new AstDataDecl(
+    rawAstDataDef->m_name,
+    &(rawAstDataDef->m_objType->addQualifiers(qualifiers)),
+    rawAstDataDef->m_storageDuration);
+  return new AstDataDef(decl, rawAstDataDef->m_ctorArgs);
 }
 
 AstFunDecl* ParserExt::mkFunDecl(const string name, const ObjType* ret,

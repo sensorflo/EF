@@ -16,26 +16,23 @@ class Env;
 class ErrorHandler;
 class ParserExt;
 
-class RawAstDataDecl {
+class RawAstDataDef {
 public:
-  RawAstDataDecl(const std::string& name, ObjType* objType,
-    StorageDuration storageDuration);
+  RawAstDataDef();
+  RawAstDataDef(const std::string& name, AstCtList* ctorArgs,
+    ObjType* objType, StorageDuration storageDuration);
+
+  void setName(const std::string& name);
+  void setCtorArgs(AstCtList* ctorArgs);
+  void setObjType(ObjType* objType);
+  void setStorageDuration(StorageDuration storageDuration);
 
 private:
   friend ParserExt;
   std::string m_name;
+  AstCtList* m_ctorArgs;
   ObjType* m_objType;
   StorageDuration m_storageDuration;
-};  
-
-class RawAstDataDef {
-public:
-  RawAstDataDef(RawAstDataDecl* decl, AstCtList* ctorArgs = NULL);
-
-private:
-  friend ParserExt;
-  RawAstDataDecl* m_decl;
-  AstCtList* m_ctorArgs;
 };  
 
 /** See file's decription */
@@ -48,8 +45,6 @@ public:
     AstValue* child2, AstValue* child3 = NULL, AstValue* child4 = NULL,
     AstValue* child5 = NULL, AstValue* child6 = NULL);
 
-  AstDataDecl* mkDataDecl(ObjType::Qualifiers qualifiers,
-    RawAstDataDecl*& rawAstDataDecl);
   AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,
     RawAstDataDef*& rawAstDataDef);
 
