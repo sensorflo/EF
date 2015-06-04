@@ -66,7 +66,6 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_END_OF_FILE, {"END_OF_FILE", SVTVoid, TKDelimiter}},
     { Parser::token::TOK_END, {"END", SVTVoid, TKDelimiter}},
     { Parser::token::TOK_ENDOF, {"ENDOF", SVTVoid, TKSeparator}},
-    { Parser::token::TOK_DECL, {"DECL", SVTVoid, TKStarter}},
     { Parser::token::TOK_IF, {"IF", SVTVoid, TKStarter}},
     { Parser::token::TOK_THEN, {"THEN", SVTVoid, TKSeparator}},
     { Parser::token::TOK_ELIF, {"ELIF", SVTVoid, TKSeparator}},

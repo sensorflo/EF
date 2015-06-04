@@ -374,48 +374,6 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    a_function_declaration,
-    scannAndParse,
-    succeeds_AND_returns_correct_AST) ) {
-  string spec = "example with zero arguments and explicit return type";
-  //Toggling 1) 'keyword...;' vs 'keyword(...)' vs 'keyword...end' vs
-  //'keyword...endof...$' syntax
-  TEST_PARSE( "decl  fun foo:() int$"           , "declfun(foo () int)", spec);
-  TEST_PARSE( "decl($fun foo:() int)"           , "declfun(foo () int)", spec);
-  TEST_PARSE( "decl  fun foo:() int end"        , "declfun(foo () int)", spec);
-  TEST_PARSE( "decl  fun foo:() int endof foo$" , "declfun(foo () int)", spec);
-
-  spec = "example with one argument and explicity return type";
-  //Toggling 1) 'keyword...;' vs 'keyword(...)' syntax
-  TEST_PARSE( "decl  fun foo:(arg1:int) int$", "declfun(foo ((arg1 int)) int)", spec);
-  TEST_PARSE( "decl($fun foo:(arg1:int) int)", "declfun(foo ((arg1 int)) int)", spec);
-
-  spec = "example with two arguments and explicity return type\n";
-  //Toggling 1) 'keyword...;' vs 'keyword(...)' syntax
-  TEST_PARSE( "decl  fun foo:(arg1:int, arg2:int) int$", "declfun(foo ((arg1 int) (arg2 int)) int)", spec);
-  TEST_PARSE( "decl($fun foo:(arg1:int, arg2:int) int)", "declfun(foo ((arg1 int) (arg2 int)) int)", spec);
-
-  spec = "example with implicit return type";
-  //Toggling 1) zero (int two variants) vs one parameter
-  //Toggling 2) 'keyword...;' vs 'keyword(...)' syntax
-  TEST_PARSE( "decl  fun foo:           int$", "declfun(foo () int)", spec);
-  TEST_PARSE( "decl  fun foo:()         int$", "declfun(foo () int)", spec);
-  TEST_PARSE( "decl  fun foo:(arg1:int) int$", "declfun(foo ((arg1 int)) int)", spec);
-  TEST_PARSE( "decl($fun foo:           int)", "declfun(foo () int)", spec);
-  TEST_PARSE( "decl($fun foo:()         int)", "declfun(foo () int)", spec);
-  TEST_PARSE( "decl($fun foo:(arg1:int) int)", "declfun(foo ((arg1 int)) int)", spec);
-
-  spec = "should allow trailing comma in argument list";
-  TEST_PARSE( "decl fun foo:(arg1:int,) int$", "declfun(foo ((arg1 int)) int)", spec);
-
-  spec = "example: mutable parameter";
-  TEST_PARSE( "decl  fun foo:(arg1:mut int) int$", "declfun(foo ((arg1 mut-int)) int)", spec);
-
-  spec = "example: mutable return-type (is currently an semantic error though)";
-  TEST_PARSE( "decl  fun foo:(arg1:int) mut int$", "declfun(foo ((arg1 int)) mut-int)", spec);
-}
-
-TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_reference_to_a_symbol_within_a_function_definition,
     scannAndParse,
     succeeds_AND_returns_correct_AST) ) {

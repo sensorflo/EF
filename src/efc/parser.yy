@@ -90,7 +90,6 @@ and by declaration of free function yylex */
   TOKENLISTSTART "<TOKENLISTSTART>"
   END "end"
   ENDOF "endof"
-  DECL "decl"
   IF "if"
   THEN "then"
   ELIF "elif"
@@ -348,7 +347,6 @@ primary_expr
   
 list_expr
   : valvar kwao naked_data_def kwac                 { $$ = parserExt.mkDataDef($1, $3); }
-  | DECL kwao FUN naked_fun_decl kwac               { $$ = $4; }
   | FUN kwao naked_fun_def kwac                     { $$ = $3; }
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
   | WHILE kwao naked_while kwac                     { std::swap($$,$3); }
@@ -372,7 +370,7 @@ kwac
   ;
 
 id_or_keyword
-  : ID | IF | ELIF | ELSE | FUN | VAL | VAR | DECL | END | NOT | AND | OR | FUNDAMENTAL_TYPE
+  : ID | IF | ELIF | ELSE | FUN | VAL | VAR | END | NOT | AND | OR | FUNDAMENTAL_TYPE
   ;
 
 naked_data_def

@@ -47,6 +47,5 @@ TEST(TutorialsTest, MAKE_TEST_NAME(
   TEST_TUTORIAL("4",  "tutorial2.ef");
   TEST_TUTORIAL("5",  "tutorial3.ef");
   TEST_TUTORIAL("6",  "tutorial4.ef");
-  TEST_TUTORIAL("42", "tutorial5.ef");
-  TEST_TUTORIAL("3",  "tutorial6.ef");
+  TEST_TUTORIAL("3",  "tutorial5.ef");
 }

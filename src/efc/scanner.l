@@ -66,7 +66,6 @@ do                  return yy::Parser::make_DO(loc);
 fun                 return yy::Parser::make_FUN(loc);
 val                 return yy::Parser::make_VAL(loc);
 var                 return yy::Parser::make_VAR(loc);
-decl                return yy::Parser::make_DECL(loc);
 end                 return yy::Parser::make_END(loc);
 endof               return yy::Parser::make_ENDOF(loc);
 not                 return yy::Parser::make_NOT(loc);
