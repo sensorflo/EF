@@ -92,22 +92,6 @@ private:
   AstValue* m_child;
 };
 
-class AstFunDef : public AstValue {
-public:
-  AstFunDef(AstFunDecl* decl, AstValue* body);
-  virtual ~AstFunDef();
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
-  virtual AstFunDecl& decl() const { return *m_decl; }
-  virtual AstValue& body() const { return *m_body; }
-
-private:
-  /** We're the owner. Is garanteed to be non-null */
-  AstFunDecl* const m_decl;
-  /** We're the owner. Is garanteed to be non-null */
-  AstValue* const m_body;
-};
-
 class AstFunDecl : public AstValue {
 public:
   AstFunDecl(const std::string& name,
@@ -132,6 +116,22 @@ private:
   /** We're the owner. Is garanteed to be non-null */
   std::list<AstArgDecl*>* const m_args;
   const std::shared_ptr<const ObjType> m_ret;
+};
+
+class AstFunDef : public AstValue {
+public:
+  AstFunDef(AstFunDecl* decl, AstValue* body);
+  virtual ~AstFunDef();
+  virtual void accept(AstVisitor& visitor);
+  virtual void accept(AstConstVisitor& visitor) const;
+  virtual AstFunDecl& decl() const { return *m_decl; }
+  virtual AstValue& body() const { return *m_body; }
+
+private:
+  /** We're the owner. Is garanteed to be non-null */
+  AstFunDecl* const m_decl;
+  /** We're the owner. Is garanteed to be non-null */
+  AstValue* const m_body;
 };
 
 class AstDataDecl : public AstValue {
