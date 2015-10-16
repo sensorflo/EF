@@ -12,7 +12,6 @@ namespace llvm {
   class Module;
   class BasicBlock;
 }
-class Env;
 class SymbolTableEntry;
 class ErrorHandler;
 

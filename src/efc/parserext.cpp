@@ -1,5 +1,6 @@
 #include "parserext.h"
 #include "env.h"
+#include "symboltableentry.h"
 #include "ast.h"
 #include "errorhandler.h"
 #include <cassert>

@@ -1,6 +1,6 @@
 #include "irgen.h"
 #include "ast.h"
-#include "env.h"
+#include "symboltableentry.h"
 #include "errorhandler.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/IR/Value.h"

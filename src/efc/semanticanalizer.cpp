@@ -2,6 +2,7 @@
 #include "ast.h"
 #include "astdefaultiterator.h"
 #include "env.h"
+#include "symboltableentry.h"
 #include "errorhandler.h"
 #include "objtype.h"
 using namespace std;

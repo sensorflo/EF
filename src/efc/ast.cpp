@@ -2,7 +2,7 @@
 #include "astvisitor.h"
 #include "astprinter.h"
 #include "errorhandler.h"
-#include "env.h"
+#include "symboltableentry.h"
 #include <cassert>
 #include <stdexcept>
 using namespace std;

@@ -3,6 +3,7 @@
 #include "../ast.h"
 #include "../objtype.h"
 #include "../env.h"
+#include "../symboltableentry.h"
 #include "../errorhandler.h"
 #include "../astdefaultiterator.h"
 #include "../parserext.h"

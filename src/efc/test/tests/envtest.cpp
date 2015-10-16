@@ -1,5 +1,6 @@
 #include "test.h"
 #include "../env.h"
+#include "../symboltableentry.h"
 #include <string>
 using namespace testing;
 using namespace std;
