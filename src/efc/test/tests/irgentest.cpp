@@ -866,6 +866,28 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
+    a_call_to_a_terminating_recursive_function,
+    genIrInImplicitMain,
+    returns_result_of_that_function_call)) {
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstOperator(';',
+      pe.mkFunDef("fact",
+        AstFunDef::createArgs(
+          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new ObjTypeFunda(ObjTypeFunda::eInt),
+        new AstIf(
+          new AstOperator("==", new AstSymbol("x"), new AstNumber(0)),
+          new AstNumber(1),
+          new AstOperator(AstOperator::eMul,
+            new AstSymbol("x"),
+            new AstFunCall(
+              new AstSymbol("fact"),
+              new AstCtList(new AstOperator("-", new AstSymbol("x"), new AstNumber(1))))))),
+      new AstFunCall(new AstSymbol("fact"), new AstCtList(new AstNumber(2)))),
+    2*1, "");
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME(
     a_immutable_local_data_object_definition_of_foo_being_initialized_with_x,
     genIrInImplicitMain,
     returns_x_rvalue)) {
