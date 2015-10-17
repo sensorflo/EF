@@ -84,15 +84,26 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "42", AstCtList(new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "42 77", AstCtList(new AstNumber(42),new AstNumber(77)), spec);
 
-  spec = "AstFunDecl";
-  EXPECT_TOSTR_EQ( "declfun(foo () int)", AstFunDecl("foo"), spec);
-  EXPECT_TOSTR_EQ( "declfun(foo () int)", AstFunDecl("foo", new list<AstArgDecl*>()), spec);
-  EXPECT_TOSTR_EQ( "declfun(foo () bool)", AstFunDecl("foo", new list<AstArgDecl*>(), make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)), spec);
-  EXPECT_TOSTR_EQ( "declfun(foo ((arg1 int)) int)", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))), spec);
-  EXPECT_TOSTR_EQ( "declfun(foo ((arg1 int) (arg2 int)) int)", AstFunDecl("foo", new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))), spec);
-
   spec = "AstFunDef";
-  EXPECT_TOSTR_EQ( "fun(declfun(foo () int) 42)", AstFunDef(new AstFunDecl("foo"),new AstNumber(42)), spec);
+  EXPECT_TOSTR_EQ( "fun(foo () int 42)",
+    AstFunDef("foo", nullptr, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      new AstNumber(42)), spec);
+  EXPECT_TOSTR_EQ( "fun(foo () bool 1bool)",
+    AstFunDef("foo", nullptr, make_shared<ObjTypeFunda>(ObjTypeFunda::eBool),
+      new AstNumber(true, ObjTypeFunda::eBool)), spec);
+  EXPECT_TOSTR_EQ( "fun(foo ((arg1 int)) int 42)",
+    AstFunDef("foo", nullptr,
+      AstFunDef::createArgs(
+        new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      new AstNumber(42)), spec);
+  EXPECT_TOSTR_EQ( "fun(foo ((arg1 int) (arg2 int)) int 42)",
+    AstFunDef("foo", nullptr,
+      AstFunDef::createArgs(
+        new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      new AstNumber(42)), spec);
 
   spec = "AstFunCall";
   EXPECT_TOSTR_EQ( "foo()", AstFunCall(new AstSymbol("foo"), new AstCtList()), spec);

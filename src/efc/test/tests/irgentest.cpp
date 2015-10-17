@@ -76,22 +76,19 @@ void testgenIr(TestingIrGen& UUT, AstValue* astRoot,
 
 #define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(astRoot, expectedResult, spec) \
   TEST_GEN_IR_0ARG(                                                     \
-    pe.mkFunDef(                                                        \
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eBool)),       \
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eBool),           \
       astRoot),                                                         \
     spec, bool, "foo", expectedResult)
 
 #define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(astRoot, expectedResult, spec) \
   TEST_GEN_IR_0ARG(                                                     \
-    pe.mkFunDef(                                                        \
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eChar)),       \
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eChar),           \
       astRoot),                                                         \
     spec, unsigned char, "foo", expectedResult)
 
 #define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(astRoot, expectedResult, spec) \
   TEST_GEN_IR_0ARG(                                                     \
-    pe.mkFunDef(                                                        \
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eDouble)),     \
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eDouble),         \
       astRoot),                                                         \
     spec, double, "foo", expectedResult)
 
@@ -574,18 +571,18 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // the normal use case of the sequence operator is tested in a separte test
   // together with all other operators
 
-  string spec = "Sequence containing a function declaration";
+  string spec = "Sequence containing a function definition";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(0)),
       new AstNumber(42)),
     42, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
-    a_function_declaration,
+    a_function_definition,
     genIr,
-    adds_the_function_declaration_to_the_module_with_the_correct_signature)) {
+    adds_the_function_definition_to_the_module_with_the_correct_signature)) {
 
   string spec = "Example: zero arguments";
   {
@@ -595,7 +592,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)));
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
@@ -619,11 +616,13 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
-      pe.mkFunDecl(
+      pe.mkFunDef(
         "foo",
+        AstFunDef::createArgs(
+          new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new ObjTypeFunda(ObjTypeFunda::eInt),
-        new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))));
+        new AstNumber(42)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
@@ -653,8 +652,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(77)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
@@ -679,12 +677,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstValue> ast(
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new ObjTypeFunda(ObjTypeFunda::eVoid),
+      pe.mkFunDef("foo",
+        AstFunDef::createArgs(
           new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eBool))),
+        new ObjTypeFunda(ObjTypeFunda::eVoid),
         new AstNop()));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
@@ -711,8 +708,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TestingIrGen UUT;
   ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
   unique_ptr<AstValue> ast(
-    pe.mkFunDef(
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eVoid)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eVoid),
       new AstNop()));
   UUT.m_semanticAnalizer.analyze(*ast.get());
 
@@ -732,37 +728,33 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 
   string spec = "Example: zero arguments, returning a literal";
   TEST_GEN_IR_0ARG(
-    pe.mkFunDef(
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstNumber(42)),
     spec, int, "foo", 42)
 
   spec = "Example: one argument, which however is ignored, returning "
     "a literal";
   TEST_GEN_IR_1ARG(
-    pe.mkFunDef(
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstNumber(42)),
     spec, int, "foo", int, 42, 0);
 
   spec = "Example: one argument which is returned";
   TEST_GEN_IR_1ARG(
-    pe.mkFunDef(
-      pe.mkFunDecl(
-        "foo",
-        new ObjTypeFunda(ObjTypeFunda::eInt),
+    pe.mkFunDef("foo",
+      AstFunDef::createArgs(
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstSymbol("x")),
     spec, int, "foo", int, 42, 42);
 
   spec = "Example: two arguments, returns the product";
   TEST_GEN_IR_2ARG(
-    pe.mkFunDef(
-      pe.mkFunDecl(
-        "foo",
-        new ObjTypeFunda(ObjTypeFunda::eInt),
+    pe.mkFunDef("foo",
+      AstFunDef::createArgs(
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstOperator('*',
         new AstSymbol("x"),
         new AstSymbol("y"))),
@@ -770,39 +762,16 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 
   spec = "Example: multiple arguments, mixed argument types";
   TEST_GEN_IR_2ARG(
-    pe.mkFunDef(
-      pe.mkFunDecl(
-        "foo",
-        new ObjTypeFunda(ObjTypeFunda::eInt),
+    pe.mkFunDef("foo",
+      AstFunDef::createArgs(
         new AstArgDecl("condition", new ObjTypeFunda(ObjTypeFunda::eBool)),
         new AstArgDecl("thenValue", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstIf(
         new AstSymbol("condition"),
         new AstSymbol("thenValue"),
         new AstNumber(77))),
     spec, int, "foo", bool, int, true ? 42 : 77, true, 42);
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
-    a_function_declaration_and_a_matching_function_definition,
-    genIr,
-    succeeds)) {
-  // setup
-  TestingIrGen UUT;
-  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-  unique_ptr<AstNode> ast{
-    new AstOperator(';',
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstNumber(42)))};
-  UUT.m_semanticAnalizer.analyze(*ast.get());
-
-  // execute & verify
-  EXPECT_NO_THROW( UUT.genIr(*ast.get()));
-
-  // verify
-  EXPECT_TRUE(UUT.m_errorHandler->errors().empty());
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -812,10 +781,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      pe.mkFunDef(pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator(';',
-          pe.mkFunDef(
-            pe.mkFunDecl("bar", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          pe.mkFunDef("bar", new ObjTypeFunda(ObjTypeFunda::eInt),
             new AstNumber(42)),
           new AstFunCall(new AstSymbol("bar")))),
       new AstFunCall(new AstSymbol("foo"))),
@@ -830,8 +798,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   string spec = "Trivial function with zero arguments returning a constant";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"))),
     42, spec);
@@ -839,11 +806,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   spec = "Simple function with one argument which is ignored and a constant is returned";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new ObjTypeFunda(ObjTypeFunda::eInt),
+      pe.mkFunDef("foo",
+        AstFunDef::createArgs(
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
     42, spec);
@@ -851,12 +817,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   spec = "Simple function with two arguments whichs sum is returned";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "add",
-          new ObjTypeFunda(ObjTypeFunda::eInt),
+      pe.mkFunDef("add",
+        AstFunDef::createArgs(
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator('+',
           new AstSymbol("x"),
           new AstSymbol("y"))),
@@ -965,8 +930,7 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
         new AstDataDecl("spy_sum",
           new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic)),
 
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eVoid)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eVoid),
         new AstOperator(";",
           new AstDataDef(
             // Init UUT with true. This test is about that this happens _not_
@@ -1149,11 +1113,10 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new ObjTypeFunda(ObjTypeFunda::eVoid),
+      pe.mkFunDef("foo",
+        AstFunDef::createArgs(
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+        new ObjTypeFunda(ObjTypeFunda::eVoid),
         new AstOperator('=',
           new AstSymbol("x"),
           new AstNumber(77))),
@@ -1164,8 +1127,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstDataDef(
           new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
           new AstNumber(77))),
@@ -1209,8 +1171,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "Example: return expression, returning an void, at end of function body";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eVoid)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eVoid),
         new AstReturn(new AstNop)),
       new AstFunCall(new AstSymbol("foo")),
       new AstNumber(42)),

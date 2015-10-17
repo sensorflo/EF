@@ -37,15 +37,11 @@ void AstDefaultIterator::visit(AstFunCall& funCall) {
 }
 
 void AstDefaultIterator::visit(AstFunDef& funDef) {
-  funDef.decl().accept(m_visitor);
-  funDef.body().accept(m_visitor);
-}
-
-void AstDefaultIterator::visit(AstFunDecl& funDecl) {
-  for (list<AstArgDecl*>::const_iterator i=funDecl.args().begin();
-       i!=funDecl.args().end(); ++i) {
+  for (list<AstArgDecl*>::const_iterator i=funDef.args().begin();
+       i!=funDef.args().end(); ++i) {
     (*i)->accept(m_visitor);
   }
+  funDef.body().accept(m_visitor);
 }
 
 void AstDefaultIterator::visit(AstDataDecl& dataDecl) {

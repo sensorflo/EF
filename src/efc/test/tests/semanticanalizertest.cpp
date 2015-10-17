@@ -117,8 +117,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 
   spec = "Example: Body of a function definition must match function's return type";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    pe.mkFunDef(
-      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eBool)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eBool),
       new AstNumber(42)),
     Error::eNoImplicitConversion, spec);
 }
@@ -152,8 +151,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 
   spec = "Example: Body of a function definition must match function's return type";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    pe.mkFunDef(
-      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstNumber(0, ObjTypeFunda::eBool)),
     Error::eNoImplicitConversion, spec);
 }
@@ -163,8 +161,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     THEN_it_succeeds)) {
 
   TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
-    pe.mkFunDef(
-      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eBool)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eBool),
       new AstOperator(
         "&&",
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -172,8 +169,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     "");
 
   TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
-    pe.mkFunDef(
-      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eBool)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eBool),
       new AstOperator(
         "||",
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -249,7 +245,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     reports_eCTConstRequired)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)),
       new AstDataDef(
         new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt),
           StorageDuration::eStatic),
@@ -273,15 +269,15 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    a_reference_to_an_entity_other_than_local_data_object_before_its_declaration_or_definition,
+    a_reference_to_an_entity_other_than_local_data_object_before_its_definition,
     transform,
     succeeds)) {
 
-  string spec = "Example: function call before function declaration";
+  string spec = "Example: function call before function definition";
   TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
     new AstOperator(';',
       new AstFunCall(new AstSymbol("foo")),
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eVoid))),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eVoid), new AstNop())),
     "");
 
   spec = "Example: static data - !!!! Not yet implemented, "
@@ -382,39 +378,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    a_function_redeclaration_with_matching_type,
-    transform,
-    succeeds_AND_inserts_an_appropriate_SymbolTableEntry_into_Env_once)) {
-
-  // setup
-  Env env;
-  ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  ParserExt pe(env, errorHandler);
-  AstNode* ast =
-    new AstOperator(';',
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)));
-
-  // exercise
-  UUT.analyze(*ast);
-
-  // verify
-  EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
-  shared_ptr<SymbolTableEntry> stentry;
-  env.find("foo", stentry);
-  EXPECT_TRUE( stentry.get() ) << amendAst(ast);
-  EXPECT_TRUE( stentry->objType().matchesFully(
-      ObjTypeFun(
-        ObjTypeFun::createArgs(),
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))));
-
-  // tear down
-  delete ast;
-}
-
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST(SemanticAnalizerTest, MAKE_DISABLED_TEST_NAME(
     a_redeclaration_with_non_matching_type,
     transform,
     reports_eIncompatibleRedeclaration)) {
@@ -429,7 +393,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Example: first function type, then fundamental type";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)),
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))),
     Error::eIncompatibleRedeclaration, spec);
 
@@ -437,11 +401,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
       new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42))),
     Error::eIncompatibleRedeclaration, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST(SemanticAnalizerTest, MAKE_DISABLED_TEST_NAME(
     a_redeclaration_with_non_matching_storage_duration,
     transform,
     reports_eIncompatibleRedeclaration)) {
@@ -466,33 +430,29 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   spec = "Example: two parameters";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    pe.mkFunDef(
-      pe.mkFunDecl(
-        "foo",
-        new ObjTypeFunda(ObjTypeFunda::eInt),
+    pe.mkFunDef("foo",
+      AstFunDef::createArgs(
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstNumber(42)),
     Error::eRedefinition, spec);
 
   spec = "Example: a parameter and a local variable in the function's body";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    pe.mkFunDef(
-      pe.mkFunDecl(
-        "foo",
-        new ObjTypeFunda(ObjTypeFunda::eInt),
+    pe.mkFunDef( "foo",
+      AstFunDef::createArgs(
         new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+      new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)))),
     Error::eRedefinition, spec);
 
   spec = "Example: two functions";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42))),
     Error::eRedefinition, spec);
 }
@@ -509,9 +469,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   TestingSemanticAnalizer UUT(env, errorHandler);
   ParserExt pe(env, errorHandler);
   AstNode* ast =
-    pe.mkFunDef( pe.mkFunDecl("outer", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    pe.mkFunDef("outer", new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstOperator(';',
-        pe.mkFunDef( pe.mkFunDecl("inner", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
+        pe.mkFunDef("inner", new ObjTypeFunda(ObjTypeFunda::eInt),
+          new AstNumber(42)),
         new AstNumber(42)));
 
   // exercise
@@ -952,8 +913,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     AstFunCall* funCall = new AstFunCall(new AstSymbol("foo"));
     unique_ptr<AstValue> ast{
       new AstOperator(';',
-        pe.mkFunDef(
-          pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eBool)),
+        pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eBool),
           new AstNumber(0, ObjTypeFunda::eBool)),
         funCall)};
 
@@ -1002,8 +962,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   ParserExt pe(UUT.m_env, UUT.m_errorHandler);
   AstValue* retAst = new AstReturn(new AstNumber(42, ObjTypeFunda::eInt));
   unique_ptr<AstValue> ast{
-    pe.mkFunDef(
-      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
       retAst)};
 
   // exercise
@@ -1026,8 +985,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     AstNode* ast =
-      pe.mkFunDef(
-        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
 
     // exercise
@@ -1045,8 +1003,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     AstNode* ast =
-      pe.mkFunDef(
-        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator(';',
           new AstIf(
             new AstNumber(0, ObjTypeFunda::eBool),
@@ -1067,12 +1024,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     AstNode* ast =
-      pe.mkFunDef(
-        pe.mkFunDecl( "outer", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("outer", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator(';',
 
-          pe.mkFunDef(
-            pe.mkFunDecl( "inner", new ObjTypeFunda(ObjTypeFunda::eBool)),
+          pe.mkFunDef("inner", new ObjTypeFunda(ObjTypeFunda::eBool),
             new AstReturn(new AstNumber(0, ObjTypeFunda::eBool))),
 
           new AstReturn(new AstNumber(42, ObjTypeFunda::eInt))));
@@ -1091,15 +1046,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 
   string spec = "Example: return expression as last (and only) expression in fun's body";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    pe.mkFunDef(
-      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstReturn(new AstNumber(42, ObjTypeFunda::eBool))),
     Error::eNoImplicitConversion, spec);
 
   spec = "Example: Early return, return expression in an if clause";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    pe.mkFunDef(
-      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstOperator(';',
         new AstIf(
           new AstNumber(0, ObjTypeFunda::eBool),
@@ -1111,12 +1064,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     "does not match return type of its function, but would match that of the "
     "outer function. Naturally that is still an error.";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    pe.mkFunDef(
-      pe.mkFunDecl( "outer", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    pe.mkFunDef("outer", new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstOperator(';',
 
-        pe.mkFunDef(
-          pe.mkFunDecl( "inner", new ObjTypeFunda(ObjTypeFunda::eBool)),
+        pe.mkFunDef("inner", new ObjTypeFunda(ObjTypeFunda::eBool),
           new AstReturn(new AstNumber(0, ObjTypeFunda::eInt))), // return under test
 
         new AstNumber(42))),
@@ -1217,8 +1168,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
         new AstNumber(1, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
     unique_ptr<AstValue> ast{
-      pe.mkFunDef(
-        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator(';',
           astIf,
           new AstNumber(42)))};
@@ -1245,8 +1195,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)),
         new AstNumber(1, ObjTypeFunda::eBool));
     unique_ptr<AstValue> ast{
-      pe.mkFunDef(
-        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator(';',
           astIf,
           new AstNumber(42)))};
@@ -1272,8 +1221,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)),
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
     unique_ptr<AstValue> ast{
-      pe.mkFunDef(
-        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         astIf)};
 
     // exercise
@@ -1322,8 +1270,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
     unique_ptr<AstValue> ast{
-      pe.mkFunDef(
-        pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator(';',
           astIf,
           new AstNumber(42)))};
@@ -1431,8 +1378,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42)));
     unique_ptr<AstValue> ast{
-        pe.mkFunDef(
-          pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
           new AstOperator(';', loop, new AstNumber(42)))};
 
     // exercise
@@ -1510,11 +1456,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   string spec = "Function foo expects one arg, but zero where passed on call";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new ObjTypeFunda(ObjTypeFunda::eInt),
+      pe.mkFunDef("foo",
+        AstFunDef::createArgs(
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"))),
     Error::eInvalidArguments, spec);
@@ -1522,8 +1467,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Function foo expects no args, but one arg was passed on call";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
     Error::eInvalidArguments, spec);
@@ -1531,11 +1475,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Function foo expects one bool arg, but one int is passed";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new ObjTypeFunda(ObjTypeFunda::eInt),
+      pe.mkFunDef("foo",
+        AstFunDef::createArgs(
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
+        new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0, ObjTypeFunda::eInt)))),
     Error::eInvalidArguments, spec);
@@ -1543,11 +1486,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Function foo expects one int arg, but one bool is passed";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
-      pe.mkFunDef(
-        pe.mkFunDecl(
-          "foo",
-          new ObjTypeFunda(ObjTypeFunda::eInt),
+      pe.mkFunDef("foo",
+        AstFunDef::createArgs(
           new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0, ObjTypeFunda::eBool)))),
     Error::eInvalidArguments, spec);
@@ -1567,11 +1509,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     unique_ptr<AstValue> ast{
       pe.mkOperatorTree(";",
-        pe.mkFunDef(
-          pe.mkFunDecl(
-            "foo",
-            new ObjTypeFunda(ObjTypeFunda::eInt),
+        pe.mkFunDef("foo",
+          AstFunDef::createArgs(
             new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+          new ObjTypeFunda(ObjTypeFunda::eInt),
           new AstNumber(42)),
         new AstDataDef(
           new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
@@ -1594,11 +1535,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     unique_ptr<AstValue> ast{
       new AstOperator(';',
-        pe.mkFunDef(
-          pe.mkFunDecl(
-            "foo",
-            new ObjTypeFunda(ObjTypeFunda::eInt),
+        pe.mkFunDef("foo",
+          AstFunDef::createArgs(
             new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+          new ObjTypeFunda(ObjTypeFunda::eInt),
           new AstNumber(42)),
         new AstFunCall(new AstSymbol("foo"),
           new AstCtList(new AstNumber(0, ObjTypeFunda::eInt))))};
@@ -1632,7 +1572,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Example: Arithemtic operator (+) with argument not being of arithmetic class (here function)";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)),
       new AstOperator('+',
         new AstSymbol("foo"),
         new AstSymbol("foo"))),
@@ -1648,7 +1588,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Example: Comparision operator (==) with argument not being of scalar class (here function)";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(';',
-      pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)),
       new AstOperator("==",
         new AstSymbol("foo"),
         new AstSymbol("foo"))),
@@ -1731,15 +1671,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
       new AstOperator(';', UUT, new AstNumber(0));
     if ( inputSpec.isValid ) {
       TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
-        pe.mkFunDef(
-          pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          funbody),
+        pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), funbody),
         "");
     } else {
       TEST_ASTTRAVERSAL_REPORTS_ERROR(
-        pe.mkFunDef(
-          pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          funbody),
+        pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), funbody),
         Error::eNoSuchMember, "");
     }
   }
@@ -1760,8 +1696,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     reports_an_eUnreachableCode,
     BECAUSE_the_rhs_can_not_be_reached)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    pe.mkFunDef(
-      pe.mkFunDecl( "foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstOperator(';',
         new AstReturn(new AstNumber(42)),
         new AstNumber(77))),
@@ -1787,7 +1722,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     THEN_eRetTypeCantHaveMutQualifier_is_reported,
     BECAUSE_currently_temporary_objects_are_always_immutable)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    pe.mkFunDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+    pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
+      new AstNumber(42)),
     Error::eRetTypeCantHaveMutQualifier, "");
 
 }

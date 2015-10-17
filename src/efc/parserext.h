@@ -50,11 +50,10 @@ public:
   AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,
     RawAstDataDef*& rawAstDataDef);
 
-  AstFunDecl* mkFunDecl(const std::string name, const ObjType* ret,
-    std::list<AstArgDecl*>* args = NULL);
-  AstFunDecl* mkFunDecl(const std::string name, const ObjType* ret,
-    AstArgDecl* arg1, AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
-  AstFunDef* mkFunDef(AstFunDecl* decl, AstValue* body);
+  AstFunDef* mkFunDef(const std::string name, std::list<AstArgDecl*>* args,
+    const ObjType* ret, AstValue* body);
+  AstFunDef* mkFunDef(const std::string name, const ObjType* ret,
+    AstValue* body);
 
   AstFunDef* mkMainFunDef(AstValue* body);
 

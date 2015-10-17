@@ -256,14 +256,16 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
 }
 
 void SemanticAnalizer::visit(AstFunDef& funDef) {
-  funDef.decl().accept(*this);
+  if ( funDef.retObjType().qualifiers() & ObjType::eMutable ) {
+    Error::throwError(m_errorHandler, Error::eRetTypeCantHaveMutQualifier);
+  }
 
   {
-    m_funRetObjTypes.push(&funDef.decl().retObjType());
+    m_funRetObjTypes.push(&funDef.retObjType());
     Env::AutoScope scope(m_env);
 
-    list<AstArgDecl*>::const_iterator argDeclIter = funDef.decl().args().begin();
-    list<AstArgDecl*>::const_iterator end = funDef.decl().args().end();
+    list<AstArgDecl*>::const_iterator argDeclIter = funDef.args().begin();
+    list<AstArgDecl*>::const_iterator end = funDef.args().end();
     for ( ; argDeclIter!=end; ++argDeclIter) {
       (*argDeclIter)->accept(*this);
       (*argDeclIter)->stentry()->markAsDefined(m_errorHandler);
@@ -275,28 +277,17 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   }
 
   const auto& bodyObjType = funDef.body().objType();
-  if ( ! bodyObjType.matchesSaufQualifiers( funDef.decl().retObjType())
+  if ( ! bodyObjType.matchesSaufQualifiers( funDef.retObjType())
     && ! bodyObjType.isNoreturn()) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
 
-  funDef.setStentry( funDef.decl().stentryAsSp() );
   funDef.stentry()->markAsDefined(m_errorHandler);
 
   funDef.stentry()->addAccessToObject(funDef.access());
 
   postConditionCheck(funDef);
-}
-
-void SemanticAnalizer::visit(AstFunDecl& funDecl) {
-  // Note that visit(AstFundDef) does all of the work for the case AstFunDecl
-  // is a child of AstFundDef.
-  if ( funDecl.retObjType().qualifiers() & ObjType::eMutable ) {
-    Error::throwError(m_errorHandler, Error::eRetTypeCantHaveMutQualifier);
-  }
-  funDecl.stentry()->addAccessToObject(funDecl.access());
-  postConditionCheck(funDecl);
 }
 
 void SemanticAnalizer::visit(AstDataDecl& dataDecl) {

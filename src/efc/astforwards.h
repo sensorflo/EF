@@ -10,7 +10,6 @@ class AstOperator;
 class AstCast;
 class AstCtList;
 class AstFunDef;
-class AstFunDecl;
 class AstDataDecl;
 class AstArgDecl;
 class AstDataDef;

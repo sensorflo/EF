@@ -92,20 +92,24 @@ private:
   AstValue* m_child;
 };
 
-class AstFunDecl : public AstValue {
+class AstFunDef : public AstValue {
 public:
-  AstFunDecl(const std::string& name,
-    std::list<AstArgDecl*>* args = NULL,
-    std::shared_ptr<const ObjType> ret = nullptr,
-    std::shared_ptr<SymbolTableEntry> stentry = nullptr);
-  AstFunDecl(const std::string& name, AstArgDecl* arg1,
-    AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
-  virtual ~AstFunDecl();
+  AstFunDef(const std::string& name,
+    std::shared_ptr<SymbolTableEntry> stentry,
+    std::shared_ptr<const ObjType> ret,
+    AstValue* body);
+  AstFunDef(const std::string& name,
+    std::shared_ptr<SymbolTableEntry> stentry,
+    std::list<AstArgDecl*>* args,
+    std::shared_ptr<const ObjType> ret,
+    AstValue* body);
+  virtual ~AstFunDef();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
   virtual std::list<AstArgDecl*>const& args() const { return *m_args; }
   virtual const ObjType& retObjType() const;
+  virtual AstValue& body() const { return *m_body; }
   static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
     AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
 
@@ -116,20 +120,6 @@ private:
   /** We're the owner. Is garanteed to be non-null */
   std::list<AstArgDecl*>* const m_args;
   const std::shared_ptr<const ObjType> m_ret;
-};
-
-class AstFunDef : public AstValue {
-public:
-  AstFunDef(AstFunDecl* decl, AstValue* body);
-  virtual ~AstFunDef();
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
-  virtual AstFunDecl& decl() const { return *m_decl; }
-  virtual AstValue& body() const { return *m_body; }
-
-private:
-  /** We're the owner. Is garanteed to be non-null */
-  AstFunDecl* const m_decl;
   /** We're the owner. Is garanteed to be non-null */
   AstValue* const m_body;
 };

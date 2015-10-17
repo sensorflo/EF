@@ -164,7 +164,6 @@ and by declaration of free function yylex */
 %type <ObjType::Qualifiers> valvar type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
 %type <RawAstDataDef*> naked_data_def data_def_args
-%type <AstFunDecl*> naked_fun_decl
 %type <AstFunDef*> naked_fun_def
 %type <ObjType*> type opt_type type_arg opt_type_arg opt_ret_type
 %type <ConditionActionPair> condition_action_pair_then
@@ -386,13 +385,9 @@ data_def_args
   ;
 
 naked_fun_def
-  : naked_fun_decl COMMA_EQUAL block_expr                            { $$ = parserExt.mkFunDef($1, $3); }
-  ;
-  
-naked_fun_decl
-  : ID COLON                                                  opt_ret_type  { $$ = parserExt.mkFunDecl($1, $3); }
-  | ID COLON LPAREN                                    RPAREN opt_ret_type  { $$ = parserExt.mkFunDecl($1, $5); }
-  | ID COLON LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type  { $$ = parserExt.mkFunDecl($1, $7, $4); }
+  : ID COLON                                                  opt_ret_type COMMA_EQUAL block_expr { $$ = parserExt.mkFunDef($1, $3, $5); }
+  | ID COLON LPAREN                                    RPAREN opt_ret_type COMMA_EQUAL block_expr { $$ = parserExt.mkFunDef($1, $5, $7); }
+  | ID COLON LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type COMMA_EQUAL block_expr { $$ = parserExt.mkFunDef($1, $4, $7, $9); }
   ;
 
 opt_ret_type

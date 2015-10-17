@@ -309,9 +309,26 @@ void IrGen::visit(AstSymbol& symbol) {
 }
 
 void IrGen::visit(AstFunDef& funDef) {
-  visit(funDef.decl());
-  auto functionIr = static_cast<Function*>(funDef.stentry()->irAddr());
+  // create IR function with given name and signature
+  vector<Type*> llvmArgs;
+  for ( const auto& astArg : funDef.args() ) {
+    llvmArgs.push_back(astArg->declaredObjType().llvmType());
+  }
+  auto llvmFunctionType = FunctionType::get(
+    funDef.retObjType().llvmType(), llvmArgs, false);
+  auto functionIr = Function::Create( llvmFunctionType,
+    Function::ExternalLinkage, funDef.name(), m_module.get() );
   assert(functionIr);
+
+  // If the names differ that means a function with that name already existed,
+  // so LLVM automaticaly chose a new name. That cannot be since above our
+  // environment said the name is unique.
+  assert(functionIr->getName() == funDef.name());
+
+  // Before accepting the body to facilitate recursive calls. As soon as EF
+  // supports calling method which are defined later in the AST that should
+  // not be an relevant issue anymore.
+  funDef.stentry()->setIrAddr(functionIr);
 
   if ( m_builder.GetInsertBlock() ) {
     m_BasicBlockStack.push(m_builder.GetInsertBlock());
@@ -319,9 +336,10 @@ void IrGen::visit(AstFunDef& funDef) {
   m_builder.SetInsertPoint(
     BasicBlock::Create(getGlobalContext(), "entry", functionIr));
 
-  // Add all arguments to the symbol table and create their allocas.
+  // Add all arguments to the symbol table and create their allocas. Also tell
+  // llvm the name of each arg.
   Function::arg_iterator llvmArgIter = functionIr->arg_begin();
-  list<AstArgDecl*>::const_iterator astArgIter = funDef.decl().args().begin();
+  list<AstArgDecl*>::const_iterator astArgIter = funDef.args().begin();
   for (/*nop*/; llvmArgIter != functionIr->arg_end(); ++llvmArgIter, ++astArgIter) {
     auto stentry = (*astArgIter)->stentry();
     if ( stentry->isStoredInMemory() ) {
@@ -330,6 +348,8 @@ void IrGen::visit(AstFunDef& funDef) {
       stentry->setIrAddr(argAddr);
     }
     stentry->setIrValue(llvmArgIter, m_builder);
+
+    llvmArgIter->setName((*astArgIter)->name());
   }
 
   Value* bodyVal = callAcceptOn( funDef.body());
@@ -344,41 +364,6 @@ void IrGen::visit(AstFunDef& funDef) {
     m_builder.SetInsertPoint(m_BasicBlockStack.top());
     m_BasicBlockStack.pop();
   }
-
-  // stentry().irValue was already set by AstFunDecl
-}
-
-void IrGen::visit(AstFunDecl& funDecl) {
-  // An earlier AstFunDecl node declaring the same function allready did the
-  // job, so there's nothing to do anymore
-  if ( funDecl.stentry()->irAddr() ) {
-    return;
-  }
-
-  // create IR function with given name and signature
-  vector<Type*> llvmArgs;
-  for ( const auto& astArg : funDecl.args() ) {
-    llvmArgs.push_back(astArg->declaredObjType().llvmType());
-  }
-  auto llvmFunctionType = FunctionType::get(
-    funDecl.retObjType().llvmType(), llvmArgs, false);
-  auto llvmFunction = Function::Create( llvmFunctionType,
-    Function::ExternalLinkage, funDecl.name(), m_module.get() );
-  assert(llvmFunction);
-
-  // If the names differ (see condition of if statement below) that means a
-  // function with that name already existed, so LLVM automaticaly chose a new
-  // name. That cannot be since above our environment said the name is unique.
-  assert(llvmFunction->getName() == funDecl.name());
-
-  // set names of arguments of IR function
-  auto astArgIter = funDecl.args().begin();
-  auto llvmArgIter = llvmFunction->arg_begin();
-  for (/*nop*/; astArgIter!=funDecl.args().end(); ++astArgIter, ++llvmArgIter) {
-    llvmArgIter->setName((*astArgIter)->name());
-  }
-
-  funDecl.stentry()->setIrAddr(llvmFunction);
 }
 
 void IrGen::visit(AstFunCall& funCall) {

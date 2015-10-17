@@ -78,22 +78,16 @@ void AstPrinter::visit(const AstFunCall& funCall) {
 }
 
 void AstPrinter::visit(const AstFunDef& funDef) {
-  m_os << "fun(";
-  funDef.decl().accept(*this);
-  m_os << " ";
-  funDef.body().accept(*this);
-  m_os <<")";
-}
-
-void AstPrinter::visit(const AstFunDecl& funDecl) {
-  m_os << "declfun(" << funDecl.name() << " (";
-  for (list<AstArgDecl*>::const_iterator i=funDecl.args().begin();
-       i!=funDecl.args().end(); ++i) {
-    if (i!=funDecl.args().begin()) { m_os << " "; }
+  m_os << "fun(" << funDef.name() << " (";
+  for (list<AstArgDecl*>::const_iterator i=funDef.args().begin();
+       i!=funDef.args().end(); ++i) {
+    if (i!=funDef.args().begin()) { m_os << " "; }
     (*i)->accept(*this);
   }
   m_os << ") ";
-  m_os << funDecl.retObjType();
+  m_os << funDef.retObjType();
+  m_os << " ";
+  funDef.body().accept(*this);
   m_os << ")";
 }
 

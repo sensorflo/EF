@@ -128,8 +128,8 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
   return new AstDataDef(decl, rawAstDataDef->m_ctorArgs);
 }
 
-AstFunDecl* ParserExt::mkFunDecl(const string name, const ObjType* ret,
-  list<AstArgDecl*>* args) {
+AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstArgDecl*>* args,
+  const ObjType* ret, AstValue* body) {
 
   // create ObjTypeFun object
   args = args ? args : new list<AstArgDecl*>();
@@ -158,21 +158,14 @@ AstFunDecl* ParserExt::mkFunDecl(const string name, const ObjType* ret,
     }
   }
 
-  return new AstFunDecl(name, args, objTypeRet, stIterStEntry);
+  return new AstFunDef(name, stIterStEntry, args, objTypeRet, body);
 }
 
-AstFunDecl* ParserExt::mkFunDecl(const string name, const ObjType* ret,
-  AstArgDecl* arg1, AstArgDecl* arg2, AstArgDecl* arg3) {
-  return mkFunDecl(name, ret, AstFunDecl::createArgs(arg1, arg2, arg3));
-}
-
-AstFunDef* ParserExt::mkFunDef(AstFunDecl* decl, AstValue* body) {
-  // handling stentry.isDefined() is done later
-  return new AstFunDef(decl, body);
+AstFunDef* ParserExt::mkFunDef(const string name, const ObjType* ret,
+  AstValue* body) {
+  return mkFunDef(name, AstFunDef::createArgs(), ret, body);
 }
 
 AstFunDef* ParserExt::mkMainFunDef(AstValue* body) {
-  return mkFunDef(
-    mkFunDecl("main", new ObjTypeFunda(ObjTypeFunda::eInt)),
-    body);
+  return mkFunDef("main", new ObjTypeFunda(ObjTypeFunda::eInt), body);
 }

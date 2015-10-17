@@ -83,47 +83,43 @@ AstCast::~AstCast() {
   delete m_child;
 }
 
-AstFunDef::AstFunDef(AstFunDecl* decl, AstValue* body) :
-  m_decl(decl ? decl : new AstFunDecl("<unknown_name>")),
-  m_body(body ? body : new AstNumber(0)) {
-  assert(m_decl);
+AstFunDef::AstFunDef(const string& name,
+  shared_ptr<SymbolTableEntry> stentry,
+  std::list<AstArgDecl*>* args,
+  shared_ptr<const ObjType> ret,
+  AstValue* body) :
+  AstValue{move(stentry)},
+  m_name(name),
+  m_args(args),
+  m_ret(move(ret)),
+  m_body(body) {
+  assert(m_args);
+  assert(m_ret);
   assert(m_body);
 }
 
-AstFunDef::~AstFunDef() {
-  delete m_body;
-}
-
-AstFunDecl::AstFunDecl(const string& name,
-  list<AstArgDecl*>* args,
+AstFunDef::AstFunDef(const string& name,
+  shared_ptr<SymbolTableEntry> stentry,
   shared_ptr<const ObjType> ret,
-  shared_ptr<SymbolTableEntry> stentry) :
-  AstValue{move(stentry)},
-  m_name(name),
-  m_args(args ? args : new list<AstArgDecl*>()),
-  m_ret(ret ? move(ret) : make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)) {
+  AstValue* body) :
+  AstFunDef(name, stentry, new list<AstArgDecl*>(), ret, body) {
 }
 
-/** Same as overloaded ctor for convenience; it's easier to pass short
-argument lists. An empty string means 'no argument'. */
-AstFunDecl::AstFunDecl(const string& name, AstArgDecl* arg1,
-  AstArgDecl* arg2, AstArgDecl* arg3) :
-  AstFunDecl(name, createArgs(arg1, arg2, arg3)) {}
-
-AstFunDecl::~AstFunDecl() {
+AstFunDef::~AstFunDef() {
   for (list<AstArgDecl*>::const_iterator i=m_args->begin();
        i!=m_args->end(); ++i) {
     delete *i;
   }
   delete m_args;
+  delete m_body;
 }
 
-const ObjType& AstFunDecl::retObjType() const {
+const ObjType& AstFunDef::retObjType() const {
   assert(m_ret);
   return *m_ret;
 }
 
-list<AstArgDecl*>* AstFunDecl::createArgs(AstArgDecl* arg1,
+list<AstArgDecl*>* AstFunDef::createArgs(AstArgDecl* arg1,
   AstArgDecl* arg2, AstArgDecl* arg3) {
   list<AstArgDecl*>* args = new list<AstArgDecl*>;
   if (arg1) { args->push_back(arg1); }
@@ -473,7 +469,6 @@ void AstNop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstBlock::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCast::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstFunDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
-void AstFunDecl::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstDataDecl::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstArgDecl::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstDataDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
@@ -490,7 +485,6 @@ void AstNop::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstBlock::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCast::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstFunDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
-void AstFunDecl::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstDataDecl::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstArgDecl::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstDataDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
