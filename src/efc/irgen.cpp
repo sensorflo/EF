@@ -339,7 +339,7 @@ void IrGen::visit(AstFunDef& funDef) {
   // Add all arguments to the symbol table and create their allocas. Also tell
   // llvm the name of each arg.
   Function::arg_iterator llvmArgIter = functionIr->arg_begin();
-  list<AstArgDecl*>::const_iterator astArgIter = funDef.args().begin();
+  list<AstDataDef*>::const_iterator astArgIter = funDef.args().begin();
   for (/*nop*/; llvmArgIter != functionIr->arg_end(); ++llvmArgIter, ++astArgIter) {
     auto stentry = (*astArgIter)->stentry();
     if ( stentry->isStoredInMemory() ) {
@@ -390,18 +390,10 @@ void IrGen::visit(AstFunCall& funCall) {
   }
 }
 
-void IrGen::visit(AstDataDecl& dataDecl) {
-  // nop -- dataDecl.irValue() internally allready refers to
-  // llvm::Value* of its associated symbol table entry
-}
-
-void IrGen::visit(AstArgDecl& argDecl) {
-  visit( dynamic_cast<AstDataDecl&>(argDecl));
-}
-
 void IrGen::visit(AstDataDef& dataDef) {
-  // process data declaration. That ensures an entry in the symbol table
-  dataDef.decl().accept(*this);
+  // note that AstDataDef being function parameters are _not_ handled here but
+  // in visit of AstFunDef
+
   SymbolTableEntry*const stentry = dataDef.stentry();
   assert(stentry);
 
@@ -415,7 +407,7 @@ void IrGen::visit(AstDataDef& dataDef) {
     GlobalVariable* variableAddr = new GlobalVariable( *m_module, objType.llvmType(),
       ! objType.qualifiers() & ObjType::eMutable, GlobalValue::InternalLinkage,
       static_cast<Constant*>(initValue),
-      dataDef.decl().name());
+      dataDef.name());
     stentry->setIrAddr(variableAddr);
     // don't stentry->setIrAddr(...) since the initialization of a static
     // variable shall not occur again at run-time when controll flow reaches
@@ -423,7 +415,7 @@ void IrGen::visit(AstDataDef& dataDef) {
   }
 
   else {
-    stentry->irInitLocal(initValue, m_builder, dataDef.decl().name());
+    stentry->irInitLocal(initValue, m_builder, dataDef.name());
   }
 }
 

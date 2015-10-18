@@ -57,7 +57,7 @@ public:
   AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,
     RawAstDataDef*& rawAstDataDef);
 
-  AstFunDef* mkFunDef(const std::string name, std::list<AstArgDecl*>* args,
+  AstFunDef* mkFunDef(const std::string name, std::list<AstDataDef*>* args,
     const ObjType* ret, AstValue* body);
   AstFunDef* mkFunDef(const std::string name, const ObjType* ret,
     AstValue* body);

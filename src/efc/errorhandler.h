@@ -12,7 +12,6 @@ public:
   enum No {
     eNone,
     eUnknownName,
-    eIncompatibleRedeclaration,
     eRedefinition,
     eWriteToImmutable,
     eNoImplicitConversion,

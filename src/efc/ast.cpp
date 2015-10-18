@@ -85,7 +85,7 @@ AstCast::~AstCast() {
 
 AstFunDef::AstFunDef(const string& name,
   shared_ptr<SymbolTableEntry> stentry,
-  std::list<AstArgDecl*>* args,
+  std::list<AstDataDef*>* args,
   shared_ptr<const ObjType> ret,
   AstValue* body) :
   AstValue{move(stentry)},
@@ -102,11 +102,11 @@ AstFunDef::AstFunDef(const string& name,
   shared_ptr<SymbolTableEntry> stentry,
   shared_ptr<const ObjType> ret,
   AstValue* body) :
-  AstFunDef(name, stentry, new list<AstArgDecl*>(), ret, body) {
+  AstFunDef(name, stentry, new list<AstDataDef*>(), ret, body) {
 }
 
 AstFunDef::~AstFunDef() {
-  for (list<AstArgDecl*>::const_iterator i=m_args->begin();
+  for (list<AstDataDef*>::const_iterator i=m_args->begin();
        i!=m_args->end(); ++i) {
     delete *i;
   }
@@ -119,67 +119,58 @@ const ObjType& AstFunDef::retObjType() const {
   return *m_ret;
 }
 
-list<AstArgDecl*>* AstFunDef::createArgs(AstArgDecl* arg1,
-  AstArgDecl* arg2, AstArgDecl* arg3) {
-  list<AstArgDecl*>* args = new list<AstArgDecl*>;
+list<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
+  AstDataDef* arg2, AstDataDef* arg3) {
+  list<AstDataDef*>* args = new list<AstDataDef*>;
   if (arg1) { args->push_back(arg1); }
   if (arg2) { args->push_back(arg2); }
   if (arg3) { args->push_back(arg3); }
   return args;
 }
 
-AstDataDecl::AstDataDecl(const string& name, const ObjType* declaredObjType,
-  StorageDuration declaredStorageDuration) :
+AstDataDef::AstDataDef(const std::string& name, const ObjType* declaredObjType,
+  StorageDuration declaredStorageDuration,  AstCtList* ctorArgs) :
   m_name(name),
   m_declaredObjType(declaredObjType ?
     shared_ptr<const ObjType>(declaredObjType) :
     make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
-  m_declaredStorageDuration(declaredStorageDuration) {
-}
-
-const ObjType& AstDataDecl::declaredObjType() const {
-  return *m_declaredObjType.get();
-}
-
-shared_ptr<const ObjType>& AstDataDecl::declaredObjTypeAsSp() {
-  return m_declaredObjType;
-}
-
-StorageDuration AstDataDecl::declaredStorageDuration() const {
-  return m_declaredStorageDuration;
-}
-
-shared_ptr<SymbolTableEntry>& AstDataDecl::createAndSetStEntryUsingDeclaredObjType() {
-  setStentry(make_shared<SymbolTableEntry>(m_declaredObjType, m_declaredStorageDuration));
-  return m_stentry;
-}
-
-AstDataDef::AstDataDef(AstDataDecl* decl, AstValue* initValue) :
-  m_decl(decl ? decl : new AstDataDecl(
-      "<unknown_name>",
-      new ObjTypeFunda(ObjTypeFunda::eInt),
-      StorageDuration::eLocal)),
-  m_ctorArgs(initValue ? new AstCtList(initValue) : new AstCtList()),
-  m_implicitInitializer(initValue ? NULL : m_decl->declaredObjType().createDefaultAstValue()) {
-  assert(m_decl);
-  assert(m_ctorArgs);
-}
-
-AstDataDef::AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs) :
-  m_decl(decl ? decl : new AstDataDecl(
-      "<unknown_name>",
-      new ObjTypeFunda(ObjTypeFunda::eInt),
-      StorageDuration::eLocal)),
+  m_declaredStorageDuration(declaredStorageDuration),
   m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()),
-  m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_decl->declaredObjType().createDefaultAstValue()) {
-  assert(m_decl);
+  m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_declaredObjType->createDefaultAstValue()) {
   assert(m_ctorArgs);
+}
+
+AstDataDef::AstDataDef(const std::string& name, const ObjType* declaredObjType,
+  StorageDuration declaredStorageDuration, AstValue* initValue) :
+  AstDataDef(name, declaredObjType, declaredStorageDuration,
+    initValue ? new AstCtList(initValue) : nullptr) {
+}
+
+AstDataDef::AstDataDef(const std::string& name, const ObjType* declaredObjType,
+  AstValue* initValue) :
+  AstDataDef(name, declaredObjType, StorageDuration::eLocal, initValue) {
 }
 
 AstDataDef::~AstDataDef() {
-  delete m_decl;
   delete m_ctorArgs;
   delete m_implicitInitializer;
+}
+
+const ObjType& AstDataDef::declaredObjType() const {
+  return *m_declaredObjType.get();
+}
+
+shared_ptr<const ObjType>& AstDataDef::declaredObjTypeAsSp() {
+  return m_declaredObjType;
+}
+
+StorageDuration AstDataDef::declaredStorageDuration() const {
+  return m_declaredStorageDuration;
+}
+
+shared_ptr<SymbolTableEntry>& AstDataDef::createAndSetStEntryUsingDeclaredObjType() {
+  setStentry(make_shared<SymbolTableEntry>(m_declaredObjType, m_declaredStorageDuration));
+  return m_stentry;
 }
 
 AstValue& AstDataDef::initValue() const {
@@ -469,8 +460,6 @@ void AstNop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstBlock::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCast::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstFunDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
-void AstDataDecl::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
-void AstArgDecl::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstDataDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstNumber::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstSymbol::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
@@ -485,8 +474,6 @@ void AstNop::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstBlock::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCast::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstFunDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
-void AstDataDecl::accept(AstVisitor& visitor) { visitor.visit(*this); }
-void AstArgDecl::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstDataDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstNumber::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstSymbol::accept(AstVisitor& visitor) { visitor.visit(*this); }

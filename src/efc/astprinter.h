@@ -20,8 +20,6 @@ private:
   virtual void visit(const AstSymbol& symbol);
   virtual void visit(const AstFunCall& funCall);
   virtual void visit(const AstFunDef& funDef);
-  virtual void visit(const AstDataDecl& dataDecl);
-  virtual void visit(const AstArgDecl& argDecl);
   virtual void visit(const AstDataDef& dataDef);
   virtual void visit(const AstIf& if_);
   virtual void visit(const AstLoop& loop);

@@ -305,15 +305,15 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "a = b = c", "=(a =(b c))", spec);
 
   spec = ":= is right associative";
-  TEST_PARSE( "a := b := c", "data(decldata(a int) (data(decldata(b int) (c))))", spec);
+  TEST_PARSE( "a := b := c", "data(a int (data(b int (c))))", spec);
 
   spec = "= has lower precedence than || aka 'or'";
   TEST_PARSE( "a =  b or c", "=(a or(b c))", spec);
   TEST_PARSE( "a or b =  c", "=(or(a b) c)", spec);
 
   spec = ":= has same precedence as =";
-  TEST_PARSE( "a := b =  c", "data(decldata(a int) (=(b c)))", spec);
-  TEST_PARSE( "a =  b := c", "=(a data(decldata(b int) (c)))", spec);
+  TEST_PARSE( "a := b =  c", "data(a int (=(b c)))", spec);
+  TEST_PARSE( "a =  b := c", "=(a data(b int (c)))", spec);
 
   // precedence level group: binary sequence operator (; or adjancted standalone expression)
   spec = "sequence operator (; or newline) is left associative";
@@ -434,95 +434,95 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   //Toggling 2) 'keyword...;' vs 'keyword(...)' vs 'keyword...end...;' syntax
   //Toggling 3) initializer behind id vs initializer behind type
   //Toggling 4) val vs var
-  TEST_PARSE( "val    foo : int  ,= 42   $"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo : bool ,= true $"         , "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val    foo :      ,= 42   $"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo        ,= 42   $"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val ($ foo : int  ,= 42   )"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val ($ foo : bool ,= true )"         , "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val ($ foo :      ,= 42   )"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val ($ foo        ,= 42   )"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo : int  ,= 42   end"       , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo : bool ,= true end"       , "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val    foo :      ,= 42   end"       , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo        ,= 42   end"       , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo : int  ,= 42   endof foo$", "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo : bool ,= true endof foo$", "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val    foo :      ,= 42   endof foo$", "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo        ,= 42   endof foo$", "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo : int  ,= 42   $"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo : bool ,= true $"         , "data(foo bool (1bool))", spec);
+  TEST_PARSE( "val    foo :      ,= 42   $"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo        ,= 42   $"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val ($ foo : int  ,= 42   )"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val ($ foo : bool ,= true )"         , "data(foo bool (1bool))", spec);
+  TEST_PARSE( "val ($ foo :      ,= 42   )"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val ($ foo        ,= 42   )"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo : int  ,= 42   end"       , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo : bool ,= true end"       , "data(foo bool (1bool))", spec);
+  TEST_PARSE( "val    foo :      ,= 42   end"       , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo        ,= 42   end"       , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo : int  ,= 42   endof foo$", "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo : bool ,= true endof foo$", "data(foo bool (1bool))", spec);
+  TEST_PARSE( "val    foo :      ,= 42   endof foo$", "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo        ,= 42   endof foo$", "data(foo int (42))", spec);
 
-  TEST_PARSE( "val    foo ,= 42   : int  $"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo ,= true : bool $"         , "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val    foo ,= 42   :      $"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo ,= 42          $"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val ($ foo ,= 42   : int  )"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val ($ foo ,= true : bool )"         , "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val ($ foo ,= 42   :      )"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val ($ foo ,= 42          )"         , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo ,= 42   : int  end"       , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo ,= true : bool end"       , "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val    foo ,= 42   :      end"       , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo ,= 42          end"       , "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo ,= 42   : int  endof foo$", "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo ,= true : bool endof foo$", "data(decldata(foo bool) (1bool))", spec);
-  TEST_PARSE( "val    foo ,= 42   :      endof foo$", "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val    foo ,= 42          endof foo$", "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val    foo ,= 42   : int  $"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo ,= true : bool $"         , "data(foo bool (1bool))", spec);
+  TEST_PARSE( "val    foo ,= 42   :      $"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo ,= 42          $"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val ($ foo ,= 42   : int  )"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val ($ foo ,= true : bool )"         , "data(foo bool (1bool))", spec);
+  TEST_PARSE( "val ($ foo ,= 42   :      )"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val ($ foo ,= 42          )"         , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo ,= 42   : int  end"       , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo ,= true : bool end"       , "data(foo bool (1bool))", spec);
+  TEST_PARSE( "val    foo ,= 42   :      end"       , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo ,= 42          end"       , "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo ,= 42   : int  endof foo$", "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo ,= true : bool endof foo$", "data(foo bool (1bool))", spec);
+  TEST_PARSE( "val    foo ,= 42   :      endof foo$", "data(foo int (42))", spec);
+  TEST_PARSE( "val    foo ,= 42          endof foo$", "data(foo int (42))", spec);
 
-  TEST_PARSE( "var    foo : int  ,= 42   $"         , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var    foo : bool ,= true $"         , "data(decldata(foo mut-bool) (1bool))", spec);
-  TEST_PARSE( "var    foo :      ,= 42   $"         , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var    foo        ,= 42   $"         , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var ($ foo : int  ,= 42   )"         , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var ($ foo : bool ,= true )"         , "data(decldata(foo mut-bool) (1bool))", spec);
-  TEST_PARSE( "var ($ foo :      ,= 42   )"         , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var ($ foo        ,= 42   )"         , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var    foo : int  ,= 42   end"       , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var    foo : bool ,= true end"       , "data(decldata(foo mut-bool) (1bool))", spec);
-  TEST_PARSE( "var    foo :      ,= 42   end"       , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var    foo        ,= 42   end"       , "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var    foo : int  ,= 42   endof foo$", "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var    foo : bool ,= true endof foo$", "data(decldata(foo mut-bool) (1bool))", spec);
-  TEST_PARSE( "var    foo :      ,= 42   endof foo$", "data(decldata(foo mut-int) (42))", spec);
-  TEST_PARSE( "var    foo        ,= 42   endof foo$", "data(decldata(foo mut-int) (42))", spec);
+  TEST_PARSE( "var    foo : int  ,= 42   $"         , "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var    foo : bool ,= true $"         , "data(foo mut-bool (1bool))", spec);
+  TEST_PARSE( "var    foo :      ,= 42   $"         , "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var    foo        ,= 42   $"         , "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var ($ foo : int  ,= 42   )"         , "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var ($ foo : bool ,= true )"         , "data(foo mut-bool (1bool))", spec);
+  TEST_PARSE( "var ($ foo :      ,= 42   )"         , "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var ($ foo        ,= 42   )"         , "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var    foo : int  ,= 42   end"       , "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var    foo : bool ,= true end"       , "data(foo mut-bool (1bool))", spec);
+  TEST_PARSE( "var    foo :      ,= 42   end"       , "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var    foo        ,= 42   end"       , "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var    foo : int  ,= 42   endof foo$", "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var    foo : bool ,= true endof foo$", "data(foo mut-bool (1bool))", spec);
+  TEST_PARSE( "var    foo :      ,= 42   endof foo$", "data(foo mut-int (42))", spec);
+  TEST_PARSE( "var    foo        ,= 42   endof foo$", "data(foo mut-int (42))", spec);
 
   spec = "trivial example with implicit init value";
   //Toggling 1) 'keyword...;' vs 'keyword(...)' vs 'keyword...end' vs
   //'keyword...endof...$' syntax
   //Toggling 2) val vs var
-  TEST_PARSE( "val    foo :int $"         , "data(decldata(foo int) ())", spec);
-  TEST_PARSE( "val ($ foo :int )"         , "data(decldata(foo int) ())", spec);
-  TEST_PARSE( "val    foo :int end"       , "data(decldata(foo int) ())", spec);
-  TEST_PARSE( "val    foo :int endof foo$", "data(decldata(foo int) ())", spec);
-  TEST_PARSE( "var    foo :int $"         , "data(decldata(foo mut-int) ())", spec);
-  TEST_PARSE( "var ($ foo :int )"         , "data(decldata(foo mut-int) ())", spec);
-  TEST_PARSE( "var    foo :int endof foo$", "data(decldata(foo mut-int) ())", spec);
+  TEST_PARSE( "val    foo :int $"         , "data(foo int ())", spec);
+  TEST_PARSE( "val ($ foo :int )"         , "data(foo int ())", spec);
+  TEST_PARSE( "val    foo :int end"       , "data(foo int ())", spec);
+  TEST_PARSE( "val    foo :int endof foo$", "data(foo int ())", spec);
+  TEST_PARSE( "var    foo :int $"         , "data(foo mut-int ())", spec);
+  TEST_PARSE( "var ($ foo :int )"         , "data(foo mut-int ())", spec);
+  TEST_PARSE( "var    foo :int endof foo$", "data(foo mut-int ())", spec);
 
   spec = "trivial example with constructor call style initializer";
-  TEST_PARSE( "val foo(=42) : int      $", "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo(=42) :          $", "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo(=42)            $", "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo      : int (=42)$", "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo      :     (=42)$", "data(decldata(foo int) (42))", spec);
-  TEST_PARSE( "val foo            (=42)$", "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "val foo(=42) : int      $", "data(foo int (42))", spec);
+  TEST_PARSE( "val foo(=42) :          $", "data(foo int (42))", spec);
+  TEST_PARSE( "val foo(=42)            $", "data(foo int (42))", spec);
+  TEST_PARSE( "val foo      : int (=42)$", "data(foo int (42))", spec);
+  TEST_PARSE( "val foo      :     (=42)$", "data(foo int (42))", spec);
+  TEST_PARSE( "val foo            (=42)$", "data(foo int (42))", spec);
 
   spec = "initializer is the empty 'ctor call' argument list";
-  TEST_PARSE( "val foo(=) : int    $", "data(decldata(foo int) ())", spec);
-  TEST_PARSE( "val foo    : int (=)$", "data(decldata(foo int) ())", spec);
+  TEST_PARSE( "val foo(=) : int    $", "data(foo int ())", spec);
+  TEST_PARSE( "val foo    : int (=)$", "data(foo int ())", spec);
 
   spec = "initializer is in 'ctor call' style with 2+ arguments. "
     "Here it's about parsing, the fact that the type 'int' does not expect "
     "two arguments is irrelevant here.";
-  TEST_PARSE( "val foo (=42,77) :int         $", "data(decldata(foo int) (42 77))", spec);
-  TEST_PARSE( "val foo          :int (=42,77)$", "data(decldata(foo int) (42 77))", spec);
+  TEST_PARSE( "val foo (=42,77) :int         $", "data(foo int (42 77))", spec);
+  TEST_PARSE( "val foo          :int (=42,77)$", "data(foo int (42 77))", spec);
 
   spec = "muttable qualifier";
-  TEST_PARSE( "val foo :mut int$", "data(decldata(foo mut-int) ())", spec);
+  TEST_PARSE( "val foo :mut int$", "data(foo mut-int ())", spec);
 
   spec = "(process) static storage duration";
-  TEST_PARSE( "val foo :int is static$", "data(decldata(foo static/int) ())", spec);
+  TEST_PARSE( "val foo :int is static$", "data(foo static/int ())", spec);
 
   spec = "short version with implicit type";
-  TEST_PARSE( "foo:=42", "data(decldata(foo int) (42))", spec);
+  TEST_PARSE( "foo:=42", "data(foo int (42))", spec);
 }
 
 // note that it is a semantic error, not a grammar error

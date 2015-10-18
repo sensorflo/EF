@@ -157,10 +157,10 @@ and by declaration of free function yylex */
 
 
 %type <AstCtList*> ct_list initializer_arg initializer_special_arg pure2_standalone_expr_seq
-%type <std::list<AstArgDecl*>*> pure_naked_param_ct_list
+%type <std::list<AstDataDef*>*> pure_naked_param_ct_list
 %type <std::list<AstValue*>*> pure_ct_list
 %type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
-%type <AstArgDecl*> param_decl
+%type <AstDataDef*> param_decl
 %type <ObjType::Qualifiers> valvar type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
 %type <RawAstDataDef*> naked_data_def data_def_args
@@ -227,12 +227,12 @@ pure_ct_list
   ;
 
 pure_naked_param_ct_list
-  : param_decl                                      { $$ = new std::list<AstArgDecl*>(); ($$)->push_back($1); }
+  : param_decl                                      { $$ = new std::list<AstDataDef*>(); ($$)->push_back($1); }
   | pure_naked_param_ct_list COMMA param_decl       { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 param_decl
-  : ID COLON type                                   { $$ = new AstArgDecl($1, $3); }
+  : ID COLON type                                   { $$ = new AstDataDef($1, $3); }
   ;
   
 type
@@ -324,7 +324,7 @@ operator_expr
   /* binary operators */
   | sub_expr EQUAL       sub_expr                   { $$ = new AstOperator('=', $1, $3); }
   | sub_expr DOT_EQUAL   sub_expr                   { $$ = new AstOperator(".=", $1, $3); }
-  | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef(new AstDataDecl($1, new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eLocal), $3); }
+  | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eLocal, new AstCtList($3)); }
   | sub_expr OR          sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr PIPE_PIPE   sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr AND         sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }

@@ -100,72 +100,59 @@ public:
     AstValue* body);
   AstFunDef(const std::string& name,
     std::shared_ptr<SymbolTableEntry> stentry,
-    std::list<AstArgDecl*>* args,
+    std::list<AstDataDef*>* args,
     std::shared_ptr<const ObjType> ret,
     AstValue* body);
   virtual ~AstFunDef();
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
-  virtual std::list<AstArgDecl*>const& args() const { return *m_args; }
+  virtual std::list<AstDataDef*>const& args() const { return *m_args; }
   virtual const ObjType& retObjType() const;
   virtual AstValue& body() const { return *m_body; }
-  static std::list<AstArgDecl*>* createArgs(AstArgDecl* arg1 = NULL,
-    AstArgDecl* arg2 = NULL, AstArgDecl* arg3 = NULL);
+  static std::list<AstDataDef*>* createArgs(AstDataDef* arg1 = NULL,
+    AstDataDef* arg2 = NULL, AstDataDef* arg3 = NULL);
 
 private:
   void initObjType();
 
   const std::string m_name;
   /** We're the owner. Is garanteed to be non-null */
-  std::list<AstArgDecl*>* const m_args;
+  std::list<AstDataDef*>* const m_args;
   const std::shared_ptr<const ObjType> m_ret;
   /** We're the owner. Is garanteed to be non-null */
   AstValue* const m_body;
 };
 
-class AstDataDecl : public AstValue {
+class AstDataDef : public AstValue {
 public:
-  AstDataDecl(const std::string& name, const ObjType* declaredObjType,
-    StorageDuration declaredStorageDuration = StorageDuration::eLocal);
+  AstDataDef(const std::string& name, const ObjType* declaredObjType,
+    StorageDuration declaredStorageDuration,
+    AstCtList* ctorArgs = nullptr);
+  AstDataDef(const std::string& name, const ObjType* declaredObjType,
+    StorageDuration declaredStorageDuration,
+    AstValue* initValue);
+  AstDataDef(const std::string& name, const ObjType* declaredObjType,
+    AstValue* initValue = nullptr);
+  virtual ~AstDataDef();
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
-  virtual const std::string& name() const { return m_name; }
 
+  virtual const std::string& name() const { return m_name; }
   const ObjType& declaredObjType() const;
   std::shared_ptr<const ObjType>& declaredObjTypeAsSp();
   StorageDuration declaredStorageDuration() const;
   std::shared_ptr<SymbolTableEntry>& createAndSetStEntryUsingDeclaredObjType();  
+  AstCtList& ctorArgs() const { return *m_ctorArgs; }
+  virtual AstValue& initValue() const;
 
 private:
   const std::string m_name;
   std::shared_ptr<const ObjType> m_declaredObjType;
   const StorageDuration m_declaredStorageDuration;
-};
-
-class AstArgDecl : public AstDataDecl {
-public:
-  AstArgDecl(const std::string& name, const ObjType* declaredObjType) :
-    AstDataDecl(name, declaredObjType, StorageDuration::eLocal) {};
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
-};
-
-class AstDataDef : public AstValue {
-public:
-  AstDataDef(AstDataDecl* decl, AstValue* initValue);
-  AstDataDef(AstDataDecl* decl, AstCtList* ctorArgs = NULL);
-  virtual ~AstDataDef();
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
-  virtual AstDataDecl& decl() const { return *m_decl; }
-  AstCtList& ctorArgs() const { return *m_ctorArgs; }
-  virtual AstValue& initValue() const;
-
-private:
-  /** We're the owner. Is garanteed to be non-null */
-  AstDataDecl* const m_decl;
-  /** We're the owner. Is garanteed to be non-null. */
+  /** We're the owner. Is garanteed to be non-null. In case of fun params, in
+  future it will mean the default initializer, currently it's just ignored. */
   AstCtList* const m_ctorArgs;
   /** We're the owner. Is _NOT_ guaranteed to  be non-null. */
   AstValue* m_implicitInitializer;

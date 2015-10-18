@@ -13,8 +13,6 @@ public:
   virtual void visit(AstSymbol& symbol) =0;
   virtual void visit(AstFunCall& funCall) =0;
   virtual void visit(AstFunDef& funDef) =0;
-  virtual void visit(AstDataDecl& dataDecl) =0;
-  virtual void visit(AstArgDecl& argDecl) =0;
   virtual void visit(AstDataDef& dataDef) =0;
   virtual void visit(AstIf& if_) =0;
   virtual void visit(AstLoop& loop) =0;
@@ -33,8 +31,6 @@ public:
   virtual void visit(const AstSymbol& symbol) =0;
   virtual void visit(const AstFunCall& funCall) =0;
   virtual void visit(const AstFunDef& funDef) =0;
-  virtual void visit(const AstDataDecl& dataDecl) =0;
-  virtual void visit(const AstArgDecl& argDecl) =0;
   virtual void visit(const AstDataDef& dataDef) =0;
   virtual void visit(const AstIf& if_) =0;
   virtual void visit(const AstLoop& loop) =0;

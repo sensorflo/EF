@@ -264,11 +264,12 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
     m_funRetObjTypes.push(&funDef.retObjType());
     Env::AutoScope scope(m_env);
 
-    list<AstArgDecl*>::const_iterator argDeclIter = funDef.args().begin();
-    list<AstArgDecl*>::const_iterator end = funDef.args().end();
-    for ( ; argDeclIter!=end; ++argDeclIter) {
-      (*argDeclIter)->accept(*this);
-      (*argDeclIter)->stentry()->markAsDefined(m_errorHandler);
+    list<AstDataDef*>::const_iterator argDefIter = funDef.args().begin();
+    list<AstDataDef*>::const_iterator end = funDef.args().end();
+    for ( ; argDefIter!=end; ++argDefIter) {
+      assert((*argDefIter)->declaredStorageDuration() == StorageDuration::eLocal);
+      (*argDefIter)->accept(*this);
+      (*argDefIter)->stentry()->markAsDefined(m_errorHandler);
     }
 
     funDef.body().accept(*this);
@@ -290,56 +291,32 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   postConditionCheck(funDef);
 }
 
-void SemanticAnalizer::visit(AstDataDecl& dataDecl) {
-
-  // let dataDecl.stentry() point either to a newly created symbol table entry
-  // or to an allready existing one declaring the same data object
+void SemanticAnalizer::visit(AstDataDef& dataDef) {
+  // let dataDecl.stentry() point a newly created symbol table entry
   {
-    Env::InsertRet insertRet = m_env.insert( dataDecl.name(), nullptr );
+    Env::InsertRet insertRet = m_env.insert( dataDef.name(), nullptr );
     shared_ptr<SymbolTableEntry>& envs_stentry_ptr = insertRet.first->second;
 
     // name is not yet in env, thus insert new symbol table entry
     if (insertRet.second) {
-      envs_stentry_ptr = dataDecl.createAndSetStEntryUsingDeclaredObjType();
+      envs_stentry_ptr = dataDef.createAndSetStEntryUsingDeclaredObjType();
     }
 
     // name is already in env: unless the type matches that is an error
     else {
-      assert(envs_stentry_ptr.get());
-      const auto objTypeMatchesFully =
-        envs_stentry_ptr->objType().matchesFully(dataDecl.declaredObjType());
-      const auto storageDurationMatches =
-        envs_stentry_ptr->storageDuration() ==
-        dataDecl.declaredStorageDuration();
-      if ( !objTypeMatchesFully || !storageDurationMatches ) {
-        Error::throwError(m_errorHandler, Error::eIncompatibleRedeclaration);
-      }
-      dataDecl.setStentry(envs_stentry_ptr);
+      Error::throwError(m_errorHandler, Error::eRedefinition);
     }
   }
 
-  dataDecl.stentry()->addAccessToObject(dataDecl.access());
-  postConditionCheck(dataDecl);
-}
-
-void SemanticAnalizer::visit(AstArgDecl& argDecl) {
-  visit( dynamic_cast<AstDataDecl&>(argDecl));
-}
-
-void SemanticAnalizer::visit(AstDataDef& dataDef) {
-  dataDef.decl().accept(*this);
   dataDef.ctorArgs().accept(*this);
 
-  if ( dataDef.decl().objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
+  if ( dataDef.objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
-  if ( dataDef.decl().stentry()->storageDuration() == StorageDuration::eStatic
+  if ( dataDef.stentry()->storageDuration() == StorageDuration::eStatic
     && !dataDef.initValue().isCTConst() ) {
     Error::throwError(m_errorHandler, Error::eCTConstRequired);
   }
-
-  dataDef.setStentry( dataDef.decl().stentryAsSp() );
-  dataDef.stentry()->markAsDefined(m_errorHandler);
 
   dataDef.stentry()->addAccessToObject(dataDef.access());
 

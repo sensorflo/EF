@@ -303,8 +303,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(AstOperator::eDeref,
       new AstOperator('&',
-        new AstDataDef(
-          new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+        new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
           new AstNumber(42, ObjTypeFunda::eInt)))),
     42, "");
 
@@ -314,8 +313,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstOperator(AstOperator::eDeref,
         new AstOperator('&',
           new AstOperator('&',
-            new AstDataDef(
-              new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+            new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
               new AstNumber(42, ObjTypeFunda::eInt)))))),
     42, "");
 
@@ -323,11 +321,9 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     "then x has the new value";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
-      new AstDataDef(
-        new AstDataDecl("p", new ObjTypePtr(
-            make_shared<ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+      new AstDataDef("p",
+        new ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstOperator('&', new AstSymbol("x"))),
       new AstOperator("=",
         new AstOperator(AstOperator::eDeref, new AstSymbol("p")),
@@ -339,12 +335,10 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     "through a pointer p to it.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42, ObjTypeFunda::eInt)),
-      new AstDataDef(
-        new AstDataDecl("p", new ObjTypePtr(
-            make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+      new AstDataDef("p",
+        new ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
         new AstOperator('&', new AstSymbol("x"))),
       new AstOperator(AstOperator::eDeref, new AstSymbol("p"))),
     42, "");
@@ -352,9 +346,8 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "Example: Address of a temporary object; a literal number";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("p", new ObjTypePtr(
-            make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+      new AstDataDef("p",
+        new ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
         new AstOperator('&', new AstNumber(42))),
       new AstOperator(AstOperator::eDeref, new AstSymbol("p"))),
     42, spec);
@@ -362,9 +355,8 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "Example: Address of a temproary object; an arithmetic operator";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("p", new ObjTypePtr(
-            make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+      new AstDataDef("p",
+        new ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
         new AstOperator('&',
           new AstOperator('+', new AstNumber(1), new AstNumber(2)))),
       new AstOperator(AstOperator::eDeref, new AstSymbol("p"))),
@@ -379,8 +371,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   string spec = "Example: lhs of 'and' operator is false -> rhs is not evaluated";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable),
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eAnd,
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -391,8 +382,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   spec = "Example: lhs of 'and' operator is true -> rhs is evaluated";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable),
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eAnd,
         new AstNumber(1, ObjTypeFunda::eBool),
@@ -403,8 +393,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   spec = "Example: lhs of 'or' operator is true -> rhs is not evaluated";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable),
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eOr,
         new AstNumber(1, ObjTypeFunda::eBool),
@@ -415,8 +404,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   spec = "Example: lhs of 'or' operator is false -> rhs is evaluated";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable),
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eOr,
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -619,8 +607,8 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       pe.mkFunDef(
         "foo",
         AstFunDef::createArgs(
-          new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
+          new AstDataDef("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstDataDef("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
@@ -679,8 +667,8 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     unique_ptr<AstValue> ast(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
-          new AstArgDecl("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          new AstArgDecl("arg2", new ObjTypeFunda(ObjTypeFunda::eBool))),
+          new AstDataDef("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstDataDef("arg2", new ObjTypeFunda(ObjTypeFunda::eBool))),
         new ObjTypeFunda(ObjTypeFunda::eVoid),
         new AstNop()));
     UUT.m_semanticAnalizer.analyze(*ast.get());
@@ -743,7 +731,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_1ARG(
     pe.mkFunDef("foo",
       AstFunDef::createArgs(
-        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstSymbol("x")),
     spec, int, "foo", int, 42, 42);
@@ -752,8 +740,8 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_2ARG(
     pe.mkFunDef("foo",
       AstFunDef::createArgs(
-        new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstDataDef("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstOperator('*',
         new AstSymbol("x"),
@@ -764,8 +752,8 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_2ARG(
     pe.mkFunDef("foo",
       AstFunDef::createArgs(
-        new AstArgDecl("condition", new ObjTypeFunda(ObjTypeFunda::eBool)),
-        new AstArgDecl("thenValue", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstDataDef("condition", new ObjTypeFunda(ObjTypeFunda::eBool)),
+        new AstDataDef("thenValue", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstIf(
         new AstSymbol("condition"),
@@ -808,7 +796,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstOperator(';',
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
-          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+          new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
@@ -819,8 +807,8 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstOperator(';',
       pe.mkFunDef("add",
         AstFunDef::createArgs(
-          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
-          new AstArgDecl("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
+          new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+          new AstDataDef("y", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator('+',
           new AstSymbol("x"),
@@ -838,7 +826,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstOperator(';',
       pe.mkFunDef("fact",
         AstFunDef::createArgs(
-          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
+          new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstIf(
           new AstOperator("==", new AstSymbol("x"), new AstNumber(0)),
@@ -857,8 +845,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     genIrInImplicitMain,
     returns_x_rvalue)) {
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstDataDef(
-      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
+    new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
       new AstNumber(42)),
     42, "");
 }
@@ -871,16 +858,14 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   string spec = "Reading from the data definition expression gives the value "
     "of the data object after initialization, which in turn equals value of the initializer.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstDataDef(
-      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+    new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
       new AstNumber(42)),
     42, spec);
 
   spec = "Writing to the data object modifies it";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+      new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
         new AstNumber(42)),
       new AstOperator('=',
         new AstSymbol("foo"),
@@ -892,8 +877,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
       new AstOperator('=',
-        new AstDataDef(
-          new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+        new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
           new AstNumber(42)),
         new AstNumber(77)),
       new AstSymbol("foo")),
@@ -906,15 +890,13 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     returns_x)) {
   string spec = "Example: immutable static data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstDataDef(
-      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic),
+    new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic,
       new AstNumber(42)),
     42, "");
 
   spec = "Example: mutable static data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstDataDef(
-      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic),
+    new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic,
       new AstNumber(42)),
     42, "");
 }
@@ -926,17 +908,16 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
 
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("spy_sum",
-          new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic)),
+      new AstDataDef("spy_sum",
+        new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic),
 
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eVoid),
         new AstOperator(";",
-          new AstDataDef(
-            // Init UUT with true. This test is about that this happens _not_
-            // when control flow reaches this place
-            new AstDataDecl("UUT",
-              new ObjTypeFunda(ObjTypeFunda::eBool, ObjTypeFunda::eMutable), StorageDuration::eStatic),
+          // Init UUT with true. This test is about that this happens _not_
+          // when control flow reaches this place
+          new AstDataDef("UUT",
+            new ObjTypeFunda(ObjTypeFunda::eBool, ObjTypeFunda::eMutable),
+            StorageDuration::eStatic,
             new AstNumber(1, ObjTypeFunda::eBool)),
           new AstIf(
             new AstSymbol("UUT"), // true only the first time ...
@@ -963,8 +944,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     "of the lhs after the assignment, which in turn equals value of the rhs.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       new AstOperator(".=",
         new AstSymbol("foo"),
         new AstNumber(42))),
@@ -973,8 +953,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "Writing to the dot assignment expression modifies the lhs data object.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       new AstOperator('=',
         new AstOperator(".=",
           new AstSymbol("foo"),
@@ -998,8 +977,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "Writing to the seq assignment expression modifies the rhs data object.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+      new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       new AstOperator('=',
         new AstOperator(';',
           new AstNumber(42),
@@ -1016,8 +994,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   string spec = "Example: local immutable data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstSymbol("x")),
     42, spec);
@@ -1025,8 +1002,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "Example: local mutable data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
         new AstNumber(42)),
       new AstSymbol("x")),
     42, spec);
@@ -1034,8 +1010,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "Example: static immutable data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic,
         new AstNumber(42)),
       new AstSymbol("x")),
     42, spec);
@@ -1043,8 +1018,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "Example: static mutable data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(';',
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic,
         new AstNumber(42)),
       new AstSymbol("x")),
     42, spec);
@@ -1057,8 +1031,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   string spec = "Example: local data object and using operator '='";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+      new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
         new AstNumber(42)),
       new AstOperator('=',
         new AstSymbol("foo"),
@@ -1069,8 +1042,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "Example: local data object and using operator '.='";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+      new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
         new AstNumber(42)),
       new AstOperator(".=",
         new AstSymbol("foo"),
@@ -1081,8 +1053,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "Example: static data object and using operator '='";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic),
+      new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), StorageDuration::eStatic,
         new AstNumber(42)),
       new AstOperator('=',
         new AstSymbol("foo"),
@@ -1096,8 +1067,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     genIrInImplicitMain,
     returns_the_default_which_is_zero)) {
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstDataDef(
-      new AstDataDecl("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+    new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
     0, "");
 }
 
@@ -1112,10 +1082,10 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   string spec = "function argument named 'x' shadows 'global' variable also named 'x'";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)),
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
-          new AstArgDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
+          new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
         new ObjTypeFunda(ObjTypeFunda::eVoid),
         new AstOperator('=',
           new AstSymbol("x"),
@@ -1126,10 +1096,9 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   spec = "variable 'x' local to a function shadows 'global' variable also named 'x'";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)), new AstNumber(42)),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)),
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
-        new AstDataDef(
-          new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
+        new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt),
           new AstNumber(77))),
       new AstSymbol("x")),
     42, spec);
@@ -1204,8 +1173,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   string spec = "Example: Count x down from 1 to 0";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     pe.mkOperatorTree(";",
-      new AstDataDef(
-        new AstDataDecl("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
+      new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
         new AstNumber(1)),
       new AstLoop(
         new AstOperator('!', new AstOperator("==", new AstSymbol("x"), new AstNumber(0))),

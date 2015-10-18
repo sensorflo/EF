@@ -20,7 +20,6 @@ const char* toStr(Error::No no) {
   switch (no) {
   case Error::eNone: return "eNone";
   case Error::eUnknownName: return "eUnknownName";
-  case Error::eIncompatibleRedeclaration: return "eIncompatibleRedeclaration";
   case Error::eRedefinition: return "eRedefinition";
   case Error::eWriteToImmutable: return "eWriteToImmutable";
   case Error::eNoImplicitConversion: return "eNoImplicitConversion";

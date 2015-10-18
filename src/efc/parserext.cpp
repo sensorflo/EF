@@ -121,19 +121,19 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
   // add to environment everything except local data objects. Currently there
   // are only local data objects, so currently there is nothing todo.
 
-  auto decl = new AstDataDecl(
+  return new AstDataDef(
     rawAstDataDef->m_name,
     &(rawAstDataDef->m_objType->addQualifiers(qualifiers)),
-    rawAstDataDef->m_storageDuration);
-  return new AstDataDef(decl, rawAstDataDef->m_ctorArgs);
+    rawAstDataDef->m_storageDuration,
+    rawAstDataDef->m_ctorArgs);
 }
 
-AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstArgDecl*>* args,
+AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstDataDef*>* args,
   const ObjType* ret, AstValue* body) {
 
   // create ObjTypeFun object
-  args = args ? args : new list<AstArgDecl*>();
-  list<AstArgDecl*>::const_iterator iterArgs = args->begin();
+  args = args ? args : new list<AstDataDef*>();
+  list<AstDataDef*>::const_iterator iterArgs = args->begin();
   list<shared_ptr<const ObjType> >* argsObjType = new list<shared_ptr<const ObjType> >;
   for (/*nop*/; iterArgs!=args->end(); ++iterArgs) {
     argsObjType->push_back( (*iterArgs)->declaredObjTypeAsSp() );
@@ -152,10 +152,7 @@ AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstArgDecl*>* a
     stIterStEntry = make_shared<SymbolTableEntry>(move(objTypeFun),
       StorageDuration::eStatic);
   } else {
-    assert(stIterStEntry.get());
-    if ( !stIterStEntry->objType().matchesFully(*objTypeFun) ) {
-      Error::throwError(m_errorHandler, Error::eIncompatibleRedeclaration);
-    }
+    Error::throwError(m_errorHandler, Error::eRedefinition);
   }
 
   return new AstFunDef(name, stIterStEntry, args, objTypeRet, body);

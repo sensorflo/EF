@@ -7,6 +7,12 @@
 using namespace testing;
 using namespace std;
 
+/** \file
+This file only tests features that clearly belong to ParserExt. See also
+SemanticAnalizerTest, which tests features which don't clearly belong to
+either ParserExt or SemanticAnalizer. */
+
+
 TEST(ParserExtTest, MAKE_TEST_NAME2(
     mkOperatorTree_WITH_a_CtList,
     returns_an_AST_tree_of_Operator_nodes_with_two_child_nodes_each)) {

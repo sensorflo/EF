@@ -36,8 +36,6 @@ private:
   virtual void visit(AstSymbol& symbol);
   virtual void visit(AstFunCall& funCall);
   virtual void visit(AstFunDef& funDef);
-  virtual void visit(AstDataDecl& dataDecl);
-  virtual void visit(AstArgDecl& argDecl);
   virtual void visit(AstDataDef& dataDef);
   virtual void visit(AstIf& if_);
   virtual void visit(AstLoop& loop);
