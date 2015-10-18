@@ -2,7 +2,7 @@
 #include "astvisitor.h"
 #include "astprinter.h"
 #include "errorhandler.h"
-#include "symboltableentry.h"
+#include "object.h"
 #include <cassert>
 #include <stdexcept>
 using namespace std;
@@ -15,41 +15,41 @@ string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
-AstValue::AstValue(Access access, std::shared_ptr<SymbolTableEntry> stentry) :
+AstValue::AstValue(Access access, std::shared_ptr<Object> object) :
   AstNode(access),
-  m_stentry(move(stentry)) {
+  m_object(move(object)) {
 }
 
 AstValue::AstValue(Access access) :
   AstValue(access, nullptr) {
 }
 
-AstValue::AstValue(std::shared_ptr<SymbolTableEntry> stentry) :
-  AstValue(eRead, move(stentry)) {
+AstValue::AstValue(std::shared_ptr<Object> object) :
+  AstValue(eRead, move(object)) {
 }
 
 AstValue::~AstValue() {
 }
 
 const ObjType& AstValue::objType() const {
-  assert(m_stentry);
-  return m_stentry->objType();
+  assert(m_object);
+  return m_object->objType();
 }
 
 bool AstValue::objectIsModifiedOrRevealsAddr() const {
-  assert(m_stentry);
-  return m_stentry->objectIsModifiedOrRevealsAddr();
+  assert(m_object);
+  return m_object->isModifiedOrRevealsAddr();
 }
 
-void AstValue::setStentry(shared_ptr<SymbolTableEntry> stentry) {
-  assert(stentry);
-  assert(!m_stentry.get()); // it makes no sense to set it twice
-  m_stentry = move(stentry);
+void AstValue::setObject(shared_ptr<Object> object) {
+  assert(object);
+  assert(!m_object.get()); // it makes no sense to set it twice
+  m_object = move(object);
 }
 
 AstNop::AstNop() :
   AstValue{
-    make_shared<SymbolTableEntry>(
+    make_shared<Object>(
       make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid),
       StorageDuration::eLocal)} {
 }
@@ -63,7 +63,7 @@ AstBlock::~AstBlock() {
 
 AstCast::AstCast(ObjType* objType, AstValue* child) :
   AstValue{
-    make_shared<SymbolTableEntry>(
+    make_shared<Object>(
       shared_ptr<ObjType>{
         objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)},
       StorageDuration::eLocal)},
@@ -84,11 +84,11 @@ AstCast::~AstCast() {
 }
 
 AstFunDef::AstFunDef(const string& name,
-  shared_ptr<SymbolTableEntry> stentry,
+  shared_ptr<Object> object,
   std::list<AstDataDef*>* args,
   shared_ptr<const ObjType> ret,
   AstValue* body) :
-  AstValue{move(stentry)},
+  AstValue{move(object)},
   m_name(name),
   m_args(args),
   m_ret(move(ret)),
@@ -99,10 +99,10 @@ AstFunDef::AstFunDef(const string& name,
 }
 
 AstFunDef::AstFunDef(const string& name,
-  shared_ptr<SymbolTableEntry> stentry,
+  shared_ptr<Object> object,
   shared_ptr<const ObjType> ret,
   AstValue* body) :
-  AstFunDef(name, stentry, new list<AstDataDef*>(), ret, body) {
+  AstFunDef(name, object, new list<AstDataDef*>(), ret, body) {
 }
 
 AstFunDef::~AstFunDef() {
@@ -168,9 +168,9 @@ StorageDuration AstDataDef::declaredStorageDuration() const {
   return m_declaredStorageDuration;
 }
 
-shared_ptr<SymbolTableEntry>& AstDataDef::createAndSetStEntryUsingDeclaredObjType() {
-  setStentry(make_shared<SymbolTableEntry>(m_declaredObjType, m_declaredStorageDuration));
-  return m_stentry;
+shared_ptr<Object>& AstDataDef::createAndSetObjectUsingDeclaredObjType() {
+  setObject(make_shared<Object>(m_declaredObjType, m_declaredStorageDuration));
+  return m_object;
 }
 
 AstValue& AstDataDef::initValue() const {
@@ -186,7 +186,7 @@ AstValue& AstDataDef::initValue() const {
 
 AstNumber::AstNumber(GeneralValue value, ObjTypeFunda* objType) :
   AstValue{
-    make_shared<SymbolTableEntry>(
+    make_shared<Object>(
       objType ?
       shared_ptr<const ObjType>{objType} :
       make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt),
@@ -337,7 +337,7 @@ AstIf::~AstIf() {
 
 AstLoop::AstLoop(AstValue* cond, AstValue* body) :
   AstValue{
-    make_shared<SymbolTableEntry>(
+    make_shared<Object>(
       make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid),
       StorageDuration::eLocal)},
   m_condition(cond),
@@ -353,7 +353,7 @@ AstLoop::~AstLoop() {
 
 AstReturn::AstReturn(AstValue* retVal) :
   AstValue{
-    make_shared<SymbolTableEntry>(
+    make_shared<Object>(
       make_shared<ObjTypeFunda>(ObjTypeFunda::eNoreturn),
       StorageDuration::eLocal)},
   m_retVal(retVal) {
@@ -380,13 +380,13 @@ AstFunCall::~AstFunCall() {
   delete m_address;
 }
 
-void AstFunCall::createAndSetStEntryUsingRetObjType() {
+void AstFunCall::createAndSetObjectUsingRetObjType() {
   const auto& objType = m_address->objType();
   assert(typeid(objType)==typeid(ObjTypeFun));
   const auto& objTypeFun = static_cast<const ObjTypeFun&>(objType);
   auto objTypeRet = objTypeFun.ret().clone();
   objTypeRet->removeQualifiers(ObjType::eMutable);
-  setStentry(make_shared<SymbolTableEntry>(
+  setObject(make_shared<Object>(
       unique_ptr<const ObjType>{objTypeRet},
       StorageDuration::eLocal));
 }

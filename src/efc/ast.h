@@ -17,10 +17,10 @@
 #include "astforwards.h"
 class AstConstVisitor;
 class AstVisitor;
-class SymbolTableEntry;
-class ErrorHandler;
 class Object;
+class ErrorHandler;
 
+/** See also Entity */
 class AstNode {
 public:
   AstNode(Access access = eRead) : m_access(access) {};
@@ -38,25 +38,26 @@ protected:
   Access m_access;
 };
 
+/** See also Object */
 class AstValue : public AstNode {
 public:
-  AstValue(Access access, std::shared_ptr<SymbolTableEntry> stentry);
+  AstValue(Access access, std::shared_ptr<Object> object);
   AstValue(Access access = eRead);
-  AstValue(std::shared_ptr<SymbolTableEntry> stentry);
+  AstValue(std::shared_ptr<Object> object);
   virtual ~AstValue();
 
   virtual bool isCTConst() const { return false; }
 
   // associated object
   /** After SemanticAnalizer guaranteed to return non-null */
- 	SymbolTableEntry* stentry() const { return m_stentry.get(); }
-  std::shared_ptr<SymbolTableEntry>& stentryAsSp() { return m_stentry; }
- 	void setStentry(std::shared_ptr<SymbolTableEntry> stentry);
+ 	Object* object() const { return m_object.get(); }
+  std::shared_ptr<Object>& objectAsSp() { return m_object; }
+ 	void setObject(std::shared_ptr<Object> object);
  	const ObjType& objType() const;
   bool objectIsModifiedOrRevealsAddr() const;
   
 protected:
-  std::shared_ptr<SymbolTableEntry> m_stentry;
+  std::shared_ptr<Object> m_object;
 };
 
 class AstNop : public AstValue {
@@ -95,11 +96,11 @@ private:
 class AstFunDef : public AstValue {
 public:
   AstFunDef(const std::string& name,
-    std::shared_ptr<SymbolTableEntry> stentry,
+    std::shared_ptr<Object> object,
     std::shared_ptr<const ObjType> ret,
     AstValue* body);
   AstFunDef(const std::string& name,
-    std::shared_ptr<SymbolTableEntry> stentry,
+    std::shared_ptr<Object> object,
     std::list<AstDataDef*>* args,
     std::shared_ptr<const ObjType> ret,
     AstValue* body);
@@ -143,7 +144,7 @@ public:
   const ObjType& declaredObjType() const;
   std::shared_ptr<const ObjType>& declaredObjTypeAsSp();
   StorageDuration declaredStorageDuration() const;
-  std::shared_ptr<SymbolTableEntry>& createAndSetStEntryUsingDeclaredObjType();  
+  std::shared_ptr<Object>& createAndSetObjectUsingDeclaredObjType();  
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   virtual AstValue& initValue() const;
 
@@ -198,7 +199,7 @@ public:
   virtual AstValue& address () const { return *m_address; }
   AstCtList& args () const { return *m_args; }
 
-  void createAndSetStEntryUsingRetObjType();
+  void createAndSetObjectUsingRetObjType();
 
 private:
   /** We're the owner. Is garanteed to be non-null */

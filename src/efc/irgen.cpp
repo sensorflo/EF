@@ -1,6 +1,6 @@
 #include "irgen.h"
 #include "ast.h"
-#include "symboltableentry.h"
+#include "object.h"
 #include "errorhandler.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/IR/Value.h"
@@ -54,15 +54,15 @@ unique_ptr<Module> IrGen::genIr(AstNode& root) {
 
 llvm::Value* IrGen::callAcceptOn(AstValue& node) {
   node.accept(*this);
-  return node.stentry()->irValue(m_builder);
+  return node.object()->irValue(m_builder);
 }
 
 void IrGen::visit(AstNop& nop) {
-  nop.stentry()->setIrValue(m_abstractObject, m_builder);//void
+  nop.object()->setIrValue(m_abstractObject, m_builder);//void
 }
 
 void IrGen::visit(AstBlock& block) {
-  block.stentry()->setIrValue(callAcceptOn(block.body()), m_builder);
+  block.object()->setIrValue(callAcceptOn(block.body()), m_builder);
 }
 
 void IrGen::visit(AstCast& cast) {
@@ -146,7 +146,7 @@ void IrGen::visit(AstCast& cast) {
     assert(false);
   }
 
-  cast.stentry()->irInitLocal( irResult, m_builder, irValueName );
+  cast.object()->irInitLocal( irResult, m_builder, irValueName );
 }
 
 void IrGen::visit(AstCtList&) {
@@ -162,13 +162,13 @@ void IrGen::visit(AstOperator& op) {
     llvmResult = m_builder.CreateNot(callAcceptOn(*astOperands.front()), "not" );
   } else if (op.op()==AstOperator::eAddrOf) {
     astOperands.front()->accept(*this);
-    llvmResult = astOperands.front()->stentry()->irAddr();
+    llvmResult = astOperands.front()->object()->irAddr();
   } else if (op.op()==AstOperator::eDeref) {
     auto llvmAddrOfDerefee = callAcceptOn(*astOperands.front());
     // auto llvmm_builder.CreateLoad(llvmAddrOfDerefee, "deref"); 
-    // op.stentry is semantically a redunant copy of the stentry denoting the
+    // op.object is semantically a redunant copy of the object denoting the
     // derefee. 'Copy' as good as we can.
-    op.stentry()->setIrAddr(llvmAddrOfDerefee);
+    op.object()->setIrAddr(llvmAddrOfDerefee);
   }
 
   // binary logical short circuit operators
@@ -212,18 +212,18 @@ void IrGen::visit(AstOperator& op) {
   else if (op.op()==AstOperator::eDotAssign || op.op()==AstOperator::eAssign) {
     astOperands.front()->accept(*this);
     auto llvmRhs = callAcceptOn(*astOperands.back());
-    m_builder.CreateStore( llvmRhs, astOperands.front()->stentry()->irAddr());
+    m_builder.CreateStore( llvmRhs, astOperands.front()->object()->irAddr());
     if ( op.op()==AstOperator::eAssign ) {
       llvmResult = m_abstractObject; // void
     } else {
-      // op.stetry() is the same as astOperands.front().stentry(), so
+      // op.object() is the same as astOperands.front().object(), so
       // 'returning the result' is now a nop.
     }
   }
 
   // seq operator: evaluate lhs ignoring the result, then evaluate rhs and
   // then return that result. op.stetry() is the same as
-  // astOperands.back().stentry(), so 'returning the result' is now a nop.
+  // astOperands.back().object(), so 'returning the result' is now a nop.
   else if (op.op()==AstOperator::eSeq) {
     astOperands.front()->accept(*this);
     astOperands.back()->accept(*this);
@@ -281,7 +281,7 @@ void IrGen::visit(AstOperator& op) {
   }
 
   if ( llvmResult ) {
-    op.stentry()->irInitLocal(llvmResult, m_builder);
+    op.object()->irInitLocal(llvmResult, m_builder);
   }
 }
 
@@ -300,11 +300,11 @@ void IrGen::visit(AstNumber& number) {
   default:
     assert(false);
   }
-  number.stentry()->irInitLocal(value, m_builder, "literal");
+  number.object()->irInitLocal(value, m_builder, "literal");
 }
 
 void IrGen::visit(AstSymbol& symbol) {
-  // nop - irValue of object denoted by symbol.stentry() has been set/stored
+  // nop - irValue of object denoted by symbol.object() has been set/stored
   // before and will be querried later by caller
 }
 
@@ -328,7 +328,7 @@ void IrGen::visit(AstFunDef& funDef) {
   // Before accepting the body to facilitate recursive calls. As soon as EF
   // supports calling method which are defined later in the AST that should
   // not be an relevant issue anymore.
-  funDef.stentry()->setIrAddr(functionIr);
+  funDef.object()->setIrAddr(functionIr);
 
   if ( m_builder.GetInsertBlock() ) {
     m_BasicBlockStack.push(m_builder.GetInsertBlock());
@@ -341,13 +341,13 @@ void IrGen::visit(AstFunDef& funDef) {
   Function::arg_iterator llvmArgIter = functionIr->arg_begin();
   list<AstDataDef*>::const_iterator astArgIter = funDef.args().begin();
   for (/*nop*/; llvmArgIter != functionIr->arg_end(); ++llvmArgIter, ++astArgIter) {
-    auto stentry = (*astArgIter)->stentry();
-    if ( stentry->isStoredInMemory() ) {
+    auto object = (*astArgIter)->object();
+    if ( object->isStoredInMemory() ) {
       AllocaInst* argAddr = createAllocaInEntryBlock(functionIr,
-        (*astArgIter)->name(), stentry->objType().llvmType());
-      stentry->setIrAddr(argAddr);
+        (*astArgIter)->name(), object->objType().llvmType());
+      object->setIrAddr(argAddr);
     }
-    stentry->setIrValue(llvmArgIter, m_builder);
+    object->setIrValue(llvmArgIter, m_builder);
 
     llvmArgIter->setName((*astArgIter)->name());
   }
@@ -368,7 +368,7 @@ void IrGen::visit(AstFunDef& funDef) {
 
 void IrGen::visit(AstFunCall& funCall) {
   funCall.address().accept(*this);
-  Function* callee = static_cast<Function*>(funCall.address().stentry()->irAddr());
+  Function* callee = static_cast<Function*>(funCall.address().object()->irAddr());
   assert(callee);
     
   const auto& astArgs = funCall.args().childs();
@@ -383,9 +383,9 @@ void IrGen::visit(AstFunCall& funCall) {
   const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(funCall.address().objType());
   if ( objTypeFun.ret().isVoid() ) {
     m_builder.CreateCall(callee, llvmArgs);
-    funCall.stentry()->irInitLocal(m_abstractObject, m_builder);
+    funCall.object()->irInitLocal(m_abstractObject, m_builder);
   } else {
-    funCall.stentry()->irInitLocal(
+    funCall.object()->irInitLocal(
       m_builder.CreateCall(callee, llvmArgs, callee->getName()), m_builder);
   }
 }
@@ -394,8 +394,8 @@ void IrGen::visit(AstDataDef& dataDef) {
   // note that AstDataDef being function parameters are _not_ handled here but
   // in visit of AstFunDef
 
-  SymbolTableEntry*const stentry = dataDef.stentry();
-  assert(stentry);
+  Object*const object = dataDef.object();
+  assert(object);
 
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.
@@ -403,19 +403,19 @@ void IrGen::visit(AstDataDef& dataDef) {
   assert(initValue);
   const ObjType& objType = dataDef.objType();
 
-  if ( stentry->storageDuration() == StorageDuration::eStatic ) {
+  if ( object->storageDuration() == StorageDuration::eStatic ) {
     GlobalVariable* variableAddr = new GlobalVariable( *m_module, objType.llvmType(),
       ! objType.qualifiers() & ObjType::eMutable, GlobalValue::InternalLinkage,
       static_cast<Constant*>(initValue),
       dataDef.name());
-    stentry->setIrAddr(variableAddr);
-    // don't stentry->setIrAddr(...) since the initialization of a static
+    object->setIrAddr(variableAddr);
+    // don't object->setIrAddr(...) since the initialization of a static
     // variable shall not occur again at run-time when controll flow reaches
     // the data definition expresssion.
   }
 
   else {
-    stentry->irInitLocal(initValue, m_builder, dataDef.name());
+    object->irInitLocal(initValue, m_builder, dataDef.name());
   }
 }
 
@@ -465,9 +465,9 @@ void IrGen::visit(AstIf& if_) {
     assert(phi);
     phi->addIncoming(thenValue, ThenLastBB);
     phi->addIncoming(elseValue, ElseLastBB);
-    if_.stentry()->irInitLocal(phi, m_builder);
+    if_.object()->irInitLocal(phi, m_builder);
   } else {
-    if_.stentry()->irInitLocal(m_abstractObject, m_builder);
+    if_.object()->irInitLocal(m_abstractObject, m_builder);
   }
 }
 
@@ -501,7 +501,7 @@ void IrGen::visit(AstLoop& loop) {
   m_builder.SetInsertPoint(afterBB);
 
   //
-  loop.stentry()->irInitLocal(m_abstractObject, m_builder);
+  loop.object()->irInitLocal(m_abstractObject, m_builder);
 }
 
 void IrGen::visit(AstReturn& return_) {
@@ -512,7 +512,7 @@ void IrGen::visit(AstReturn& return_) {
   } else {
     m_builder.CreateRet( retVal);
   }
-  return_.stentry()->irInitLocal(m_abstractObject, m_builder);
+  return_.object()->irInitLocal(m_abstractObject, m_builder);
 }
 
 /** \internal We want allocas in the entry block to facilitate llvm's mem2reg

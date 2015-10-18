@@ -3,7 +3,7 @@
 #include "../ast.h"
 #include "../objtype.h"
 #include "../env.h"
-#include "../symboltableentry.h"
+#include "../object.h"
 #include "../errorhandler.h"
 #include "../astdefaultiterator.h"
 #include "../parserext.h"
@@ -200,7 +200,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_simple_data_obj_definition,
     transform,
-    inserts_an_appropriate_SymbolTableEntry_into_Env)) {
+    inserts_an_appropriate_symbol_table_entry_into_Env)) {
 
   string spec = "Example: local immutable int";
   {
@@ -216,11 +216,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
     // verify
     shared_ptr<Entity> entity;
-    shared_ptr<SymbolTableEntry> stentry;
+    shared_ptr<Object> object;
     env.find("x", entity);
     EXPECT_TRUE( entity.get() ) << amendAst(ast.get());
-    EXPECT_NO_THROW( stentry = std::dynamic_pointer_cast<SymbolTableEntry>(entity));
-    EXPECT_MATCHES_FULLY( *objType, stentry->objType()) << amendAst(ast.get());
+    EXPECT_NO_THROW( object = std::dynamic_pointer_cast<Object>(entity));
+    EXPECT_MATCHES_FULLY( *objType, object->objType()) << amendAst(ast.get());
   }
 
   spec = "Example: static immutable int";
@@ -239,8 +239,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     shared_ptr<Entity> entity;
     env.find("x", entity);
     EXPECT_TRUE( entity.get() ) << amendAst(ast.get());
-    const auto stentry = std::dynamic_pointer_cast<SymbolTableEntry>(entity);
-    EXPECT_MATCHES_FULLY( *objType, stentry->objType()) << amendAst(ast.get());
+    const auto object = std::dynamic_pointer_cast<Object>(entity);
+    EXPECT_MATCHES_FULLY( *objType, object->objType()) << amendAst(ast.get());
   }
 }
 
@@ -314,9 +314,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   UUT.analyze(*ast.get());
 
   // verify
-  const auto dataDefStentry = dataDef->stentry();
-  EXPECT_TRUE( nullptr!=dataDefStentry ) << amendAst(ast);
-  EXPECT_EQ( dataDefStentry, symbol->stentry()) << amendAst(ast);
+  const auto dataDefObject = dataDef->object();
+  EXPECT_TRUE( nullptr!=dataDefObject ) << amendAst(ast);
+  EXPECT_EQ( dataDefObject, symbol->object()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -428,18 +428,18 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   ObjTypeFun funType{ ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
 
   shared_ptr<Entity> entityOuter;
-  shared_ptr<SymbolTableEntry> stentryOuter;
+  shared_ptr<Object> objectOuter;
   env.find("outer", entityOuter);
   EXPECT_TRUE( entityOuter.get() ) << amendAst(ast);
-  EXPECT_NO_THROW( stentryOuter = std::dynamic_pointer_cast<SymbolTableEntry>(entityOuter));
-  EXPECT_TRUE( stentryOuter->objType().matchesFully(funType) );
+  EXPECT_NO_THROW( objectOuter = std::dynamic_pointer_cast<Object>(entityOuter));
+  EXPECT_TRUE( objectOuter->objType().matchesFully(funType) );
 
   shared_ptr<Entity> entityInner;
-  shared_ptr<SymbolTableEntry> stentryInner;
+  shared_ptr<Object> objectInner;
   env.find("inner", entityInner);
   EXPECT_TRUE( entityInner.get() ) << amendAst(ast);
-  EXPECT_NO_THROW( stentryInner = std::dynamic_pointer_cast<SymbolTableEntry>(entityInner));
-  EXPECT_TRUE( stentryInner->objType().matchesFully(funType) );
+  EXPECT_NO_THROW( objectInner = std::dynamic_pointer_cast<Object>(entityInner));
+  EXPECT_TRUE( objectInner->objType().matchesFully(funType) );
 
   // tear down
   delete ast;

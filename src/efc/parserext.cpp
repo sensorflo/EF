@@ -1,6 +1,6 @@
 #include "parserext.h"
 #include "env.h"
-#include "symboltableentry.h"
+#include "object.h"
 #include "ast.h"
 #include "errorhandler.h"
 #include <cassert>
@@ -148,10 +148,10 @@ AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstDataDef*>* a
   SymbolTable::iterator& stIter = insertRet.first;
   bool wasAlreadyInMap = !insertRet.second;
   if (!wasAlreadyInMap) {
-    auto&& newStEntry = make_shared<SymbolTableEntry>(move(objTypeFun),
+    auto&& newObject = make_shared<Object>(move(objTypeFun),
       StorageDuration::eStatic);
-    stIter->second = newStEntry;
-    return new AstFunDef(name, move(newStEntry), args, objTypeRet, body);
+    stIter->second = newObject;
+    return new AstFunDef(name, move(newObject), args, objTypeRet, body);
   } else {
     Error::throwError(m_errorHandler, Error::eRedefinition);
     return nullptr;

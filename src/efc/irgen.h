@@ -12,7 +12,6 @@ namespace llvm {
   class Module;
   class BasicBlock;
 }
-class SymbolTableEntry;
 class ErrorHandler;
 
 /** IR Generator -- Generates LLVM intermediate representation from a given

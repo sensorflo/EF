@@ -18,7 +18,6 @@ yy::Parser implementation extension. Has two related responsibilities:
 #include <list>
 
 #include "astforwards.h"
-class SymbolTableEntry;
 class Env;
 class ErrorHandler;
 class ParserExt;
