@@ -30,8 +30,8 @@ private:
   virtual void visit(AstLoop& loop);
   virtual void visit(AstReturn& return_);
 
-  void callAcceptWithinNewScope(AstValue& node);
-  void postConditionCheck(const AstValue& node);
+  void callAcceptWithinNewScope(AstObject& node);
+  void postConditionCheck(const AstObject& node);
 
   friend class TestingSemanticAnalizer;
 

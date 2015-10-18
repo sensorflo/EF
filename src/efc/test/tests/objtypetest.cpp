@@ -425,7 +425,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
-    createDefaultAstValue)) {
+    createDefaultAstObject)) {
 
   // examples: fundamental types
   {
@@ -435,7 +435,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 
     for (const auto type : inputTypes ) {
       unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
-          ObjTypeFunda(type).createDefaultAstValue())};
+          ObjTypeFunda(type).createDefaultAstObject())};
       EXPECT_TRUE( defaultValue != nullptr );
       EXPECT_EQ( 0.0, defaultValue->value());
       EXPECT_TRUE( defaultValue->objType().matchesFully(ObjTypeFunda(type)));
@@ -444,7 +444,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 
   // example: objType of created AstNumber is always immutable
   unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
-      ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).createDefaultAstValue())};
+      ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).createDefaultAstObject())};
   EXPECT_TRUE( defaultValue != nullptr );
   EXPECT_EQ( 0.0, defaultValue->value());
   EXPECT_TRUE( defaultValue->objType().matchesFully(ObjTypeFunda(ObjTypeFunda::eInt)));
@@ -453,7 +453,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   {
     ObjTypePtr UUT{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
     unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
-        UUT.createDefaultAstValue())};
+        UUT.createDefaultAstObject())};
     EXPECT_TRUE( defaultValue != nullptr );
     EXPECT_EQ( 0.0, defaultValue->value());
     ObjTypePtr expectedObjType{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
@@ -464,7 +464,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   {
     ObjTypePtr UUT{make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid))};
     unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
-        UUT.createDefaultAstValue())};
+        UUT.createDefaultAstObject())};
     EXPECT_TRUE( defaultValue != nullptr );
     EXPECT_EQ( 0.0, defaultValue->value());
     ObjTypePtr expectedObjType{make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid))};

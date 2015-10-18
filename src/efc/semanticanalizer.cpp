@@ -56,15 +56,15 @@ void SemanticAnalizer::visit(AstBlock& block) {
 }
 
 void SemanticAnalizer::visit(AstCtList& ctList) {
-  list<AstValue*>& childs = ctList.childs();
-  for (list<AstValue*>::const_iterator i=childs.begin();
+  list<AstObject*>& childs = ctList.childs();
+  for (list<AstObject*>::const_iterator i=childs.begin();
        i!=childs.end(); ++i) {
     (*i)->accept(*this);
   }
 }
 
 void SemanticAnalizer::visit(AstOperator& op) {
-  const list<AstValue*>& argschilds = op.args().childs();
+  const list<AstObject*>& argschilds = op.args().childs();
 
   // Note that orrect number of arguments was already handled in AstOperator's
   // ctor; we're allowed to count on that.
@@ -307,11 +307,11 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 
   dataDef.ctorArgs().accept(*this);
 
-  if ( dataDef.objType().match(dataDef.initValue().objType()) == ObjType::eNoMatch ) {
+  if ( dataDef.objType().match(dataDef.initObj().objType()) == ObjType::eNoMatch ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
   if ( dataDef.object()->storageDuration() == StorageDuration::eStatic
-    && !dataDef.initValue().isCTConst() ) {
+    && !dataDef.initObj().isCTConst() ) {
     Error::throwError(m_errorHandler, Error::eCTConstRequired);
   }
 
@@ -410,11 +410,11 @@ void SemanticAnalizer::visit(AstReturn& return_) {
   postConditionCheck(return_);
 }
 
-void SemanticAnalizer::callAcceptWithinNewScope(AstValue& node) {
+void SemanticAnalizer::callAcceptWithinNewScope(AstObject& node) {
   Env::AutoScope scope(m_env);
   node.accept(*this);
 }
 
-void SemanticAnalizer::postConditionCheck(const AstValue& node) {
+void SemanticAnalizer::postConditionCheck(const AstObject& node) {
   assert(node.object());
 }

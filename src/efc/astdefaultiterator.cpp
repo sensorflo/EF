@@ -14,8 +14,8 @@ void AstDefaultIterator::visit(AstCast& cast) {
 }
 
 void AstDefaultIterator::visit(AstCtList& ctList) {
-  list<AstValue*>& childs = ctList.childs();
-  for (list<AstValue*>::const_iterator i=childs.begin();
+  list<AstObject*>& childs = ctList.childs();
+  for (list<AstObject*>::const_iterator i=childs.begin();
        i!=childs.end(); ++i) {
     (*i)->accept(m_visitor);
   }

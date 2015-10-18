@@ -10,7 +10,7 @@
 class ObjTypeFunda;
 class ObjTypePtr;
 class ObjTypeFun;
-class AstValue;
+class AstObject;
 namespace llvm {
   class Type;
 }
@@ -70,10 +70,10 @@ public:
 
   Qualifiers qualifiers() const { return m_qualifiers; }
 
-  /** The objType of the created AstValue is immutable, since the AstValue has
+  /** The objType of the created AstObject is immutable, since the AstObject has
   the semantics of a temporary. Asserts in case of there is no default
-  AstValue */
-  virtual AstValue* createDefaultAstValue() const = 0;
+  AstObject */
+  virtual AstObject* createDefaultAstObject() const = 0;
   virtual llvm::Type* llvmType() const = 0;
 
   /** Returns true if this type has the given operator as member function.
@@ -139,7 +139,7 @@ public:
   virtual ObjTypeFunda* clone() const;
 
   EType type() const { return m_type; }
-  virtual AstValue* createDefaultAstValue() const;
+  virtual AstObject* createDefaultAstObject() const;
   virtual llvm::Type* llvmType() const;
 
   virtual bool hasMember(int op) const;
@@ -192,7 +192,7 @@ public:
   using ObjType::match2;
   virtual MatchType match2(const ObjTypeFun& src, bool isLevel0) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
-  virtual AstValue* createDefaultAstValue() const;
+  virtual AstObject* createDefaultAstObject() const;
   virtual llvm::Type* llvmType() const;
   virtual bool hasMember(int) const { return false; }
   virtual bool hasConstructor(const ObjType& other) const { return false; }

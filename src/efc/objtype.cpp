@@ -139,7 +139,7 @@ int ObjTypeFunda::size() const {
   return -1;
 }
 
-AstValue* ObjTypeFunda::createDefaultAstValue() const {
+AstObject* ObjTypeFunda::createDefaultAstObject() const {
   assert(!is(eAbstract));
   auto objType = clone();
   objType->removeQualifiers(eMutable);
@@ -362,9 +362,9 @@ list<shared_ptr<const ObjType> >* ObjTypeFun::createArgs(const ObjType* arg1, co
   return l;
 }
 
-AstValue* ObjTypeFun::createDefaultAstValue() const {
+AstObject* ObjTypeFun::createDefaultAstObject() const {
   // The liskov substitution principle is broken here, ObjTypeFun cannot
-  // provide a createDefaultAstValue method. A possible solution would be to introduce
+  // provide a createDefaultAstObject method. A possible solution would be to introduce
   // a 'ObjTypeData' abstract class into the ObjType hierarchy, but currently
   // I think that is overkill.
   assert(false);

@@ -34,8 +34,8 @@ scanner doesn't need to know */
 {
   class RawAstDataDef;
   struct ConditionActionPair {
-    AstValue* m_condition;
-    AstValue* m_action;
+    AstObject* m_condition;
+    AstObject* m_action;
   };
 }
 
@@ -158,8 +158,8 @@ and by declaration of free function yylex */
 
 %type <AstCtList*> ct_list initializer_arg initializer_special_arg pure2_standalone_expr_seq
 %type <std::list<AstDataDef*>*> pure_naked_param_ct_list
-%type <std::list<AstValue*>*> pure_ct_list
-%type <AstValue*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
+%type <std::list<AstObject*>*> pure_ct_list
+%type <AstObject*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstDataDef*> param_decl
 %type <ObjType::Qualifiers> valvar type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
@@ -222,7 +222,7 @@ ct_list
   ;
 
 pure_ct_list
-  : standalone_expr                                 { $$ = new std::list<AstValue*>(); ($$)->push_back($1); }
+  : standalone_expr                                 { $$ = new std::list<AstObject*>(); ($$)->push_back($1); }
   | pure_ct_list COMMA standalone_expr              { ($1)->push_back($3); std::swap($$,$1); }
   ;
 

@@ -2,7 +2,7 @@
 class AstNop;
 class AstBlock;
 class AstNode;
-class AstValue;
+class AstObject;
 class AstNumber;
 class AstSymbol;
 class AstFunCall;

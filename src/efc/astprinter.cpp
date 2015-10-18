@@ -36,8 +36,8 @@ void AstPrinter::visit(const AstCast& cast) {
 }
 
 void AstPrinter::visit(const AstCtList& ctList) {
-  list<AstValue*>& childs = ctList.childs();
-  for (list<AstValue*>::const_iterator i=childs.begin();
+  list<AstObject*>& childs = ctList.childs();
+  for (list<AstObject*>::const_iterator i=childs.begin();
        i!=childs.end(); ++i) {
     if (i!=childs.begin()) { m_os << " "; }
     (*i)->accept(*this);

@@ -17,7 +17,7 @@ one object in the target program might have multiple associated Object
 instances. Actually we would want a one to one relationship, but that's not
 feasible.
 
-Multiple AstValue nodes may refer to one Entity. */
+Multiple AstObject nodes may refer to one Entity. */
 class Object : public Entity {
 public:
   Object(std::shared_ptr<const ObjType> objType,

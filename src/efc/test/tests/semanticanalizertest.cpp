@@ -306,7 +306,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   const auto dataDef =
     new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt));
   const auto symbol = new AstSymbol("x");
-  unique_ptr<AstValue> ast{
+  unique_ptr<AstObject> ast{
     new AstBlock(
       new AstOperator(';', dataDef, symbol))};
 
@@ -457,7 +457,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstBlock(
         new AstNumber(42, ObjTypeFunda::eInt))};
 
@@ -476,7 +476,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstBlock(
         new AstDataDef("x",
             new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)))};
@@ -498,8 +498,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   Env env;
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
-  AstValue* operand = new AstNumber(42);
-  unique_ptr<AstValue> ast{new AstOperator('&', operand)};
+  AstObject* operand = new AstNumber(42);
+  unique_ptr<AstObject> ast{new AstOperator('&', operand)};
 
   // exercise
   UUT.analyze(*ast.get());
@@ -509,7 +509,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
-    GIVEN_an_AstValue_whichs_object_is_never_modified_nor_its_address_is_taken,
+    GIVEN_an_AstObject_whichs_object_is_never_modified_nor_its_address_is_taken,
     THEN_the_target_object_remembers_that))
 {
   string spec = "Example: a single AstNode, i.e. a single object";
@@ -518,7 +518,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     Env env;
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
-    unique_ptr<AstValue> ast{new AstNumber(42)};
+    unique_ptr<AstObject> ast{new AstNumber(42)};
 
     // exercise
     UUT.analyze(*ast.get());
@@ -539,8 +539,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     Env env;
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
-    AstValue* operand = new AstNumber(42);
-    unique_ptr<AstValue> ast{new AstOperator('&', operand)};
+    AstObject* operand = new AstNumber(42);
+    unique_ptr<AstObject> ast{new AstOperator('&', operand)};
 
     // exercise
     UUT.analyze(*ast.get());
@@ -559,8 +559,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ErrorHandler errorHandler;
     errorHandler.disableReportingOf(Error::eComputedValueNotUsed);
     TestingSemanticAnalizer UUT(env, errorHandler);
-    AstValue* symbol = new AstSymbol("x");
-    unique_ptr<AstValue> ast{
+    AstObject* symbol = new AstSymbol("x");
+    unique_ptr<AstObject> ast{
       new AstOperator(';',
         new AstOperator('&',
           new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
@@ -583,8 +583,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   Env env;
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
-  AstValue* body = new AstNumber(42);
-  unique_ptr<AstValue> ast{
+  AstObject* body = new AstNumber(42);
+  unique_ptr<AstObject> ast{
     new AstOperator(';', // imposes eIgnore access onto the block
       new AstBlock(body),
       new AstNumber(42))};
@@ -604,9 +604,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   Env env;
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
-  AstValue* lhsAst = new AstNumber(42);
-  AstValue* rhsAst = new AstSymbol("x");
-  unique_ptr<AstValue> ast{
+  AstObject* lhsAst = new AstNumber(42);
+  AstObject* rhsAst = new AstSymbol("x");
+  unique_ptr<AstObject> ast{
     new AstOperator(';',
       new AstDataDef("x",
         new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -640,7 +640,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstOperator('+',
         new AstNumber(0, ObjTypeFunda::eInt),
         new AstNumber(0, ObjTypeFunda::eInt))};
@@ -661,7 +661,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstOperator("&&",
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNumber(0, ObjTypeFunda::eBool))};
@@ -681,11 +681,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    AstValue* opAst =
+    AstObject* opAst =
       new AstOperator('+',
         new AstSymbol("x"),
         new AstSymbol("x"));
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstOperator(';',
         new AstDataDef("x",
           new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -706,7 +706,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstOperator(';',
         new AstNumber(0, ObjTypeFunda::eInt),
         new AstNumber(0, ObjTypeFunda::eBool))};
@@ -729,7 +729,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
   ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-  unique_ptr<AstValue> ast{
+  unique_ptr<AstObject> ast{
     new AstOperator('&', new AstNumber(0, ObjTypeFunda::eInt))};
 
   // exercise
@@ -772,11 +772,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
   ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-  AstValue* assignmentAst =
+  AstObject* assignmentAst =
     new AstOperator("=",
       new AstSymbol("foo"),
       new AstNumber(77));
-  unique_ptr<AstValue> ast{
+  unique_ptr<AstObject> ast{
     new AstOperator(';',
       new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       assignmentAst)};
@@ -799,11 +799,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
   ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-  AstValue* dotAssignmentAst =
+  AstObject* dotAssignmentAst =
     new AstOperator(".=",
       new AstSymbol("x"),
       new AstNumber(0, ObjTypeFunda::eInt));
-  unique_ptr<AstValue> ast{
+  unique_ptr<AstObject> ast{
     new AstOperator(';',
       new AstDataDef("x",
         new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -827,7 +827,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
   ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-  unique_ptr<AstValue> ast{
+  unique_ptr<AstObject> ast{
     new AstOperator("==",
       new AstNumber(42),
       new AstNumber(77))};
@@ -854,7 +854,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     AstFunCall* funCall = new AstFunCall(new AstSymbol("foo"));
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstOperator(';',
         pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eBool),
           new AstNumber(0, ObjTypeFunda::eBool)),
@@ -880,7 +880,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstCast(
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(0, ObjTypeFunda::eBool))};
@@ -903,8 +903,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
   ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-  AstValue* retAst = new AstReturn(new AstNumber(42, ObjTypeFunda::eInt));
-  unique_ptr<AstValue> ast{
+  AstObject* retAst = new AstReturn(new AstNumber(42, ObjTypeFunda::eInt));
+  unique_ptr<AstObject> ast{
     pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
       retAst)};
 
@@ -1032,7 +1032,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNumber(1, ObjTypeFunda::eBool),
@@ -1053,7 +1053,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNop(),
@@ -1074,11 +1074,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    AstValue* if_ = new AstIf(
+    AstObject* if_ = new AstIf(
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstSymbol("x"),
       new AstSymbol("x"));
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstOperator(';',
         new AstDataDef("x",
           new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
@@ -1105,12 +1105,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    AstValue* astIf =
+    AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNumber(1, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator(';',
           astIf,
@@ -1132,12 +1132,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    AstValue* astIf =
+    AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)),
         new AstNumber(1, ObjTypeFunda::eBool));
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator(';',
           astIf,
@@ -1158,12 +1158,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    AstValue* astIf =
+    AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)),
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         astIf)};
 
@@ -1188,7 +1188,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNumber(1, ObjTypeFunda::eInt))};
@@ -1208,11 +1208,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    AstValue* astIf =
+    AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstOperator(';',
           astIf,
@@ -1237,9 +1237,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     Env env;
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
-    AstValue* thenClauseAst = new AstSymbol("x");
-    AstValue* elseClauseAst = new AstSymbol("x");
-    unique_ptr<AstValue> ast{
+    AstObject* thenClauseAst = new AstSymbol("x");
+    AstObject* elseClauseAst = new AstSymbol("x");
+    unique_ptr<AstObject> ast{
       new AstOperator(';', // imposes read access on its rhs
         new AstDataDef("x",
           new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -1261,9 +1261,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     Env env;
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
-    AstValue* thenClauseAst = new AstSymbol("x");
-    AstValue* elseClauseAst = new AstSymbol("x");
-    unique_ptr<AstValue> ast{
+    AstObject* thenClauseAst = new AstSymbol("x");
+    AstObject* elseClauseAst = new AstSymbol("x");
+    unique_ptr<AstObject> ast{
       new AstOperator(';',
         new AstDataDef("x",
           new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
@@ -1294,7 +1294,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     Env env;
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstLoop(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNumber(42))};
@@ -1318,7 +1318,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
       new AstLoop(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42)));
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
         pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
           new AstOperator(';', loop, new AstNumber(42)))};
 
@@ -1339,9 +1339,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   Env env;
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
-  AstValue* condition = new AstNumber(0, ObjTypeFunda::eBool);
-  AstValue* body = new AstNumber(42);
-  unique_ptr<AstValue> ast{ new AstLoop( condition, body)};
+  AstObject* condition = new AstNumber(0, ObjTypeFunda::eBool);
+  AstObject* body = new AstNumber(42);
+  unique_ptr<AstObject> ast{ new AstLoop( condition, body)};
 
   // exercise
   UUT.analyze(*ast.get());
@@ -1446,7 +1446,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       pe.mkOperatorTree(";",
         pe.mkFunDef("foo",
           AstFunDef::createArgs(
@@ -1471,7 +1471,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstValue> ast{
+    unique_ptr<AstObject> ast{
       new AstOperator(';',
         pe.mkFunDef("foo",
           AstFunDef::createArgs(
@@ -1581,7 +1581,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   for ( const auto& inputSpec : inputSpecs ) {
 
     // create child of AstCast
-    AstValue* castChild = nullptr;
+    AstObject* castChild = nullptr;
     switch (inputSpec.oldType) {
     case ObjTypeFunda::eVoid:
       castChild = new AstNop();
@@ -1602,8 +1602,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 
     // AstCast needs to be wrapped into an AstFunDef since in some iterations
     // the child of AstCast is the return expression.
-    AstValue* UUT = new AstCast( new ObjTypeFunda(inputSpec.newType), castChild);
-    AstValue* funbody =
+    AstObject* UUT = new AstCast( new ObjTypeFunda(inputSpec.newType), castChild);
+    AstObject* funbody =
       inputSpec.newType == ObjTypeFunda::eNoreturn ?
       UUT :
       new AstOperator(';', UUT, new AstNumber(0));

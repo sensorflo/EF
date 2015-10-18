@@ -40,7 +40,7 @@ private:
   virtual void visit(AstLoop& loop);
   virtual void visit(AstReturn& return_);
 
-  llvm::Value* callAcceptOn(AstValue&);
+  llvm::Value* callAcceptOn(AstObject&);
 
   llvm::AllocaInst* createAllocaInEntryBlock(llvm::Function* functionIr,
     const std::string& varName, llvm::Type* type);

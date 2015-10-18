@@ -79,8 +79,8 @@ void Driver::compile() {
     assert(astAfterParse);
 
     // It's currently implied that the module wants an implicit main method
-    AstValue* astAfterImplicitMain =
-      m_parserExt.mkMainFunDef( dynamic_cast<AstValue*>(astAfterParse));
+    AstObject* astAfterImplicitMain =
+      m_parserExt.mkMainFunDef( dynamic_cast<AstObject*>(astAfterParse));
 
     doSemanticAnalysis(*astAfterImplicitMain);
     generateIr(*astAfterImplicitMain);

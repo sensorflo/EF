@@ -52,7 +52,7 @@ unique_ptr<Module> IrGen::genIr(AstNode& root) {
   return move(m_module);
 }
 
-llvm::Value* IrGen::callAcceptOn(AstValue& node) {
+llvm::Value* IrGen::callAcceptOn(AstObject& node) {
   node.accept(*this);
   return node.object()->irValue(m_builder);
 }
@@ -399,14 +399,14 @@ void IrGen::visit(AstDataDef& dataDef) {
 
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.
-  Value* initValue = callAcceptOn(dataDef.initValue());
-  assert(initValue);
+  Value* initObj = callAcceptOn(dataDef.initObj());
+  assert(initObj);
   const ObjType& objType = dataDef.objType();
 
   if ( object->storageDuration() == StorageDuration::eStatic ) {
     GlobalVariable* variableAddr = new GlobalVariable( *m_module, objType.llvmType(),
       ! objType.qualifiers() & ObjType::eMutable, GlobalValue::InternalLinkage,
-      static_cast<Constant*>(initValue),
+      static_cast<Constant*>(initObj),
       dataDef.name());
     object->setIrAddr(variableAddr);
     // don't object->setIrAddr(...) since the initialization of a static
@@ -415,7 +415,7 @@ void IrGen::visit(AstDataDef& dataDef) {
   }
 
   else {
-    object->irInitLocal(initValue, m_builder, dataDef.name());
+    object->irInitLocal(initObj, m_builder, dataDef.name());
   }
 }
 

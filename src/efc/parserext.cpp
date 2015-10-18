@@ -76,9 +76,9 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
   // right associative binary operator
   else if ( op == '=' ) {
     assert(args->childs().size() >= 2);
-    reverse_iterator<list<AstValue*>::iterator> ri = args->childs().rbegin();
-    AstValue* last = *ri;
-    AstValue* beforelast = *(++ri);
+    reverse_iterator<list<AstObject*>::iterator> ri = args->childs().rbegin();
+    AstObject* last = *ri;
+    AstObject* beforelast = *(++ri);
     tree = new AstOperator(op, beforelast, last);
     for ( ++ri; ri!=args->childs().rend(); ++ri ) {
       tree = new AstOperator(op, *ri, tree);
@@ -88,9 +88,9 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
   // left associative binary operator
   else {
     assert(args->childs().size() >= 2);
-    list<AstValue*>::iterator i = args->childs().begin();
-    AstValue* first = *i;
-    AstValue* second = *(++i);
+    list<AstObject*>::iterator i = args->childs().begin();
+    AstObject* first = *i;
+    AstObject* second = *(++i);
     tree = new AstOperator(op, first, second);
     for ( ++i; i!=args->childs().end(); ++i ) {
       tree = new AstOperator(op, tree, *i);
@@ -102,9 +102,9 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
   return tree;
 }
 
-AstOperator* ParserExt::mkOperatorTree(const string& op, AstValue* child1,
-  AstValue* child2, AstValue* child3, AstValue* child4, AstValue* child5,
-  AstValue* child6) {
+AstOperator* ParserExt::mkOperatorTree(const string& op, AstObject* child1,
+  AstObject* child2, AstObject* child3, AstObject* child4, AstObject* child5,
+  AstObject* child6) {
   return mkOperatorTree(op, new AstCtList(child1, child2, child3, child4, child5,
       child6));
 }
@@ -129,7 +129,7 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
 }
 
 AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstDataDef*>* args,
-  const ObjType* ret, AstValue* body) {
+  const ObjType* ret, AstObject* body) {
 
   // create ObjTypeFun object
   args = args ? args : new list<AstDataDef*>();
@@ -159,10 +159,10 @@ AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstDataDef*>* a
 }
 
 AstFunDef* ParserExt::mkFunDef(const string name, const ObjType* ret,
-  AstValue* body) {
+  AstObject* body) {
   return mkFunDef(name, AstFunDef::createArgs(), ret, body);
 }
 
-AstFunDef* ParserExt::mkMainFunDef(AstValue* body) {
+AstFunDef* ParserExt::mkMainFunDef(AstObject* body) {
   return mkFunDef("main", new ObjTypeFunda(ObjTypeFunda::eInt), body);
 }

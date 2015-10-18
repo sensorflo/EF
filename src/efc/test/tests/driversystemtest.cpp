@@ -13,12 +13,12 @@ public:
   using Driver::m_parserExt;
 };
 
-void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstValue* astRoot,
+void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstObject* astRoot,
   Error::No expectedErrorNo, const string& spec = "") {
 
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
-  auto_ptr<AstValue> astRootAp(astRoot);
+  auto_ptr<AstObject> astRootAp(astRoot);
   bool foreignExceptionThrown = false;
   string excptionwhat;
 

@@ -49,19 +49,19 @@ public:
   ParserExt(Env& env, ErrorHandler& errorHandler);
 
   AstOperator* mkOperatorTree(const std::string& op, AstCtList* args);
-  AstOperator* mkOperatorTree(const std::string& op, AstValue* child1,
-    AstValue* child2, AstValue* child3 = NULL, AstValue* child4 = NULL,
-    AstValue* child5 = NULL, AstValue* child6 = NULL);
+  AstOperator* mkOperatorTree(const std::string& op, AstObject* child1,
+    AstObject* child2, AstObject* child3 = NULL, AstObject* child4 = NULL,
+    AstObject* child5 = NULL, AstObject* child6 = NULL);
 
   AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,
     RawAstDataDef*& rawAstDataDef);
 
   AstFunDef* mkFunDef(const std::string name, std::list<AstDataDef*>* args,
-    const ObjType* ret, AstValue* body);
+    const ObjType* ret, AstObject* body);
   AstFunDef* mkFunDef(const std::string name, const ObjType* ret,
-    AstValue* body);
+    AstObject* body);
 
-  AstFunDef* mkMainFunDef(AstValue* body);
+  AstFunDef* mkMainFunDef(AstObject* body);
 
   ErrorHandler& errorHandler() { return m_errorHandler; }
 

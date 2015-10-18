@@ -15,54 +15,54 @@ string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
-AstValue::AstValue(Access access, std::shared_ptr<Object> object) :
+AstObject::AstObject(Access access, std::shared_ptr<Object> object) :
   AstNode(access),
   m_object(move(object)) {
 }
 
-AstValue::AstValue(Access access) :
-  AstValue(access, nullptr) {
+AstObject::AstObject(Access access) :
+  AstObject(access, nullptr) {
 }
 
-AstValue::AstValue(std::shared_ptr<Object> object) :
-  AstValue(eRead, move(object)) {
+AstObject::AstObject(std::shared_ptr<Object> object) :
+  AstObject(eRead, move(object)) {
 }
 
-AstValue::~AstValue() {
+AstObject::~AstObject() {
 }
 
-const ObjType& AstValue::objType() const {
+const ObjType& AstObject::objType() const {
   assert(m_object);
   return m_object->objType();
 }
 
-bool AstValue::objectIsModifiedOrRevealsAddr() const {
+bool AstObject::objectIsModifiedOrRevealsAddr() const {
   assert(m_object);
   return m_object->isModifiedOrRevealsAddr();
 }
 
-void AstValue::setObject(shared_ptr<Object> object) {
+void AstObject::setObject(shared_ptr<Object> object) {
   assert(object);
   assert(!m_object.get()); // it makes no sense to set it twice
   m_object = move(object);
 }
 
 AstNop::AstNop() :
-  AstValue{
+  AstObject{
     make_shared<Object>(
       make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid),
       StorageDuration::eLocal)} {
 }
 
-AstBlock::AstBlock(AstValue* body) :
+AstBlock::AstBlock(AstObject* body) :
   m_body(body) {
 }
 
 AstBlock::~AstBlock() {
 }
 
-AstCast::AstCast(ObjType* objType, AstValue* child) :
-  AstValue{
+AstCast::AstCast(ObjType* objType, AstObject* child) :
+  AstObject{
     make_shared<Object>(
       shared_ptr<ObjType>{
         objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)},
@@ -75,7 +75,7 @@ AstCast::AstCast(ObjType* objType, AstValue* child) :
   assert(!(objType->qualifiers() & ObjType::eMutable));
 }
 
-AstCast::AstCast(ObjTypeFunda::EType objType, AstValue* child) :
+AstCast::AstCast(ObjTypeFunda::EType objType, AstObject* child) :
   AstCast{new ObjTypeFunda(objType), child} {
 }
 
@@ -87,8 +87,8 @@ AstFunDef::AstFunDef(const string& name,
   shared_ptr<Object> object,
   std::list<AstDataDef*>* args,
   shared_ptr<const ObjType> ret,
-  AstValue* body) :
-  AstValue{move(object)},
+  AstObject* body) :
+  AstObject{move(object)},
   m_name(name),
   m_args(args),
   m_ret(move(ret)),
@@ -101,7 +101,7 @@ AstFunDef::AstFunDef(const string& name,
 AstFunDef::AstFunDef(const string& name,
   shared_ptr<Object> object,
   shared_ptr<const ObjType> ret,
-  AstValue* body) :
+  AstObject* body) :
   AstFunDef(name, object, new list<AstDataDef*>(), ret, body) {
 }
 
@@ -136,19 +136,19 @@ AstDataDef::AstDataDef(const std::string& name, const ObjType* declaredObjType,
     make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
   m_declaredStorageDuration(declaredStorageDuration),
   m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()),
-  m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_declaredObjType->createDefaultAstValue()) {
+  m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_declaredObjType->createDefaultAstObject()) {
   assert(m_ctorArgs);
 }
 
 AstDataDef::AstDataDef(const std::string& name, const ObjType* declaredObjType,
-  StorageDuration declaredStorageDuration, AstValue* initValue) :
+  StorageDuration declaredStorageDuration, AstObject* initObj) :
   AstDataDef(name, declaredObjType, declaredStorageDuration,
-    initValue ? new AstCtList(initValue) : nullptr) {
+    initObj ? new AstCtList(initObj) : nullptr) {
 }
 
 AstDataDef::AstDataDef(const std::string& name, const ObjType* declaredObjType,
-  AstValue* initValue) :
-  AstDataDef(name, declaredObjType, StorageDuration::eLocal, initValue) {
+  AstObject* initObj) :
+  AstDataDef(name, declaredObjType, StorageDuration::eLocal, initObj) {
 }
 
 AstDataDef::~AstDataDef() {
@@ -173,8 +173,8 @@ shared_ptr<Object>& AstDataDef::createAndSetObjectUsingDeclaredObjType() {
   return m_object;
 }
 
-AstValue& AstDataDef::initValue() const {
-  const list<AstValue*>& args = m_ctorArgs->childs();
+AstObject& AstDataDef::initObj() const {
+  const list<AstObject*>& args = m_ctorArgs->childs();
   if (!args.empty()) {
     assert(args.size()==1); // more ctor arguments not yet supported
     return *(args.front());
@@ -185,7 +185,7 @@ AstValue& AstDataDef::initValue() const {
 }
 
 AstNumber::AstNumber(GeneralValue value, ObjTypeFunda* objType) :
-  AstValue{
+  AstObject{
     make_shared<Object>(
       objType ?
       shared_ptr<const ObjType>{objType} :
@@ -193,7 +193,7 @@ AstNumber::AstNumber(GeneralValue value, ObjTypeFunda* objType) :
       StorageDuration::eLocal)},
   m_value(value) {
   // A mutable literal makes no sense.
-  assert(!(AstValue::objType().qualifiers() & ObjType::eMutable));
+  assert(!(AstObject::objType().qualifiers() & ObjType::eMutable));
 }
 
 AstNumber::AstNumber(GeneralValue value, ObjTypeFunda::EType eType,
@@ -202,7 +202,7 @@ AstNumber::AstNumber(GeneralValue value, ObjTypeFunda::EType eType,
 }
 
 const ObjTypeFunda& AstNumber::objType() const {
-  return static_cast<const ObjTypeFunda&>(AstValue::objType());
+  return static_cast<const ObjTypeFunda&>(AstObject::objType());
 }
 
 const map<const string, const AstOperator::EOperation> AstOperator::m_opMap{
@@ -243,13 +243,13 @@ AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   }
 }
 
-AstOperator::AstOperator(char op, AstValue* operand1, AstValue* operand2) :
+AstOperator::AstOperator(char op, AstObject* operand1, AstObject* operand2) :
   AstOperator(static_cast<EOperation>(op), operand1, operand2) {};
 
-AstOperator::AstOperator(const string& op, AstValue* operand1, AstValue* operand2) :
+AstOperator::AstOperator(const string& op, AstObject* operand1, AstObject* operand2) :
   AstOperator(toEOperation(op), operand1, operand2) {};
 
-AstOperator::AstOperator(AstOperator::EOperation op, AstValue* operand1, AstValue* operand2) :
+AstOperator::AstOperator(AstOperator::EOperation op, AstObject* operand1, AstObject* operand2) :
   AstOperator(op, new AstCtList(operand1, operand2)) {};
 
 AstOperator::~AstOperator() {
@@ -321,7 +321,7 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
   }
 }
 
-AstIf::AstIf(AstValue* cond, AstValue* action, AstValue* elseAction) :
+AstIf::AstIf(AstObject* cond, AstObject* action, AstObject* elseAction) :
   m_condition(cond),
   m_action(action),
   m_elseAction(elseAction) {
@@ -335,8 +335,8 @@ AstIf::~AstIf() {
   delete m_elseAction;
 }
 
-AstLoop::AstLoop(AstValue* cond, AstValue* body) :
-  AstValue{
+AstLoop::AstLoop(AstObject* cond, AstObject* body) :
+  AstObject{
     make_shared<Object>(
       make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid),
       StorageDuration::eLocal)},
@@ -351,8 +351,8 @@ AstLoop::~AstLoop() {
   delete m_body;
 }
 
-AstReturn::AstReturn(AstValue* retVal) :
-  AstValue{
+AstReturn::AstReturn(AstObject* retVal) :
+  AstObject{
     make_shared<Object>(
       make_shared<ObjTypeFunda>(ObjTypeFunda::eNoreturn),
       StorageDuration::eLocal)},
@@ -363,12 +363,12 @@ AstReturn::AstReturn(AstValue* retVal) :
 AstReturn::~AstReturn() {
 }
 
-AstValue& AstReturn::retVal() const {
+AstObject& AstReturn::retVal() const {
   assert(m_retVal);
   return *m_retVal.get();
 }
 
-AstFunCall::AstFunCall(AstValue* address, AstCtList* args) :
+AstFunCall::AstFunCall(AstObject* address, AstCtList* args) :
   m_address(address ? address : new AstSymbol("")),
   m_args(args ? args : new AstCtList()) {
   assert(m_address);
@@ -392,10 +392,10 @@ void AstFunCall::createAndSetObjectUsingRetObjType() {
 }
 
 /** The list's elements must be non-null */
-AstCtList::AstCtList(list<AstValue*>* childs) :
-  m_childs(childs ? childs : new list<AstValue*>() ) {
+AstCtList::AstCtList(list<AstObject*>* childs) :
+  m_childs(childs ? childs : new list<AstObject*>() ) {
   assert(m_childs);
-  for (list<AstValue*>::iterator it = m_childs->begin();
+  for (list<AstObject*>::iterator it = m_childs->begin();
        it != m_childs->end();
        ++it) {
     assert(*it);
@@ -403,16 +403,16 @@ AstCtList::AstCtList(list<AstValue*>* childs) :
 }
 
 /** When child is NULL it is ignored */
-AstCtList::AstCtList(AstValue* child) :
-  m_childs(new list<AstValue*>()) {
+AstCtList::AstCtList(AstObject* child) :
+  m_childs(new list<AstObject*>()) {
   assert(m_childs);
   if (child) { m_childs->push_back(child); }
 }
 
 /** NULL childs are ignored.*/
-AstCtList::AstCtList(AstValue* child1, AstValue* child2, AstValue* child3,
-  AstValue* child4, AstValue* child5, AstValue* child6) :
-  m_childs(new list<AstValue*>()) {
+AstCtList::AstCtList(AstObject* child1, AstObject* child2, AstObject* child3,
+  AstObject* child4, AstObject* child5, AstObject* child6) :
+  m_childs(new list<AstObject*>()) {
   assert(m_childs);
   if (child1) { m_childs->push_back(child1); }
   if (child2) { m_childs->push_back(child2); }
@@ -424,7 +424,7 @@ AstCtList::AstCtList(AstValue* child1, AstValue* child2, AstValue* child3,
 
 AstCtList::~AstCtList() {
   if ( m_owner ) {
-    for (list<AstValue*>::iterator i=m_childs->begin(); i!=m_childs->end(); ++i) {
+    for (list<AstObject*>::iterator i=m_childs->begin(); i!=m_childs->end(); ++i) {
       delete (*i);
     }
   }
@@ -436,13 +436,13 @@ void AstCtList::releaseOwnership() {
 }
 
 /** When child is NULL it is ignored */
-AstCtList* AstCtList::Add(AstValue* child) {
+AstCtList* AstCtList::Add(AstObject* child) {
   if (child) m_childs->push_back(child);
   return this;
 }
 
 /** NULL childs are ignored. */
-AstCtList* AstCtList::Add(AstValue* child1, AstValue* child2, AstValue* child3) {
+AstCtList* AstCtList::Add(AstObject* child1, AstObject* child2, AstObject* child3) {
   Add(child1);
   Add(child2);
   Add(child3);

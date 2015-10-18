@@ -30,12 +30,12 @@ public:
 JIT executing the given function, passing the given args, and verifying that
 it returns the expected result. */
 template<typename TRet, typename...TArgs>
-void testgenIr(TestingIrGen& UUT, AstValue* astRoot,
+void testgenIr(TestingIrGen& UUT, AstObject* astRoot,
   const string& spec, TRet expectedResult, const string functionName,
   TArgs...args) {
 
   ENV_ASSERT_TRUE( astRoot!=NULL );
-  unique_ptr<AstValue> astRootAp(astRoot);
+  unique_ptr<AstObject> astRootAp(astRoot);
   bool unexpctedExceptionThrown = false;
   string exceptionDescription;
 
@@ -579,7 +579,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-    unique_ptr<AstValue> ast(
+    unique_ptr<AstObject> ast(
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
@@ -603,7 +603,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-    unique_ptr<AstValue> ast(
+    unique_ptr<AstObject> ast(
       pe.mkFunDef(
         "foo",
         AstFunDef::createArgs(
@@ -639,7 +639,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-    unique_ptr<AstValue> ast(
+    unique_ptr<AstObject> ast(
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(77)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
@@ -664,7 +664,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-    unique_ptr<AstValue> ast(
+    unique_ptr<AstObject> ast(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
           new AstDataDef("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
@@ -695,7 +695,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // setup
   TestingIrGen UUT;
   ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
-  unique_ptr<AstValue> ast(
+  unique_ptr<AstObject> ast(
     pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eVoid),
       new AstNop()));
   UUT.m_semanticAnalizer.analyze(*ast.get());
