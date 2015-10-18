@@ -287,8 +287,7 @@ std::basic_ostream<char>& ObjTypePtr::printTo(
 };
 
 AstValue* ObjTypePtr::createDefaultAstValue() const {
-  return new AstNumber(0,
-    new ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid)));
+  return new AstNumber(0, clone());
 };
 
 llvm::Type* ObjTypePtr::llvmType() const {

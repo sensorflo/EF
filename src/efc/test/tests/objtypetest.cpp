@@ -427,7 +427,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
     createDefaultAstValue)) {
 
-  // fundamental types
+  // examples: fundamental types
   {
     vector<ObjTypeFunda::EType> inputTypes = {
       ObjTypeFunda::eBool, ObjTypeFunda::eChar, ObjTypeFunda::eInt,
@@ -442,12 +442,25 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     }
   }
 
-  // pointer to any type: default is 0 of type 'pointer to void'
-  ObjTypePtr UUT{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
-  unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
-      UUT.createDefaultAstValue())};
-  EXPECT_TRUE( defaultValue != nullptr );
-  EXPECT_EQ( 0.0, defaultValue->value());
-  ObjTypePtr expectedObjType{make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid)};
-  EXPECT_TRUE( defaultValue->objType().matchesFully(expectedObjType));
+  // example: pointer to int
+  {
+    ObjTypePtr UUT{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
+    unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
+        UUT.createDefaultAstValue())};
+    EXPECT_TRUE( defaultValue != nullptr );
+    EXPECT_EQ( 0.0, defaultValue->value());
+    ObjTypePtr expectedObjType{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
+    EXPECT_TRUE( defaultValue->objType().matchesFully(expectedObjType));
+  }
+
+  // example: pointer to pointer to void
+  {
+    ObjTypePtr UUT{make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid))};
+    unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
+        UUT.createDefaultAstValue())};
+    EXPECT_TRUE( defaultValue != nullptr );
+    EXPECT_EQ( 0.0, defaultValue->value());
+    ObjTypePtr expectedObjType{make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid))};
+    EXPECT_TRUE( defaultValue->objType().matchesFully(expectedObjType));
+  }
 }
