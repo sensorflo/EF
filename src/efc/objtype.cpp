@@ -141,7 +141,7 @@ int ObjTypeFunda::size() const {
 
 AstValue* ObjTypeFunda::createDefaultAstValue() const {
   assert(!is(eAbstract));
-  auto objType = new ObjTypeFunda(m_type);
+  auto objType = clone();
   objType->removeQualifiers(eMutable);
   return new AstNumber(0, objType);
 }
@@ -286,10 +286,6 @@ std::basic_ostream<char>& ObjTypePtr::printTo(
   ObjTypeFunda::printTo(os);
   m_pointee->printTo(os);
   return os;
-};
-
-AstValue* ObjTypePtr::createDefaultAstValue() const {
-  return new AstNumber(0, clone());
 };
 
 llvm::Type* ObjTypePtr::llvmType() const {
