@@ -1,10 +1,17 @@
 #pragma once
 /** \file
-yy::Parser implementation extension. So bison's input file ef.yy can only contain
-tiny fragments of code. Anything larger than tiny is implemented here and
-ef.yy should make only the call.
+yy::Parser implementation extension. Has two related responsibilities:
 
-ParserApiExt is similar, but extends the public interface of yy::Parser. */
+1) So bison's input file ef.yy can only contain tiny fragments of
+   code. Anything larger than tiny is implemented here and ef.yy should make
+   only the call.  ParserApiExt is similar, but extends the public interface
+   of yy::Parser.
+
+2) So SemanticAnalizer can make less traversals of the AST, ParserExt does
+   some of SemanticAnalizer's responsibilities already while creating the
+   AST. Currently the design is that it is intentionally left open who is
+   responsible for what, so that responsibilities can easily be moved between
+   the two.*/
 
 #include "objtype.h"
 #include "storageduration.h"
