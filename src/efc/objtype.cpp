@@ -141,7 +141,9 @@ int ObjTypeFunda::size() const {
 
 AstValue* ObjTypeFunda::createDefaultAstValue() const {
   assert(!is(eAbstract));
-  return new AstNumber(0, new ObjTypeFunda(m_type));
+  auto objType = new ObjTypeFunda(m_type);
+  objType->removeQualifiers(eMutable);
+  return new AstNumber(0, objType);
 }
 
 llvm::Type* ObjTypeFunda::llvmType() const {

@@ -442,6 +442,13 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     }
   }
 
+  // example: objType of created AstNumber is always immutable
+  unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
+      ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).createDefaultAstValue())};
+  EXPECT_TRUE( defaultValue != nullptr );
+  EXPECT_EQ( 0.0, defaultValue->value());
+  EXPECT_TRUE( defaultValue->objType().matchesFully(ObjTypeFunda(ObjTypeFunda::eInt)));
+
   // example: pointer to int
   {
     ObjTypePtr UUT{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
