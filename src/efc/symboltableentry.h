@@ -1,5 +1,6 @@
 #pragma once
 #include "storageduration.h"
+#include "entity.h"
 #include "llvm/IR/IRBuilder.h"
 #include <string>
 #include <memory>
@@ -11,11 +12,7 @@ namespace llvm {
   class Value;
 }
 
-/** Currently it is two things; should eventually be splitted in these two. 
-- Object: 
-- Symbol table entry: for objects having a name and thus are in the symbol
-table. Contains a pointer to its object. */
-class SymbolTableEntry {
+class SymbolTableEntry : public Entity {
 public:
   SymbolTableEntry(std::shared_ptr<const ObjType> objType,
     StorageDuration storageDuration);
@@ -30,7 +27,7 @@ public:
   (equals `can't be optimized to be a SSA value only') and `actually is stored
   in memory'. */
   bool isStoredInMemory() const;
-  std::string toStr() const;
+  virtual std::string toStr() const override;
 
 private:
   /** Is guaranteed to be non-null */

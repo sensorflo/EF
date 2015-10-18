@@ -1,28 +1,22 @@
 #include "test.h"
 #include "../env.h"
-#include "../symboltableentry.h"
 #include <string>
 using namespace testing;
 using namespace std;
 
-shared_ptr<SymbolTableEntry> createASymbolTableEntry() {
-  return make_shared<SymbolTableEntry>(
-    make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt),
-    StorageDuration::eLocal);
-}
+class AnEntity : public Entity {
+  virtual string toStr() const { return string(); }
+};
 
-TEST(EnvTest, MAKE_TEST_NAME1(
-    toStr)) {
-  auto ot = make_shared<ObjTypeFunda>(ObjTypeFunda::eInt);
-  EXPECT_EQ( SymbolTableEntry(ot, StorageDuration::eLocal).toStr(), "int" );
-  EXPECT_EQ( SymbolTableEntry(ot, StorageDuration::eStatic).toStr(), "static/int" );
+shared_ptr<Entity> createAnEntity() {
+  return make_shared<AnEntity>();
 }
 
 TEST(EnvTest, MAKE_TEST_NAME2(
     insert_WITH_name_x,
     returns_a_pair_with_the_first_being_an_iterator_to_the_inserted_pair_and_the_second_being_true)) {
 
-  SymbolTable::KeyValue xPair = make_pair("x", createASymbolTableEntry());
+  SymbolTable::KeyValue xPair = make_pair("x", createAnEntity());
   Env UUT;
   Env::InsertRet ret = UUT.insert(xPair.first, xPair.second);
   EXPECT_EQ( xPair, *ret.first );
@@ -34,10 +28,10 @@ TEST(EnvTest, MAKE_TEST_NAME(
     insert_WITH_name_x,
     returns_a_pair_with_the_first_being_an_iterator_to_the_allready_inserted_pair_and_the_second_being_false)) {
   // setup
-  SymbolTable::KeyValue allreadyInsertedPair = make_pair("x", createASymbolTableEntry());
+  SymbolTable::KeyValue allreadyInsertedPair = make_pair("x", createAnEntity());
   Env UUT;
   UUT.insert(allreadyInsertedPair.first, allreadyInsertedPair.second);
-  auto anotherStEntry = createASymbolTableEntry();
+  auto anotherStEntry = createAnEntity();
 
   // exercise
   Env::InsertRet ret = UUT.insert("x", anotherStEntry);
@@ -53,26 +47,26 @@ TEST(EnvTest, MAKE_TEST_NAME(
     returns_a_pointer_to_the_symbol_table_entry)) {
   // setup
   string name = "x";
-  auto stEntry = createASymbolTableEntry();
+  auto entity = createAnEntity();
   Env UUT;
 
   // exercise
-  UUT.insert(name, stEntry);
-  shared_ptr<SymbolTableEntry> returnedStEntry;
-  UUT.find(name, returnedStEntry);
+  UUT.insert(name, entity);
+  shared_ptr<Entity> returnedEntity;
+  UUT.find(name, returnedEntity);
 
   // verify
-  EXPECT_TRUE( NULL!=returnedStEntry );
-  EXPECT_EQ( stEntry, returnedStEntry );
+  EXPECT_TRUE( NULL!=returnedEntity );
+  EXPECT_EQ( entity, returnedEntity );
 }
 
 TEST(EnvTest, MAKE_TEST_NAME2(
     find_WITH_an_nonexisting_name,
     returns_NULL)) {
   Env UUT;
-  shared_ptr<SymbolTableEntry> foundStentry;
-  UUT.find("x", foundStentry);
-  EXPECT_TRUE( NULL==foundStentry.get() );
+  shared_ptr<Entity> foundEntity;
+  UUT.find("x", foundEntity);
+  EXPECT_TRUE( NULL==foundEntity.get() );
 }
 
 TEST(EnvTest, MAKE_TEST_NAME4(
@@ -82,11 +76,11 @@ TEST(EnvTest, MAKE_TEST_NAME4(
     because_the_new_scope_allows_the_inner_x_to_shadow_the_outer_x)) {
   // setup
   Env UUT;
-  UUT.insert("x", createASymbolTableEntry());
+  UUT.insert("x", createAnEntity());
 
   // exercise
   UUT.pushScope();
-  SymbolTable::KeyValue innerx = make_pair("x", createASymbolTableEntry());
+  SymbolTable::KeyValue innerx = make_pair("x", createAnEntity());
   Env::InsertRet ret = UUT.insert(innerx);
 
   // verify
@@ -101,18 +95,18 @@ TEST(EnvTest, MAKE_TEST_NAME4(
     because_the_new_scope_did_not_add_a_new_x_which_would_shadow_the_old_x)) {
   // setup
   string name = "x";
-  auto stEntry = createASymbolTableEntry();
-  shared_ptr<SymbolTableEntry> foundStentry;
+  auto entity = createAnEntity();
+  shared_ptr<Entity> foundEntity;
   Env UUT;
-  UUT.insert(name, stEntry);
+  UUT.insert(name, entity);
 
   // exercise
   UUT.pushScope();
-  UUT.find(name, foundStentry);
+  UUT.find(name, foundEntity);
 
   // verify
-  EXPECT_TRUE( NULL!=foundStentry );
-  EXPECT_EQ( stEntry, foundStentry );
+  EXPECT_TRUE( NULL!=foundEntity );
+  EXPECT_EQ( entity, foundEntity );
 }
 
 TEST(EnvTest, MAKE_TEST_NAME(
@@ -122,18 +116,18 @@ TEST(EnvTest, MAKE_TEST_NAME(
 
   // setup
   Env UUT;
-  auto stEntryOuter = createASymbolTableEntry();
-  UUT.insert("x", stEntryOuter);
+  auto entityOuter = createAnEntity();
+  UUT.insert("x", entityOuter);
   UUT.pushScope();
-  UUT.insert("x", createASymbolTableEntry()); // inner symbol table entr
-  shared_ptr<SymbolTableEntry> foundStentry;
+  UUT.insert("x", createAnEntity()); // inner symbol table entr
+  shared_ptr<Entity> foundEntity;
 
   // exercise
   UUT.popScope();
-  UUT.find("x", foundStentry);
+  UUT.find("x", foundEntity);
 
   // verify
-  EXPECT_TRUE( NULL!=foundStentry );
-  EXPECT_EQ( stEntryOuter, foundStentry );
+  EXPECT_TRUE( NULL!=foundEntity );
+  EXPECT_EQ( entityOuter, foundEntity );
 }
 

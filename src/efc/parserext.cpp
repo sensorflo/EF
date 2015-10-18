@@ -146,16 +146,16 @@ AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstDataDef*>* a
   // nevertheless in the flat global namespace.
   Env::InsertRet insertRet = m_env.insert( name, NULL);
   SymbolTable::iterator& stIter = insertRet.first;
-  shared_ptr<SymbolTableEntry>& stIterStEntry = stIter->second;
   bool wasAlreadyInMap = !insertRet.second;
   if (!wasAlreadyInMap) {
-    stIterStEntry = make_shared<SymbolTableEntry>(move(objTypeFun),
+    auto&& newStEntry = make_shared<SymbolTableEntry>(move(objTypeFun),
       StorageDuration::eStatic);
+    stIter->second = newStEntry;
+    return new AstFunDef(name, move(newStEntry), args, objTypeRet, body);
   } else {
     Error::throwError(m_errorHandler, Error::eRedefinition);
+    return nullptr;
   }
-
-  return new AstFunDef(name, stIterStEntry, args, objTypeRet, body);
 }
 
 AstFunDef* ParserExt::mkFunDef(const string name, const ObjType* ret,

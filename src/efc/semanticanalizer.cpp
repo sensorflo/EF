@@ -219,13 +219,14 @@ void SemanticAnalizer::visit(AstNumber& number) {
 }
 
 void SemanticAnalizer::visit(AstSymbol& symbol) {
-  shared_ptr<SymbolTableEntry> stentry;
-  m_env.find(symbol.name(), stentry);
-  if (NULL==stentry) {
+  shared_ptr<Entity> entity;
+  m_env.find(symbol.name(), entity);
+  if (NULL==entity) {
     Error::throwError(m_errorHandler, Error::eUnknownName);
   }
-  stentry->addAccessToObject(symbol.access());
-  symbol.setStentry(move(stentry));
+  auto stEntry = std::dynamic_pointer_cast<SymbolTableEntry>(entity);
+  stEntry->addAccessToObject(symbol.access());
+  symbol.setStentry(move(stEntry));
   postConditionCheck(symbol);
 }
 
@@ -290,12 +291,12 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 void SemanticAnalizer::visit(AstDataDef& dataDef) {
   // let dataDecl.stentry() point a newly created symbol table entry
   {
-    Env::InsertRet insertRet = m_env.insert( dataDef.name(), nullptr );
-    shared_ptr<SymbolTableEntry>& envs_stentry_ptr = insertRet.first->second;
+    const auto& insertRet = m_env.insert( dataDef.name(), nullptr );
+    auto& envs_entity_ptr = insertRet.first->second;
 
     // name is not yet in env, thus insert new symbol table entry
     if (insertRet.second) {
-      envs_stentry_ptr = dataDef.createAndSetStEntryUsingDeclaredObjType();
+      envs_entity_ptr = dataDef.createAndSetStEntryUsingDeclaredObjType();
     }
 
     // name is already in env: unless the type matches that is an error

@@ -1,5 +1,5 @@
 #include "env.h"
-#include "symboltableentry.h"
+#include "entity.h"
 using namespace std;
 
 Env::AutoScope::AutoScope(Env& env) : m_env(env) {
@@ -14,8 +14,8 @@ Env::Env() {
   m_ststack.push_front(SymbolTable());
 }
 
-Env::InsertRet Env::insert(const string& name, shared_ptr<SymbolTableEntry> stentry) {
-  return insert(make_pair(move(name), move(stentry)));
+Env::InsertRet Env::insert(const string& name, shared_ptr<Entity> entity) {
+  return insert(make_pair(move(name), move(entity)));
 }
 
 /** \overload */
@@ -23,13 +23,13 @@ Env::InsertRet Env::insert(const SymbolTable::KeyValue& keyValue) {
   return m_ststack.front().insert(move(keyValue));
 }
 
-void Env::find(const string& name, shared_ptr<SymbolTableEntry>& stentry) {
+void Env::find(const string& name, shared_ptr<Entity>& entity) {
   list<SymbolTable>::iterator iter = m_ststack.begin();
   for ( /*nop*/; iter!=m_ststack.end(); ++iter ) {
     SymbolTable& symbolTable = *iter;
     SymbolTable::iterator i = symbolTable.find(name);
     if (i!=symbolTable.end()) {
-      stentry = i->second;
+      entity = i->second;
       return;
     }
   }

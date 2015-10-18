@@ -215,9 +215,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast);
 
     // verify
+    shared_ptr<Entity> entity;
     shared_ptr<SymbolTableEntry> stentry;
-    env.find("x", stentry);
-    EXPECT_TRUE( stentry.get() ) << amendAst(ast.get());
+    env.find("x", entity);
+    EXPECT_TRUE( entity.get() ) << amendAst(ast.get());
+    EXPECT_NO_THROW( stentry = std::dynamic_pointer_cast<SymbolTableEntry>(entity));
     EXPECT_MATCHES_FULLY( *objType, stentry->objType()) << amendAst(ast.get());
   }
 
@@ -234,9 +236,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast);
 
     // verify
-    shared_ptr<SymbolTableEntry> stentry;
-    env.find("x", stentry);
-    EXPECT_TRUE( stentry.get() ) << amendAst(ast.get());
+    shared_ptr<Entity> entity;
+    env.find("x", entity);
+    EXPECT_TRUE( entity.get() ) << amendAst(ast.get());
+    const auto stentry = std::dynamic_pointer_cast<SymbolTableEntry>(entity);
     EXPECT_MATCHES_FULLY( *objType, stentry->objType()) << amendAst(ast.get());
   }
 }
@@ -424,14 +427,18 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 
   ObjTypeFun funType{ ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
 
+  shared_ptr<Entity> entityOuter;
   shared_ptr<SymbolTableEntry> stentryOuter;
-  env.find("outer", stentryOuter);
-  EXPECT_TRUE( stentryOuter.get() ) << amendAst(ast);
+  env.find("outer", entityOuter);
+  EXPECT_TRUE( entityOuter.get() ) << amendAst(ast);
+  EXPECT_NO_THROW( stentryOuter = std::dynamic_pointer_cast<SymbolTableEntry>(entityOuter));
   EXPECT_TRUE( stentryOuter->objType().matchesFully(funType) );
 
+  shared_ptr<Entity> entityInner;
   shared_ptr<SymbolTableEntry> stentryInner;
-  env.find("inner", stentryInner);
-  EXPECT_TRUE( stentryInner.get() ) << amendAst(ast);
+  env.find("inner", entityInner);
+  EXPECT_TRUE( entityInner.get() ) << amendAst(ast);
+  EXPECT_NO_THROW( stentryInner = std::dynamic_pointer_cast<SymbolTableEntry>(entityInner));
   EXPECT_TRUE( stentryInner->objType().matchesFully(funType) );
 
   // tear down

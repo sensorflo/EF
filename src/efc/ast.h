@@ -175,6 +175,7 @@ private:
   const GeneralValue m_value;
 };
 
+/** Here symbol as an synonym to identifier */
 class AstSymbol : public AstValue {
 public:
   AstSymbol(const std::string& name, Access access = eRead) :
