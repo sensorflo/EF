@@ -23,19 +23,11 @@ class ErrorHandler;
 /** See also Entity */
 class AstNode {
 public:
-  AstNode(Access access = eRead) : m_access(access) {};
   virtual ~AstNode() {};
 
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
-  /** Access to this node. Contrast this with access to the object refered to
-  by this node. */
-  virtual Access access() const { return m_access; }
-  virtual void setAccess(Access access);
   std::string toStr() const;
-
-protected:
-  Access m_access;
 };
 
 /** See also Object */
@@ -47,6 +39,10 @@ public:
   virtual ~AstObject();
 
   virtual bool isCTConst() const { return false; }
+  /** Access to this AST node. Contrast this with access to the object refered
+  to by this AST node. */
+  virtual Access access() const { return m_access; }
+  virtual void setAccess(Access access);
 
   // associated object
   /** After SemanticAnalizer guaranteed to return non-null */
@@ -57,6 +53,7 @@ public:
   bool objectIsModifiedOrRevealsAddr() const;
   
 protected:
+  Access m_access;
   std::shared_ptr<Object> m_object;
 };
 

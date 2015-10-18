@@ -7,16 +7,12 @@
 #include <stdexcept>
 using namespace std;
 
-void AstNode::setAccess(Access access) {
-  m_access = access;
-}
-
 string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
 AstObject::AstObject(Access access, std::shared_ptr<Object> object) :
-  AstNode(access),
+  m_access(access),
   m_object(move(object)) {
 }
 
@@ -29,6 +25,10 @@ AstObject::AstObject(std::shared_ptr<Object> object) :
 }
 
 AstObject::~AstObject() {
+}
+
+void AstObject::setAccess(Access access) {
+  m_access = access;
 }
 
 const ObjType& AstObject::objType() const {
