@@ -10,16 +10,8 @@ SymbolTableEntry::SymbolTableEntry(shared_ptr<const ObjType> objType,
   StorageDuration storageDuration) :
   m_objType( (assert(objType.get()), move(objType))),
   m_storageDuration(storageDuration),
-  m_isDefined(false),
   m_objectIsModifiedOrRevealsAddr(false),
   m_irValueOrAddr(NULL) {}
-
-void SymbolTableEntry::markAsDefined(ErrorHandler& errorHandler) {
-  if (m_isDefined) {
-    Error::throwError(errorHandler, Error::eRedefinition);
-  }
-  m_isDefined = true;
-}
 
 void SymbolTableEntry::addAccessToObject(Access access) {
   m_objectIsModifiedOrRevealsAddr =

@@ -22,8 +22,6 @@ public:
 
   const ObjType& objType() const { return *m_objType.get(); }
   StorageDuration storageDuration() const { return m_storageDuration; }
-  bool isDefined() const { return m_isDefined; }
-  void markAsDefined(ErrorHandler& errorHandler);
   void addAccessToObject(Access access);
   bool objectIsModifiedOrRevealsAddr() const;
   /** Semantically every non-abstract object is stored in memory. However
@@ -38,8 +36,6 @@ private:
   /** Is guaranteed to be non-null */
   const std::shared_ptr<const ObjType> m_objType;
   const StorageDuration m_storageDuration;
-  /** Opposed to only declared */
-  bool m_isDefined;
   bool m_objectIsModifiedOrRevealsAddr;
 
   // decorations for IrGen

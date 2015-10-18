@@ -269,7 +269,6 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
     for ( ; argDefIter!=end; ++argDefIter) {
       assert((*argDefIter)->declaredStorageDuration() == StorageDuration::eLocal);
       (*argDefIter)->accept(*this);
-      (*argDefIter)->stentry()->markAsDefined(m_errorHandler);
     }
 
     funDef.body().accept(*this);
@@ -282,9 +281,6 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
     && ! bodyObjType.isNoreturn()) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
-
-
-  funDef.stentry()->markAsDefined(m_errorHandler);
 
   funDef.stentry()->addAccessToObject(funDef.access());
 
