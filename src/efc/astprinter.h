@@ -2,7 +2,11 @@
 #include "astvisitor.h"
 #include <iostream>
 
-/** Prints the AST in its canonical form. */
+/** Prints the AST in its canonical form. Note purpose is to have an exact
+representation of the AST. Thus no information can thus be dropped. For
+example one could _mistakenly_ think that for the readers' convenience
+AstBlock should only print its body but not itself, or that a AstSeq with only
+one elements should only print that but not itself.*/
 class AstPrinter : private AstConstVisitor {
 public:
   AstPrinter(std::basic_ostream<char>& os);

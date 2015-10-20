@@ -15,7 +15,7 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "nop", AstNop(), spec);
 
   spec = "AstBlock";
-  EXPECT_TOSTR_EQ( "42", AstBlock(new AstNumber(42)), spec);
+  EXPECT_TOSTR_EQ( ":42", AstBlock(new AstNumber(42)), spec);
 
   spec = "AstNumber";
   EXPECT_TOSTR_EQ( "42", AstNumber(42), spec);

@@ -26,6 +26,10 @@ void AstPrinter::visit(const AstNop& nop) {
 }
 
 void AstPrinter::visit(const AstBlock& block) {
+  // Since AstBlock alwasy only has exactly one 'operand', and since it is
+  // quite common, for the reader's convenience, only prefix body with ':',
+  // opposed to enclose body in ':(...)'. See also class' comment.
+  m_os << ":";
   block.body().accept(*this);
 }
 
