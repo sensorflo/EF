@@ -103,7 +103,7 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
       new AstNumber(42)), spec);
 
   spec = "AstFunCall";
-  EXPECT_TOSTR_EQ( "foo()", AstFunCall(new AstSymbol("foo"), new AstCtList()), spec);
-  EXPECT_TOSTR_EQ( "foo(42 77)", AstFunCall(new AstSymbol("foo"),
+  EXPECT_TOSTR_EQ( "call(foo)", AstFunCall(new AstSymbol("foo"), new AstCtList()), spec);
+  EXPECT_TOSTR_EQ( "call(foo 42 77)", AstFunCall(new AstSymbol("foo"),
       new AstCtList(new AstNumber(42), new AstNumber(77))), spec);
 }

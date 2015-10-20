@@ -180,7 +180,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   // precedence level group: function call
   string spec = "function call () is right associative";
-  TEST_PARSE( "foo(a)(b)", ":foo(a)(b)", spec);
+  TEST_PARSE( "foo(a)(b)", ":call(call(foo a) b)", spec);
 
   // precedence level group: unary prefix not & * - +
   spec = "! aka 'not' is right associative. ! and 'not' are synonyms";
@@ -190,7 +190,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "!   !   a", ":!(!(a))", spec);
 
   spec = "! has lower precedence than function call ()";
-  TEST_PARSE( "!foo()", ":!(foo())", spec);
+  TEST_PARSE( "!foo()", ":!(call(foo))", spec);
 
   spec = "& is right associative.";
   TEST_PARSE( "& & a", ":&(&(a))", spec);
@@ -200,7 +200,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "! & a", ":!(&(a))", spec);
 
   spec = "& has lower precedence than function call ()";
-  TEST_PARSE( "&foo()", ":&(foo())", spec);
+  TEST_PARSE( "&foo()", ":&(call(foo))", spec);
 
   spec = "* is right associative.";
   TEST_PARSE( "* * a", ":*(*(a))", spec);
@@ -210,7 +210,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "! * a", ":!(*(a))", spec);
 
   spec = "* has lower precedence than function call ()";
-  TEST_PARSE( "*foo()", ":*(foo())", spec);
+  TEST_PARSE( "*foo()", ":*(call(foo))", spec);
 
   spec = "unary - is right associative.";
   TEST_PARSE( "- - a", ":-(-(a))", spec);
@@ -220,7 +220,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "! - a", ":!(-(a))", spec);
 
   spec = "- has lower precedence than function call ()";
-  TEST_PARSE( "-foo()", ":-(foo())", spec);
+  TEST_PARSE( "-foo()", ":-(call(foo))", spec);
 
   spec = "unary + is right associative.";
   TEST_PARSE( "+ + a", ":+(+(a))", spec);
@@ -230,7 +230,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "! + a", ":!(+(a))", spec);
 
   spec = "unary + has lower precedence than function call ()";
-  TEST_PARSE( "+foo()", ":+(foo())", spec);
+  TEST_PARSE( "+foo()", ":+(call(foo))", spec);
 
   // precedence level group: binary * /
   spec = "* is left associative";
@@ -414,12 +414,12 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "trivial example";
-  TEST_PARSE( "foo()", ":foo()", spec);
-  TEST_PARSE( "foo(42)", ":foo(42)", spec);
-  TEST_PARSE( "foo(42,77)", ":foo(42 77)", spec);
+  TEST_PARSE( "foo()", ":call(foo)", spec);
+  TEST_PARSE( "foo(42)", ":call(foo 42)", spec);
+  TEST_PARSE( "foo(42,77)", ":call(foo 42 77)", spec);
 
   spec = "Function address can be given by an expression";
-  TEST_PARSE( "(foo+bar)(42,77)", ":+(foo bar)(42 77)", spec);
+  TEST_PARSE( "(foo+bar)(42,77)", ":call(+(foo bar) 42 77)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
