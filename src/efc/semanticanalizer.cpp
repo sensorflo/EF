@@ -76,9 +76,6 @@ void SemanticAnalizer::visit(AstOperator& op) {
   {
     if ( AstOperator::eAssignment == class_) {
       argschilds.front()->setAccess(eWrite);
-    } else if ( AstOperator::eSeq == opop ) {
-      argschilds.front()->setAccess(eIgnore);
-      argschilds.back()->setAccess(op.access());
     } else if ( opop==AstOperator::eAddrOf ) {
       argschilds.front()->setAccess(eTakeAddress);
     }
@@ -94,7 +91,8 @@ void SemanticAnalizer::visit(AstOperator& op) {
     auto& rhs = argschilds.back()->objType();
     if ( op.class_() == AstOperator::eLogical ) {
       if ( !lhs.matchesSaufQualifiers(rhs)
-        && !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eNoreturn))) {
+        && (!op.isBinaryLogicalShortCircuit() ||
+            !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eNoreturn)))) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
       }
     } else if ( class_ != AstOperator::eOther ) {
@@ -121,23 +119,12 @@ void SemanticAnalizer::visit(AstOperator& op) {
   }
 
   // Verify that the first argument has the operator as member function.
-  if ( opop!=AstOperator::eSeq // eSeq is a global operator, not a member function
-    && !argschilds.front()->objType().hasMember(opop)) {
+  if ( !argschilds.front()->objType().hasMember(opop)) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 
-  // Report eUnreachableCode if the lhs of an sequence operator is of obj type
-  // noreturn.  That is actually also true for other operators, but there the
-  // error eNoSuchMember has higher priority.
-  if ( opop==AstOperator::eSeq ) {
-    if ( argschilds.front()->objType().isNoreturn() ) {
-      Error::throwError(m_errorHandler, Error::eUnreachableCode);
-    }
-  }
-
   // On eComputedValueNotUsed
-  if ( opop!=AstOperator::eSeq // computes no value
-    && opop!=AstOperator::eAnd // shirt circuit operator, is effectively flow control
+  if ( opop!=AstOperator::eAnd // shirt circuit operator, is effectively flow control
     && opop!=AstOperator::eOr  // dito
     && class_!=AstOperator::eAssignment // have side effects
     && op.access()==eIgnore ) {
@@ -160,10 +147,6 @@ void SemanticAnalizer::visit(AstOperator& op) {
     // Assignment is always of object type void
     else if ( opop == AstOperator::eAssign ) {
       objType = make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid);
-    }
-    // The object denoted by the seq operator is exactly that of rhs
-    else if ( opop == AstOperator::eSeq ) {
-      op.setObject(argschilds.back()->objectAsSp());
     }
     // Addrof 
     else if ( opop == AstOperator::eAddrOf) {
@@ -204,6 +187,30 @@ void SemanticAnalizer::visit(AstOperator& op) {
   op.object()->addAccess(op.access());
 
   postConditionCheck(op);
+}
+
+void SemanticAnalizer::visit(AstSeq& seq) {
+  assert(!seq.operands().empty());
+  const auto& lastOp = seq.operands().back();
+  for (const auto& op: seq.operands()) {
+    if (op!=lastOp) {
+      op->setAccess(eIgnore);
+      op->accept(*this);
+      if (op->isObjTypeNoReturn()) {
+        Error::throwError(m_errorHandler, Error::eUnreachableCode);
+      }
+    } else {
+      AstObject& lastOperand = seq.lastOperand(m_errorHandler);
+      lastOperand.setAccess(seq.access());
+      lastOperand.accept(*this);
+      // The Object denoted by the AstSeq node is exactly that of the
+      // lastOperand
+      seq.setObject(lastOperand.objectAsSp());
+      seq.object()->addAccess(seq.access());
+    }
+  }
+
+  postConditionCheck(seq);
 }
 
 void SemanticAnalizer::visit(AstNumber& number) {

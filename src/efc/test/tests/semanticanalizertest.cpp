@@ -249,7 +249,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     transform,
     reports_eCTConstRequired)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)),
       new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt),
         StorageDuration::eStatic,
@@ -279,7 +279,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   string spec = "Example: function call before function definition";
   TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
-    new AstOperator(';',
+    new AstSeq(
       new AstFunCall(new AstSymbol("foo")),
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eVoid), new AstNop())),
     "");
@@ -287,7 +287,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Example: static data - !!!! Not yet implemented, "
     "currently behaves as local data !!!!";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       new AstSymbol("x"),
       new AstDataDef("x",
         new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic)),
@@ -308,7 +308,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   const auto symbol = new AstSymbol("x");
   unique_ptr<AstObject> ast{
     new AstBlock(
-      new AstOperator(';', dataDef, symbol))};
+      new AstSeq( dataDef, symbol))};
 
   // exercise
   UUT.analyze(*ast.get());
@@ -325,7 +325,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     reports_eUnknownName,
     BECAUSE_the_scope_of_local_data_objects_declarations_is_that_of_the_enclosing_block)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       new AstBlock(
         new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
       new AstSymbol("x")),
@@ -339,35 +339,35 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   string spec = "Example: types differs: two different fundamental types";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
     Error::eRedefinition, spec);
 
   spec = "Example: types differ: first function type, then fundamental type";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)),
       new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt))),
     Error::eRedefinition, spec);
 
   spec = "Example: types differ: First fundamental type, then function type";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt)),
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42))),
     Error::eRedefinition, spec);
 
   spec = "Example: storage duration differs";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eLocal),
       new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt), StorageDuration::eStatic)),
     Error::eRedefinition, "");
 
   spec = "Example: two local variables in implicit main method";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt)),
       new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
     Error::eRedefinition, spec);
@@ -393,7 +393,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   spec = "Example: two functions";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
@@ -414,7 +414,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   ParserExt pe(env, errorHandler);
   AstNode* ast =
     pe.mkFunDef("outer", new ObjTypeFunda(ObjTypeFunda::eInt),
-      new AstOperator(';',
+      new AstSeq(
         pe.mkFunDef("inner", new ObjTypeFunda(ObjTypeFunda::eInt),
           new AstNumber(42)),
         new AstNumber(42)));
@@ -561,7 +561,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     TestingSemanticAnalizer UUT(env, errorHandler);
     AstObject* symbol = new AstSymbol("x");
     unique_ptr<AstObject> ast{
-      new AstOperator(';',
+      new AstSeq(
         new AstOperator('&',
           new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
         symbol)};
@@ -585,7 +585,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   TestingSemanticAnalizer UUT(env, errorHandler);
   AstObject* body = new AstNumber(42);
   unique_ptr<AstObject> ast{
-    new AstOperator(';', // imposes eIgnore access onto the block
+    new AstSeq( // imposes eIgnore access onto the block
       new AstBlock(body),
       new AstNumber(42))};
 
@@ -598,28 +598,43 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_access_to_a_sequence_operator,
-    THEN_the_access_value_of_seqs_rhs_equals_that_outer_access_value_AND_the_access_value_of_the_lhs_is_eIgnore))
+    THEN_the_access_value_of_seqs_last_operand_equals_that_outer_access_value_AND_the_access_value_of_the_leading_operands_is_eIgnore))
 {
   // setup
   Env env;
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
-  AstObject* lhsAst = new AstNumber(42);
-  AstObject* rhsAst = new AstSymbol("x");
+  AstObject* leadingOpAst = new AstNumber(42);
+  AstObject* lastOpAst = new AstSymbol("x");
   unique_ptr<AstObject> ast{
-    new AstOperator(';',
+    new AstSeq(
       new AstDataDef("x",
         new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       new AstOperator('=', // imposes write access onto the seq operator
-        new AstOperator(';', lhsAst, rhsAst), // the seq operator under test
+        new AstSeq( leadingOpAst, lastOpAst), // the seq operator under test
         new AstNumber(77)))};
 
   // exercise
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( eIgnore, lhsAst->access()) << amendAst(ast);
-  EXPECT_EQ( eWrite, rhsAst->access()) << amendAst(ast);
+  EXPECT_EQ( eIgnore, leadingOpAst->access()) << amendAst(ast);
+  EXPECT_EQ( eWrite, lastOpAst->access()) << amendAst(ast);
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+    GIVEN_sequence_operator_WITH_the_last_operator_not_being_an_AstObject,
+    THEN_it_reports_eObjectExpected))
+{
+  typedef AstCtList AstNotAnObject; // i.e. not derived from AstObject
+
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstSeq(new AstNotAnObject()),
+    Error::eObjectExpected, "");
+
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstSeq(new AstNumber(42), new AstNotAnObject()),
+    Error::eObjectExpected, "");
 }
 
 // aka temporary objects are immutable
@@ -686,7 +701,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstSymbol("x"),
         new AstSymbol("x"));
     unique_ptr<AstObject> ast{
-      new AstOperator(';',
+      new AstSeq(
         new AstDataDef("x",
           new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         opAst)};
@@ -707,7 +722,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     unique_ptr<AstObject> ast{
-      new AstOperator(';',
+      new AstSeq(
         new AstNumber(0, ObjTypeFunda::eInt),
         new AstNumber(0, ObjTypeFunda::eBool))};
 
@@ -777,7 +792,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       new AstSymbol("foo"),
       new AstNumber(77));
   unique_ptr<AstObject> ast{
-    new AstOperator(';',
+    new AstSeq(
       new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       assignmentAst)};
 
@@ -804,7 +819,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       new AstSymbol("x"),
       new AstNumber(0, ObjTypeFunda::eInt));
   unique_ptr<AstObject> ast{
-    new AstOperator(';',
+    new AstSeq(
       new AstDataDef("x",
         new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
       dotAssignmentAst)};
@@ -855,7 +870,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     AstFunCall* funCall = new AstFunCall(new AstSymbol("foo"));
     unique_ptr<AstObject> ast{
-      new AstOperator(';',
+      new AstSeq(
         pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eBool),
           new AstNumber(0, ObjTypeFunda::eBool)),
         funCall)};
@@ -947,7 +962,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     AstNode* ast =
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
-        new AstOperator(';',
+        new AstSeq(
           new AstIf(
             new AstNumber(0, ObjTypeFunda::eBool),
             new AstReturn(new AstNumber(42, ObjTypeFunda::eInt))), // early return
@@ -968,7 +983,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     AstNode* ast =
       pe.mkFunDef("outer", new ObjTypeFunda(ObjTypeFunda::eInt),
-        new AstOperator(';',
+        new AstSeq(
 
           pe.mkFunDef("inner", new ObjTypeFunda(ObjTypeFunda::eBool),
             new AstReturn(new AstNumber(0, ObjTypeFunda::eBool))),
@@ -996,7 +1011,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   spec = "Example: Early return, return expression in an if clause";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
-      new AstOperator(';',
+      new AstSeq(
         new AstIf(
           new AstNumber(0, ObjTypeFunda::eBool),
           new AstReturn(new AstNumber(0, ObjTypeFunda::eBool))), // early return
@@ -1008,7 +1023,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     "outer function. Naturally that is still an error.";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     pe.mkFunDef("outer", new ObjTypeFunda(ObjTypeFunda::eInt),
-      new AstOperator(';',
+      new AstSeq(
 
         pe.mkFunDef("inner", new ObjTypeFunda(ObjTypeFunda::eBool),
           new AstReturn(new AstNumber(0, ObjTypeFunda::eInt))), // return under test
@@ -1079,7 +1094,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
       new AstSymbol("x"),
       new AstSymbol("x"));
     unique_ptr<AstObject> ast{
-      new AstOperator(';',
+      new AstSeq(
         new AstDataDef("x",
           new ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable)),
         if_)};
@@ -1112,7 +1127,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
     unique_ptr<AstObject> ast{
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
-        new AstOperator(';',
+        new AstSeq(
           astIf,
           new AstNumber(42)))};
 
@@ -1139,7 +1154,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
         new AstNumber(1, ObjTypeFunda::eBool));
     unique_ptr<AstObject> ast{
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
-        new AstOperator(';',
+        new AstSeq(
           astIf,
           new AstNumber(42)))};
 
@@ -1214,7 +1229,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
     unique_ptr<AstObject> ast{
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
-        new AstOperator(';',
+        new AstSeq(
           astIf,
           new AstNumber(42)))};
 
@@ -1240,7 +1255,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     AstObject* thenClauseAst = new AstSymbol("x");
     AstObject* elseClauseAst = new AstSymbol("x");
     unique_ptr<AstObject> ast{
-      new AstOperator(';', // imposes read access on its rhs
+      new AstSeq( // imposes read access on its rhs
         new AstDataDef("x",
           new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstIf( // the if expression under test
@@ -1264,7 +1279,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     AstObject* thenClauseAst = new AstSymbol("x");
     AstObject* elseClauseAst = new AstSymbol("x");
     unique_ptr<AstObject> ast{
-      new AstOperator(';',
+      new AstSeq(
         new AstDataDef("x",
           new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
         new AstOperator('=', // imposes write access onto the if expression
@@ -1320,7 +1335,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
         new AstReturn(new AstNumber(42)));
     unique_ptr<AstObject> ast{
         pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
-          new AstOperator(';', loop, new AstNumber(42)))};
+          new AstSeq( loop, new AstNumber(42)))};
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1359,7 +1374,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   string spec = "Example: Assignment to an symbol standing for a previously "
     "defined immutable data object";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       new AstDataDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstOperator('=',
@@ -1394,7 +1409,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   string spec = "Function foo expects one arg, but zero where passed on call";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
           new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
@@ -1405,7 +1420,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   spec = "Function foo expects no args, but one arg was passed on call";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
@@ -1413,7 +1428,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   spec = "Function foo expects one bool arg, but one int is passed";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
           new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eBool))),
@@ -1424,7 +1439,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   spec = "Function foo expects one int arg, but one bool is passed";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
           new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
@@ -1447,7 +1462,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     unique_ptr<AstObject> ast{
-      pe.mkOperatorTree(";",
+      new AstSeq(
         pe.mkFunDef("foo",
           AstFunDef::createArgs(
             new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt))),
@@ -1472,7 +1487,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     TestingSemanticAnalizer UUT(env, errorHandler);
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     unique_ptr<AstObject> ast{
-      new AstOperator(';',
+      new AstSeq(
         pe.mkFunDef("foo",
           AstFunDef::createArgs(
             new AstDataDef("x", new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable))),
@@ -1509,7 +1524,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   spec = "Example: Arithemtic operator (+) with argument not being of arithmetic class (here function)";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)),
       new AstOperator('+',
         new AstSymbol("foo"),
@@ -1525,7 +1540,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   spec = "Example: Comparision operator (==) with argument not being of scalar class (here function)";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), new AstNumber(42)),
       new AstOperator("==",
         new AstSymbol("foo"),
@@ -1606,7 +1621,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     AstObject* funbody =
       inputSpec.newType == ObjTypeFunda::eNoreturn ?
       UUT :
-      new AstOperator(';', UUT, new AstNumber(0));
+      new AstSeq( UUT, new AstNumber(0));
     if ( inputSpec.isValid ) {
       TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
         pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt), funbody),
@@ -1635,7 +1650,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     BECAUSE_the_rhs_can_not_be_reached)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     pe.mkFunDef("foo", new ObjTypeFunda(ObjTypeFunda::eInt),
-      new AstOperator(';',
+      new AstSeq(
         new AstReturn(new AstNumber(42)),
         new AstNumber(77))),
     Error::eUnreachableCode, "");
@@ -1647,7 +1662,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     reports_eComputedValueNotUsed)) {
   string spec = "Example: operator + being lhs of sequence operator";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstOperator(';',
+    new AstSeq(
       new AstOperator('+',
         new AstNumber(42),
         new AstNumber(77)),

@@ -260,6 +260,10 @@ AstOperator::EClass AstOperator::class_() const {
   return classOf(m_op);
 }
 
+bool AstOperator::isBinaryLogicalShortCircuit() const {
+  return m_op==eAnd || m_op==eOr;
+}
+
 AstOperator::EClass AstOperator::classOf(AstOperator::EOperation op) {
   switch (op) {
   case eAssign:
@@ -283,9 +287,6 @@ AstOperator::EClass AstOperator::classOf(AstOperator::EOperation op) {
   case eAddrOf:
   case eDeref:
     return eMemberAccess;
-
-  case eSeq:
-    return eOther;
   }
   assert(false);
   return eOther;
@@ -302,6 +303,7 @@ AstOperator::EOperation AstOperator::toEOperationPreferingBinary(const string& o
 AstOperator::EOperation AstOperator::toEOperation(const string& op) {
   if (op.size()==1) {
     assert(op[0]!='*'); // '*' is ambigous: either eMul or eDeref
+    assert(op[0]!=';'); // ';' is not really an operator, use AstSeq
     return static_cast<EOperation>(op[0]);
   } else {
     auto i = m_opMap.find(op);
@@ -319,6 +321,41 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
     assert( i != AstOperator::m_opReverseMap.end() );
     return os << i->second;
   }
+}
+
+AstSeq::AstSeq(std::vector<AstNode*>* operands) :
+  m_operands(operands) {
+  assert(m_operands);
+  assert(!m_operands->empty());
+}
+
+AstSeq::AstSeq(AstNode* op1, AstNode* op2, AstNode* op3, AstNode* op4,
+  AstNode* op5) :
+  m_operands(std::make_unique<std::vector<AstNode*>>()) {
+  if ( op1 ) {
+    m_operands->push_back(op1);
+  }
+  if ( op2 ) {
+    m_operands->push_back(op2);
+  }
+  if ( op3 ) {
+    m_operands->push_back(op3);
+  }
+  if ( op4 ) {
+    m_operands->push_back(op4);
+  }
+  if ( op5 ) {
+    m_operands->push_back(op5);
+  }
+  assert(!m_operands->empty());
+}
+
+AstObject& AstSeq::lastOperand(ErrorHandler& errorHandler) const {
+  auto obj = dynamic_cast<AstObject*>((*m_operands).back());
+  if ( !obj ) {
+    Error::throwError(errorHandler, Error::eObjectExpected);
+  }
+  return *obj;
 }
 
 AstIf::AstIf(AstObject* cond, AstObject* action, AstObject* elseAction) :
@@ -465,6 +502,7 @@ void AstNumber::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstSymbol::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstFunCall::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstOperator::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstSeq::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstIf::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstLoop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstReturn::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
@@ -479,6 +517,7 @@ void AstNumber::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstSymbol::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstFunCall::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstOperator::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstSeq::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstLoop::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstReturn::accept(AstVisitor& visitor) { visitor.visit(*this); }

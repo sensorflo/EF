@@ -156,10 +156,12 @@ and by declaration of free function yylex */
 %token TOKENLISTEND "<TOKENLISTEND>"
 
 
-%type <AstCtList*> ct_list initializer_arg initializer_special_arg pure2_standalone_expr_seq
+%type <AstCtList*> ct_list initializer_arg initializer_special_arg
+%type <std::vector<AstNode*>*> pure_standalone_node_seq_expr
 %type <std::list<AstDataDef*>*> pure_naked_param_ct_list
 %type <std::list<AstObject*>*> pure_ct_list
-%type <AstObject*> block_expr standalone_expr_seq standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
+%type <AstNode*> standalone_node 
+%type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstDataDef*> param_decl
 %type <ObjType::Qualifiers> valvar type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
@@ -197,19 +199,30 @@ program
   ;
 
 block_expr
-  : standalone_expr_seq                             { $$ = new AstBlock($1); }
+  : standalone_node_seq_expr                        { $$ = new AstBlock($1); }
   ;
 
-/* Note that the trailing 'seq_operator' is not really a sequence operator,
-i.e. it does not build an expression sequence */
-standalone_expr_seq
-  : standalone_expr opt_seq_operator                       { std::swap($$,$1); }
-  | pure2_standalone_expr_seq opt_seq_operator             { $$ = parserExt.mkOperatorTree(";", $1); }
+/* Sequence of standalone nodes being itself an expr. The dynamic type of the
+last node must be expr, which is verified later by the semantic analizer. That
+is also the reason why it makes sense to create a 'sequence' even if there is
+only one element; there must be someone verifying that the dynamic type of
+that element is expr.
+
+Note that the seq_operator is _not_ the thing that builds / creates the
+sequence. It is the context where standalone_node_seq_expr is used that
+defines that an sequence must be created, also if it only contains one
+element. */
+standalone_node_seq_expr
+  : pure_standalone_node_seq_expr opt_seq_operator              { $$ = new AstSeq($1); }
   ;
 
-pure2_standalone_expr_seq
-  : standalone_expr seq_operator standalone_expr           { $$ = new AstCtList($1,$3); }
-  | pure2_standalone_expr_seq seq_operator standalone_expr { ($1)->Add($3); std::swap($$,$1); }
+pure_standalone_node_seq_expr
+  : standalone_node                                             { $$ = new std::vector<AstNode*>{$1}; }
+  | pure_standalone_node_seq_expr seq_operator standalone_node  { ($1)->push_back($3); std::swap($$,$1); }
+  ;
+
+standalone_node
+  : standalone_expr                                 { $$ = $1; }
   ;
 
 standalone_expr
@@ -339,7 +352,7 @@ operator_expr
 primary_expr
   : list_expr                                       { std::swap($$,$1); }
   | NUMBER                                          { $$ = new AstNumber($1.m_value, $1.m_objType); }
-  | LPAREN standalone_expr_seq RPAREN               { $$ = $2; }
+  | LPAREN standalone_node_seq_expr RPAREN          { $$ = $2; }
   | ID                                              { $$ = new AstSymbol($1); }
   | NOP                                             { $$ = new AstNop(); }
   ;

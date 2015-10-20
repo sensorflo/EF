@@ -20,6 +20,7 @@ private:
   virtual void visit(const AstCast& cast);
   virtual void visit(const AstCtList& ctList);
   virtual void visit(const AstOperator& op);
+  virtual void visit(const AstSeq& seq);
   virtual void visit(const AstNumber& number);
   virtual void visit(const AstSymbol& symbol);
   virtual void visit(const AstFunCall& funCall);

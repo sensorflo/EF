@@ -172,7 +172,7 @@ void IrGen::visit(AstOperator& op) {
   }
 
   // binary logical short circuit operators
-  else if (op.op()==AstOperator::eAnd || op.op()==AstOperator::eOr) {
+  else if (op.isBinaryLogicalShortCircuit()) {
     const string opname = op.op()==AstOperator::eAnd ? "and" : "or";
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
     BasicBlock* rhsBB = BasicBlock::Create(getGlobalContext(),
@@ -185,8 +185,10 @@ void IrGen::visit(AstOperator& op) {
     assert(llvmLhs);
     if ( op.op()==AstOperator::eAnd ) {
       m_builder.CreateCondBr(llvmLhs, rhsBB, mergeBB);
-    } else {
+    } else if ( op.op()==AstOperator::eOr )  {
       m_builder.CreateCondBr(llvmLhs, mergeBB, rhsBB);
+    } else {
+      assert(false);
     }
     BasicBlock* lhsLastBB = m_builder.GetInsertBlock();
 
@@ -219,14 +221,6 @@ void IrGen::visit(AstOperator& op) {
       // op.object() is the same as astOperands.front().object(), so
       // 'returning the result' is now a nop.
     }
-  }
-
-  // seq operator: evaluate lhs ignoring the result, then evaluate rhs and
-  // then return that result. op.stetry() is the same as
-  // astOperands.back().object(), so 'returning the result' is now a nop.
-  else if (op.op()==AstOperator::eSeq) {
-    astOperands.front()->accept(*this);
-    astOperands.back()->accept(*this);
   }
 
   // binary arithmetic operators
@@ -282,6 +276,15 @@ void IrGen::visit(AstOperator& op) {
 
   if ( llvmResult ) {
     op.object()->irInitLocal(llvmResult, m_builder);
+  }
+}
+
+void IrGen::visit(AstSeq& seq) {
+  // evaluate all operands, but ignore all results but the result of the
+  // last operand. seq.object() is the same as seq.operands.last().object(), so
+  // 'returning the result' is a nop.
+  for (const auto& op: seq.operands()) {
+    op->accept(*this);
   }
 }
 

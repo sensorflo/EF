@@ -54,6 +54,27 @@ void AstPrinter::visit(const AstOperator& op) {
   m_os << ')';
 }
 
+void AstPrinter::visit(const AstSeq& seq) {
+  // For the readers convenience, the case of only one operand is printed
+  // specially: only prefix it with ';', opposed to enclose it in
+  // ';(...)'. See also class comment.
+  m_os << ';';
+  if (seq.operands().size()==1) {
+    seq.operands().front()->accept(*this);
+  } else {
+    m_os << "(";
+    bool isFirstIter = true;
+    for (const auto& op: seq.operands()) {
+      if ( !isFirstIter ) {
+        m_os << " ";
+      }
+      isFirstIter = false;
+      op->accept(*this);
+    }
+    m_os << ')';
+  }
+}
+
 void AstPrinter::visit(const AstNumber& number) {
   // if value is outside range of type, that is a topic that shall not
   // interest us at this point here
@@ -138,3 +159,4 @@ void AstPrinter::visit(const AstReturn& return_) {
   return_.retVal().accept(*this);
   m_os << ")";
 }
+

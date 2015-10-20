@@ -7,6 +7,7 @@ class AstNumber;
 class AstSymbol;
 class AstFunCall;
 class AstOperator;
+class AstSeq;
 class AstCast;
 class AstCtList;
 class AstFunDef;

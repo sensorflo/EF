@@ -27,6 +27,16 @@ public:
 
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
+
+  /** See AstObject::m_access. For non-AstObject types, access can only be
+  eIgnore. It's a kludge that this method is a member of AstNode, the author
+  hasn't found another way to implement SemanticAnalizer::visit(AstSeq& seq).*/
+  virtual void setAccess(Access access) { assert(access==eIgnore); }
+  /** For AstObject's, identical to objType().isNoreturn();, for all others it
+  always returns false. It's a kludge that this method is a member of AstNode,
+  see also setAccess. */
+  virtual bool isObjTypeNoReturn() const { return false;}
+
   std::string toStr() const;
 };
 
@@ -39,10 +49,10 @@ public:
   virtual ~AstObject();
 
   virtual bool isCTConst() const { return false; }
-  /** Access to this AST node. Contrast this with access to the object refered
-  to by this AST node. */
   virtual Access access() const { return m_access; }
-  virtual void setAccess(Access access);
+  virtual void setAccess(Access access) override;
+
+  virtual bool isObjTypeNoReturn() const override { return objType().isNoreturn(); }
 
   // associated object
   /** After SemanticAnalizer guaranteed to return non-null */
@@ -53,6 +63,8 @@ public:
   bool objectIsModifiedOrRevealsAddr() const;
   
 protected:
+  /** Access to this AST node. Contrast this with access to the object refered
+  to by this AST node. */
   Access m_access;
   std::shared_ptr<Object> m_object;
 };
@@ -214,7 +226,6 @@ public:
     eMul = '*', // '*' is ambigous. can also mean eDeref
     eDiv = '/',
     eNot = '!',
-    eSeq = ';',
     eAddrOf = '&',
     eAnd = 128,
     eOr,
@@ -242,6 +253,7 @@ public:
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
   EClass class_() const;
+  bool isBinaryLogicalShortCircuit() const;
   static EClass classOf(AstOperator::EOperation op);
   /** In case of ambiguity, chooses the binary operator */
   static EOperation toEOperationPreferingBinary(const std::string& op);
@@ -264,6 +276,27 @@ private:
 
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   AstOperator::EOperation op);
+
+/** Has two responsibilities: 1) Be an ordered sequence of AstNode s 2) cast
+the last AstNode to an AstObject and report an error if that is not
+possible. */
+class AstSeq : public AstObject {
+public:
+  AstSeq(std::vector<AstNode*>* operands);
+  AstSeq(AstNode* op1 = nullptr, AstNode* op2 = nullptr,
+    AstNode* op3 = nullptr, AstNode* op4 = nullptr, AstNode* op5 = nullptr);
+
+  virtual void accept(AstVisitor& visitor);
+  virtual void accept(AstConstVisitor& visitor) const;
+
+  const std::vector<AstNode*>& operands() const { return *m_operands; }
+  AstObject& lastOperand(ErrorHandler& errorHandler) const;
+
+private:
+  /** Pointers are garanteed to be non null. Garanteed to have at least one
+  element. */
+  std::unique_ptr<std::vector<AstNode*>> m_operands;
+};
 
 /* If flow control expression */
 class AstIf : public AstObject {
@@ -315,6 +348,7 @@ private:
   const std::unique_ptr<AstObject> m_retVal;
 };
 
+/** Maybe it should be an independent type, that is not derive from AstNode */
 class AstCtList : public AstNode {
 public:
   AstCtList(std::list<AstObject*>* childs);
@@ -323,8 +357,8 @@ public:
     AstObject* child4 = NULL, AstObject* child5 = NULL, AstObject* child6 = NULL);
   virtual ~AstCtList();
   void releaseOwnership();
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  virtual void accept(AstVisitor& visitor) override;
+  virtual void accept(AstConstVisitor& visitor) const override;
   AstCtList* Add(AstObject* child);
   AstCtList* Add(AstObject* child1, AstObject* child2, AstObject* child3 = NULL);
   /** The elements are guaranteed to be non-null */

@@ -44,9 +44,14 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "and(42 77)", AstOperator("and"              , new AstNumber(42), new AstNumber(77)), spec);
   EXPECT_TOSTR_EQ( "or(42 77)" , AstOperator("||"               , new AstNumber(42), new AstNumber(77)), spec);
   EXPECT_TOSTR_EQ( "or(42 77)" , AstOperator("or"               , new AstNumber(42), new AstNumber(77)), spec);
-  EXPECT_TOSTR_EQ( ";(42 77)"  , AstOperator(';'                , new AstNumber(42), new AstNumber(77)), spec);;
   EXPECT_TOSTR_EQ( "*(x)"      , AstOperator(AstOperator::eDeref, new AstSymbol("x")), spec);;
   EXPECT_TOSTR_EQ( "&(x)"      , AstOperator('&'                , new AstSymbol("x")), spec);;
+
+  spec = "AstSeq";
+  EXPECT_TOSTR_EQ( ";42"         , AstSeq(new AstNumber(42)),
+    spec + " - As a special case, when there's only one operand, ommit the parentheses");
+  EXPECT_TOSTR_EQ( ";(42 77)"    , AstSeq(new AstNumber(42), new AstNumber(77)), spec);;
+  EXPECT_TOSTR_EQ( ";(42 77 88)" , AstSeq(new AstNumber(42), new AstNumber(77), new AstNumber(88)), spec);;
 
   spec = "AstIf";
   EXPECT_TOSTR_EQ( "if(x 1)",

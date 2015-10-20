@@ -23,6 +23,7 @@ public:
     eCTConstRequired,
     eRetTypeCantHaveMutQualifier,
     eSameArgWasDefinedMultipleTimes,
+    eObjectExpected,
     eCnt
   };
 

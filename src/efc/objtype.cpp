@@ -172,11 +172,6 @@ bool ObjTypeFunda::hasMember(int op) const {
   else if (op==AstOperator::eAddrOf) {
     return true;
   }
-  // The sequence operator is a global operator, it's never a member function
-  // operator
-  else if (op==AstOperator::eSeq) {
-    assert(false);
-  }
   
   // rules specific per object type
   // ------------------------------

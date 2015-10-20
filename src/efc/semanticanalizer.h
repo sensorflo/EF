@@ -21,6 +21,7 @@ private:
   virtual void visit(AstCast& cast);
   virtual void visit(AstCtList& ctList);
   virtual void visit(AstOperator& op);
+  virtual void visit(AstSeq& seq);
   virtual void visit(AstNumber& number);
   virtual void visit(AstSymbol& symbol);
   virtual void visit(AstFunCall& funCall);

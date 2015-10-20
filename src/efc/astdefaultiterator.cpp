@@ -21,6 +21,12 @@ void AstDefaultIterator::visit(AstCtList& ctList) {
   }
 }
 
+void AstDefaultIterator::visit(AstSeq& seq) {
+  for (const auto& op: seq.operands()) {
+    op->accept(m_visitor);
+  }
+}
+
 void AstDefaultIterator::visit(AstOperator& op) {
   op.args().accept(m_visitor);
 }
