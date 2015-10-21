@@ -348,6 +348,24 @@ private:
   const std::unique_ptr<AstObject> m_retVal;
 };
 
+/** See also ObjType */
+class AstObjType : public AstNode {
+};
+
+/** See also ObjTypeClass */
+class AstClass : public AstObjType {
+public:
+  AstClass(const std::string& name, std::vector<AstNode*>* members);
+  virtual void accept(AstVisitor& visitor);
+  virtual void accept(AstConstVisitor& visitor) const;
+
+private:
+  const std::string m_name;
+  /** We're the owner of the list and of the pointees. Pointers are garanteed
+  to be non null, also the pointer to the vector.*/
+  const std::unique_ptr<std::vector<AstNode*>> m_members;
+};
+
 /** Maybe it should be an independent type, that is not derive from AstNode */
 class AstCtList : public AstNode {
 public:

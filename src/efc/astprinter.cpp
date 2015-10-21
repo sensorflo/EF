@@ -160,3 +160,7 @@ void AstPrinter::visit(const AstReturn& return_) {
   m_os << ")";
 }
 
+void AstPrinter::visit(const AstClass& class_) {
+  assert(false); // not yet implemented
+}
+

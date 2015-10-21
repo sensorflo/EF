@@ -24,6 +24,7 @@ public:
   virtual void visit(AstIf& if_);
   virtual void visit(AstLoop& loop);
   virtual void visit(AstReturn& return_);
+  virtual void visit(AstClass& class_);
 
 private:
   AstVisitor& m_visitor;

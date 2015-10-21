@@ -1,7 +1,7 @@
 #pragma once
 // If you change this list of header files, you must also modify the
 // analogous, redundant list in the Makefile
-
+#include "entity.h"
 #include <string>
 #include <list>
 #include <iostream>
@@ -15,8 +15,10 @@ namespace llvm {
   class Type;
 }
 
-/** Abstract base class for all object types */
-class ObjType {
+/** Abstract base class for all object types.
+
+Multiple AstObjType nodes may refer to one Entity. */
+class ObjType : public Entity {
 public:
   // works as bit flags
   enum Qualifiers {
@@ -177,6 +179,10 @@ private:
 
   /** Guaranteed to be non-null */
   const std::shared_ptr<const ObjType> m_pointee;
+};
+
+/** Compount-type/class */
+class ObjTypeClass : public ObjType {
 };
 
 /** Compound-type/function */

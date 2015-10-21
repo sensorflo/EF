@@ -518,6 +518,10 @@ void IrGen::visit(AstReturn& return_) {
   return_.object()->irInitLocal(m_abstractObject, m_builder);
 }
 
+void IrGen::visit(AstClass& class_){
+  assert(false); // not yet implemented
+}
+
 /** \internal We want allocas in the entry block to facilitate llvm's mem2reg
 pass.*/
 AllocaInst* IrGen::createAllocaInEntryBlock(Function* functionIr,

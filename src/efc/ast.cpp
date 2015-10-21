@@ -428,6 +428,15 @@ void AstFunCall::createAndSetObjectUsingRetObjType() {
       StorageDuration::eLocal));
 }
 
+AstClass::AstClass(const std::string& name, std::vector<AstNode*>* members) :
+  m_name(name),
+  m_members(members) {
+  assert(m_members);
+  for (const auto& member: *m_members) {
+    assert(member);
+  }
+}
+
 /** The list's elements must be non-null */
 AstCtList::AstCtList(list<AstObject*>* childs) :
   m_childs(childs ? childs : new list<AstObject*>() ) {
@@ -504,6 +513,7 @@ void AstFunCall::accept(AstConstVisitor& visitor) const { visitor.visit(*this); 
 void AstOperator::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstSeq::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstIf::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstClass::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstLoop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstReturn::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCtList::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
@@ -519,6 +529,7 @@ void AstFunCall::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstOperator::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstSeq::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstClass::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstLoop::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstReturn::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCtList::accept(AstVisitor& visitor) { visitor.visit(*this); }

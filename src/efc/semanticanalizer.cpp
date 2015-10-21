@@ -417,6 +417,10 @@ void SemanticAnalizer::visit(AstReturn& return_) {
   postConditionCheck(return_);
 }
 
+void SemanticAnalizer::visit(AstClass& class_) {
+  assert(false); // not yet implemented
+}
+
 void SemanticAnalizer::callAcceptWithinNewScope(AstObject& node) {
   Env::AutoScope scope(m_env);
   node.accept(*this);

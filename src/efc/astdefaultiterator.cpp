@@ -71,3 +71,7 @@ void AstDefaultIterator::visit(AstReturn& return_) {
   return_.retVal().accept(m_visitor);
 }
 
+void AstDefaultIterator::visit(AstClass& class_) {
+  assert(false); // not yet implemented
+}
+
