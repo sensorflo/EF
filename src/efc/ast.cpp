@@ -437,6 +437,21 @@ AstClass::AstClass(const std::string& name, std::vector<AstNode*>* members) :
   }
 }
 
+AstClass::AstClass(const std::string& name, AstNode* m1, AstNode* m2,
+  AstNode* m3) :
+  m_name(name),
+  m_members(make_unique<std::vector<AstNode*>>()) {
+  if (m1) {
+    m_members->push_back(m1);  
+  }
+  if (m2) {
+    m_members->push_back(m2);  
+  }
+  if (m3) {
+    m_members->push_back(m3);  
+  }
+}
+
 /** The list's elements must be non-null */
 AstCtList::AstCtList(list<AstObject*>* childs) :
   m_childs(childs ? childs : new list<AstObject*>() ) {

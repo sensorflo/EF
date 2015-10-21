@@ -161,6 +161,11 @@ void AstPrinter::visit(const AstReturn& return_) {
 }
 
 void AstPrinter::visit(const AstClass& class_) {
-  assert(false); // not yet implemented
+  m_os << "class(" << class_.name();
+  for (const auto& member: class_.members()) {
+    m_os << " ";
+    member->accept(*this);
+  }
+  m_os << ")";
 }
 

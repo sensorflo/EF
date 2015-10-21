@@ -352,12 +352,17 @@ private:
 class AstObjType : public AstNode {
 };
 
-/** See also ObjTypeClass */
+/** Definition of a class. See also ObjTypeClass */
 class AstClass : public AstObjType {
 public:
   AstClass(const std::string& name, std::vector<AstNode*>* members);
+  AstClass(const std::string& name, AstNode* m1 = nullptr,
+    AstNode* m2 = nullptr, AstNode* m3 = nullptr);
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  const std::string& name() const { return m_name; }
+  const std::vector<AstNode*>& members() const { return *m_members; }
 
 private:
   const std::string m_name;
