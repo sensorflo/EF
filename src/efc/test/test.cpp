@@ -27,7 +27,7 @@ string amendAst(const AstNode* ast) {
   return string("\nInput AST in its canonical form:\n") + ast->toStr() + "\n";
 }
 
-string amendAst(const auto_ptr<AstObject>& ast) {
+string amendAst(const unique_ptr<AstNode>& ast) {
   return amendAst(ast.get());
 }
 

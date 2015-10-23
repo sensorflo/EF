@@ -49,7 +49,7 @@ out/specs.html using the tools testdox and asciidoc.*/
 
 std::string amendSpec(const std::string& spec);
 std::string amendAst(const AstNode* ast);
-std::string amendAst(const std::auto_ptr<AstObject>& ast);
+std::string amendAst(const std::unique_ptr<AstNode>& ast);
 std::string amendAst(const std::unique_ptr<AstObject>& ast);
 std::string amend(llvm::Module* module);
 std::string amend(const std::unique_ptr<llvm::Module>& module);
