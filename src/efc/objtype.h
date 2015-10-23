@@ -67,9 +67,6 @@ public:
 
   virtual ObjType* clone() const = 0;
 
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const = 0;
-  std::string toStr() const;
-
   Qualifiers qualifiers() const { return m_qualifiers; }
 
   /** The objType of the created AstObject is immutable, since the AstObject has
@@ -97,11 +94,6 @@ protected:
 private:
   ObjType& operator=(const ObjType&) =delete; // for simplicity reasons
 };
-
-inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  const ObjType& ot) {
-  return ot.printTo(os);
-}
 
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   ObjType::Qualifiers qualifiers);

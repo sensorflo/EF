@@ -5,7 +5,9 @@ using namespace testing;
 using namespace std;
 
 class AnEntity : public Entity {
-  virtual string toStr() const { return string(); }
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override  {
+    return os;
+  }
 };
 
 shared_ptr<Entity> createAnEntity() {

@@ -28,12 +28,6 @@ bool Object::isStoredInMemory() const {
     m_isModifiedOrRevealsAddr;
 }
 
-string Object::toStr() const {
-  ostringstream ss;
-  ss << *this;
-  return ss.str();
-}
-
 void Object::irInitLocal(llvm::Value* irValue, llvm::IRBuilder<>& builder,
   const std::string& name) {
   assert( !m_irValueOrAddr );  // It doesn't make sense to set it twice
@@ -78,11 +72,10 @@ void Object::setIrAddr(llvm::Value* addr) {
   m_irValueOrAddr = addr;
 }
 
-basic_ostream<char>& operator<<(basic_ostream<char>& os,
-  const Object& obj) {
-  if ( obj.storageDuration()!=StorageDuration::eLocal ) {
-    os << obj.storageDuration() << "/";
+basic_ostream<char>& Object::printTo(basic_ostream<char>& os) const {
+  if ( m_storageDuration!=StorageDuration::eLocal ) {
+    os << m_storageDuration << "/";
   }
-  os << obj.objType();
+  os << *m_objType;
   return os;
 }

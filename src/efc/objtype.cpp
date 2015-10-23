@@ -17,12 +17,6 @@ ObjType& ObjType::removeQualifiers(Qualifiers qualifiers) {
   return *this;
 }
 
-string ObjType::toStr() const {
-  ostringstream ss;
-  ss << *this;
-  return ss.str();
-}
-
 bool ObjType::isVoid() const {
   static const ObjTypeFunda voidType(ObjTypeFunda::eVoid);
   return matchesFully(voidType);

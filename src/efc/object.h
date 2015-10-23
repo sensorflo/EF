@@ -23,6 +23,8 @@ public:
   Object(std::shared_ptr<const ObjType> objType,
     StorageDuration storageDuration);
 
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
+
   const ObjType& objType() const { return *m_objType.get(); }
   StorageDuration storageDuration() const { return m_storageDuration; }
   void addAccess(Access access);
@@ -33,7 +35,6 @@ public:
   (equals `can't be optimized to be a SSA value only') and `actually is stored
   in memory'. */
   bool isStoredInMemory() const;
-  virtual std::string toStr() const override;
 
 private:
   /** Is guaranteed to be non-null */
@@ -55,6 +56,3 @@ private:
   otherwise */
   llvm::Value* m_irValueOrAddr;
 };
-
-std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  const Object& obj);
