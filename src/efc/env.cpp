@@ -43,3 +43,34 @@ void Env::popScope() {
   assert(!m_ststack.empty());
   m_ststack.pop_front();
 }
+
+std::ostream& operator<<(std::ostream& os, const SymbolTable& st) {
+  os << "{";
+  bool isFirstIter = true;
+  for (const auto& stentry: st) {
+    if ( !isFirstIter ) {
+      os << ", ";
+    }
+    isFirstIter = false;
+    os << stentry.first << "=";
+    if ( stentry.second ) {
+      stentry.second->printTo(os);
+    } else {
+      os << "null";
+    }
+  }
+  return os << "}";
+}
+
+std::ostream& operator<<(std::ostream& os, const Env& env) {
+  os << "{";
+  bool isFirstIter = true;
+  for (auto const& st: env.m_ststack) {
+    if ( !isFirstIter ) {
+      os << ", ";
+    }
+    isFirstIter = false;
+    os << st;
+  }
+  return os << "}";
+}

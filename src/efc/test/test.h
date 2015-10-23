@@ -5,6 +5,7 @@
 class AstNode;
 class AstObject;
 class ErrorHandler;
+class Env;
 namespace llvm {
   class Module;
 }
@@ -53,6 +54,7 @@ std::string amendAst(const std::unique_ptr<AstObject>& ast);
 std::string amend(llvm::Module* module);
 std::string amend(const std::unique_ptr<llvm::Module>& module);
 std::string amend(const ErrorHandler& errorHandler);
+std::string amend(const Env& env);
 
 #define EXPECT_MATCHES_FULLY( expected_obj_type, actual_obj_type ) \
   EXPECT_PRED2( ObjType::matchesFully_, expected_obj_type, actual_obj_type )

@@ -1,6 +1,7 @@
 #include "test.h"
 #include "../ast.h"
 #include "../errorhandler.h"
+#include "../env.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/raw_os_ostream.h"
 #include <sstream>
@@ -55,5 +56,11 @@ string amend(const ErrorHandler& errorHandler) {
   } else {
     ss << "\n" << errorHandler << '\n';
   }
+  return ss.str();
+}
+
+string amend(const Env& env) {
+  stringstream ss;
+  ss << "\nEnvironment:\n" << env;
   return ss.str();
 }
