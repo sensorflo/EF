@@ -54,6 +54,62 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::MatchType mt) 
   }
 }
 
+ObjTypeQuali::ObjTypeQuali(Qualifiers qualifiers,
+  std::shared_ptr<const ObjType> type) :
+  ObjType(qualifiers),
+  m_qualifiers(qualifiers),
+  m_type(type) {
+  assert(m_type);
+}
+
+std::basic_ostream<char>& ObjTypeQuali::printTo(
+  std::basic_ostream<char>& os) const {
+  if (eMutable & m_qualifiers) {
+    os << "mut-";
+  }
+  return os << *m_type;
+}
+
+ObjType::MatchType ObjTypeQuali::match(const ObjType& dst, bool isLevel0) const {
+  assert(0);
+  return eNoMatch;
+}
+
+bool ObjTypeQuali::is(EClass class_) const {
+  assert(0);
+  return false;
+}
+
+int ObjTypeQuali::size() const {
+  assert(0);
+  return 0;
+}
+
+ObjType* ObjTypeQuali::clone() const {
+  assert(0);
+  return nullptr;
+}
+
+AstObject* ObjTypeQuali::createDefaultAstObject() const {
+  assert(0);
+  return nullptr;
+}
+
+llvm::Type* ObjTypeQuali::llvmType() const {
+  assert(0);
+  return nullptr;
+}
+
+bool ObjTypeQuali::hasMember(int op) const {
+  assert(0);
+  return false;
+}
+
+bool ObjTypeQuali::hasConstructor(const ObjType& other) const {
+  assert(0);
+  return false;
+}
+
 ObjTypeFunda::ObjTypeFunda(EType type, Qualifiers qualifiers)  :
   ObjType(qualifiers), m_type(type) {
   if ( type==eVoid ) {

@@ -102,6 +102,27 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   ObjType::MatchType mt);
 
 
+class ObjTypeQuali : public ObjType {
+public:
+  ObjTypeQuali(const Qualifiers qualifiers, std::shared_ptr<const ObjType> type);
+
+  std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
+
+  MatchType match(const ObjType& dst, bool isLevel0 = true) const override;
+  bool is(EClass class_) const override;
+  int size() const override;
+  ObjType* clone() const override;
+  AstObject* createDefaultAstObject() const override;
+  llvm::Type* llvmType() const override;
+  bool hasMember(int op) const override;
+  bool hasConstructor(const ObjType& other) const override;
+
+private:
+  const Qualifiers m_qualifiers;
+  /** Type being qualified. Garanteed to be non-null */
+  const std::shared_ptr<const ObjType> m_type;
+};
+
 /** Fundamental type (int, bool, double etc) and also pointer type. 'General
 scalar' (note that it also includes abstract objects) might be a better
 name. */
