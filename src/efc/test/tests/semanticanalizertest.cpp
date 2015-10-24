@@ -597,7 +597,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
-    GIVEN_an_access_to_a_sequence_operator,
+    GIVEN_an_access_to_a_sequence,
     THEN_the_access_value_of_seqs_last_operand_equals_that_outer_access_value_AND_the_access_value_of_the_leading_operands_is_eIgnore))
 {
   // setup
@@ -610,8 +610,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     new AstSeq(
       new AstDataDef("x",
         new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable)),
-      new AstOperator('=', // imposes write access onto the seq operator
-        new AstSeq( leadingOpAst, lastOpAst), // the seq operator under test
+      new AstOperator('=', // imposes write access onto the sequence
+        new AstSeq( leadingOpAst, lastOpAst), // the sequence under test
         new AstNumber(77)))};
 
   // exercise
@@ -623,7 +623,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
-    GIVEN_sequence_operator_WITH_the_last_operator_not_being_an_AstObject,
+    GIVEN_a_sequence_WITH_the_last_operator_not_being_an_AstObject,
     THEN_it_reports_eObjectExpected))
 {
   typedef AstCtList AstNotAnObject; // i.e. not derived from AstObject
@@ -713,26 +713,30 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), opAst->objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
+}
 
-  spec = "Example: Sequence operator (;) ignores the type of the lhs operand";
-  {
-    // setup
-    Env env;
-    ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-    unique_ptr<AstObject> ast{
-      new AstSeq(
-        new AstNumber(0, ObjTypeFunda::eInt),
-        new AstNumber(0, ObjTypeFunda::eBool))};
+// aka temporary objects are immutable
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_sequence,
+    transform,
+    sets_the_objectType_of_the_seq_node_to_the_type_of_the_last_operand)) {
 
-    // exercise
-    UUT.analyze(*ast.get());
+  // setup
+  Env env;
+  ErrorHandler errorHandler;
+  TestingSemanticAnalizer UUT(env, errorHandler);
+  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  unique_ptr<AstObject> ast{
+    new AstSeq(
+      new AstNumber(0, ObjTypeFunda::eInt),
+      new AstNumber(0, ObjTypeFunda::eBool))};
 
-    // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
-      amendAst(ast) << amendSpec(spec);
-  }
+  // exercise
+  UUT.analyze(*ast.get());
+
+  // verify
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+    amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
