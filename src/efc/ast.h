@@ -5,6 +5,7 @@
 #include "access.h"
 #include "generalvalue.h"
 #include "storageduration.h"
+#include "declutils.h"
 
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Function.h"
@@ -23,7 +24,7 @@ class ErrorHandler;
 /** See also Entity */
 class AstNode {
 public:
-  virtual ~AstNode() {};
+  virtual ~AstNode() = default;
 
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
@@ -38,14 +39,17 @@ public:
   virtual bool isObjTypeNoReturn() const { return false;}
 
   std::string toStr() const;
+
+protected:
+  AstNode() = default;
+
+private:
+  NEITHER_COPY_NOR_MOVEABLE(AstNode);
 };
 
 /** See also Object */
 class AstObject : public AstNode {
 public:
-  AstObject(Access access, std::shared_ptr<Object> object);
-  AstObject(Access access = eRead);
-  AstObject(std::shared_ptr<Object> object);
   virtual ~AstObject();
 
   virtual bool isCTConst() const { return false; }
@@ -63,6 +67,10 @@ public:
   bool objectIsModifiedOrRevealsAddr() const;
   
 protected:
+  AstObject(Access access, std::shared_ptr<Object> object);
+  AstObject(Access access = eRead);
+  AstObject(std::shared_ptr<Object> object);
+
   /** Access to this AST node. Contrast this with access to the object refered
   to by this AST node. */
   Access m_access;
@@ -80,6 +88,7 @@ class AstBlock : public AstObject {
 public:
   AstBlock(AstObject* body);
   virtual ~AstBlock();
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   AstObject& body() const { return *m_body.get(); }
@@ -93,6 +102,7 @@ public:
   AstCast(ObjType* objType, AstObject* child);
   AstCast(ObjTypeFunda::EType objType, AstObject* child);
   virtual ~AstCast();
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   AstObject& child() const { return *m_child; }
@@ -114,6 +124,7 @@ public:
     std::shared_ptr<const ObjType> ret,
     AstObject* body);
   virtual ~AstFunDef();
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
@@ -191,7 +202,7 @@ class AstSymbol : public AstObject {
 public:
   AstSymbol(const std::string& name, Access access = eRead) :
     AstObject(access), m_name(name) { }
-  virtual ~AstSymbol() {};
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   const std::string& name() const { return m_name; }
@@ -204,6 +215,7 @@ class AstFunCall : public AstObject {
 public:
   AstFunCall(AstObject* address, AstCtList* args = NULL);
   virtual ~AstFunCall();
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual AstObject& address () const { return *m_address; }
@@ -242,6 +254,7 @@ public:
     eMemberAccess,
     eOther
   };
+
   AstOperator(char op, AstCtList* args);
   AstOperator(const std::string& op, AstCtList* args);
   AstOperator(EOperation op, AstCtList* args);
@@ -249,6 +262,7 @@ public:
   AstOperator(const std::string& op, AstObject* operand1 = NULL, AstObject* operand2 = NULL);
   AstOperator(EOperation op, AstObject* operand1 = NULL, AstObject* operand2 = NULL);
   virtual ~AstOperator();
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   EOperation op() const { return m_op; }
@@ -264,9 +278,6 @@ public:
 private:
   friend std::basic_ostream<char>& operator<<(std::basic_ostream<char>&,
     AstOperator::EOperation);
-
-  AstOperator(const AstOperator&);
-  AstOperator& operator=(const AstOperator&);
 
   const EOperation m_op;
   /** We're the owner. Is garanteed to be non-null */
@@ -304,6 +315,7 @@ class AstIf : public AstObject {
 public:
   AstIf(AstObject* cond, AstObject* action, AstObject* elseAction = NULL);
   virtual ~AstIf();
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   AstObject& condition() const { return *m_condition; }
@@ -323,6 +335,7 @@ class AstLoop : public AstObject {
 public:
   AstLoop(AstObject* cond, AstObject* body);
   virtual ~AstLoop();
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   AstObject& condition() const { return *m_condition; }
@@ -339,6 +352,7 @@ class AstReturn : public AstObject {
 public:
   AstReturn(AstObject* retVal);
   virtual ~AstReturn();
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
@@ -380,6 +394,7 @@ public:
   AstCtList(AstObject* child1, AstObject* child2, AstObject* child3 = NULL,
     AstObject* child4 = NULL, AstObject* child5 = NULL, AstObject* child6 = NULL);
   virtual ~AstCtList();
+
   void releaseOwnership();
   virtual void accept(AstVisitor& visitor) override;
   virtual void accept(AstConstVisitor& visitor) const override;
@@ -390,9 +405,6 @@ public:
   virtual const ObjType& objType() const;
 
 private:
-  AstCtList(const AstCtList&);
-  AstCtList& operator=(const AstCtList&);
-
   /** We're the owner of the list and of the pointees. Pointers are garanteed
   to be non null*/
   std::list<AstObject*>*const m_childs;

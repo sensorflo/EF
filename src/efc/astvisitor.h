@@ -1,9 +1,11 @@
 #pragma once
 #include "astforwards.h"
+#include "declutils.h"
 
 class AstVisitor {
 public:
-  virtual ~AstVisitor() {};
+  virtual ~AstVisitor() = default;
+
   virtual void visit(AstNop& nop) =0;
   virtual void visit(AstBlock& block) =0;
   virtual void visit(AstCast& cast) =0;
@@ -19,11 +21,18 @@ public:
   virtual void visit(AstLoop& loop) =0;
   virtual void visit(AstReturn& return_) =0;
   virtual void visit(AstClass& class_) =0;
+
+protected:
+  AstVisitor() = default;
+
+private:
+  NEITHER_COPY_NOR_MOVEABLE(AstVisitor);
 };
 
 class AstConstVisitor {
 public:
-  virtual ~AstConstVisitor() {};
+  virtual ~AstConstVisitor() = default;
+
   virtual void visit(const AstNop& nop) =0;
   virtual void visit(const AstBlock& block) =0;
   virtual void visit(const AstCast& cast) =0;
@@ -39,4 +48,10 @@ public:
   virtual void visit(const AstLoop& loop) =0;
   virtual void visit(const AstReturn& return_) =0;
   virtual void visit(const AstClass& class_) =0;
+
+protected:
+  AstConstVisitor() = default;
+
+private:
+  NEITHER_COPY_NOR_MOVEABLE(AstConstVisitor);
 };

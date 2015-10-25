@@ -12,7 +12,7 @@ yy::Parser implementation extension. Has two related responsibilities:
    AST. Currently the design is that it is intentionally left open who is
    responsible for what, so that responsibilities can easily be moved between
    the two.*/
-
+#include "declutils.h"
 #include "objtype.h"
 #include "storageduration.h"
 #include <list>
@@ -22,12 +22,13 @@ class Env;
 class ErrorHandler;
 class ParserExt;
 
-class RawAstDataDef {
+class RawAstDataDef final {
 public:
   RawAstDataDef(ErrorHandler& errorHandler);
   RawAstDataDef(ErrorHandler& errorHandler, const std::string& name,
     AstCtList* ctorArgs, std::shared_ptr<const ObjType> objType,
     StorageDuration storageDuration);
+  ~RawAstDataDef() = default;
 
   void setName(const std::string& name);
   void setCtorArgs(AstCtList* ctorArgs);
@@ -36,6 +37,9 @@ public:
 
 private:
   friend ParserExt;
+
+  NEITHER_COPY_NOR_MOVEABLE(RawAstDataDef);
+
   ErrorHandler& m_errorHandler;
   std::string m_name;
   AstCtList* m_ctorArgs;
@@ -45,9 +49,10 @@ private:
 };
 
 /** See file's decription */
-class ParserExt {
+class ParserExt final {
 public:
   ParserExt(Env& env, ErrorHandler& errorHandler);
+  ~ParserExt() = default;
 
   AstOperator* mkOperatorTree(const std::string& op, AstCtList* args);
   AstOperator* mkOperatorTree(const std::string& op, AstObject* child1,
@@ -69,6 +74,8 @@ public:
   ErrorHandler& errorHandler() { return m_errorHandler; }
 
 private:
+  NEITHER_COPY_NOR_MOVEABLE(ParserExt);
+
   Env& m_env;
   ErrorHandler& m_errorHandler;
 };

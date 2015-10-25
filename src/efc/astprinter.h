@@ -10,6 +10,7 @@ one elements should only print that but not itself.*/
 class AstPrinter : private AstConstVisitor {
 public:
   AstPrinter(std::basic_ostream<char>& os);
+
   static std::string toStr(const AstNode& root);
   static std::basic_ostream<char>& printTo(const AstNode& root,
     std::basic_ostream<char>& os);

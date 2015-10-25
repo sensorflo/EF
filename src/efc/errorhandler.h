@@ -1,4 +1,5 @@
 #pragma once
+#include "declutils.h"
 #include <list>
 #include <ostream>
 #include <stdexcept>
@@ -7,7 +8,7 @@
 class ErrorHandler;
 
 /** See also BuildError */
-class Error {
+class Error final {
 public:
   enum No {
     eNone,
@@ -27,6 +28,8 @@ public:
     eCnt
   };
 
+  ~Error() = default;
+
   /** Unless given error is disabled, adds a new Error to ErrorHandler and
   throws an according BuildError. */
   static void throwError(ErrorHandler& errorHandler, No no);
@@ -34,6 +37,8 @@ public:
   No no() const { return m_no; }
 
 private:
+  NEITHER_COPY_NOR_MOVEABLE(Error);
+
   Error(No no);
   No m_no;
 };
@@ -44,12 +49,12 @@ std::ostream& operator<<(std::ostream& os, Error::No no);
 
 std::ostream& operator<<(std::ostream& os, const Error& error);
 
-class ErrorHandler {
+class ErrorHandler final {
 public:
   typedef std::list<Error*> Container;
 
   ErrorHandler();
-  virtual ~ErrorHandler();
+  ~ErrorHandler();
 
   /** Errorhandler overtakes ownership */
   void add(Error* error) { m_errors.push_back(error); }
@@ -59,6 +64,8 @@ public:
   bool isReportingDisabledFor(Error::No no) const;
 
 private:
+  NEITHER_COPY_NOR_MOVEABLE(ErrorHandler);
+
   /** We're the owner of the pointees */
   Container m_errors;
   std::array<bool,Error::eCnt> m_disabledErrors;

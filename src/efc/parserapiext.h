@@ -1,4 +1,5 @@
 #pragma once
+#include "declutils.h"
 #include "gensrc/parser.hpp"
 #include <vector>
 #include <iostream>
@@ -11,7 +12,7 @@ provided by ParserApiExt are directly provided by yy::Parser.
 
 ParserExt is similar, but extends the private implementation details of
 Parser. */
-class ParserApiExt {
+class ParserApiExt final {
 public:
   enum TokenClass {
     TKStarter,
@@ -30,6 +31,10 @@ public:
   static yy::Parser::symbol_type makeToken(yy::Parser::token_type tt);
 
 private:
+  ParserApiExt() = delete;
+  ~ParserApiExt() = delete;
+  NEITHER_COPY_NOR_MOVEABLE(ParserApiExt);
+
   enum SemanticValueType {
     SVTInvalid,
     SVTVoid,

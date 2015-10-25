@@ -54,7 +54,8 @@ gensrc/scanner.cpp: scanner.l | gensrc
 
 # The author sadly doesn't know how to automatically make the dependencies,
 # that's why they are written explicitely and redundantely.
-efc.h.pch: efc.h objtype.h access.h ast.h generalvalue.h storageduration.h entity.h astforwards.h
+efc.h.pch: efc.h objtype.h access.h ast.h generalvalue.h storageduration.h \
+           entity.h astforwards.h declutils.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
 out/%.o: gensrc/%.cpp efc.h.pch | out

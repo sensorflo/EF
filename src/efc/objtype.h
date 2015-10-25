@@ -46,7 +46,6 @@ public:
 
     eFunction
   };
-  virtual ~ObjType() {};
 
   bool isVoid() const;
   bool isNoreturn() const;
@@ -85,9 +84,6 @@ public:
   static bool matchesSaufQualifiers_(const ObjType& src, const ObjType& dst);
 
   virtual std::shared_ptr<const ObjType> unqualifiedObjType() const;
-
-private:
-  ObjType& operator=(const ObjType&) =delete; // for simplicity reasons
 };
 
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
@@ -171,7 +167,6 @@ public:
   bool isValueInRange(double val) const;
 
 private:
-  ObjTypeFunda& operator=(const ObjTypeFunda&) =delete; // for simplicity reasons
   const EType m_type;
 };
 
@@ -195,8 +190,6 @@ public:
   const ObjType& pointee() const;
 
 private:
-  ObjTypePtr& operator=(const ObjTypePtr&) =delete; // for simplicity reasons
-
   /** Guaranteed to be non-null */
   const std::shared_ptr<const ObjType> m_pointee;
 };
@@ -232,8 +225,6 @@ public:
   const ObjType& ret() const { return *m_ret; }
 
 private:
-  ObjTypePtr& operator=(const ObjTypePtr&) =delete; // for simplicity reasons
-
   /** m_args itself and the pointers in the cointainer are garanteed to be
   non-null. */
   const std::unique_ptr<std::list<std::shared_ptr<const ObjType>>> m_args;

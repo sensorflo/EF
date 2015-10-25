@@ -1,4 +1,5 @@
 #pragma once
+#include "declutils.h"
 #include <string>
 #include <memory>
 
@@ -46,6 +47,8 @@ public:
 
 private:
   friend class TestingDriver;
+
+  NEITHER_COPY_NOR_MOVEABLE(Driver);
 
   std::basic_ostream<char>& print(const yy::location& loc);
   

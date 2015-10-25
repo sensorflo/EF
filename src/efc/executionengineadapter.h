@@ -1,4 +1,5 @@
 #pragma once
+#include "declutils.h"
 #include "llvm/IR/Module.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include <string>
@@ -10,9 +11,10 @@ namespace llvm {
 
 /** Adapter to llvm::ExecutionEngine which makes JIT executing functions more
 convenient. */
-class ExecutionEngineApater {
+class ExecutionEngineApater final {
 public:
   ExecutionEngineApater(std::unique_ptr<llvm::Module> module);
+  ~ExecutionEngineApater() = default;
 
   llvm::Module& module() { return m_module; }
 
@@ -28,6 +30,8 @@ public:
   }
 
 private:
+  NEITHER_COPY_NOR_MOVEABLE(ExecutionEngineApater);
+
   llvm::Module& m_module;
   /** Guaranteed to be non-null. We're _not_ the owner. */
   llvm::ExecutionEngine* m_executionEngine;
