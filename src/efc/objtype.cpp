@@ -416,3 +416,50 @@ llvm::Type* ObjTypeFun::llvmType() const {
   assert(false); // not implemented yet
 }
 
+ObjTypeClass::ObjTypeClass(const std::string& name) :
+  m_name(name) {
+}
+
+std::basic_ostream<char>& ObjTypeClass::printTo(std::basic_ostream<char>& os) const {
+  assert(false);
+  return os;
+}
+
+ObjType::MatchType ObjTypeClass::match(const ObjType& dst, bool isLevel0) const {
+  return dst.match2(*this, isLevel0);
+}
+
+ObjType::MatchType ObjTypeClass::match2(const ObjTypeClass& src, bool isRoot) const {
+  assert(false);
+  return eNoMatch;
+}
+
+bool ObjTypeClass::is(EClass class_) const {
+  assert(false);
+  return false;
+}
+
+int ObjTypeClass::size() const {
+  assert(false);
+  return 0;
+}
+
+AstObject* ObjTypeClass::createDefaultAstObject() const {
+  assert(false);
+  return nullptr;
+}
+
+llvm::Type* ObjTypeClass::llvmType() const {
+  assert(false);
+  return nullptr;
+}
+
+bool ObjTypeClass::hasMember(int op) const {
+  assert(false);
+  return false;
+}
+
+bool ObjTypeClass::hasConstructor(const ObjType& other) const {
+  assert(false);
+  return false;
+}

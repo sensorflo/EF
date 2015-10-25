@@ -11,6 +11,7 @@ class ObjTypeQuali;
 class ObjTypeFunda;
 class ObjTypePtr;
 class ObjTypeFun;
+class ObjTypeClass;
 class AstObject;
 namespace llvm {
   class Type;
@@ -58,6 +59,7 @@ public:
   virtual MatchType match2(const ObjTypeFunda& src, bool isLevel0) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypePtr& src, bool isLevel0) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypeFun& src, bool isLevel0) const { return eNoMatch; }
+  virtual MatchType match2(const ObjTypeClass& src, bool isLevel0) const { return eNoMatch; }
 
   virtual bool is(EClass class_) const =0;
   /** Size in bits */
@@ -187,10 +189,6 @@ private:
   const std::shared_ptr<const ObjType> m_pointee;
 };
 
-/** Compount-type/class */
-class ObjTypeClass : public ObjType {
-};
-
 /** Compound-type/function */
 class ObjTypeFun : public ObjType {
 public:
@@ -220,4 +218,24 @@ private:
   non-null. */
   const std::unique_ptr<std::list<std::shared_ptr<const ObjType>>> m_args;
   const std::shared_ptr<const ObjType> m_ret;
+};
+
+/** Compount-type/class */
+class ObjTypeClass : public ObjType {
+public:
+  ObjTypeClass(const std::string& name);
+
+  std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
+  MatchType match(const ObjType& dst, bool isLevel0) const override;
+  using ObjType::match2;
+  MatchType match2(const ObjTypeClass& src, bool isLevel0) const override;
+  AstObject* createDefaultAstObject() const override;
+  llvm::Type* llvmType() const override;
+  bool hasMember(int) const override;
+  bool hasConstructor(const ObjType& other) const override;
+  bool is(EClass class_) const override;
+  int size() const override;
+
+private:
+  const std::string m_name;
 };
