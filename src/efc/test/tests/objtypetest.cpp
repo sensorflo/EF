@@ -202,6 +202,39 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   TEST_MATCH( "", ObjType::eNoMatch,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     class1);
+
+  // symbol <-> symbol
+  // -----------------
+  TEST_MATCH( "same symbol", ObjType::eFullMatch,
+    ObjTypeSymbol("x"),
+    ObjTypeSymbol("x"));
+  TEST_MATCH( "different symbol", ObjType::eNoMatch,
+    ObjTypeSymbol("x"),
+    ObjTypeSymbol("y"));
+
+  // symbol <-> other / other <-> symbol
+  // ---------------------------------------
+  // Currently each different name is a distinct type
+  TEST_MATCH( "", ObjType::eNoMatch,
+    ObjTypeSymbol("x"),
+    ObjTypeFunda(ObjTypeFunda::eInt));
+  TEST_MATCH( "", ObjType::eNoMatch,
+    ObjTypeSymbol("x"),
+    ObjTypeFunda(ObjTypeFunda::eInt));
+  TEST_MATCH( "", ObjType::eNoMatch,
+    ObjTypeSymbol("x"),
+    ObjTypeFun(
+      ObjTypeFun::createArgs()));
+  TEST_MATCH( "", ObjType::eNoMatch,
+    ObjTypeFun(
+      ObjTypeFun::createArgs()),
+    ObjTypeSymbol("x"));
+  TEST_MATCH( "", ObjType::eNoMatch,
+    ObjTypeSymbol("x"),
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
+  TEST_MATCH( "", ObjType::eNoMatch,
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+    ObjTypeSymbol("x"));
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(

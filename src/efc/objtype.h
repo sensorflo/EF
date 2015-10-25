@@ -261,6 +261,7 @@ public:
 
   std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
   MatchType match(const ObjType& dst, bool isLevel0  = true) const override;
+  MatchType match2(const ObjTypeSymbol& src, bool isLevel0) const override;
   bool is(EClass class_) const override;
   int size() const override;
   AstObject* createDefaultAstObject() const override;

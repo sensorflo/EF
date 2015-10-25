@@ -514,6 +514,11 @@ ObjType::MatchType ObjTypeSymbol::match(const ObjType& dst, bool isLevel0) const
   return dst.match2(*this, isLevel0);
 }
 
+ObjType::MatchType ObjTypeSymbol::match2(const ObjTypeSymbol& src, bool isLevel0) const {
+  // Currently each different name is a distinct type
+  return m_name == src.m_name ? eFullMatch : eNoMatch;
+}
+
 bool ObjTypeSymbol::is(EClass class_) const {
   assert(false);
   return false;
