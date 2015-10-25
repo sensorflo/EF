@@ -19,6 +19,9 @@ public:
 
 protected:
   Entity() = default;
+
+private:
+  NEITHER_COPY_NOR_MOVEABLE(Entity);
 };
 
 inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,

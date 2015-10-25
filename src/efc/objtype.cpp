@@ -125,10 +125,6 @@ int ObjTypeQuali::size() const {
   return m_type->size();
 }
 
-ObjType* ObjTypeQuali::clone() const {
-  return new ObjTypeQuali(*this);
-}
-
 AstObject* ObjTypeQuali::createDefaultAstObject() const {
   return m_type->createDefaultAstObject();
 }
@@ -308,10 +304,6 @@ bool ObjTypeFunda::isValueInRange(double val) const {
   return false;
 }
 
-ObjTypeFunda* ObjTypeFunda::clone() const {
-  return new ObjTypeFunda(*this);
-}
-
 bool ObjType::matchesFully_(const ObjType& rhs, const ObjType& lhs) {
   return rhs.matchesFully(lhs);
 }
@@ -324,11 +316,6 @@ ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee) :
   ObjTypeFunda(ePointer),
   m_pointee(move(pointee)) {
   assert(m_pointee);
-}
-
-ObjTypePtr::ObjTypePtr(const ObjTypePtr& other) :
-  ObjTypeFunda{other},
-  m_pointee{other.m_pointee->clone()} {
 }
 
 ObjType::MatchType ObjTypePtr::match(const ObjType& dst, bool isLevel0) const {
@@ -350,10 +337,6 @@ ObjType::MatchType ObjTypePtr::match2(const ObjTypePtr& src, bool isRoot) const 
   return ObjTypeFunda::match2(static_cast<const ObjTypeFunda&>(src), isRoot);
 }
 
-ObjTypePtr* ObjTypePtr::clone() const {
-  return new ObjTypePtr{*this};
-};
-
 std::basic_ostream<char>& ObjTypePtr::printTo(
   std::basic_ostream<char>& os) const {
   ObjTypeFunda::printTo(os);
@@ -365,8 +348,8 @@ llvm::Type* ObjTypePtr::llvmType() const {
   return PointerType::get(m_pointee->llvmType(), 0);
 }
 
-const ObjType& ObjTypePtr::pointee() const {
-  return *m_pointee.get();
+std::shared_ptr<const ObjType> ObjTypePtr::pointee() const {
+  return m_pointee;
 };
 
 ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret) :
@@ -378,15 +361,6 @@ ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType>>* args, shared_ptr<const O
   assert(m_ret);
   for (list<shared_ptr<const ObjType> >::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
     assert(*i);
-  }
-}
-
-ObjTypeFun::ObjTypeFun(const ObjTypeFun& other) :
-  ObjType{other},
-  m_args{std::make_unique<list<shared_ptr<const ObjType>>>()},
-  m_ret{other.m_ret->clone()} {
-  for ( const auto& srcArg : *other.m_args  ) {
-    m_args->push_back(shared_ptr<ObjType>{srcArg->clone()});
   }
 }
 
@@ -407,10 +381,6 @@ ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& src, bool isRoot) const 
 
 bool ObjTypeFun::is(ObjType::EClass class_) const {
   return class_ == eFunction;
-}
-
-ObjTypeFun* ObjTypeFun::clone() const {
-  return new ObjTypeFun(*this);
 }
 
 basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {

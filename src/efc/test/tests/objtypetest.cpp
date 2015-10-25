@@ -248,55 +248,6 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   }
 }
 
-TEST(ObjTypeTest, MAKE_DISABLED_TEST_NAME1(
-    clone)) {
-#if 0
-  {
-    ObjTypeFunda src{ ObjTypeFunda::eInt };
-    unique_ptr<ObjType> clone{src.clone()};
-    EXPECT_MATCHES_FULLY( src, *clone );
-  }
-
-  {
-    ObjTypeFunda src{ ObjTypeFunda::eBool, ObjType::eMutable };
-    unique_ptr<ObjType> clone{src.clone()};
-    EXPECT_MATCHES_FULLY( src, *clone );
-  }
-
-  {
-    ObjTypePtr src{ make_shared<ObjTypeFunda>(ObjTypeFunda::eInt) };
-    unique_ptr<ObjType> clone{src.clone()};
-    EXPECT_MATCHES_FULLY( src, *clone );
-  }
-
-  {
-    ObjTypePtr src{
-      make_shared<ObjTypePtr>(
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)) };
-    unique_ptr<ObjType> clone{src.clone()};
-    EXPECT_MATCHES_FULLY( src, *clone );
-  }
-
-  {
-    ObjTypeFun src{
-      ObjTypeFun::createArgs(),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt) };
-    unique_ptr<ObjType> clone{src.clone()};
-    EXPECT_MATCHES_FULLY( src, *clone );
-  }
-
-  {
-    ObjTypeFun src{
-      ObjTypeFun::createArgs(
-        new ObjTypeFunda(ObjTypeFunda::eInt),
-        new ObjTypeFunda(ObjTypeFunda::eBool)),
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt) };
-    unique_ptr<ObjType> clone{src.clone()};
-    EXPECT_MATCHES_FULLY( src, *clone );
-  }
-#endif
-}
-
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
     class_)) {
 

@@ -63,8 +63,6 @@ public:
   /** Size in bits */
   virtual int size() const =0;
 
-  virtual ObjType* clone() const = 0;
-
   virtual Qualifiers qualifiers() const { return eNoQualifier; }
 
   /** The objType of the created AstObject is immutable, since the AstObject has
@@ -113,7 +111,6 @@ public:
 
   bool is(EClass class_) const override;
   int size() const override;
-  ObjType* clone() const override;
   AstObject* createDefaultAstObject() const override;
   llvm::Type* llvmType() const override;
   bool hasMember(int op) const override;
@@ -155,8 +152,6 @@ public:
   virtual bool is(EClass class_) const;
   virtual int size() const;
 
-  virtual ObjTypeFunda* clone() const;
-
   EType type() const { return m_type; }
   virtual AstObject* createDefaultAstObject() const;
   virtual llvm::Type* llvmType() const;
@@ -175,19 +170,17 @@ private:
 class ObjTypePtr : public ObjTypeFunda {
 public:
   ObjTypePtr(std::shared_ptr<const ObjType> pointee);
-  ObjTypePtr(const ObjTypePtr&);
 
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
   using ObjType::match2;
   using ObjTypeFunda::match2;
   virtual MatchType match2(const ObjTypePtr& src, bool isLevel0) const;
 
-  virtual ObjTypePtr* clone() const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
 
   virtual llvm::Type* llvmType() const;
 
-  const ObjType& pointee() const;
+  std::shared_ptr<const ObjType> pointee() const;
 
 private:
   /** Guaranteed to be non-null */
@@ -203,7 +196,7 @@ class ObjTypeFun : public ObjType {
 public:
   ObjTypeFun(std::list<std::shared_ptr<const ObjType> >* args,
     std::shared_ptr<const ObjType> ret = std::shared_ptr<const ObjType>());
-  ObjTypeFun(const ObjTypeFun&);
+
   static std::list<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = NULL,
     const ObjType* arg2 = NULL, const ObjType* arg3 = NULL);
 
@@ -218,8 +211,6 @@ public:
 
   virtual bool is(EClass class_) const;
   virtual int size() const { return -1;}
-
-  virtual ObjTypeFun* clone() const;
 
   const std::list<std::shared_ptr<const ObjType> >& args() const { return *m_args; }
   const ObjType& ret() const { return *m_ret; }

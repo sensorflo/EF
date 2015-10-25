@@ -149,9 +149,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
     }
     // Addrof 
     else if ( opop == AstOperator::eAddrOf) {
-      objType =
-        make_shared<ObjTypePtr>(
-          shared_ptr<ObjType>{argschilds.back()->objType().clone()});
+      objType = make_shared<ObjTypePtr>(argschilds.back()->objTypeAsSp());
     }
     // 
     else if ( opop == AstOperator::eDeref) {
@@ -160,7 +158,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
       // member function.
       const ObjTypePtr& opObjType =
         static_cast<const ObjTypePtr&>(argschilds.back()->objType());
-      objType.reset(opObjType.pointee().clone());
+      objType = opObjType.pointee();
 
       // op.object is semantically a redundant copy of the object denoting
       // the derefee. 'Copy' as good as we can. Since the address of the
@@ -356,15 +354,15 @@ void SemanticAnalizer::visit(AstIf& if_) {
     }
   }
 
-  // The AstIf's obj type is a temporary
+  // The AstIf's obj type is a temporary with the underlying type of either
+  // clause; now that we now both clauses have the same type.
   shared_ptr<const ObjType> objType;
   if ( if_.elseAction() ) {
     if ( !actionIsOfTypeNoreturn ) {
-      objType.reset(if_.action().objType().clone());
+      objType = if_.action().objType().unqualifiedObjType();
     } else {
-      objType.reset(if_.elseAction()->objType().clone());
+      objType = if_.elseAction()->objType().unqualifiedObjType();
     }
-    objType = objType->unqualifiedObjType();
   } else {
     objType = make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid);
   }
