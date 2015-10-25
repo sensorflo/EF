@@ -575,8 +575,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
-    GIVEN_an_access_to_a_bock,
-    THEN_the_access_value_of_its_body_is_always_eRead))
+    GIVEN_any_access_to_a_bock,
+    THEN_the_access_value_of_its_body_is_still_always_eRead))
 {
   // setup
   Env env;
@@ -1037,9 +1037,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     Error::eNoImplicitConversion, spec);
 }
 
+// i.e. the if expression is just like an operator, which is just like an
+// call: they return temporaries, i.e. new objects on the stack
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_if_expression_with_else_clause_AND_none_of_the_two_clauses_is_of_obj_type_noreturn,
-    THEN_the_if_expressions_obj_type_is_exactly_that_of_either_of_its_two_clauses)) {
+    THEN_the_if_expressions_obj_type_is_a_temporay)) {
 
   // this specification only looks at operands with identical types. Other
   // specifications specify how to introduce implicit conversions when the
@@ -1087,7 +1089,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
       amendAst(ast);
   }
 
-  spec = "Example: both clauses are of type mutable-bool -> whole if is of type mutable-bool";
+  spec = "Example: both clauses are of type mutable-bool -> whole if is of type (immutable) bool";
   {
     // setup
     Env env;
@@ -1109,8 +1111,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 
     // verify
     EXPECT_MATCHES_FULLY(
-      ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)),
-      ast->objType()) <<
+      ObjTypeFunda(ObjTypeFunda::eBool),
+      if_->objType()) <<
       amendAst(ast);
   }
 }
@@ -1249,25 +1251,26 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   }
 }
 
+// i.e. an if expression is just as an operator which in turn is just as an
+// call
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
-    GIVEN_an_access_to_an_if_expression,
-    THEN_the_access_value_of_both_clauses_equal_that_outer_access_value))
+    GIVEN_any_access_to_an_if_expression,
+    THEN_the_access_value_of_both_clauses_is_still_always_eRead))
 {
-  string spec = "Example: read access";
+  string spec = "Example: eIgnore access";
   {
     // setup
     Env env;
     ErrorHandler errorHandler;
     TestingSemanticAnalizer UUT(env, errorHandler);
-    AstObject* thenClauseAst = new AstSymbol("x");
-    AstObject* elseClauseAst = new AstSymbol("x");
+    AstObject* thenClauseAst = new AstNumber(42);
+    AstObject* elseClauseAst = new AstNumber(42);
     unique_ptr<AstObject> ast{
-      new AstSeq( // imposes read access on its rhs
-        new AstDataDef("x",
-          make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+      new AstSeq( // imposes eIgnore access upon the if expression
         new AstIf( // the if expression under test
           new AstNumber(0, ObjTypeFunda::eBool),
-          thenClauseAst, elseClauseAst))};
+          thenClauseAst, elseClauseAst),
+        new AstNumber(42))};
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1275,32 +1278,6 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     // verify
     EXPECT_EQ( eRead, thenClauseAst->access()) << amendAst(ast);
     EXPECT_EQ( eRead, thenClauseAst->access()) << amendAst(ast);
-  }
-
-  spec = "Example: write access";
-  {
-    // setup
-    Env env;
-    ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    AstObject* thenClauseAst = new AstSymbol("x");
-    AstObject* elseClauseAst = new AstSymbol("x");
-    unique_ptr<AstObject> ast{
-      new AstSeq(
-        new AstDataDef("x",
-          make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
-        new AstOperator('=', // imposes write access onto the if expression
-          new AstIf( // the if expression under test
-            new AstNumber(0, ObjTypeFunda::eBool),
-            thenClauseAst, elseClauseAst),
-          new AstNumber(77)))};
-
-    // exercise
-    UUT.analyze(*ast.get());
-
-    // verify
-    EXPECT_EQ( eWrite, thenClauseAst->access()) << amendAst(ast);
-    EXPECT_EQ( eWrite, thenClauseAst->access()) << amendAst(ast);
   }
 }
 

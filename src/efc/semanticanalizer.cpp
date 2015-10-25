@@ -328,11 +328,11 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 void SemanticAnalizer::visit(AstIf& if_) {
   if_.condition().accept(*this);
 
-  if_.action().setAccess(if_.access());
+  if_.action().setAccess(eRead);
   if_.action().accept(*this);
 
   if (if_.elseAction()) {
-    if_.elseAction()->setAccess(if_.access());
+    if_.elseAction()->setAccess(eRead);
     if_.elseAction()->accept(*this);
   }
 
@@ -356,18 +356,15 @@ void SemanticAnalizer::visit(AstIf& if_) {
     }
   }
 
-  // Set the obj type of this AstIf node. It's exactly the type of the
-  // evaluated clause, i.e. it's not a new (immutable) temporary.  Now that we
-  // know the two clauses have the same obj type, either clause's obj type can
-  // be taken.
-  shared_ptr<ObjType> objType;
+  // The AstIf's obj type is a temporary
+  shared_ptr<const ObjType> objType;
   if ( if_.elseAction() ) {
     if ( !actionIsOfTypeNoreturn ) {
       objType.reset(if_.action().objType().clone());
     } else {
       objType.reset(if_.elseAction()->objType().clone());
     }
-    // don't remove mutable qualifier
+    objType = objType->unqualifiedObjType();
   } else {
     objType = make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid);
   }
