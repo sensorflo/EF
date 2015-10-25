@@ -162,6 +162,34 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
+
+  // class <-> class
+  // ---------------
+  const auto& class1 = ObjTypeClass("samename");
+  const auto& class2 = ObjTypeClass("samename");
+  TEST_MATCH( "", ObjType::eFullMatch, class1, class1);
+  TEST_MATCH( "", ObjType::eNoMatch, class1, class2);
+
+  // class <-> other / other <-> class
+  // ---------------------------------
+  TEST_MATCH( "", ObjType::eNoMatch,
+    class1,
+    ObjTypeFunda(ObjTypeFunda::eInt));
+  TEST_MATCH( "", ObjType::eNoMatch,
+    ObjTypeFunda(ObjTypeFunda::eInt),
+    class1);
+  TEST_MATCH( "", ObjType::eNoMatch,
+    class1,
+    ObjTypeFun(ObjTypeFun::createArgs()));
+  TEST_MATCH( "", ObjType::eNoMatch,
+    ObjTypeFun(ObjTypeFun::createArgs()),
+    class1);
+  TEST_MATCH( "", ObjType::eNoMatch,
+    class1,
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
+  TEST_MATCH( "", ObjType::eNoMatch,
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+    class1);
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
