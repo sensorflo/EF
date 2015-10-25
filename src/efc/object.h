@@ -26,6 +26,7 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
 
   const ObjType& objType() const { return *m_objType.get(); }
+  std::shared_ptr<const ObjType> objTypeAsSp() const { return m_objType; }
   StorageDuration storageDuration() const { return m_storageDuration; }
   void addAccess(Access access);
   bool isModifiedOrRevealsAddr() const;

@@ -36,6 +36,11 @@ const ObjType& AstObject::objType() const {
   return m_object->objType();
 }
 
+shared_ptr<const ObjType> AstObject::objTypeAsSp() const {
+  assert(m_object);
+  return m_object->objTypeAsSp();
+}
+
 bool AstObject::objectIsModifiedOrRevealsAddr() const {
   assert(m_object);
   return m_object->isModifiedOrRevealsAddr();

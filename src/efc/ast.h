@@ -64,6 +64,7 @@ public:
   std::shared_ptr<Object>& objectAsSp() { return m_object; }
  	void setObject(std::shared_ptr<Object> object);
  	const ObjType& objType() const;
+  std::shared_ptr<const ObjType> objTypeAsSp() const;
   bool objectIsModifiedOrRevealsAddr() const;
   
 protected:
