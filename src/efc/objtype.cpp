@@ -101,6 +101,10 @@ ObjType::MatchType ObjTypeQuali::match2(const ObjTypeFun& src, bool isRoot) cons
   return match2Quali(src, isRoot, true);
 }
 
+ObjType::MatchType ObjTypeQuali::match2(const ObjTypeSymbol& src, bool isRoot) const {
+  return match2Quali(src, isRoot, true);
+}
+
 ObjType::MatchType ObjTypeQuali::match2Quali(const ObjType& type, bool isRoot, bool typeIsSrc) const {
   switch (type.match(*m_type)) {
   case eNoMatch:
@@ -494,6 +498,49 @@ bool ObjTypeClass::hasMember(int op) const {
 }
 
 bool ObjTypeClass::hasConstructor(const ObjType& other) const {
+  assert(false);
+  return false;
+}
+
+ObjTypeSymbol::ObjTypeSymbol(const std::string& name) :
+  m_name(name) {
+}
+
+std::basic_ostream<char>& ObjTypeSymbol::printTo(std::basic_ostream<char>& os) const {
+  assert(false);
+  return os;
+}
+
+ObjType::MatchType ObjTypeSymbol::match(const ObjType& dst, bool isLevel0) const {
+  return dst.match2(*this, isLevel0);
+}
+
+bool ObjTypeSymbol::is(EClass class_) const {
+  assert(false);
+  return false;
+}
+
+int ObjTypeSymbol::size() const {
+  assert(false);
+  return 0;
+}
+
+AstObject* ObjTypeSymbol::createDefaultAstObject() const {
+  assert(false);
+  return nullptr;
+}
+
+llvm::Type* ObjTypeSymbol::llvmType() const {
+  assert(false);
+  return nullptr;
+}
+
+bool ObjTypeSymbol::hasMember(int op) const {
+  assert(false);
+  return false;
+}
+
+bool ObjTypeSymbol::hasConstructor(const ObjType& other) const {
   assert(false);
   return false;
 }
