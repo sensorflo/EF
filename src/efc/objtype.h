@@ -6,6 +6,7 @@
 #include <list>
 #include <iostream>
 #include <memory>
+#include <vector>
 
 class ObjTypeQuali;
 class ObjTypeFunda;
@@ -223,7 +224,17 @@ private:
 /** Compount-type/class */
 class ObjTypeClass : public ObjType {
 public:
-  ObjTypeClass(const std::string& name);
+  ObjTypeClass(const std::string& name,
+    std::vector<std::shared_ptr<const ObjType>>&& members);
+  ObjTypeClass(const std::string& name,
+    std::shared_ptr<const ObjType> member1 = nullptr,
+    std::shared_ptr<const ObjType> member2 = nullptr,
+    std::shared_ptr<const ObjType> member3 = nullptr);
+
+  static std::vector<std::shared_ptr<const ObjType>> createMembers(
+    std::shared_ptr<const ObjType> member1 = nullptr,
+    std::shared_ptr<const ObjType> member2 = nullptr,
+    std::shared_ptr<const ObjType> member3 = nullptr);
 
   std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
   MatchType match(const ObjType& dst, bool isLevel0) const override;
@@ -238,4 +249,5 @@ public:
 
 private:
   const std::string m_name;
+  const std::vector<std::shared_ptr<const ObjType>> m_members;
 };

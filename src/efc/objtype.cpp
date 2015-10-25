@@ -416,12 +416,42 @@ llvm::Type* ObjTypeFun::llvmType() const {
   assert(false); // not implemented yet
 }
 
-ObjTypeClass::ObjTypeClass(const std::string& name) :
-  m_name(name) {
+ObjTypeClass::ObjTypeClass(const string& name,
+  vector<shared_ptr<const ObjType>>&& members) :
+  m_name(name),
+  m_members(move(members)) {
 }
 
-std::basic_ostream<char>& ObjTypeClass::printTo(std::basic_ostream<char>& os) const {
-  return os << m_name;
+ObjTypeClass::ObjTypeClass(const string& name,
+  shared_ptr<const ObjType> member1,
+  shared_ptr<const ObjType> member2,
+  shared_ptr<const ObjType> member3) :
+  ObjTypeClass(name, createMembers(member1, member2, member3)) {
+}
+
+vector<shared_ptr<const ObjType>> ObjTypeClass::createMembers(
+  shared_ptr<const ObjType> member1,
+  shared_ptr<const ObjType> member2,
+  shared_ptr<const ObjType> member3) {
+  vector<shared_ptr<const ObjType>> members;
+  if ( member1 ) {
+    members.emplace_back(member1);
+  }
+  if ( member2 ) {
+    members.emplace_back(member2);
+  }
+  if ( member3 ) {
+    members.emplace_back(member3);
+  }
+  return members;
+}
+
+basic_ostream<char>& ObjTypeClass::printTo(basic_ostream<char>& os) const {
+  os << "class(" << m_name;
+  for ( const auto& member: m_members ) {
+    os << " " << *member;
+  }
+  return os << ")";
 }
 
 ObjType::MatchType ObjTypeClass::match(const ObjType& dst, bool isLevel0) const {
@@ -436,13 +466,15 @@ ObjType::MatchType ObjTypeClass::match2(const ObjTypeClass& src, bool isRoot) co
 }
 
 bool ObjTypeClass::is(EClass class_) const {
-  assert(false);
   return false;
 }
 
 int ObjTypeClass::size() const {
-  assert(false);
-  return 0;
+  int sum = 0;
+  for ( const auto& member: m_members ) {
+    sum += member->size();
+  }
+  return sum;
 }
 
 AstObject* ObjTypeClass::createDefaultAstObject() const {

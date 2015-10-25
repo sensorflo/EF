@@ -62,7 +62,15 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
       ).toStr());
 
   // class
-  EXPECT_EQ("foo", ObjTypeClass("foo").toStr());
+  EXPECT_EQ("class(foo)",
+    ObjTypeClass("foo").toStr());
+  EXPECT_EQ("class(foo int)",
+    ObjTypeClass("foo",
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
+  EXPECT_EQ("class(foo int bool)",
+    ObjTypeClass("foo",
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)).toStr());
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
@@ -373,6 +381,16 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   EXPECT_EQ( 64, ObjTypeFunda(ObjTypeFunda::eDouble).size());
 
   EXPECT_EQ( -1, ObjTypeFun(ObjTypeFun::createArgs()).size());
+
+  const auto& charType = make_shared<ObjTypeFunda>(ObjTypeFunda::eChar);
+  const auto& intType = make_shared<ObjTypeFunda>(ObjTypeFunda::eInt);
+  EXPECT_EQ( 0, ObjTypeClass("").size());
+  EXPECT_EQ(
+    charType->size(),
+    ObjTypeClass("", charType).size());
+  EXPECT_EQ(
+    charType->size() + intType->size(),
+    ObjTypeClass("", charType, intType).size());
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
