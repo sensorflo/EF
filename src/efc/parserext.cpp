@@ -10,17 +10,17 @@ using namespace std;
 RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler) :
   m_errorHandler{errorHandler},
   m_ctorArgs{},
-  m_objType{},
   m_isStorageDurationDefined{false},
   m_storageDuration{StorageDuration::eLocal} {
 }
 
 RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler, const std::string& name,
-  AstCtList* ctorArgs, ObjType* objType, StorageDuration storageDuration) :
+  AstCtList* ctorArgs, shared_ptr<const ObjType> objType,
+  StorageDuration storageDuration) :
   m_errorHandler{errorHandler},
   m_name(name),
   m_ctorArgs(ctorArgs),
-  m_objType(objType),
+  m_objType(move(objType)),
   m_isStorageDurationDefined(false),
   m_storageDuration(storageDuration) {
 }
@@ -39,11 +39,11 @@ void RawAstDataDef::setCtorArgs(AstCtList* ctorArgs) {
   m_ctorArgs = ctorArgs;
 }
 
-void RawAstDataDef::setObjType(ObjType* objType) {
+void RawAstDataDef::setObjType(shared_ptr<const ObjType> objType) {
   if ( m_objType ) {
     Error::throwError(m_errorHandler, Error::eSameArgWasDefinedMultipleTimes);
   }
-  m_objType = objType;
+  m_objType = move(objType);
 }
 
 void RawAstDataDef::setStorageDuration(StorageDuration storageDuration) {
@@ -114,22 +114,23 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
 
   assert(rawAstDataDef);
   assert(!rawAstDataDef->m_name.empty());
-  if (!rawAstDataDef->m_objType) {
-    rawAstDataDef->m_objType = new ObjTypeFunda(ObjTypeFunda::eInt);
-  }
+  const auto unqualifiedObjType = rawAstDataDef->m_objType ?
+    rawAstDataDef->m_objType : make_shared<ObjTypeFunda>(ObjTypeFunda::eInt);
+  const auto qualifiedobjType =
+    make_shared<ObjTypeQuali>(qualifiers, unqualifiedObjType);
 
   // add to environment everything except local data objects. Currently there
   // are only local data objects, so currently there is nothing todo.
 
   return new AstDataDef(
     rawAstDataDef->m_name,
-    &(rawAstDataDef->m_objType->addQualifiers(qualifiers)),
+    qualifiedobjType,
     rawAstDataDef->m_storageDuration,
     rawAstDataDef->m_ctorArgs);
 }
 
 AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstDataDef*>* args,
-  const ObjType* ret, AstObject* body) {
+  shared_ptr<const ObjType> ret, AstObject* body) {
 
   // create ObjTypeFun object
   args = args ? args : new list<AstDataDef*>();
@@ -138,8 +139,7 @@ AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstDataDef*>* a
   for (/*nop*/; iterArgs!=args->end(); ++iterArgs) {
     argsObjType->push_back( (*iterArgs)->declaredObjTypeAsSp() );
   }
-  auto objTypeRet = shared_ptr<const ObjType>(ret);
-  auto objTypeFun = make_shared<const ObjTypeFun>( argsObjType, objTypeRet);
+  auto objTypeFun = make_shared<const ObjTypeFun>( argsObjType, ret);
 
   // ensure function is in environment. Note that currently there is a flat
   // namespace regarding function names; i.e. also nested functions are
@@ -151,18 +151,24 @@ AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstDataDef*>* a
     auto&& newObject = make_shared<Object>(move(objTypeFun),
       StorageDuration::eStatic);
     stIter->second = newObject;
-    return new AstFunDef(name, move(newObject), args, objTypeRet, body);
+    return new AstFunDef(name, move(newObject), args, ret, body);
   } else {
     Error::throwError(m_errorHandler, Error::eRedefinition);
     return nullptr;
   }
 }
 
-AstFunDef* ParserExt::mkFunDef(const string name, const ObjType* ret,
+AstFunDef* ParserExt::mkFunDef(const std::string name, ObjTypeFunda::EType ret,
   AstObject* body) {
-  return mkFunDef(name, AstFunDef::createArgs(), ret, body);
+  return mkFunDef(name, AstFunDef::createArgs(),
+    make_shared<const ObjTypeFunda>(ret), body);
+}
+
+AstFunDef* ParserExt::mkFunDef(const string name, shared_ptr<const ObjType> ret,
+  AstObject* body) {
+  return mkFunDef(name, AstFunDef::createArgs(), move(ret), body);
 }
 
 AstFunDef* ParserExt::mkMainFunDef(AstObject* body) {
-  return mkFunDef("main", new ObjTypeFunda(ObjTypeFunda::eInt), body);
+  return mkFunDef("main", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), body);
 }

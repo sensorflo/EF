@@ -6,17 +6,6 @@
 using namespace std;
 using namespace llvm;
 
-ObjType& ObjType::addQualifiers(Qualifiers qualifiers) {
-  m_qualifiers = static_cast<Qualifiers>(m_qualifiers | qualifiers);
-  // don't allow for certain types, e.g. fun, void, noret
-  return *this;
-}
-
-ObjType& ObjType::removeQualifiers(Qualifiers qualifiers) {
-  m_qualifiers = static_cast<Qualifiers>(m_qualifiers & ~qualifiers);
-  return *this;
-}
-
 bool ObjType::isVoid() const {
   static const ObjTypeFunda voidType(ObjTypeFunda::eVoid);
   return matchesFully(voidType);
@@ -33,6 +22,14 @@ bool ObjType::matchesFully(const ObjType& dst) const {
 
 bool ObjType::matchesSaufQualifiers(const ObjType& dst) const {
   return this->match(dst) != eNoMatch;
+}
+
+ObjType::MatchType ObjType::match2(const ObjTypeQuali& src, bool isLevel0) const {
+  return src.match2Quali(*this, isLevel0, false);
+}
+
+std::shared_ptr<const ObjType> ObjType::unqualifiedObjType() const {
+  return shared_from_this();
 }
 
 basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::Qualifiers qualifiers) {
@@ -56,10 +53,10 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::MatchType mt) 
 
 ObjTypeQuali::ObjTypeQuali(Qualifiers qualifiers,
   std::shared_ptr<const ObjType> type) :
-  ObjType(qualifiers),
-  m_qualifiers(qualifiers),
-  m_type(type) {
+  m_qualifiers(static_cast<Qualifiers>(qualifiers | type->qualifiers())),
+  m_type((assert(type), type->unqualifiedObjType())) {
   assert(m_type);
+  assert(not(qualifiers!=eNoQualifier && m_type->is(eAbstract)));
 }
 
 std::basic_ostream<char>& ObjTypeQuali::printTo(
@@ -71,51 +68,89 @@ std::basic_ostream<char>& ObjTypeQuali::printTo(
 }
 
 ObjType::MatchType ObjTypeQuali::match(const ObjType& dst, bool isLevel0) const {
-  assert(0);
-  return eNoMatch;
+  return dst.match2(*this, isLevel0);
+}
+
+ObjType::MatchType ObjTypeQuali::match2(const ObjTypeQuali& src, bool isRoot) const {
+  switch (src.m_type->match(*m_type)) {
+  case eNoMatch:
+    return eNoMatch;
+  case eFullMatch:
+    if (src.m_qualifiers==m_qualifiers) {
+      return eFullMatch;
+    } else if (m_qualifiers & eMutable) {
+      return eMatchButAllQualifiersAreWeaker;
+    } else {
+      return eMatchButAnyQualifierIsStronger;
+    }
+  default:
+    assert(false);
+    return eNoMatch;
+  }
+}
+
+ObjType::MatchType ObjTypeQuali::match2(const ObjTypeFunda& src, bool isRoot) const {
+  return match2Quali(src, isRoot, true);
+}
+
+ObjType::MatchType ObjTypeQuali::match2(const ObjTypePtr& src, bool isRoot) const {
+  return match2Quali(src, isRoot, true);
+}
+
+ObjType::MatchType ObjTypeQuali::match2(const ObjTypeFun& src, bool isRoot) const {
+  return match2Quali(src, isRoot, true);
+}
+
+ObjType::MatchType ObjTypeQuali::match2Quali(const ObjType& type, bool isRoot, bool typeIsSrc) const {
+  switch (type.match(*m_type)) {
+  case eNoMatch:
+    return eNoMatch;
+  case eFullMatch:
+    if (m_qualifiers & eMutable) {
+      return typeIsSrc ? eMatchButAllQualifiersAreWeaker : eMatchButAnyQualifierIsStronger;
+    } else {
+      return typeIsSrc ? eMatchButAnyQualifierIsStronger : eMatchButAllQualifiersAreWeaker;
+    }
+  default:
+    assert(false);
+    return eNoMatch;
+  }
 }
 
 bool ObjTypeQuali::is(EClass class_) const {
-  assert(0);
-  return false;
+  return m_type->is(class_);
 }
 
 int ObjTypeQuali::size() const {
-  assert(0);
-  return 0;
+  return m_type->size();
 }
 
 ObjType* ObjTypeQuali::clone() const {
-  assert(0);
-  return nullptr;
+  return new ObjTypeQuali(*this);
 }
 
 AstObject* ObjTypeQuali::createDefaultAstObject() const {
-  assert(0);
-  return nullptr;
+  return m_type->createDefaultAstObject();
 }
 
 llvm::Type* ObjTypeQuali::llvmType() const {
-  assert(0);
-  return nullptr;
+  return m_type->llvmType();
 }
 
 bool ObjTypeQuali::hasMember(int op) const {
-  assert(0);
-  return false;
+  return m_type->hasMember(op);
 }
 
 bool ObjTypeQuali::hasConstructor(const ObjType& other) const {
-  assert(0);
-  return false;
+  return m_type->hasConstructor(other);
 }
 
-ObjTypeFunda::ObjTypeFunda(EType type, Qualifiers qualifiers)  :
-  ObjType(qualifiers), m_type(type) {
-  if ( type==eVoid ) {
-    assert( qualifiers == eNoQualifier );
-  }
-  // same for eNoret
+std::shared_ptr<const ObjType> ObjTypeQuali::unqualifiedObjType() const {
+  return m_type;
+}
+
+ObjTypeFunda::ObjTypeFunda(EType type) :
+  m_type(type) {
 }
 
 ObjType::MatchType ObjTypeFunda::match(const ObjType& dst, bool isLevel0) const {
@@ -123,16 +158,10 @@ ObjType::MatchType ObjTypeFunda::match(const ObjType& dst, bool isLevel0) const 
 }
 
 ObjType::MatchType ObjTypeFunda::match2(const ObjTypeFunda& src, bool isRoot) const {
-  if (m_type!=src.m_type) { return eNoMatch; }
-  if (m_qualifiers==src.m_qualifiers) { return eFullMatch; }
-  if (m_qualifiers & eMutable) { return eMatchButAllQualifiersAreWeaker; }
-  return eMatchButAnyQualifierIsStronger;
+  return m_type==src.m_type ? eFullMatch : eNoMatch;
 }
 
 basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
-  if (eMutable & m_qualifiers) {
-    os << "mut-";
-  }
   switch (m_type) {
   case eVoid: os << "void"; break;
   case eNoreturn: os << "noreturn"; break;
@@ -191,9 +220,8 @@ int ObjTypeFunda::size() const {
 
 AstObject* ObjTypeFunda::createDefaultAstObject() const {
   assert(!is(eAbstract));
-  auto objType = clone();
-  objType->removeQualifiers(eMutable);
-  return new AstNumber(0, objType);
+  return new AstNumber(0,
+    static_pointer_cast<const ObjTypeFunda>(shared_from_this()));
 }
 
 llvm::Type* ObjTypeFunda::llvmType() const {
@@ -292,8 +320,8 @@ bool ObjType::matchesSaufQualifiers_(const ObjType& rhs, const ObjType& lhs) {
   return rhs.matchesSaufQualifiers(lhs);
 }
 
-ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee, Qualifiers qualifiers) :
-  ObjTypeFunda(ePointer, qualifiers),
+ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee) :
+  ObjTypeFunda(ePointer),
   m_pointee(move(pointee)) {
   assert(m_pointee);
 }
@@ -342,7 +370,6 @@ const ObjType& ObjTypePtr::pointee() const {
 };
 
 ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret) :
-  ObjType{eNoQualifier},
   m_args{ args ?
       std::unique_ptr<list<shared_ptr<const ObjType>>>{args} :
     std::make_unique<list<shared_ptr<const ObjType>>>()},

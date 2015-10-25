@@ -76,9 +76,11 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
 
   spec = "AstDataDef";
   EXPECT_TOSTR_EQ( "data(foo int ())", AstDataDef("foo",
-      new ObjTypeFunda(ObjTypeFunda::eInt)), spec);
+      ObjTypeFunda::eInt), spec);
   EXPECT_TOSTR_EQ( "data(foo mut-int (42))", AstDataDef("foo",
-      new ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable),
+      make_shared<ObjTypeQuali>(
+        ObjType::eMutable,
+        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
       new AstNumber(42)), spec);
   
   spec = "AstCtList";
@@ -96,14 +98,14 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "fun(foo ((arg1 int)) int 42)",
     AstFunDef("foo", nullptr,
       AstFunDef::createArgs(
-        new AstDataDef("arg1", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstDataDef("arg1", ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
       new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "fun(foo ((arg1 int) (arg2 int)) int 42)",
     AstFunDef("foo", nullptr,
       AstFunDef::createArgs(
-        new AstDataDef("arg1", new ObjTypeFunda(ObjTypeFunda::eInt)),
-        new AstDataDef("arg2", new ObjTypeFunda(ObjTypeFunda::eInt))),
+        new AstDataDef("arg1", ObjTypeFunda::eInt),
+        new AstDataDef("arg2", ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
       new AstNumber(42)), spec);
 
@@ -116,6 +118,6 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "class(foo)", AstClass("foo"), spec);
   EXPECT_TOSTR_EQ( "class(foo data(m1 int ()) data(m2 int ()))",
     AstClass("foo",
-      new AstDataDef("m1", new ObjTypeFunda(ObjTypeFunda::eInt)),
-      new AstDataDef("m2", new ObjTypeFunda(ObjTypeFunda::eInt))), spec);
+      new AstDataDef("m1", ObjTypeFunda::eInt),
+      new AstDataDef("m2", ObjTypeFunda::eInt)), spec);
 }

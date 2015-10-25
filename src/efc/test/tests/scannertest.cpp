@@ -122,8 +122,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   Parser::symbol_type st = UUT.pop();
   EXPECT_TOK_EQ(TOK_NUMBER, st);
   EXPECT_EQ('x', st.value.as<NumberToken>().m_value );
-  ObjTypeFunda expectedType(ObjTypeFunda::eChar);
-  EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
+  EXPECT_EQ(ObjTypeFunda::eChar, st.value.as<NumberToken>().m_objType);
 
   EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop());
 
@@ -143,8 +142,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     Parser::symbol_type st = UUT.pop();
     EXPECT_TOK_EQ(TOK_NUMBER, st);
     EXPECT_EQ(42, st.value.as<NumberToken>().m_value );
-    ObjTypeFunda expectedType(ObjTypeFunda::eInt);
-    EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
+    EXPECT_EQ(ObjTypeFunda::eInt, st.value.as<NumberToken>().m_objType);
 
     EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 
@@ -159,8 +157,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     Parser::symbol_type st = UUT.pop();
     EXPECT_TOK_EQ(TOK_NUMBER, st);
     EXPECT_EQ(42.77, st.value.as<NumberToken>().m_value );
-    ObjTypeFunda expectedType(ObjTypeFunda::eDouble);
-    EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
+    EXPECT_EQ(ObjTypeFunda::eDouble, st.value.as<NumberToken>().m_objType);
 
     EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 
@@ -178,8 +175,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   Parser::symbol_type st = UUT.pop();
   EXPECT_TOK_EQ(TOK_NUMBER, st);
   EXPECT_EQ(0, st.value.as<NumberToken>().m_value );
-  ObjTypeFunda expectedType(ObjTypeFunda::eBool);
-  EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
+  EXPECT_EQ(ObjTypeFunda::eBool, st.value.as<NumberToken>().m_objType);
 
   EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 
@@ -196,8 +192,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   Parser::symbol_type st = UUT.pop();
   EXPECT_TOK_EQ(TOK_NUMBER, st);
   EXPECT_EQ(1, st.value.as<NumberToken>().m_value );
-  ObjTypeFunda expectedType(ObjTypeFunda::eBool);
-  EXPECT_EQ(ObjType::eFullMatch, st.value.as<NumberToken>().m_objType->match(expectedType));
+  EXPECT_EQ(ObjTypeFunda::eBool, st.value.as<NumberToken>().m_objType);
 
   EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 

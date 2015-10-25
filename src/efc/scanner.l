@@ -90,12 +90,12 @@ double              return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eDoub
 
 
   /* literal bool */
-false               return yy::Parser::make_NUMBER(NumberToken(0, new ObjTypeFunda(ObjTypeFunda::eBool)), loc);
-true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFunda(ObjTypeFunda::eBool)), loc);
+false               return yy::Parser::make_NUMBER(NumberToken(0, ObjTypeFunda::eBool), loc);
+true                return yy::Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBool), loc);
 
 
   /* literal char */
-'.'                 return yy::Parser::make_NUMBER(NumberToken(yytext[1], new ObjTypeFunda(ObjTypeFunda::eChar)), loc);
+'.'                 return yy::Parser::make_NUMBER(NumberToken(yytext[1], ObjTypeFunda::eChar), loc);
 
 
   /* literal integral / floatingpoint number  */
@@ -104,7 +104,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFun
   char* suffix = NULL;
   bool containsDot = (nullptr != strchr(yytext, '.'));
   long double number = strtold(yytext, &suffix);
-  ObjTypeFunda* objType = nullptr;
+  ObjTypeFunda::EType objType = ObjTypeFunda::eVoid;
 
   if (errno) {
     driver.exitInternError(loc, string("Scanner's rule"
@@ -122,7 +122,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFun
       number = number<DBL_MIN ? DBL_MIN : DBL_MAX;
       driver.error(loc, "Numeric literal to big");
     }
-    objType = new ObjTypeFunda(ObjTypeFunda::eDouble);
+    objType = ObjTypeFunda::eDouble;
   }
 
   // it's an integral literal
@@ -131,7 +131,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, new ObjTypeFun
       number = number<INT_MIN ? INT_MIN : INT_MAX;
       driver.error(loc, "Numeric literal to big");
     }
-    objType = new ObjTypeFunda(ObjTypeFunda::eInt);
+    objType = ObjTypeFunda::eInt;
   }
   return yy::Parser::make_NUMBER(
     NumberToken(static_cast<GeneralValue>(number), objType), loc);

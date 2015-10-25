@@ -128,11 +128,12 @@ list<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
   return args;
 }
 
-AstDataDef::AstDataDef(const std::string& name, const ObjType* declaredObjType,
+AstDataDef::AstDataDef(const std::string& name,
+  shared_ptr<const ObjType> declaredObjType,
   StorageDuration declaredStorageDuration,  AstCtList* ctorArgs) :
   m_name(name),
   m_declaredObjType(declaredObjType ?
-    shared_ptr<const ObjType>(declaredObjType) :
+    move(declaredObjType) :
     make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
   m_declaredStorageDuration(declaredStorageDuration),
   m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()),
@@ -140,15 +141,21 @@ AstDataDef::AstDataDef(const std::string& name, const ObjType* declaredObjType,
   assert(m_ctorArgs);
 }
 
-AstDataDef::AstDataDef(const std::string& name, const ObjType* declaredObjType,
+AstDataDef::AstDataDef(const std::string& name,
+  shared_ptr<const ObjType> declaredObjType,
   StorageDuration declaredStorageDuration, AstObject* initObj) :
-  AstDataDef(name, declaredObjType, declaredStorageDuration,
+  AstDataDef(name, move(declaredObjType), declaredStorageDuration,
     initObj ? new AstCtList(initObj) : nullptr) {
 }
 
-AstDataDef::AstDataDef(const std::string& name, const ObjType* declaredObjType,
+AstDataDef::AstDataDef(const std::string& name,
+  shared_ptr<const ObjType> declaredObjType, AstObject* initObj) :
+  AstDataDef(name, move(declaredObjType), StorageDuration::eLocal, initObj) {
+}
+
+AstDataDef::AstDataDef(const std::string& name, ObjTypeFunda::EType declaredObjType,
   AstObject* initObj) :
-  AstDataDef(name, declaredObjType, StorageDuration::eLocal, initObj) {
+  AstDataDef(name, make_shared<ObjTypeFunda>(declaredObjType), initObj) {
 }
 
 AstDataDef::~AstDataDef() {
@@ -184,21 +191,18 @@ AstObject& AstDataDef::initObj() const {
   }
 }
 
-AstNumber::AstNumber(GeneralValue value, ObjTypeFunda* objType) :
+AstNumber::AstNumber(GeneralValue value, std::shared_ptr<const ObjTypeFunda> objType) :
   AstObject{
     make_shared<Object>(
       objType ?
-      shared_ptr<const ObjType>{objType} :
+      move(objType) :
       make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt),
       StorageDuration::eLocal)},
   m_value(value) {
-  // A mutable literal makes no sense.
-  assert(!(AstObject::objType().qualifiers() & ObjType::eMutable));
 }
 
-AstNumber::AstNumber(GeneralValue value, ObjTypeFunda::EType eType,
-  ObjTypeFunda::Qualifiers qualifiers) :
-  AstNumber(value, new ObjTypeFunda(eType, qualifiers)) {
+AstNumber::AstNumber(GeneralValue value, ObjTypeFunda::EType eType) :
+  AstNumber(value, make_shared<ObjTypeFunda>(eType)) {
 }
 
 const ObjTypeFunda& AstNumber::objType() const {
@@ -421,10 +425,8 @@ void AstFunCall::createAndSetObjectUsingRetObjType() {
   const auto& objType = m_address->objType();
   assert(typeid(objType)==typeid(ObjTypeFun));
   const auto& objTypeFun = static_cast<const ObjTypeFun&>(objType);
-  auto objTypeRet = objTypeFun.ret().clone();
-  objTypeRet->removeQualifiers(ObjType::eMutable);
   setObject(make_shared<Object>(
-      unique_ptr<const ObjType>{objTypeRet},
+      objTypeFun.ret().unqualifiedObjType(),
       StorageDuration::eLocal));
 }
 

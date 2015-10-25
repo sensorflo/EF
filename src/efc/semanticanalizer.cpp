@@ -46,9 +46,8 @@ void SemanticAnalizer::visit(AstBlock& block) {
     block.body().accept(*this);
   }
 
-  shared_ptr<ObjType> objType{block.body().objType().clone()};
-  objType->removeQualifiers(ObjType::eMutable);
-  block.setObject(make_shared<Object>(objType, StorageDuration::eLocal));
+  const auto& blockObjType = block.body().objType().unqualifiedObjType();
+  block.setObject(make_shared<Object>(blockObjType, StorageDuration::eLocal));
 
   block.object()->addAccess(block.access());
 
@@ -133,7 +132,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
 
   // Set the obj type and optionally also already the object of this
   // AstOperator node.
-  shared_ptr<ObjType> objType;
+  shared_ptr<const ObjType> objType;
   {
     // comparision ops store the result of their computation in a new a
     // temporary object of type bool
@@ -174,8 +173,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
     // know the two operands have the same obj type, either operand's obj
     // type.
     else {
-      objType.reset(argschilds.back()->objType().clone());
-      objType->removeQualifiers(ObjType::eMutable);
+      objType = argschilds.back()->objType().unqualifiedObjType();
     }
   }
 

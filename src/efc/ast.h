@@ -136,13 +136,15 @@ private:
 
 class AstDataDef : public AstObject {
 public:
-  AstDataDef(const std::string& name, const ObjType* declaredObjType,
+  AstDataDef(const std::string& name, std::shared_ptr<const ObjType> declaredObjType,
     StorageDuration declaredStorageDuration,
     AstCtList* ctorArgs = nullptr);
-  AstDataDef(const std::string& name, const ObjType* declaredObjType,
+  AstDataDef(const std::string& name, std::shared_ptr<const ObjType> declaredObjType,
     StorageDuration declaredStorageDuration,
     AstObject* initObj);
-  AstDataDef(const std::string& name, const ObjType* declaredObjType,
+  AstDataDef(const std::string& name, std::shared_ptr<const ObjType> declaredObjType,
+    AstObject* initObj = nullptr);
+  AstDataDef(const std::string& name, ObjTypeFunda::EType declaredObjType,
     AstObject* initObj = nullptr);
   virtual ~AstDataDef();
 
@@ -171,9 +173,8 @@ private:
 /** Literal number */
 class AstNumber : public AstObject {
 public:
-  AstNumber(GeneralValue value, ObjTypeFunda* objType = NULL);
-  AstNumber(GeneralValue value, ObjTypeFunda::EType eType,
-    ObjTypeFunda::Qualifiers qualifiers = ObjTypeFunda::eNoQualifier);
+  AstNumber(GeneralValue value, std::shared_ptr<const ObjTypeFunda> objType = nullptr);
+  AstNumber(GeneralValue value, ObjTypeFunda::EType eType);
 
  	const ObjTypeFunda& objType() const;
 

@@ -32,13 +32,9 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   EXPECT_EQ("void", ObjTypeFunda(ObjTypeFunda::eVoid).toStr());
   EXPECT_EQ("noreturn", ObjTypeFunda(ObjTypeFunda::eNoreturn).toStr());
   EXPECT_EQ("char", ObjTypeFunda(ObjTypeFunda::eChar).toStr());
-  EXPECT_EQ("mut-char", ObjTypeFunda(ObjTypeFunda::eChar, ObjType::eMutable).toStr());
   EXPECT_EQ("int", ObjTypeFunda(ObjTypeFunda::eInt).toStr());
-  EXPECT_EQ("mut-int", ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).toStr());
   EXPECT_EQ("bool", ObjTypeFunda(ObjTypeFunda::eBool).toStr());
-  EXPECT_EQ("mut-bool", ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable).toStr());
   EXPECT_EQ("double", ObjTypeFunda(ObjTypeFunda::eDouble).toStr());
-  EXPECT_EQ("mut-double", ObjTypeFunda(ObjTypeFunda::eDouble, ObjType::eMutable).toStr());
 
   // qualifiers
   EXPECT_EQ("mut-int", ObjTypeQuali(ObjType::eMutable,
@@ -67,40 +63,6 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
-    addQualifiers)) {
-  EXPECT_EQ(
-    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifiers(),
-    ObjTypeFunda(ObjTypeFunda::eInt).addQualifiers(ObjType::eMutable).qualifiers());
-
-  EXPECT_EQ(
-    ObjTypeFunda(ObjTypeFunda::eBool, ObjType::eMutable).qualifiers(),
-    ObjTypeFunda(ObjTypeFunda::eBool).addQualifiers(ObjType::eMutable).qualifiers());
-
-  EXPECT_EQ(
-    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).qualifiers(),
-    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).addQualifiers(ObjType::eMutable).qualifiers());
-
-  EXPECT_EQ(
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), ObjType::eMutable).qualifiers(),
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).addQualifiers(ObjType::eMutable).qualifiers());
-}
-
-TEST(ObjTypeTest, MAKE_TEST_NAME1(
-    removeQualifiers)) {
-  EXPECT_EQ(
-    ObjTypeFunda(ObjTypeFunda::eInt).qualifiers(),
-    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).removeQualifiers(ObjType::eMutable).qualifiers());
-
-  EXPECT_EQ(
-    ObjTypeFunda(ObjTypeFunda::eInt).qualifiers(),
-    ObjTypeFunda(ObjTypeFunda::eInt).removeQualifiers(ObjType::eMutable).qualifiers());
-
-  EXPECT_EQ(
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).qualifiers(),
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), ObjType::eMutable).removeQualifiers(ObjType::eMutable).qualifiers());
-}
-
-TEST(ObjTypeTest, MAKE_TEST_NAME1(
     match)) {
 
   // fundamental type <-> fundamental type
@@ -115,10 +77,12 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     ObjTypeFunda(ObjTypeFunda::eBool), ObjTypeFunda(ObjTypeFunda::eInt) );
 
   TEST_MATCH( "type matches, but dst has weaker qualifiers", ObjType::eMatchButAllQualifiersAreWeaker,
-    ObjTypeFunda(ObjTypeFunda::eInt), ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable));
+    ObjTypeFunda(ObjTypeFunda::eInt),
+    ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
   TEST_MATCH( "type matches, but dst has stronger qualifiers", ObjType::eMatchButAnyQualifierIsStronger,
-    ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable), ObjTypeFunda(ObjTypeFunda::eInt));
+    ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+    ObjTypeFunda(ObjTypeFunda::eInt));
 
   // pointer <-> pointer
   // -------------------
@@ -131,20 +95,20 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)));
 
   TEST_MATCH( "qualifier of level0 differs", ObjType::eMatchButAnyQualifierIsStronger,
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), ObjType::eMutable),
+    ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
   TEST_MATCH( "qualifier of level0 differs", ObjType::eMatchButAllQualifiersAreWeaker,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), ObjType::eMutable));
+    ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))));
 
   TEST_MATCH( "qualifier of level1+ differs", ObjType::eNoMatch,
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable)),
+    ObjTypePtr(make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
   TEST_MATCH( "qualifier of level1+ differs", ObjType::eNoMatch,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt, ObjType::eMutable)));
+    ObjTypePtr(make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))));
 
 
   // fundamental type <-> pointer <-> function
@@ -284,9 +248,9 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   }
 }
 
-TEST(ObjTypeTest, MAKE_TEST_NAME1(
+TEST(ObjTypeTest, MAKE_DISABLED_TEST_NAME1(
     clone)) {
-
+#if 0
   {
     ObjTypeFunda src{ ObjTypeFunda::eInt };
     unique_ptr<ObjType> clone{src.clone()};
@@ -330,6 +294,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     unique_ptr<ObjType> clone{src.clone()};
     EXPECT_MATCHES_FULLY( src, *clone );
   }
+#endif
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
@@ -439,7 +404,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 
     for (const auto type : inputTypes ) {
       unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
-          ObjTypeFunda(type).createDefaultAstObject())};
+          make_shared<ObjTypeFunda>(type)->createDefaultAstObject())};
       EXPECT_TRUE( defaultValue != nullptr );
       EXPECT_EQ( 0.0, defaultValue->value());
       EXPECT_TRUE( defaultValue->objType().matchesFully(ObjTypeFunda(type)));
@@ -447,17 +412,20 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   }
 
   // example: objType of created AstNumber is always immutable
+  const auto UUT = make_shared<ObjTypeQuali>(ObjType::eMutable,
+    make_shared<ObjTypeFunda>(ObjTypeFunda::eInt));
   unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
-      ObjTypeFunda(ObjTypeFunda::eInt, ObjType::eMutable).createDefaultAstObject())};
+      UUT->createDefaultAstObject())};
   EXPECT_TRUE( defaultValue != nullptr );
   EXPECT_EQ( 0.0, defaultValue->value());
   EXPECT_TRUE( defaultValue->objType().matchesFully(ObjTypeFunda(ObjTypeFunda::eInt)));
 
   // example: pointer to int
   {
-    ObjTypePtr UUT{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
+    const auto UUT = make_shared<ObjTypePtr>(
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt));
     unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
-        UUT.createDefaultAstObject())};
+        UUT->createDefaultAstObject())};
     EXPECT_TRUE( defaultValue != nullptr );
     EXPECT_EQ( 0.0, defaultValue->value());
     ObjTypePtr expectedObjType{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
@@ -466,9 +434,10 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
 
   // example: pointer to pointer to void
   {
-    ObjTypePtr UUT{make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid))};
+    const auto UUT = make_shared<ObjTypePtr>(
+      make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid)));
     unique_ptr<AstNumber> defaultValue{dynamic_cast<AstNumber*>(
-        UUT.createDefaultAstObject())};
+        UUT->createDefaultAstObject())};
     EXPECT_TRUE( defaultValue != nullptr );
     EXPECT_EQ( 0.0, defaultValue->value());
     ObjTypePtr expectedObjType{make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid))};

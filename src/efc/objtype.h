@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 
+class ObjTypeQuali;
 class ObjTypeFunda;
 class ObjTypePtr;
 class ObjTypeFun;
@@ -18,7 +19,7 @@ namespace llvm {
 /** Abstract base class for all object types.
 
 Multiple AstObjType nodes may refer to one Entity. */
-class ObjType : public Entity {
+class ObjType : public Entity, public std::enable_shared_from_this<ObjType> {
 public:
   // works as bit flags
   enum Qualifiers {
@@ -47,9 +48,6 @@ public:
   };
   virtual ~ObjType() {};
 
-  ObjType& addQualifiers(Qualifiers qualifiers);
-  ObjType& removeQualifiers(Qualifiers qualifiers);
-
   bool isVoid() const;
   bool isNoreturn() const;
   bool matchesFully(const ObjType& dst) const;
@@ -57,6 +55,7 @@ public:
   /** eMatchButAllQualifiersAreWeaker means that other has weaker qualifiers than
   this, likewise for eMatchButAnyQualifierIsStronger. */
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const = 0;
+  virtual MatchType match2(const ObjTypeQuali& src, bool isLevel0) const;
   virtual MatchType match2(const ObjTypeFunda& src, bool isLevel0) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypePtr& src, bool isLevel0) const { return eNoMatch; }
   virtual MatchType match2(const ObjTypeFun& src, bool isLevel0) const { return eNoMatch; }
@@ -67,7 +66,7 @@ public:
 
   virtual ObjType* clone() const = 0;
 
-  Qualifiers qualifiers() const { return m_qualifiers; }
+  virtual Qualifiers qualifiers() const { return eNoQualifier; }
 
   /** The objType of the created AstObject is immutable, since the AstObject has
   the semantics of a temporary. Asserts in case of there is no default
@@ -85,11 +84,7 @@ public:
   static bool matchesFully_(const ObjType& src, const ObjType& dst);
   static bool matchesSaufQualifiers_(const ObjType& src, const ObjType& dst);
 
-protected:
-  ObjType(Qualifiers qualifiers) : m_qualifiers(qualifiers) {};
-  ObjType(const ObjType& rhs) : m_qualifiers(rhs.m_qualifiers) {};
-
-  Qualifiers m_qualifiers;
+  virtual std::shared_ptr<const ObjType> unqualifiedObjType() const;
 
 private:
   ObjType& operator=(const ObjType&) =delete; // for simplicity reasons
@@ -104,11 +99,22 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
 
 class ObjTypeQuali : public ObjType {
 public:
+  /** If type is of dynamic type ObjTypeQuali, this newly created type points
+  to the type pointed by type, and the qualifiers are combined. */
   ObjTypeQuali(const Qualifiers qualifiers, std::shared_ptr<const ObjType> type);
+
+  Qualifiers qualifiers() const override { return m_qualifiers; }
 
   std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
 
   MatchType match(const ObjType& dst, bool isLevel0 = true) const override;
+  using ObjType::match2;
+  MatchType match2(const ObjTypeQuali& src, bool isRoot) const override;
+  MatchType match2(const ObjTypeFunda& src, bool isRoot) const override;
+  MatchType match2(const ObjTypePtr& src, bool isRoot) const override;
+  MatchType match2(const ObjTypeFun& src, bool isRoot) const override;
+  MatchType match2Quali(const ObjType& type, bool isRoot, bool typeIsSrc) const;
+
   bool is(EClass class_) const override;
   int size() const override;
   ObjType* clone() const override;
@@ -116,10 +122,12 @@ public:
   llvm::Type* llvmType() const override;
   bool hasMember(int op) const override;
   bool hasConstructor(const ObjType& other) const override;
+  std::shared_ptr<const ObjType> unqualifiedObjType() const override;
 
 private:
   const Qualifiers m_qualifiers;
-  /** Type being qualified. Garanteed to be non-null */
+  /** Type being qualified. Is never of dynamic type ObjTypeQuali. Garanteed
+  to be non-null */
   const std::shared_ptr<const ObjType> m_type;
 };
 
@@ -141,7 +149,7 @@ public:
       ePointer
   };
 
-  ObjTypeFunda(EType type, Qualifiers qualifiers = eNoQualifier);
+  ObjTypeFunda(EType type);
 
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
   using ObjType::match2;
@@ -171,8 +179,7 @@ private:
 /** Compond-type/pointer */
 class ObjTypePtr : public ObjTypeFunda {
 public:
-  ObjTypePtr(std::shared_ptr<const ObjType> pointee,
-    Qualifiers qualifiers = eNoQualifier);
+  ObjTypePtr(std::shared_ptr<const ObjType> pointee);
   ObjTypePtr(const ObjTypePtr&);
 
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
