@@ -60,6 +60,9 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)
       ).toStr());
+
+  // class
+  EXPECT_EQ("foo", ObjTypeClass("foo").toStr());
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(

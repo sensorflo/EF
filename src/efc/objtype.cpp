@@ -421,8 +421,7 @@ ObjTypeClass::ObjTypeClass(const std::string& name) :
 }
 
 std::basic_ostream<char>& ObjTypeClass::printTo(std::basic_ostream<char>& os) const {
-  assert(false);
-  return os;
+  return os << m_name;
 }
 
 ObjType::MatchType ObjTypeClass::match(const ObjType& dst, bool isLevel0) const {
