@@ -28,7 +28,6 @@ public:
   typedef std::pair<SymbolTable::iterator,bool> InsertRet;
 
   Env();
-  ~Env() = default;
 
   InsertRet insert(const std::string& name, std::shared_ptr<Entity> entity);
   InsertRet insert(const SymbolTable::KeyValue& keyValue);
