@@ -40,7 +40,7 @@ private:
   virtual void visit(AstIf& if_);
   virtual void visit(AstLoop& loop);
   virtual void visit(AstReturn& return_);
-  virtual void visit(AstClass& class_);
+  virtual void visit(AstClassDef& class_);
 
   llvm::Value* callAcceptOn(AstObject&);
 

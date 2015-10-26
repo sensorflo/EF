@@ -369,10 +369,10 @@ class AstObjType : public AstNode {
 };
 
 /** Definition of a class. See also ObjTypeClass */
-class AstClass : public AstObjType {
+class AstClassDef : public AstObjType {
 public:
-  AstClass(const std::string& name, std::vector<AstNode*>* members);
-  AstClass(const std::string& name, AstNode* m1 = nullptr,
+  AstClassDef(const std::string& name, std::vector<AstNode*>* members);
+  AstClassDef(const std::string& name, AstNode* m1 = nullptr,
     AstNode* m2 = nullptr, AstNode* m3 = nullptr);
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;

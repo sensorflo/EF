@@ -410,7 +410,7 @@ void SemanticAnalizer::visit(AstReturn& return_) {
   postConditionCheck(return_);
 }
 
-void SemanticAnalizer::visit(AstClass& class_) {
+void SemanticAnalizer::visit(AstClassDef& class_) {
   assert(false); // not yet implemented
 }
 

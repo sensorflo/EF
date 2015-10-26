@@ -118,10 +118,10 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "call(foo 42 77)", AstFunCall(new AstSymbol("foo"),
       new AstCtList(new AstNumber(42), new AstNumber(77))), spec);
 
-  spec = "AstClass";
-  EXPECT_TOSTR_EQ( "class(foo)", AstClass("foo"), spec);
+  spec = "AstClassDef";
+  EXPECT_TOSTR_EQ( "class(foo)", AstClassDef("foo"), spec);
   EXPECT_TOSTR_EQ( "class(foo data(m1 int ()) data(m2 int ()))",
-    AstClass("foo",
+    AstClassDef("foo",
       new AstDataDef("m1", ObjTypeFunda::eInt),
       new AstDataDef("m2", ObjTypeFunda::eInt)), spec);
 }

@@ -428,7 +428,7 @@ void AstFunCall::createAndSetObjectUsingRetObjType() {
       StorageDuration::eLocal));
 }
 
-AstClass::AstClass(const std::string& name, std::vector<AstNode*>* members) :
+AstClassDef::AstClassDef(const std::string& name, std::vector<AstNode*>* members) :
   m_name(name),
   m_members(members) {
   assert(m_members);
@@ -437,7 +437,7 @@ AstClass::AstClass(const std::string& name, std::vector<AstNode*>* members) :
   }
 }
 
-AstClass::AstClass(const std::string& name, AstNode* m1, AstNode* m2,
+AstClassDef::AstClassDef(const std::string& name, AstNode* m1, AstNode* m2,
   AstNode* m3) :
   m_name(name),
   m_members(make_unique<std::vector<AstNode*>>()) {
@@ -528,7 +528,7 @@ void AstFunCall::accept(AstConstVisitor& visitor) const { visitor.visit(*this); 
 void AstOperator::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstSeq::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstIf::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
-void AstClass::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstClassDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstLoop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstReturn::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCtList::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
@@ -544,7 +544,7 @@ void AstFunCall::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstOperator::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstSeq::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
-void AstClass::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstClassDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstLoop::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstReturn::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCtList::accept(AstVisitor& visitor) { visitor.visit(*this); }

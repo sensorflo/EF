@@ -16,4 +16,4 @@ class AstIf;
 class AstLoop;
 class AstReturn;
 class AstObjType;
-class AstClass;
+class AstClassDef;

@@ -518,7 +518,7 @@ void IrGen::visit(AstReturn& return_) {
   return_.object()->irInitLocal(m_abstractObject, m_builder);
 }
 
-void IrGen::visit(AstClass& class_){
+void IrGen::visit(AstClassDef& class_){
   assert(false); // not yet implemented
 }
 

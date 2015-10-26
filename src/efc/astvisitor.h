@@ -20,7 +20,7 @@ public:
   virtual void visit(AstIf& if_) =0;
   virtual void visit(AstLoop& loop) =0;
   virtual void visit(AstReturn& return_) =0;
-  virtual void visit(AstClass& class_) =0;
+  virtual void visit(AstClassDef& class_) =0;
 
 protected:
   AstVisitor() = default;
@@ -47,7 +47,7 @@ public:
   virtual void visit(const AstIf& if_) =0;
   virtual void visit(const AstLoop& loop) =0;
   virtual void visit(const AstReturn& return_) =0;
-  virtual void visit(const AstClass& class_) =0;
+  virtual void visit(const AstClassDef& class_) =0;
 
 protected:
   AstConstVisitor() = default;

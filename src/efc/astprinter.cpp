@@ -160,7 +160,7 @@ void AstPrinter::visit(const AstReturn& return_) {
   m_os << ")";
 }
 
-void AstPrinter::visit(const AstClass& class_) {
+void AstPrinter::visit(const AstClassDef& class_) {
   m_os << "class(" << class_.name();
   for (const auto& member: class_.members()) {
     m_os << " ";

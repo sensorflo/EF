@@ -30,7 +30,7 @@ private:
   virtual void visit(const AstIf& if_);
   virtual void visit(const AstLoop& loop);
   virtual void visit(const AstReturn& return_);
-  virtual void visit(const AstClass& class_);
+  virtual void visit(const AstClassDef& class_);
   
   std::basic_ostream<char>& m_os;
 };
