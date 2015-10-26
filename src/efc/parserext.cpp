@@ -129,36 +129,40 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
     rawAstDataDef->m_ctorArgs);
 }
 
-AstFunDef* ParserExt::mkFunDef(const std::string name, std::list<AstDataDef*>* args,
-  shared_ptr<const ObjType> ret, AstObject* body) {
+AstFunDef* ParserExt::mkFunDef(const string name, list<AstDataDef*>* astArgs,
+  shared_ptr<const ObjType> retObjType, AstObject* astBody) {
 
-  // create ObjTypeFun object
-  args = args ? args : new list<AstDataDef*>();
-  list<AstDataDef*>::const_iterator iterArgs = args->begin();
-  list<shared_ptr<const ObjType> >* argsObjType = new list<shared_ptr<const ObjType> >;
-  for (/*nop*/; iterArgs!=args->end(); ++iterArgs) {
-    argsObjType->push_back( (*iterArgs)->declaredObjTypeAsSp() );
-  }
-  auto objTypeFun = make_shared<const ObjTypeFun>( argsObjType, ret);
-
-  // ensure function is in environment. Note that currently there is a flat
+  // Insert name into environment. Note that currently there is a flat
   // namespace regarding function names; i.e. also nested functions are
   // nevertheless in the flat global namespace.
-  Env::InsertRet insertRet = m_env.insert( name, NULL);
-  SymbolTable::iterator& stIter = insertRet.first;
-  bool wasAlreadyInMap = !insertRet.second;
-  if (!wasAlreadyInMap) {
-    auto&& newObject = make_shared<Object>(move(objTypeFun),
-      StorageDuration::eStatic);
-    stIter->second = newObject;
-    return new AstFunDef(name, move(newObject), args, ret, body);
-  } else {
+  auto&& insertRet = m_env.insert(name, nullptr);
+  const auto& wasAlreadyInMap = !insertRet.second;
+  if (wasAlreadyInMap) {
     Error::throwError(m_errorHandler, Error::eRedefinition);
     return nullptr;
   }
+  auto& entityInEnvSp = insertRet.first->second;
+
+  // default for astArgs
+  astArgs = astArgs ? astArgs : new list<AstDataDef*>();
+
+  // create function object type describing the function and an function
+  // object representing the function
+  const auto& argsObjType = new list<shared_ptr<const ObjType>>;
+  for (const auto& astArg: *astArgs) {
+    argsObjType->push_back(astArg->declaredObjTypeAsSp());
+  }
+  auto&& objTypeFun = make_shared<const ObjTypeFun>(argsObjType, retObjType);
+  auto&& funObjSp = make_shared<Object>(move(objTypeFun), StorageDuration::eStatic);
+
+  // let environment node point to new function object
+  entityInEnvSp = funObjSp;
+
+  // finaly create AST node representing the function
+  return new AstFunDef(name, move(funObjSp), astArgs, move(retObjType), astBody);
 }
 
-AstFunDef* ParserExt::mkFunDef(const std::string name, ObjTypeFunda::EType ret,
+AstFunDef* ParserExt::mkFunDef(const string name, ObjTypeFunda::EType ret,
   AstObject* body) {
   return mkFunDef(name, AstFunDef::createArgs(),
     make_shared<const ObjTypeFunda>(ret), body);
