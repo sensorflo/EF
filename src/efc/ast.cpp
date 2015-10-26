@@ -103,13 +103,6 @@ AstFunDef::AstFunDef(const string& name,
   assert(m_body);
 }
 
-AstFunDef::AstFunDef(const string& name,
-  shared_ptr<Object> object,
-  shared_ptr<const ObjType> ret,
-  AstObject* body) :
-  AstFunDef(name, object, new list<AstDataDef*>(), ret, body) {
-}
-
 AstFunDef::~AstFunDef() {
   for (list<AstDataDef*>::const_iterator i=m_args->begin();
        i!=m_args->end(); ++i) {

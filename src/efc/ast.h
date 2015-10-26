@@ -117,10 +117,6 @@ class AstFunDef : public AstObject {
 public:
   AstFunDef(const std::string& name,
     std::shared_ptr<Object> object,
-    std::shared_ptr<const ObjType> ret,
-    AstObject* body);
-  AstFunDef(const std::string& name,
-    std::shared_ptr<Object> object,
     std::list<AstDataDef*>* args,
     std::shared_ptr<const ObjType> ret,
     AstObject* body);
@@ -138,9 +134,13 @@ public:
 private:
   void initObjType();
 
+  /** Redundant to the key of Env's key-value pair pointing to object(). */
   const std::string m_name;
-  /** We're the owner. Is garanteed to be non-null */
+  /** We're the owner. Is garanteed to be non-null. The shared_ptr<ObjType>
+  instances are redundant to dynamic_cast<ObjTypeFun>(objType()).args().  */
   std::list<AstDataDef*>* const m_args;
+  /** Is garanteed to be non-null. Is redundant to
+  dynamic_cast<ObjTypeFun>(objType()).ret().  */
   const std::shared_ptr<const ObjType> m_ret;
   /** We're the owner. Is garanteed to be non-null */
   AstObject* const m_body;
