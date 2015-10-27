@@ -428,27 +428,27 @@ void AstFunCall::createAndSetObjectUsingRetObjType() {
       StorageDuration::eLocal));
 }
 
-AstClassDef::AstClassDef(const std::string& name, std::vector<AstNode*>* members) :
+AstClassDef::AstClassDef(const std::string& name, std::vector<AstNode*>* dataMembers) :
   m_name(name),
-  m_members(members) {
-  assert(m_members);
-  for (const auto& member: *m_members) {
-    assert(member);
+  m_dataMembers(dataMembers) {
+  assert(m_dataMembers);
+  for (const auto& dataMember: *m_dataMembers) {
+    assert(dataMember);
   }
 }
 
 AstClassDef::AstClassDef(const std::string& name, AstNode* m1, AstNode* m2,
   AstNode* m3) :
   m_name(name),
-  m_members(make_unique<std::vector<AstNode*>>()) {
+  m_dataMembers(make_unique<std::vector<AstNode*>>()) {
   if (m1) {
-    m_members->push_back(m1);  
+    m_dataMembers->push_back(m1);  
   }
   if (m2) {
-    m_members->push_back(m2);  
+    m_dataMembers->push_back(m2);  
   }
   if (m3) {
-    m_members->push_back(m3);  
+    m_dataMembers->push_back(m3);  
   }
 }
 

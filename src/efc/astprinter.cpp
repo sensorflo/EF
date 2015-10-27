@@ -162,9 +162,9 @@ void AstPrinter::visit(const AstReturn& return_) {
 
 void AstPrinter::visit(const AstClassDef& class_) {
   m_os << "class(" << class_.name();
-  for (const auto& member: class_.members()) {
+  for (const auto& dataMember: class_.dataMembers()) {
     m_os << " ";
-    member->accept(*this);
+    dataMember->accept(*this);
   }
   m_os << ")";
 }

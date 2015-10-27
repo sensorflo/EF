@@ -371,20 +371,20 @@ class AstObjType : public AstNode {
 /** Definition of a class. See also ObjTypeClass */
 class AstClassDef : public AstObjType {
 public:
-  AstClassDef(const std::string& name, std::vector<AstNode*>* members);
+  AstClassDef(const std::string& name, std::vector<AstNode*>* dataMembers);
   AstClassDef(const std::string& name, AstNode* m1 = nullptr,
     AstNode* m2 = nullptr, AstNode* m3 = nullptr);
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
   const std::string& name() const { return m_name; }
-  const std::vector<AstNode*>& members() const { return *m_members; }
+  const std::vector<AstNode*>& dataMembers() const { return *m_dataMembers; }
 
 private:
   const std::string m_name;
   /** We're the owner of the list and of the pointees. Pointers are garanteed
   to be non null, also the pointer to the vector.*/
-  const std::unique_ptr<std::vector<AstNode*>> m_members;
+  const std::unique_ptr<std::vector<AstNode*>> m_dataMembers;
 };
 
 /** Maybe it should be an independent type, that is not derive from AstNode */
