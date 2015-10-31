@@ -298,7 +298,8 @@ bool ObjTypeFunda::isValueInRange(double val) const {
   case eInt: return (INT_MIN<=val && val<=INT_MAX) && (val==static_cast<int>(val));
   case eDouble: return true;
   case eBool: return val==0.0 || val==1.0;
-  case ePointer: assert(false);  // not yet implemented
+    // currently pointer are assumed to have as many bits as ints
+  case ePointer: return (val<=UINT_MAX) && (val==static_cast<unsigned int>(val));
   };
   assert(false);
   return false;
