@@ -418,6 +418,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
         new AstNumber(42))),
     Error::eRedefinition, spec);
+
+  spec = "Example: two classes";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstSeq(
+      pe.mkClassDef("foo"),
+      pe.mkClassDef("foo")),
+    Error::eRedefinition, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -1684,4 +1691,67 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
       new AstNumber(42)),
     Error::eRetTypeCantHaveMutQualifier, "");
 
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_class_definition,
+    transform,
+    inserts_an_appropriate_symbol_table_entry_into_Env)) {
+
+  string spec = "Example: class with no members";
+  {
+    // setup
+    const string className = "foo";
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstNode> ast(pe.mkClassDef(className));
+
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    shared_ptr<Entity> entity;
+    shared_ptr<ObjTypeClass> objTypeClass;
+    env.find(className, entity);
+    ASSERT_TRUE(entity.get())
+      << amendAst(ast.get()) << amend(env);
+    EXPECT_NO_THROW(objTypeClass = std::dynamic_pointer_cast<ObjTypeClass>(entity))
+      << amendAst(ast.get()) << amend(env);
+    EXPECT_EQ(className, objTypeClass->name())
+      << amendAst(ast.get()) << amend(env);
+    EXPECT_TRUE(objTypeClass->members().empty())
+      << amendAst(ast.get()) << amend(env);
+  }
+
+  spec = "Example: simple class with two members";
+  {
+    // setup
+    const string className = "foo";
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    unique_ptr<AstNode> ast(
+      pe.mkClassDef(className,
+        new AstDataDef("x", ObjTypeFunda::eInt),
+        new AstDataDef("y", ObjTypeFunda::eBool)));
+
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    shared_ptr<Entity> entity;
+    shared_ptr<ObjTypeClass> objTypeClass;
+    env.find(className, entity);
+    ASSERT_TRUE(entity.get())
+      << amendAst(ast.get()) << amend(env);
+    EXPECT_NO_THROW(objTypeClass = std::dynamic_pointer_cast<ObjTypeClass>(entity))
+      << amendAst(ast.get()) << amend(env);
+    EXPECT_EQ(className, objTypeClass->name())
+      << amendAst(ast.get()) << amend(env);
+    EXPECT_EQ(2, objTypeClass->members().size())
+      << amendAst(ast.get()) << amend(env);
+  }
 }

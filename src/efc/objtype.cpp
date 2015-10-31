@@ -424,7 +424,8 @@ llvm::Type* ObjTypeFun::llvmType() const {
 ObjTypeClass::ObjTypeClass(const string& name,
   vector<shared_ptr<const ObjType>>&& members) :
   m_name(name),
-  m_members(move(members)) {
+  m_members(move(members)),
+  m_llvmType(nullptr) {
 }
 
 ObjTypeClass::ObjTypeClass(const string& name,
@@ -433,6 +434,9 @@ ObjTypeClass::ObjTypeClass(const string& name,
   shared_ptr<const ObjType> member3) :
   ObjTypeClass(name, createMembers(member1, member2, member3)) {
 }
+
+// implemented in src file due to unique_ptr members
+ObjTypeClass::~ObjTypeClass() = default;
 
 vector<shared_ptr<const ObjType>> ObjTypeClass::createMembers(
   shared_ptr<const ObjType> member1,
@@ -488,8 +492,12 @@ AstObject* ObjTypeClass::createDefaultAstObject() const {
 }
 
 llvm::Type* ObjTypeClass::llvmType() const {
-  assert(false);
-  return nullptr;
+  return m_llvmType;
+}
+
+void ObjTypeClass::setLlvmType(llvm::StructType* llvmType) const {
+  assert(!m_llvmType); // it doesn't make sense to set it twice
+  m_llvmType = llvmType;
 }
 
 bool ObjTypeClass::hasMember(int op) const {

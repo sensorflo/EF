@@ -1226,3 +1226,62 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstSymbol("x")),
     0, spec);
 }
+
+TEST(IrGenTest, MAKE_TEST_NAME(
+    a_class_definition,
+    genIr,
+    adds_the_struct_type_to_the_module_with_the_correct_members)) {
+
+  string spec = "Example: empty class";
+  {
+    // setup
+    const string className = "foo";
+    TestingIrGen UUT;
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
+    unique_ptr<AstNode> ast(pe.mkClassDef(className));
+    UUT.m_semanticAnalizer.analyze(*ast.get());
+
+    // execute
+    auto module = UUT.genIr(*ast);
+
+    // verify
+    const auto llvmStructType = module->getTypeByName(className);
+    ASSERT_TRUE(llvmStructType!=nullptr)
+      << amendAst(ast) << amendSpec(spec) << amend(module);
+    EXPECT_EQ(className, llvmStructType->getName())
+      << amendAst(ast) << amendSpec(spec) << amend(module);
+    EXPECT_TRUE(llvmStructType->elements().empty())
+      << amendAst(ast) << amendSpec(spec) << amend(module);
+  }
+
+  // spec = "Example: class with two members";
+  // {
+  //   // setup
+  //   const string className = "foo";
+  //   TestingIrGen UUT;
+  //   ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
+  //   unique_ptr<AstNode> ast(
+  //     pe.mkClassDef(className,
+  //       new AstDataDef("x", ObjTypeFunda::eInt),
+  //       new AstDataDef("y", ObjTypeFunda::eBool)));
+  //   UUT.m_semanticAnalizer.analyze(*ast.get());
+
+  //   // execute
+  //   auto module = UUT.genIr(*ast);
+
+  //   // verify
+  //   const auto llvmStructType = module->getTypeByName(className);
+  //   ASSERT_TRUE(llvmStructType!=nullptr)
+  //     << amendAst(ast) << amendSpec(spec) << amend(module);
+  //   EXPECT_EQ(className, llvmStructType->getName())
+  //     << amendAst(ast) << amendSpec(spec) << amend(module);
+  //   EXPECT_EQ(2, llvmStructType->elements().size())
+  //     << amendAst(ast) << amendSpec(spec) << amend(module);
+  // }
+
+  spec = "Foo";
+  {
+    TestingIrGen UUT;
+    UUT.foo();
+  }
+}

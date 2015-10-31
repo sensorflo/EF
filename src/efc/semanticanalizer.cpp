@@ -417,7 +417,7 @@ void SemanticAnalizer::visit(AstReturn& return_) {
 }
 
 void SemanticAnalizer::visit(AstClassDef& class_) {
-  assert(false); // not yet implemented
+  // nop
 }
 
 void SemanticAnalizer::callAcceptWithinNewScope(AstObject& node) {

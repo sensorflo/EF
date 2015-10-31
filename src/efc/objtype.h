@@ -17,6 +17,8 @@ class ObjTypeSymbol;
 class AstObject;
 namespace llvm {
   class Type;
+  class StructType;
+  class LLVMContext;
 }
 
 /** Abstract base class for all object types.
@@ -233,6 +235,7 @@ public:
     std::shared_ptr<const ObjType> member1 = nullptr,
     std::shared_ptr<const ObjType> member2 = nullptr,
     std::shared_ptr<const ObjType> member3 = nullptr);
+  ~ObjTypeClass();
 
   static std::vector<std::shared_ptr<const ObjType>> createMembers(
     std::shared_ptr<const ObjType> member1 = nullptr,
@@ -245,15 +248,23 @@ public:
   MatchType match2(const ObjTypeClass& src, bool isLevel0) const override;
   AstObject* createDefaultAstObject() const override;
   llvm::Type* llvmType() const override;
+  void setLlvmType(llvm::StructType* llvmType) const;
   bool hasMember(int) const override;
   bool hasConstructor(const ObjType& other) const override;
   bool is(EClass class_) const override;
   int size() const override;
 
+  const std::string& name() const { return m_name; }
+  const std::vector<std::shared_ptr<const ObjType>>& members() const { return m_members; }
+
 private:
   /** Redundant to AstClassDef::m_name */
   const std::string m_name;
   const std::vector<std::shared_ptr<const ObjType>> m_members;
+  /** Largely redundant to ObjTypeClass; it's just the llvm version of the
+  same idea / information content. We're _not_ the owner. Is mutable because
+  it's more like a cache than like a state. */
+  mutable llvm::StructType* m_llvmType;
 };
 
 class ObjTypeSymbol : public ObjType {

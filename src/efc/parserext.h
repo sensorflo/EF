@@ -73,6 +73,9 @@ public:
 
   AstClassDef* mkClassDef(const std::string name,
     std::vector<AstDataDef*>* astDataMembers);
+  AstClassDef* mkClassDef(const std::string name,
+    AstDataDef* m1 = nullptr, AstDataDef* m2 = nullptr,
+    AstDataDef* m3 = nullptr, AstDataDef* m4 = nullptr);
 
   ErrorHandler& errorHandler() { return m_errorHandler; }
 

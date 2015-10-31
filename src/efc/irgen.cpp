@@ -8,6 +8,7 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Verifier.h"
+#include "llvm/IR/DerivedTypes.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_os_ostream.h"
 #include <algorithm>
@@ -50,6 +51,40 @@ unique_ptr<Module> IrGen::genIr(AstNode& root) {
   }
 
   return move(m_module);
+}
+
+void IrGen::foo() {
+  m_module = std::make_unique<Module>("Main", getGlobalContext());
+
+  vector<Type*> llvmArgs;
+  const auto llvmRetType = Type::getInt32Ty(getGlobalContext());
+  auto llvmFunctionType = FunctionType::get(llvmRetType, llvmArgs, false);
+  auto llvmFunction = Function::Create( llvmFunctionType,
+    Function::ExternalLinkage, "main", m_module.get() );
+  m_builder.SetInsertPoint(
+    BasicBlock::Create(getGlobalContext(), "entry", llvmFunction));
+
+  vector<Type*> llvmMembers{
+    Type::getInt32Ty(getGlobalContext()),
+    Type::getInt32Ty(getGlobalContext())};
+  StructType::create(getGlobalContext(),
+    ArrayRef<llvm::Type*>(llvmMembers), "Foo");
+
+  const auto llvmStructType = m_module->getTypeByName("Foo");
+  // createAllocaInEntryBlock(llvmFunction, "obj", llvmStructType);
+
+  m_builder.CreateRet(ConstantInt::get(getGlobalContext(), APInt(32, 42)));
+  cout << "#elements=" << llvmStructType->elements().size() << "\n";
+
+  stringstream ss;
+  llvm::raw_os_ostream llvmss(ss);
+  ss << "\n--- llvm module dump: ------------------\n";
+  m_module->print(llvmss, nullptr);
+  ss << "----------------------------------------\n";
+  cout << ss.str();
+  if (verifyModule(*m_module, &llvmss)) {
+    throw runtime_error(ss.str());
+  }
 }
 
 llvm::Value* IrGen::callAcceptOn(AstObject& node) {
@@ -524,7 +559,14 @@ void IrGen::visit(AstReturn& return_) {
 }
 
 void IrGen::visit(AstClassDef& class_){
-  assert(false); // not yet implemented
+  const auto& objTypeClass = class_.objType();
+  vector<Type*> llvmMembers;
+  for (const auto& member: objTypeClass.members()) {
+    llvmMembers.emplace_back(member->llvmType());
+  }
+  const auto llvmType = StructType::create(getGlobalContext(),
+    ArrayRef<llvm::Type*>(llvmMembers), objTypeClass.name());
+  objTypeClass.setLlvmType(llvmType);
 }
 
 /** \internal We want allocas in the entry block to facilitate llvm's mem2reg
@@ -535,3 +577,4 @@ AllocaInst* IrGen::createAllocaInEntryBlock(Function* functionIr,
     functionIr->getEntryBlock().begin());
   return irBuilder.CreateAlloca(type, 0, varName.c_str());
 }
+

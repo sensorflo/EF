@@ -206,3 +206,20 @@ AstClassDef* ParserExt::mkClassDef(const string name,
   return new AstClassDef(name, astDataMembers, objTypeClass);
 }
 
+AstClassDef* ParserExt::mkClassDef(const std::string name,
+  AstDataDef* m1, AstDataDef* m2, AstDataDef* m3, AstDataDef* m4) {
+  const auto members = new std::vector<AstDataDef*>;
+  if (m1) {
+    members->push_back(m1);
+  }
+  if (m2) {
+    members->push_back(m2);
+  }
+  if (m3) {
+    members->push_back(m3);
+  }
+  if (m4) {
+    members->push_back(m4);
+  }
+  return mkClassDef(name, members);
+}

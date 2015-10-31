@@ -22,6 +22,7 @@ public:
   IrGen(ErrorHandler& errorHandler);
 
   std::unique_ptr<llvm::Module> genIr(AstNode& root);
+  void foo();
 
 private:
   friend class TestingIrGen;
