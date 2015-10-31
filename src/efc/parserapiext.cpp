@@ -115,7 +115,8 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_STATIC, {"STATIC", SVTVoid, TKSeparator}},
     { Parser::token::TOK_LOCAL, {"LOCAL", SVTVoid, TKSeparator}},
     { Parser::token::TOK_NOINIT, {"NOINIT", SVTVoid, TKSeparator}},
-    { Parser::token::TOK_NUMBER, {"NUMBER", SVTNumberToken, TKComponentOrAmbigous}}};
+    { Parser::token::TOK_NUMBER, {"NUMBER", SVTNumberToken, TKComponentOrAmbigous}},
+    { Parser::token::TOK_CLASS, {"CLASS", SVTVoid, TKStarter}}};
   for (const auto kv: m) {
     m_TokenAttrs.at(kv.first) = kv.second;
   }

@@ -251,6 +251,7 @@ public:
   int size() const override;
 
 private:
+  /** Redundant to AstClassDef::m_name */
   const std::string m_name;
   const std::vector<std::shared_ptr<const ObjType>> m_members;
 };

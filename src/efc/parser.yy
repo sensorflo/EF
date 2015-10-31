@@ -136,6 +136,7 @@ and by declaration of free function yylex */
   STATIC "static"
   LOCAL "local"
   NOINIT "noinit"
+  CLASS "class"
 ;
 
 %token <ObjTypeFunda::EType> FUNDAMENTAL_TYPE
@@ -159,17 +160,19 @@ and by declaration of free function yylex */
 
 %type <AstCtList*> ct_list initializer_arg initializer_special_arg
 %type <std::vector<AstNode*>*> pure_standalone_node_seq_expr
+%type <std::vector<AstDataDef*>*> class_body
 %type <std::list<AstDataDef*>*> pure_naked_param_ct_list
 %type <std::list<AstObject*>*> pure_ct_list
-%type <AstNode*> standalone_node 
-%type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
-%type <AstDataDef*> param_decl
+%type <AstNode*> standalone_node
+%type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while list_fun_def
+%type <AstDataDef*> param_decl list_data_def
 %type <ObjType::Qualifiers> valvar type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
 %type <RawAstDataDef*> naked_data_def data_def_args
 %type <AstFunDef*> naked_fun_def
 %type <std::shared_ptr<const ObjType>> type opt_type type_arg opt_type_arg opt_ret_type
 %type <ConditionActionPair> condition_action_pair_then
+%type <AstObjType*> list_type_def naked_class_def
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -224,6 +227,7 @@ pure_standalone_node_seq_expr
 
 standalone_node
   : standalone_expr                                 { $$ = $1; }
+  | list_type_def                                   { $$ = $1; }   
   ;
 
 standalone_expr
@@ -359,13 +363,25 @@ primary_expr
   ;
   
 list_expr
-  : valvar kwao naked_data_def kwac                 { $$ = parserExt.mkDataDef($1, $3); }
-  | FUN kwao naked_fun_def kwac                     { $$ = $3; }
+  : list_data_def                                   { $$ = $1; }
+  | list_fun_def                                    { std::swap($$,$1); }
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
   | WHILE kwao naked_while kwac                     { std::swap($$,$3); }
   | RETURN kwao naked_return kwac                   { $$ = $3; }
   | RAW_NEW kwao type initializer_arg kwac          { $$ = NULL; }
   | RAW_DELETE kwao sub_expr kwac                   { $$ = NULL; }
+  ;
+
+list_fun_def
+  : FUN kwao naked_fun_def kwac                     { $$ = $3; }
+  ;
+
+list_data_def
+  : valvar kwao naked_data_def kwac                 { $$ = parserExt.mkDataDef($1, $3); }
+  ;
+
+list_type_def
+  : CLASS kwao naked_class_def kwac                 { std::swap($$,$3); }
   ;
 
 /* keyword argument list open delimiter */
@@ -457,6 +473,15 @@ condition_action_pair_then
 naked_return
   : %empty                                                           { $$ = new AstReturn(new AstNop()); }
   | standalone_expr                                                  { $$ = new AstReturn($1); }
+  ;
+
+naked_class_def
+  : ID equal_as_sep class_body                                       { $$ = parserExt.mkClassDef($1, $3); }
+  ;
+
+class_body
+  : %empty                                                           { $$ = new std::vector<AstDataDef*>(); }
+  | class_body list_data_def                                         { $1->push_back($2); std::swap($$, $1); }
   ;
 
 equal_as_sep

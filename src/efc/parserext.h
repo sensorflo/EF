@@ -71,6 +71,9 @@ public:
 
   AstFunDef* mkMainFunDef(AstObject* body);
 
+  AstClassDef* mkClassDef(const std::string name,
+    std::vector<AstDataDef*>* astDataMembers);
+
   ErrorHandler& errorHandler() { return m_errorHandler; }
 
 private:

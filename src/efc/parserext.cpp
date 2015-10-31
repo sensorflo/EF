@@ -176,3 +176,33 @@ AstFunDef* ParserExt::mkFunDef(const string name, shared_ptr<const ObjType> ret,
 AstFunDef* ParserExt::mkMainFunDef(AstObject* body) {
   return mkFunDef("main", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), body);
 }
+
+AstClassDef* ParserExt::mkClassDef(const string name,
+  vector<AstDataDef*>* astDataMembers) {
+
+  assert(astDataMembers);
+
+  // Insert name into environment
+  auto&& insertRet = m_env.insert(name, nullptr);
+  const auto& wasAlreadyInMap = !insertRet.second;
+  if (wasAlreadyInMap) {
+    Error::throwError(m_errorHandler, Error::eRedefinition);
+    return nullptr;
+  }
+  auto& entityInEnvSp = insertRet.first->second;
+
+  // create class object type
+  vector<shared_ptr<const ObjType>> dataMemberObjTypes;
+  for (const auto& astDataMember: *astDataMembers) {
+    dataMemberObjTypes.emplace_back(astDataMember->declaredObjTypeAsSp());
+  }
+  auto&& objTypeClass = make_shared<ObjTypeClass>(name,
+    move(dataMemberObjTypes));
+
+  // let environment node point to newly created class object type
+  entityInEnvSp = objTypeClass;
+
+  // finaly create AST node representing the class definition
+  return new AstClassDef(name, astDataMembers, objTypeClass);
+}
+
