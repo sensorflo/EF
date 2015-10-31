@@ -135,6 +135,7 @@ and by declaration of free function yylex */
   IS "is"
   STATIC "static"
   LOCAL "local"
+  NOINIT "noinit"
 ;
 
 %token <ObjTypeFunda::EType> FUNDAMENTAL_TYPE
@@ -410,11 +411,13 @@ opt_ret_type
 
 initializer_arg
   : COMMA_EQUAL standalone_expr                                      { $$ = new AstCtList($2); }
+  | COMMA_EQUAL NOINIT                                               { $$ = new AstCtList(AstDataDef::noInit); }
   | LPAREN_EQUAL ct_list RPAREN                                      { swap($$,$2); }
   ;
 
 initializer_special_arg
   : equal_as_sep standalone_expr                                     { $$ = new AstCtList($2); }
+  | equal_as_sep NOINIT                                              { $$ = new AstCtList(AstDataDef::noInit); }
   | lparen_as_sep ct_list RPAREN                                     { swap($$,$2); }
   ;
 

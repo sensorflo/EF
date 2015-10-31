@@ -308,18 +308,20 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     }
   }
 
-  dataDef.ctorArgs().accept(*this);
+  if ( !dataDef.doNotInit() ) {
+    dataDef.ctorArgs().accept(*this);
 
-  const auto ctorArgs = dataDef.ctorArgs().childs();
-  // currently a data object must be initialized withe exactly one initializer
-  assert(ctorArgs.size()==1);
-  const auto initializer = ctorArgs.front();
-  if ( dataDef.objType().match(initializer->objType()) == ObjType::eNoMatch ) {
-    Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
-  }
-  if ( dataDef.object()->storageDuration() == StorageDuration::eStatic
-    && !initializer->isCTConst() ) {
-    Error::throwError(m_errorHandler, Error::eCTConstRequired);
+    const auto ctorArgs = dataDef.ctorArgs().childs();
+    // currently a data object must be initialized withe exactly one initializer
+    assert(ctorArgs.size()==1);
+    const auto initializer = ctorArgs.front();
+    if ( dataDef.objType().match(initializer->objType()) == ObjType::eNoMatch ) {
+      Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+    }
+    if ( dataDef.object()->storageDuration() == StorageDuration::eStatic
+      && !initializer->isCTConst() ) {
+      Error::throwError(m_errorHandler, Error::eCTConstRequired);
+    }
   }
 
   dataDef.object()->addAccess(dataDef.access());

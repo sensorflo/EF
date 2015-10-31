@@ -858,6 +858,21 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
+    a_data_objec_definition_WITH_noinit,
+    genIr,
+    it_succeeds)) {
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstSeq(
+      pe.mkFunDef("foo",
+        AstFunDef::createArgs(new AstDataDef("x", ObjTypeFunda::eInt)),
+        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+        new AstOperator('/', new AstSymbol("x"), new AstSymbol("x"))),
+      new AstDataDef("x", ObjTypeFunda::eInt, AstDataDef::noInit),
+      new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstSymbol("x")))),
+    1 /* x/x is always 1 */, "");
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME(
     GIVEN_a_mutable_local_data_object_definition_expression,
     genIrInImplicitMain,
     returns_x_lvalue)) {

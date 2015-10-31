@@ -79,6 +79,7 @@ mut                 return yy::Parser::make_MUT(loc);
 is                  return yy::Parser::make_IS(loc);
 static              return yy::Parser::make_STATIC(loc);
 local               return yy::Parser::make_LOCAL(loc);
+noinit              return yy::Parser::make_NOINIT(loc);
 
 
   /* type keywords */

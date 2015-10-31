@@ -82,6 +82,8 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
         ObjType::eMutable,
         make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
       new AstNumber(42)), spec);
+  EXPECT_TOSTR_EQ( "data(foo int noinit)", AstDataDef("foo",
+      ObjTypeFunda::eInt, AstDataDef::noInit), spec);
   
   spec = "AstCtList";
   EXPECT_TOSTR_EQ( "", AstCtList(), spec);

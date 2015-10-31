@@ -534,6 +534,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   spec = "short version with implicit type";
   TEST_PARSE( "foo:=42", ":;data(foo int (42))", spec);
+
+  spec = "noinit initializer";
+  TEST_PARSE( "val foo :int ,= noinit$", ":;data(foo int noinit)", spec);
+  TEST_PARSE( "val foo = noinit :int$", ":;data(foo int noinit)", spec);
 }
 
 // note that it is a semantic error, not a grammar error

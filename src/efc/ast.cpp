@@ -126,6 +126,8 @@ list<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
   return args;
 }
 
+AstObject* const AstDataDef::noInit = reinterpret_cast<AstObject*>(1);
+
 AstDataDef::AstDataDef(const std::string& name,
   shared_ptr<const ObjType> declaredObjType,
   StorageDuration declaredStorageDuration,  AstCtList* ctorArgs) :
@@ -134,7 +136,8 @@ AstDataDef::AstDataDef(const std::string& name,
     move(declaredObjType) :
     make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
   m_declaredStorageDuration(declaredStorageDuration),
-  m_ctorArgs(mkCtorArgs(ctorArgs, *m_declaredObjType, m_ctorArgsWereImplicitelyDefined)) {
+  m_ctorArgs(mkCtorArgs(ctorArgs, *m_declaredObjType,
+      m_ctorArgsWereImplicitelyDefined, m_doNotInit)) {
   assert(m_ctorArgs);
 }
 
@@ -160,12 +163,19 @@ AstDataDef::~AstDataDef() {
 }
 
 AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
-  const ObjType& declaredObjType, bool& ctorArgsWereImplicitelyDefined) {
-  ctorArgsWereImplicitelyDefined = false; // assumption
+  const ObjType& declaredObjType, bool& ctorArgsWereImplicitelyDefined,
+  bool& doNotInit) {
+  ctorArgsWereImplicitelyDefined = false; // assumptions
+  doNotInit = false;
   if (not ctorArgs) {
     ctorArgs = new AstCtList();
   }
   if (not ctorArgs->childs().empty()) {
+    if ( ctorArgs->childs().front()==noInit ) {
+      doNotInit = true;
+      assert(ctorArgs->childs().size()==1);
+      ctorArgs->childs().clear();
+    }
     return ctorArgs;
   }
   // Currrently zero arguments are not supported. When none args are given, a

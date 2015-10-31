@@ -129,11 +129,16 @@ void AstPrinter::visit(const AstDataDef& dataDef) {
   }
   m_os << dataDef.declaredObjType();
 
-  m_os << " (";
-  if ( !dataDef.m_ctorArgsWereImplicitelyDefined ) {
-    dataDef.ctorArgs().accept(*this);
+  if ( dataDef.doNotInit() ) {
+    m_os << " noinit";
+  } else {
+    m_os << " (";
+    if ( !dataDef.m_ctorArgsWereImplicitelyDefined ) {
+      dataDef.ctorArgs().accept(*this);
+    }
+    m_os << ")";
   }
-  m_os << "))";
+  m_os << ")";
 }
 
 void AstPrinter::visit(const AstIf& if_) {

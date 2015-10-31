@@ -241,6 +241,26 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     const auto object = std::dynamic_pointer_cast<Object>(entity);
     EXPECT_MATCHES_FULLY( *objType, object->objType()) << amendAst(ast.get());
   }
+
+  spec = "Example: noinit initializer";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    const auto objType = make_shared<ObjTypeFunda>(ObjTypeFunda::eInt);
+    unique_ptr<AstNode> ast(new AstDataDef("x", objType, AstDataDef::noInit));
+
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    shared_ptr<Entity> entity;
+    env.find("x", entity);
+    EXPECT_TRUE( entity.get() ) << amendAst(ast.get());
+    const auto object = std::dynamic_pointer_cast<Object>(entity);
+    EXPECT_MATCHES_FULLY( *objType, object->objType()) << amendAst(ast.get());
+  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(

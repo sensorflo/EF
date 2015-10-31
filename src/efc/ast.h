@@ -148,6 +148,8 @@ private:
 
 class AstDataDef : public AstObject {
 public:
+  static AstObject* const noInit;
+
   AstDataDef(const std::string& name, std::shared_ptr<const ObjType> declaredObjType,
     StorageDuration declaredStorageDuration,
     AstCtList* ctorArgs = nullptr);
@@ -169,12 +171,14 @@ public:
   StorageDuration declaredStorageDuration() const;
   std::shared_ptr<Object>& createAndSetObjectUsingDeclaredObjType();  
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
+  bool doNotInit() const { return m_doNotInit; }
 
 private:
   friend class AstPrinter;
 
   static AstCtList* mkCtorArgs(AstCtList* ctorArgs,
-    const ObjType& declaredObjType, bool& ctorArgsWereImplicitelyDefined);
+    const ObjType& declaredObjType, bool& ctorArgsWereImplicitelyDefined,
+    bool& doNotInit);
 
   const std::string m_name;
   std::shared_ptr<const ObjType> m_declaredObjType;
@@ -184,6 +188,7 @@ private:
   /** The members in m_ctorArgs where implicitely defined. I.e. the client
   passed zero ctorArgs to AstDataDef's ctor. */
   bool m_ctorArgsWereImplicitelyDefined;
+  bool m_doNotInit;
 };
 
 /** Literal number */
