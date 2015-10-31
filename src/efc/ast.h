@@ -169,17 +169,22 @@ public:
   StorageDuration declaredStorageDuration() const;
   std::shared_ptr<Object>& createAndSetObjectUsingDeclaredObjType();  
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
-  virtual AstObject& initObj() const;
+  AstObject& initObj() const;
 
 private:
+  friend class AstPrinter;
+
+  static AstCtList* mkCtorArgs(AstCtList* ctorArgs,
+    const ObjType& declaredObjType, bool& ctorArgsWereImplicitelyDefined);
+
   const std::string m_name;
   std::shared_ptr<const ObjType> m_declaredObjType;
   const StorageDuration m_declaredStorageDuration;
-  /** We're the owner. Is garanteed to be non-null. In case of fun params, in
-  future it will mean the default initializer, currently it's just ignored. */
+  /** We're the owner. Is garanteed to be non-null.*/
   AstCtList* const m_ctorArgs;
-  /** We're the owner. Is _NOT_ guaranteed to  be non-null. */
-  AstObject* m_implicitInitializer;
+  /** The members in m_ctorArgs where implicitely defined. I.e. the client
+  passed zero ctorArgs to AstDataDef's ctor. */
+  bool m_ctorArgsWereImplicitelyDefined;
 };
 
 /** Literal number */

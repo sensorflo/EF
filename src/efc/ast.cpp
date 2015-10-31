@@ -134,8 +134,7 @@ AstDataDef::AstDataDef(const std::string& name,
     move(declaredObjType) :
     make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
   m_declaredStorageDuration(declaredStorageDuration),
-  m_ctorArgs(ctorArgs ? ctorArgs : new AstCtList()),
-  m_implicitInitializer(ctorArgs && !ctorArgs->childs().empty() ? NULL : m_declaredObjType->createDefaultAstObject()) {
+  m_ctorArgs(mkCtorArgs(ctorArgs, *m_declaredObjType, m_ctorArgsWereImplicitelyDefined)) {
   assert(m_ctorArgs);
 }
 
@@ -158,7 +157,22 @@ AstDataDef::AstDataDef(const std::string& name, ObjTypeFunda::EType declaredObjT
 
 AstDataDef::~AstDataDef() {
   delete m_ctorArgs;
-  delete m_implicitInitializer;
+}
+
+AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
+  const ObjType& declaredObjType, bool& ctorArgsWereImplicitelyDefined) {
+  ctorArgsWereImplicitelyDefined = false; // assumption
+  if (not ctorArgs) {
+    ctorArgs = new AstCtList();
+  }
+  if (not ctorArgs->childs().empty()) {
+    return ctorArgs;
+  }
+  // Currrently zero arguments are not supported. When none args are given, a
+  // default arg is used.
+  ctorArgs->childs().push_back(declaredObjType.createDefaultAstObject());
+  ctorArgsWereImplicitelyDefined = true;
+  return ctorArgs;
 }
 
 const ObjType& AstDataDef::declaredObjType() const {
@@ -180,13 +194,10 @@ shared_ptr<Object>& AstDataDef::createAndSetObjectUsingDeclaredObjType() {
 
 AstObject& AstDataDef::initObj() const {
   const list<AstObject*>& args = m_ctorArgs->childs();
-  if (!args.empty()) {
-    assert(args.size()==1); // more ctor arguments not yet supported
-    return *(args.front());
-  } else {
-    assert(m_implicitInitializer);
-    return *m_implicitInitializer;
-  }
+  // more than one ctor arguments not yet supported, and currently zero
+  // arguments are also not really supported, see mkCtorArgs.
+  assert(args.size()==1);
+  return *(args.front());
 }
 
 AstNumber::AstNumber(GeneralValue value, std::shared_ptr<const ObjTypeFunda> objType) :
