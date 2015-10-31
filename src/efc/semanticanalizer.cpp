@@ -310,11 +310,15 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 
   dataDef.ctorArgs().accept(*this);
 
-  if ( dataDef.objType().match(dataDef.initObj().objType()) == ObjType::eNoMatch ) {
+  const auto ctorArgs = dataDef.ctorArgs().childs();
+  // currently a data object must be initialized withe exactly one initializer
+  assert(ctorArgs.size()==1);
+  const auto initializer = ctorArgs.front();
+  if ( dataDef.objType().match(initializer->objType()) == ObjType::eNoMatch ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
   if ( dataDef.object()->storageDuration() == StorageDuration::eStatic
-    && !dataDef.initObj().isCTConst() ) {
+    && !initializer->isCTConst() ) {
     Error::throwError(m_errorHandler, Error::eCTConstRequired);
   }
 

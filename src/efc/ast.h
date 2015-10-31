@@ -169,7 +169,6 @@ public:
   StorageDuration declaredStorageDuration() const;
   std::shared_ptr<Object>& createAndSetObjectUsingDeclaredObjType();  
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
-  AstObject& initObj() const;
 
 private:
   friend class AstPrinter;

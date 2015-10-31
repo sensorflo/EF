@@ -192,14 +192,6 @@ shared_ptr<Object>& AstDataDef::createAndSetObjectUsingDeclaredObjType() {
   return m_object;
 }
 
-AstObject& AstDataDef::initObj() const {
-  const list<AstObject*>& args = m_ctorArgs->childs();
-  // more than one ctor arguments not yet supported, and currently zero
-  // arguments are also not really supported, see mkCtorArgs.
-  assert(args.size()==1);
-  return *(args.front());
-}
-
 AstNumber::AstNumber(GeneralValue value, std::shared_ptr<const ObjTypeFunda> objType) :
   AstObject{
     make_shared<Object>(

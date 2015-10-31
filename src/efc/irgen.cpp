@@ -400,9 +400,13 @@ void IrGen::visit(AstDataDef& dataDef) {
   Object*const object = dataDef.object();
   assert(object);
 
+  const auto ctorArgs = dataDef.ctorArgs().childs();
+  // currently a data object must be initialized withe exactly one initializer
+  assert(ctorArgs.size()==1);
+
   // define m_value (type Value*) of symbol table entry. For values that is
   // trivial. For variables aka allocas first an alloca has to be created.
-  Value* initObj = callAcceptOn(dataDef.initObj());
+  Value* initObj = callAcceptOn(*ctorArgs.front());
   assert(initObj);
   const ObjType& objType = dataDef.objType();
 
