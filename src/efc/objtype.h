@@ -2,6 +2,7 @@
 // If you change this list of header files, you must also modify the
 // analogous, redundant list in the Makefile
 #include "entity.h"
+#include "envnode.h"
 #include <string>
 #include <list>
 #include <iostream>
@@ -14,6 +15,7 @@ class ObjTypePtr;
 class ObjTypeFun;
 class ObjTypeClass;
 class ObjTypeSymbol;
+class EnvNode;
 class AstObject;
 namespace llvm {
   class Type;
@@ -227,7 +229,7 @@ private:
 };
 
 /** Compount-type/class */
-class ObjTypeClass : public ObjType {
+class ObjTypeClass : public ObjType, public EnvNode {
 public:
   ObjTypeClass(const std::string& name,
     std::vector<std::shared_ptr<const ObjType>>&& members);
@@ -241,6 +243,7 @@ public:
     std::shared_ptr<const ObjType> member1 = nullptr,
     std::shared_ptr<const ObjType> member2 = nullptr,
     std::shared_ptr<const ObjType> member3 = nullptr);
+  void setEnvNode(EnvNode& envNode);
 
   std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
   MatchType match(const ObjType& dst, bool isLevel0) const override;
@@ -254,12 +257,16 @@ public:
   bool is(EClass class_) const override;
   int size() const override;
 
+  virtual void find(const std::string& name,
+    std::shared_ptr<Entity>* entity, std::size_t* index) const override;
+
   const std::string& name() const { return m_name; }
   const std::vector<std::shared_ptr<const ObjType>>& members() const { return m_members; }
 
 private:
   /** Redundant to AstClassDef::m_name */
   const std::string m_name;
+  const EnvNode* m_envNode;
   const std::vector<std::shared_ptr<const ObjType>> m_members;
   /** Largely redundant to ObjTypeClass; it's just the llvm version of the
   same idea / information content. We're _not_ the owner. Is mutable because

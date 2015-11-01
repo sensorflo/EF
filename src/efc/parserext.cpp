@@ -203,7 +203,11 @@ AstClassDef* ParserExt::mkClassDef(const string name,
   entityInEnvSp = objTypeClass;
 
   // finaly create AST node representing the class definition
-  return new AstClassDef(name, astDataMembers, objTypeClass);
+  const auto astClassDef = new AstClassDef(name, astDataMembers, objTypeClass);
+
+  // KLUDGE: Currently AstClassDef plays the role of an EnvNode
+  objTypeClass->setEnvNode(*astClassDef);
+  return astClassDef;
 }
 
 AstClassDef* ParserExt::mkClassDef(const std::string name,

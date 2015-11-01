@@ -55,7 +55,7 @@ gensrc/scanner.cpp: scanner.l | gensrc
 # The author sadly doesn't know how to automatically make the dependencies,
 # that's why they are written explicitely and redundantely.
 efc.h.pch: efc.h objtype.h access.h ast.h generalvalue.h storageduration.h \
-           entity.h astforwards.h declutils.h
+           entity.h astforwards.h declutils.h envnode.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
 out/%.o: gensrc/%.cpp efc.h.pch | out
@@ -79,7 +79,7 @@ EFCTEST_TESTS_SRCS = errorhandlertest.cpp objtypetest.cpp parserexttest.cpp	\
   scannertest.cpp scannerandparsertest.cpp astprintertest.cpp	\
   driversystemtest.cpp semanticanalizertest.cpp irgentest.cpp	\
   tutorialstest.cpp tokenstreamlookaheadtest.cpp tokenfiltertest.cpp \
-  envtest.cpp objecttest.cpp
+  envtest.cpp objecttest.cpp asttest.cpp
 
 EFCTEST_TESTHELPERS_SRCS = literaltokenstream.cpp tokentesthelper.cpp
 

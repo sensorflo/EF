@@ -1,11 +1,13 @@
 #pragma once
 #include "declutils.h"
 #include "entity.h"
+#include "envnode.h"
 #include <string>
 #include <map>
 #include <list>
 #include <memory>
 #include <ostream>
+#include <string>
 
 class SymbolTable final : public std::map<std::string, std::shared_ptr<Entity> > {
 public:

@@ -6,6 +6,7 @@
 #include "generalvalue.h"
 #include "storageduration.h"
 #include "declutils.h"
+#include "envnode.h"
 
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Function.h"
@@ -380,7 +381,7 @@ public:
 };
 
 /** Definition of a class. See also ObjTypeClass */
-class AstClassDef : public AstObjType {
+class AstClassDef : public AstObjType, public EnvNode {
 public:
   AstClassDef(const std::string& name, std::vector<AstDataDef*>* dataMembers,
     std::shared_ptr<const ObjTypeClass> objTypeClass);
@@ -388,6 +389,9 @@ public:
     AstDataDef* m2 = nullptr, AstDataDef* m3 = nullptr);
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  virtual void find(const std::string& name,
+    std::shared_ptr<Entity>* entity, std::size_t* index) const;
 
   const std::string& name() const { return m_name; }
   const std::vector<AstDataDef*>& dataMembers() const { return *m_dataMembers; }

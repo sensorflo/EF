@@ -424,6 +424,7 @@ llvm::Type* ObjTypeFun::llvmType() const {
 ObjTypeClass::ObjTypeClass(const string& name,
   vector<shared_ptr<const ObjType>>&& members) :
   m_name(name),
+  m_envNode(nullptr),
   m_members(move(members)),
   m_llvmType(nullptr) {
 }
@@ -455,6 +456,11 @@ vector<shared_ptr<const ObjType>> ObjTypeClass::createMembers(
   return members;
 }
 
+void ObjTypeClass::setEnvNode(EnvNode& envNode) {
+  assert(!m_envNode); // it doesn't make sense to set it twice
+  m_envNode = &envNode;
+}
+
 basic_ostream<char>& ObjTypeClass::printTo(basic_ostream<char>& os) const {
   os << "class(" << m_name;
   for ( const auto& member: m_members ) {
@@ -484,6 +490,12 @@ int ObjTypeClass::size() const {
     sum += member->size();
   }
   return sum;
+}
+
+void ObjTypeClass::find(const string& name, shared_ptr<Entity>* entity,
+  size_t* index) const {
+  assert(m_envNode);
+  return m_envNode->find(name, entity, index);
 }
 
 AstObject* ObjTypeClass::createDefaultAstObject() const {

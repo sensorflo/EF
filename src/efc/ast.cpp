@@ -467,6 +467,24 @@ AstClassDef::AstClassDef(const string& name, AstDataDef* m1, AstDataDef* m2,
   }
 }
 
+void AstClassDef::find(const string& name, shared_ptr<Entity>* entity,
+  size_t* index) const {
+  assert(entity || index);
+  size_t cnt = 0;
+  for (const auto& m: *m_dataMembers) {
+    if ( m->name() == name ) {
+      if ( entity ) {
+        *entity = m->objectAsSp();
+      }
+      if ( index ) {
+        *index = cnt;
+      }
+      return;
+    }
+    ++cnt;
+  }
+}
+
 /** The list's elements must be non-null */
 AstCtList::AstCtList(list<AstObject*>* childs) :
   m_childs(childs ? childs : new list<AstObject*>() ) {
