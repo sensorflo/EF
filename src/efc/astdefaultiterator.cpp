@@ -71,6 +71,18 @@ void AstDefaultIterator::visit(AstReturn& return_) {
   return_.retVal().accept(m_visitor);
 }
 
+void AstDefaultIterator::visit(AstObjTypeSymbol& symbol) {
+  assert(false); // not yet implemented
+}
+
+void AstDefaultIterator::visit(AstObjTypeQuali& quali) {
+  assert(false); // not yet implemented
+}
+
+void AstDefaultIterator::visit(AstObjTypePtr& ptr) {
+  assert(false); // not yet implemented
+}
+
 void AstDefaultIterator::visit(AstClassDef& class_) {
   assert(false); // not yet implemented
 }

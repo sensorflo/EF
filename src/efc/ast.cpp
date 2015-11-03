@@ -441,6 +441,50 @@ void AstFunCall::createAndSetObjectUsingRetObjType() {
       StorageDuration::eLocal));
 }
 
+AstObjTypeSymbol::AstObjTypeSymbol(const std::string name) :
+  m_name(name) {
+}
+
+AstObjTypeSymbol::AstObjTypeSymbol(ObjTypeFunda::EType fundaType) :
+  m_name(toName(fundaType)) {
+}
+
+string AstObjTypeSymbol::toName(ObjTypeFunda::EType fundaType) {
+  switch (fundaType) {
+  case ObjTypeFunda::eVoid: return "void";
+  case ObjTypeFunda::eNoreturn: return "noreturn";
+  case ObjTypeFunda::eChar: return "char";
+  case ObjTypeFunda::eInt: return "int";
+  case ObjTypeFunda::eBool: return "bool";
+  case ObjTypeFunda::eDouble: return "double";
+  default: assert(false);
+  }
+}
+
+const ObjType& AstObjTypeSymbol::objType() const {
+  assert(m_objType);
+  return *m_objType;
+}
+
+AstObjTypeQuali::AstObjTypeQuali(ObjType::Qualifiers qualifiers, AstObjType* targetType) :
+  m_qualifiers(qualifiers),
+  m_targetType(targetType) {
+}
+
+const ObjType& AstObjTypeQuali::objType() const {
+  assert(m_objType);
+  return *m_objType;
+}
+
+AstObjTypePtr::AstObjTypePtr(AstObjType* pointee) :
+  m_pointee(pointee) {
+}
+
+const ObjTypePtr& AstObjTypePtr::objType() const {
+  assert(m_objType);
+  return *m_objType;
+}
+
 AstClassDef::AstClassDef(const std::string& name, std::vector<AstNode*>* dataMembers) :
   m_name(name),
   m_dataMembers(dataMembers) {
@@ -463,6 +507,11 @@ AstClassDef::AstClassDef(const std::string& name, AstNode* m1, AstNode* m2,
   if (m3) {
     m_dataMembers->push_back(m3);  
   }
+}
+
+const ObjTypeClass& AstClassDef::objType() const {
+  assert(m_objType);
+  return *m_objType;
 }
 
 /** The list's elements must be non-null */
@@ -541,6 +590,9 @@ void AstFunCall::accept(AstConstVisitor& visitor) const { visitor.visit(*this); 
 void AstOperator::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstSeq::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstIf::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstObjTypeSymbol::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstObjTypeQuali::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
+void AstObjTypePtr::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstClassDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstLoop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstReturn::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
@@ -557,6 +609,9 @@ void AstFunCall::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstOperator::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstSeq::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstObjTypeSymbol::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstObjTypeQuali::accept(AstVisitor& visitor) { visitor.visit(*this); }
+void AstObjTypePtr::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstClassDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstLoop::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstReturn::accept(AstVisitor& visitor) { visitor.visit(*this); }

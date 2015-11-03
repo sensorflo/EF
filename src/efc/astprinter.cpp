@@ -167,6 +167,18 @@ void AstPrinter::visit(const AstReturn& return_) {
   m_os << ")";
 }
 
+void AstPrinter::visit(const AstObjTypeSymbol& symbol) {
+  assert(false); // not yet implemented
+}
+
+void AstPrinter::visit(const AstObjTypeQuali& quali) {
+  assert(false); // not yet implemented
+}
+
+void AstPrinter::visit(const AstObjTypePtr& ptr) {
+  assert(false); // not yet implemented
+}
+
 void AstPrinter::visit(const AstClassDef& class_) {
   m_os << "class(" << class_.name();
   for (const auto& dataMember: class_.dataMembers()) {

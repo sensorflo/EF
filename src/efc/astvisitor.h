@@ -20,6 +20,9 @@ public:
   virtual void visit(AstIf& if_) =0;
   virtual void visit(AstLoop& loop) =0;
   virtual void visit(AstReturn& return_) =0;
+  virtual void visit(AstObjTypeSymbol& symbol) =0;
+  virtual void visit(AstObjTypeQuali& quali) =0;
+  virtual void visit(AstObjTypePtr& ptr) =0;
   virtual void visit(AstClassDef& class_) =0;
 
 protected:
@@ -47,6 +50,9 @@ public:
   virtual void visit(const AstIf& if_) =0;
   virtual void visit(const AstLoop& loop) =0;
   virtual void visit(const AstReturn& return_) =0;
+  virtual void visit(const AstObjTypeSymbol& symbol) =0;
+  virtual void visit(const AstObjTypeQuali& quali) =0;
+  virtual void visit(const AstObjTypePtr& ptr) =0;
   virtual void visit(const AstClassDef& class_) =0;
 
 protected:

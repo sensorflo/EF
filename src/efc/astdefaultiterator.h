@@ -24,6 +24,9 @@ public:
   virtual void visit(AstIf& if_);
   virtual void visit(AstLoop& loop);
   virtual void visit(AstReturn& return_);
+  virtual void visit(AstObjTypeSymbol& symbol);
+  virtual void visit(AstObjTypeQuali& quali);
+  virtual void visit(AstObjTypePtr& ptr);
   virtual void visit(AstClassDef& class_);
 
 private:

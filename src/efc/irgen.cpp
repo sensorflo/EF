@@ -523,6 +523,18 @@ void IrGen::visit(AstReturn& return_) {
   return_.object()->irInitLocal(m_abstractObject, m_builder);
 }
 
+void IrGen::visit(AstObjTypeSymbol& symbol) {
+  assert(false); // not yet implemented
+}
+
+void IrGen::visit(AstObjTypeQuali& quali) {
+  assert(false); // not yet implemented
+}
+
+void IrGen::visit(AstObjTypePtr& ptr) {
+  assert(false); // not yet implemented
+}
+
 void IrGen::visit(AstClassDef& class_){
   assert(false); // not yet implemented
 }

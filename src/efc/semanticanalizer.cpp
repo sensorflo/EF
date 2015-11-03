@@ -416,6 +416,18 @@ void SemanticAnalizer::visit(AstReturn& return_) {
   postConditionCheck(return_);
 }
 
+void SemanticAnalizer::visit(AstObjTypeSymbol& symbol) {
+  assert(false); // not yet implemented
+}
+
+void SemanticAnalizer::visit(AstObjTypeQuali& quali) {
+  assert(false); // not yet implemented
+}
+
+void SemanticAnalizer::visit(AstObjTypePtr& ptr) {
+  assert(false); // not yet implemented
+}
+
 void SemanticAnalizer::visit(AstClassDef& class_) {
   assert(false); // not yet implemented
 }

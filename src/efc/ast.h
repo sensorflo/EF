@@ -375,6 +375,60 @@ private:
 
 /** See also ObjType */
 class AstObjType : public AstNode {
+  virtual const ObjType& objType() const =0; 
+};
+
+class AstObjTypeSymbol : public AstObjType {
+public:
+  AstObjTypeSymbol(const std::string name);
+  AstObjTypeSymbol(ObjTypeFunda::EType fundaType);
+
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
+
+  const ObjType& objType() const override; 
+
+  const std::string name() const { return m_name; }
+
+private:
+  static std::string toName(ObjTypeFunda::EType fundaType);
+
+  const std::string m_name;
+  std::shared_ptr<const ObjType> m_objType;
+};
+
+class AstObjTypeQuali : public AstObjType {
+public:
+  AstObjTypeQuali(ObjType::Qualifiers qualifiers, AstObjType* targetType);
+
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
+
+  const ObjType& objType() const override;
+
+  ObjType::Qualifiers qualifiers() const { return m_qualifiers; }
+  const AstObjType& targetType() const { return *m_targetType; }
+
+private:
+  ObjType::Qualifiers m_qualifiers;
+  std::unique_ptr<AstObjType> m_targetType;
+  std::shared_ptr<const ObjType> m_objType;
+};
+
+class AstObjTypePtr : public AstObjType {
+public:
+  AstObjTypePtr(AstObjType* pointee);
+
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
+
+  const ObjTypePtr& objType() const override;
+
+  const AstObjType& pointee() const { return *m_pointee; }
+
+private:
+  std::unique_ptr<AstObjType> m_pointee;
+  std::shared_ptr<const ObjTypePtr> m_objType;
 };
 
 /** Definition of a class. See also ObjTypeClass */
@@ -383,8 +437,11 @@ public:
   AstClassDef(const std::string& name, std::vector<AstNode*>* dataMembers);
   AstClassDef(const std::string& name, AstNode* m1 = nullptr,
     AstNode* m2 = nullptr, AstNode* m3 = nullptr);
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
+
+  const ObjTypeClass& objType() const override;
 
   const std::string& name() const { return m_name; }
   const std::vector<AstNode*>& dataMembers() const { return *m_dataMembers; }
@@ -394,6 +451,7 @@ private:
   /** We're the owner of the list and of the pointees. Pointers are garanteed
   to be non null, also the pointer to the vector.*/
   const std::unique_ptr<std::vector<AstNode*>> m_dataMembers;
+  std::shared_ptr<const ObjTypeClass> m_objType;
 };
 
 /** Maybe it should be an independent type, that is not derive from AstNode */
