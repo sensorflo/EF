@@ -168,15 +168,22 @@ void AstPrinter::visit(const AstReturn& return_) {
 }
 
 void AstPrinter::visit(const AstObjTypeSymbol& symbol) {
-  assert(false); // not yet implemented
+  m_os << symbol.name();
 }
 
 void AstPrinter::visit(const AstObjTypeQuali& quali) {
-  assert(false); // not yet implemented
+  int qualifiers = static_cast<int>(quali.qualifiers());
+  if ( qualifiers & ObjType::eMutable ) {
+    m_os << "mut-";
+    qualifiers &= ~ObjType::eMutable;
+  }
+  assert(0==qualifiers);
+  quali.targetType().accept(*this);
 }
 
 void AstPrinter::visit(const AstObjTypePtr& ptr) {
-  assert(false); // not yet implemented
+  m_os << "raw*";
+  ptr.pointee().accept(*this);
 }
 
 void AstPrinter::visit(const AstClassDef& class_) {

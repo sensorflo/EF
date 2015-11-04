@@ -120,6 +120,22 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "call(foo 42 77)", AstFunCall(new AstSymbol("foo"),
       new AstCtList(new AstNumber(42), new AstNumber(77))), spec);
 
+  spec = "AstObjTypeSymbol";
+  EXPECT_TOSTR_EQ( "int", AstObjTypeSymbol(ObjTypeFunda::eInt), spec);
+  EXPECT_TOSTR_EQ( "foo", AstObjTypeSymbol("foo"), spec);
+
+  spec = "AstObjTypeQuali";
+  EXPECT_TOSTR_EQ( "mut-int",
+    AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)), spec);
+  EXPECT_TOSTR_EQ( "mut-foo",
+    AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol("foo")), spec);
+
+  spec = "AstObjTypePtr";
+  EXPECT_TOSTR_EQ( "raw*int",
+    AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt)), spec);
+  EXPECT_TOSTR_EQ( "raw*foo",
+    AstObjTypePtr(new AstObjTypeSymbol("foo")), spec);
+
   spec = "AstClassDef";
   EXPECT_TOSTR_EQ( "class(foo)", AstClassDef("foo"), spec);
   EXPECT_TOSTR_EQ( "class(foo data(m1 int ()) data(m2 int ()))",
