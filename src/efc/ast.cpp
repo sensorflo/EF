@@ -504,6 +504,10 @@ shared_ptr<const ObjType> AstObjTypeQuali::objTypeAsSp() const {
   return m_objType;
 }
 
+void AstObjTypeQuali::createAndSetObjType() {
+  m_objType = make_shared<ObjTypeQuali>(m_qualifiers, m_targetType->objTypeAsSp());
+}
+
 AstObjTypePtr::AstObjTypePtr(AstObjType* pointee) :
   m_pointee(pointee) {
 }

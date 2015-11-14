@@ -421,7 +421,9 @@ public:
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
 
   ObjType::Qualifiers qualifiers() const { return m_qualifiers; }
-  const AstObjType& targetType() const { return *m_targetType; }
+  AstObjType& targetType() const { return *m_targetType; }
+
+  void createAndSetObjType();
 
 private:
   ObjType::Qualifiers m_qualifiers;

@@ -422,7 +422,9 @@ void SemanticAnalizer::visit(AstObjTypeSymbol& symbol) {
 }
 
 void SemanticAnalizer::visit(AstObjTypeQuali& quali) {
-  assert(false); // not yet implemented
+  quali.targetType().accept(*this);
+  quali.createAndSetObjType();
+  postConditionCheck(quali);
 }
 
 void SemanticAnalizer::visit(AstObjTypePtr& ptr) {

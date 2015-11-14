@@ -111,6 +111,25 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), ast->objType())
       << amendAst(ast.get());
   }
+
+  spec = "Example: mut-double";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    auto ast = make_unique<AstObjTypeQuali>(
+      ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt));
+
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    EXPECT_MATCHES_FULLY(
+      ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+      ast->objType())
+      << amendAst(ast.get());
+  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
