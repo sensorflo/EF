@@ -417,7 +417,8 @@ void SemanticAnalizer::visit(AstReturn& return_) {
 }
 
 void SemanticAnalizer::visit(AstObjTypeSymbol& symbol) {
-  assert(false); // not yet implemented
+  symbol.createAndSetObjType();
+  postConditionCheck(symbol);
 }
 
 void SemanticAnalizer::visit(AstObjTypeQuali& quali) {
@@ -439,4 +440,11 @@ void SemanticAnalizer::callAcceptWithinNewScope(AstObject& node) {
 
 void SemanticAnalizer::postConditionCheck(const AstObject& node) {
   assert(node.object());
+}
+
+void SemanticAnalizer::postConditionCheck(const AstObjType& node) {
+  // If the reference returned by objType() was initialized with nullptr, that
+  // is undefined behavior. In practice however taking the address of it will
+  // deliver again a nullptr, and we assert for that.
+  assert(&node.objType());
 }

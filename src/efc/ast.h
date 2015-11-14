@@ -375,7 +375,11 @@ private:
 
 /** See also ObjType */
 class AstObjType : public AstNode {
+public:
+  /** Can only be called after this AstObjType has been visited by the
+  SemanticAnalizer. */
   virtual const ObjType& objType() const =0; 
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const =0; 
 };
 
 class AstObjTypeSymbol : public AstObjType {
@@ -387,8 +391,11 @@ public:
   void accept(AstConstVisitor& visitor) const override;
 
   const ObjType& objType() const override; 
+  std::shared_ptr<const ObjType> objTypeAsSp() const override; 
 
   const std::string name() const { return m_name; }
+
+  void createAndSetObjType();
 
 private:
   friend class TestingAstObjTypeSymbol;
@@ -411,6 +418,7 @@ public:
   void accept(AstConstVisitor& visitor) const override;
 
   const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override; 
 
   ObjType::Qualifiers qualifiers() const { return m_qualifiers; }
   const AstObjType& targetType() const { return *m_targetType; }
@@ -429,6 +437,7 @@ public:
   void accept(AstConstVisitor& visitor) const override;
 
   const ObjTypePtr& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override; 
 
   const AstObjType& pointee() const { return *m_pointee; }
 
@@ -448,6 +457,7 @@ public:
   void accept(AstConstVisitor& visitor) const override;
 
   const ObjTypeClass& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override; 
 
   const std::string& name() const { return m_name; }
   const std::vector<AstNode*>& dataMembers() const { return *m_dataMembers; }

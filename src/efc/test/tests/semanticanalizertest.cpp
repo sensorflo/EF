@@ -91,6 +91,28 @@ with ParserExt, see also file's comment. */
     TEST_ASTTRAVERSAL(ast, Error::eNone, spec)                          \
   }
 
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    an_AstObjType_node,
+    transform,
+    sets_the_correct_objType_on_the_node)) {
+
+  string spec = "Example: int";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    auto ast = make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt);
+
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), ast->objType())
+      << amendAst(ast.get());
+  }
+}
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     an_node_whose_childs_need_an_implicit_type_conversion_AND_the_rhs_is_of_larger_type,
     transform,

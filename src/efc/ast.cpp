@@ -482,6 +482,14 @@ const ObjType& AstObjTypeSymbol::objType() const {
   return *m_objType;
 }
 
+shared_ptr<const ObjType> AstObjTypeSymbol::objTypeAsSp() const {
+  return m_objType;
+}
+
+void AstObjTypeSymbol::createAndSetObjType() {
+  m_objType = make_shared<ObjTypeFunda>(toType(m_name));
+}
+
 AstObjTypeQuali::AstObjTypeQuali(ObjType::Qualifiers qualifiers, AstObjType* targetType) :
   m_qualifiers(qualifiers),
   m_targetType(targetType) {
@@ -492,6 +500,10 @@ const ObjType& AstObjTypeQuali::objType() const {
   return *m_objType;
 }
 
+shared_ptr<const ObjType> AstObjTypeQuali::objTypeAsSp() const {
+  return m_objType;
+}
+
 AstObjTypePtr::AstObjTypePtr(AstObjType* pointee) :
   m_pointee(pointee) {
 }
@@ -499,6 +511,10 @@ AstObjTypePtr::AstObjTypePtr(AstObjType* pointee) :
 const ObjTypePtr& AstObjTypePtr::objType() const {
   assert(m_objType);
   return *m_objType;
+}
+
+shared_ptr<const ObjType> AstObjTypePtr::objTypeAsSp() const {
+  return m_objType;
 }
 
 AstClassDef::AstClassDef(const std::string& name, std::vector<AstNode*>* dataMembers) :
@@ -528,6 +544,10 @@ AstClassDef::AstClassDef(const std::string& name, AstNode* m1, AstNode* m2,
 const ObjTypeClass& AstClassDef::objType() const {
   assert(m_objType);
   return *m_objType;
+}
+
+shared_ptr<const ObjType> AstClassDef::objTypeAsSp() const {
+  return m_objType;
 }
 
 /** The list's elements must be non-null */

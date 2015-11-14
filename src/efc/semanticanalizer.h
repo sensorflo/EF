@@ -37,6 +37,7 @@ private:
 
   void callAcceptWithinNewScope(AstObject& node);
   void postConditionCheck(const AstObject& node);
+  void postConditionCheck(const AstObjType& node);
 
   friend class TestingSemanticAnalizer;
 
