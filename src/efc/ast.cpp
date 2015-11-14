@@ -450,16 +450,32 @@ AstObjTypeSymbol::AstObjTypeSymbol(ObjTypeFunda::EType fundaType) :
 }
 
 string AstObjTypeSymbol::toName(ObjTypeFunda::EType fundaType) {
-  switch (fundaType) {
-  case ObjTypeFunda::eVoid: return "void";
-  case ObjTypeFunda::eNoreturn: return "noreturn";
-  case ObjTypeFunda::eChar: return "char";
-  case ObjTypeFunda::eInt: return "int";
-  case ObjTypeFunda::eBool: return "bool";
-  case ObjTypeFunda::eDouble: return "double";
-  default: assert(false);
+  initMap();
+  return m_typeToName[fundaType];
+}
+
+ObjTypeFunda::EType AstObjTypeSymbol::toType(const string& name) {
+  initMap();
+  const auto type = find(m_typeToName.begin(), m_typeToName.end(), name);
+  assert(type!=m_typeToName.end());
+  return static_cast<ObjTypeFunda::EType>(type - m_typeToName.begin()); 
+}
+
+void AstObjTypeSymbol::initMap() {
+  if ( !m_isMapInitialzied ) {
+    m_isMapInitialzied = true;
+    m_typeToName[ObjTypeFunda::eVoid] = "void";
+    m_typeToName[ObjTypeFunda::eNoreturn] = "noreturn";
+    m_typeToName[ObjTypeFunda::eChar] = "char";
+    m_typeToName[ObjTypeFunda::eInt] = "int";
+    m_typeToName[ObjTypeFunda::eBool] = "bool";
+    m_typeToName[ObjTypeFunda::eDouble] = "double";
   }
 }
+
+array<string, ObjTypeFunda::eTypeCnt> AstObjTypeSymbol::m_typeToName;
+
+bool AstObjTypeSymbol::m_isMapInitialzied = false;
 
 const ObjType& AstObjTypeSymbol::objType() const {
   assert(m_objType);

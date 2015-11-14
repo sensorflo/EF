@@ -166,6 +166,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   case eBool: os << "bool"; break;
   case eDouble: os << "double"; break;
   case ePointer: os << "raw*"; break;
+  case eTypeCnt: assert(false);
   };
   return os;
 }
@@ -196,6 +197,7 @@ bool ObjTypeFunda::is(ObjType::EClass class_) const {
     default: assert(false);
     }
     return false;
+  case eTypeCnt: assert(false);
   }
   return false;
 }
@@ -209,6 +211,7 @@ int ObjTypeFunda::size() const {
   case eInt: return 32;
   case eDouble: return 64;
   case ePointer: return 32;
+  case eTypeCnt: assert(false);
   }
   assert(false);
   return -1;
@@ -229,6 +232,7 @@ llvm::Type* ObjTypeFunda::llvmType() const {
   case eDouble: return Type::getDoubleTy(getGlobalContext());
   case eBool: return Type::getInt1Ty(getGlobalContext());
   case ePointer: assert(false); // actually implemented by derived class
+  case eTypeCnt: assert(false);
   };
   assert(false);
   return NULL;
@@ -286,6 +290,7 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
   case eInt: // fall through
   case ePointer:
     return (otherFunda.m_type != eVoid) && (otherFunda.m_type != eNoreturn);
+  case eTypeCnt: assert(false);
   }
   return false;
 }
@@ -300,6 +305,7 @@ bool ObjTypeFunda::isValueInRange(double val) const {
   case eBool: return val==0.0 || val==1.0;
     // currently pointer are assumed to have as many bits as ints
   case ePointer: return (val<=UINT_MAX) && (val==static_cast<unsigned int>(val));
+  case eTypeCnt: assert(false);
   };
   assert(false);
   return false;

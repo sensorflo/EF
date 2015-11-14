@@ -1617,6 +1617,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     case ObjTypeFunda::ePointer:
       assert(false);
       break;
+    case ObjTypeFunda::eTypeCnt: assert(false);
     }
 
     // AstCast needs to be wrapped into an AstFunDef since in some iterations

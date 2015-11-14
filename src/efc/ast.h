@@ -391,7 +391,13 @@ public:
   const std::string name() const { return m_name; }
 
 private:
+  friend class TestingAstObjTypeSymbol;
+
   static std::string toName(ObjTypeFunda::EType fundaType);
+  static ObjTypeFunda::EType toType(const std::string& name);
+  static void initMap();
+  static std::array<std::string, ObjTypeFunda::eTypeCnt> m_typeToName;
+  static bool m_isMapInitialzied;
 
   const std::string m_name;
   std::shared_ptr<const ObjType> m_objType;

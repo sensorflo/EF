@@ -142,7 +142,9 @@ public:
     eBool,
     eDouble,
       // implemented in derived classes 
-      ePointer
+      ePointer,
+
+    eTypeCnt
   };
 
   ObjTypeFunda(EType type);
