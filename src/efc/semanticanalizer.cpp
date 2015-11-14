@@ -428,7 +428,9 @@ void SemanticAnalizer::visit(AstObjTypeQuali& quali) {
 }
 
 void SemanticAnalizer::visit(AstObjTypePtr& ptr) {
-  assert(false); // not yet implemented
+  ptr.pointee().accept(*this);
+  ptr.createAndSetObjType();
+  postConditionCheck(ptr);
 }
 
 void SemanticAnalizer::visit(AstClassDef& class_) {

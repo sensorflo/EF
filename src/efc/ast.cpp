@@ -521,6 +521,10 @@ shared_ptr<const ObjType> AstObjTypePtr::objTypeAsSp() const {
   return m_objType;
 }
 
+void AstObjTypePtr::createAndSetObjType() {
+  m_objType = make_shared<ObjTypePtr>(m_pointee->objTypeAsSp());
+}
+
 AstClassDef::AstClassDef(const std::string& name, std::vector<AstNode*>* dataMembers) :
   m_name(name),
   m_dataMembers(dataMembers) {

@@ -130,6 +130,24 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       ast->objType())
       << amendAst(ast.get());
   }
+
+  spec = "Example: pointer";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    auto ast = make_unique<AstObjTypePtr>(new AstObjTypeSymbol(ObjTypeFunda::eInt));
+
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    EXPECT_MATCHES_FULLY(
+      ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+      ast->objType())
+      << amendAst(ast.get());
+  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(

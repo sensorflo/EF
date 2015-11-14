@@ -441,7 +441,9 @@ public:
   const ObjTypePtr& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
 
-  const AstObjType& pointee() const { return *m_pointee; }
+  AstObjType& pointee() const { return *m_pointee; }
+
+  void createAndSetObjType();
 
 private:
   std::unique_ptr<AstObjType> m_pointee;
