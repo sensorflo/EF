@@ -178,18 +178,15 @@ private:
   friend class AstPrinter;
 
   static AstCtList* mkCtorArgs(AstCtList* ctorArgs,
-    const ObjType& declaredObjType, bool& ctorArgsWereImplicitelyDefined,
-    bool& doNotInit);
+    const ObjType& declaredObjType, bool& doNotInit);
 
   const std::string m_name;
   std::shared_ptr<const ObjType> m_declaredObjType;
   /** Guaranteed to be not eUnknown */
   const StorageDuration m_declaredStorageDuration;
-  /** We're the owner. Is garanteed to be non-null. */
+  /** We're the owner. Is garanteed to be non-null. Currently, zero args means
+  to default initialize: semantic analizer will add an initilizer*/
   AstCtList* const m_ctorArgs;
-  /** The members in m_ctorArgs where implicitely defined. I.e. the client
-  passed zero ctorArgs to AstDataDef's ctor. */
-  bool m_ctorArgsWereImplicitelyDefined;
   bool m_doNotInit;
 };
 

@@ -133,9 +133,7 @@ void AstPrinter::visit(const AstDataDef& dataDef) {
     m_os << " noinit";
   } else {
     m_os << " (";
-    if ( !dataDef.m_ctorArgsWereImplicitelyDefined ) {
-      dataDef.ctorArgs().accept(*this);
-    }
+    dataDef.ctorArgs().accept(*this);
     m_os << ")";
   }
   m_os << ")";

@@ -136,8 +136,7 @@ AstDataDef::AstDataDef(const std::string& name,
     move(declaredObjType) :
     make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
   m_declaredStorageDuration(declaredStorageDuration),
-  m_ctorArgs(mkCtorArgs(ctorArgs, *m_declaredObjType,
-      m_ctorArgsWereImplicitelyDefined, m_doNotInit)) {
+  m_ctorArgs(mkCtorArgs(ctorArgs, *m_declaredObjType, m_doNotInit)) {
   assert(declaredStorageDuration != StorageDuration::eUnknown);
   assert(m_ctorArgs);
 }
@@ -164,10 +163,8 @@ AstDataDef::~AstDataDef() {
 }
 
 AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
-  const ObjType& declaredObjType, bool& ctorArgsWereImplicitelyDefined,
-  bool& doNotInit) {
-  ctorArgsWereImplicitelyDefined = false; // assumptions
-  doNotInit = false;
+  const ObjType& declaredObjType, bool& doNotInit) {
+  doNotInit = false; // assumption
   if (not ctorArgs) {
     ctorArgs = new AstCtList();
   }
@@ -177,12 +174,7 @@ AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
       assert(ctorArgs->childs().size()==1);
       ctorArgs->childs().clear();
     }
-    return ctorArgs;
   }
-  // Currrently zero arguments are not supported. When none args are given, a
-  // default arg is used.
-  ctorArgs->childs().push_back(declaredObjType.createDefaultAstObject());
-  ctorArgsWereImplicitelyDefined = true;
   return ctorArgs;
 }
 

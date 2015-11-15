@@ -314,10 +314,17 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     // default member initializer not yet supported
     assert(dataDef.declaredStorageDuration() != StorageDuration::eMember);
 
+    auto&& ctorArgs = dataDef.ctorArgs().childs();
+
+    // Currrently zero arguments are not supported. When none args are given,
+    // a default arg is used.
+    if (ctorArgs.empty() && !dataDef.doNotInit()) {
+      ctorArgs.push_back(dataDef.declaredObjType().createDefaultAstObject());
+    }
+
     dataDef.ctorArgs().accept(*this);
 
-    const auto ctorArgs = dataDef.ctorArgs().childs();
-    // currently a data object must be initialized withe exactly one initializer
+    // currently a data object must be initialized with exactly one initializer
     assert(ctorArgs.size()==1);
     const auto initializer = ctorArgs.front();
     if ( dataDef.objType().match(initializer->objType()) == ObjType::eNoMatch ) {
