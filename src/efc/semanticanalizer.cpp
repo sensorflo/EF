@@ -271,7 +271,9 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
     list<AstDataDef*>::const_iterator argDefIter = funDef.args().begin();
     list<AstDataDef*>::const_iterator end = funDef.args().end();
     for ( ; argDefIter!=end; ++argDefIter) {
-      assert((*argDefIter)->declaredStorageDuration() == StorageDuration::eLocal);
+      if ((*argDefIter)->declaredStorageDuration() != StorageDuration::eLocal) {
+        Error::throwError(m_errorHandler, Error::eOnlyLocalStorageDurationApplicable);
+      }
       (*argDefIter)->accept(*this);
     }
 

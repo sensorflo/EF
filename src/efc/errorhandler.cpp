@@ -32,6 +32,7 @@ const char* toStr(Error::No no) {
   case Error::eRetTypeCantHaveMutQualifier: return "eRetTypeCantHaveMutQualifier";
   case Error::eSameArgWasDefinedMultipleTimes: return "eSameArgWasDefinedMultipleTimes";
   case Error::eObjectExpected: return "eObjectExpected";
+  case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
   case Error::eCnt: return "<unknown>";
   }
   return "<unknown>";

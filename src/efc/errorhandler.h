@@ -25,6 +25,7 @@ public:
     eRetTypeCantHaveMutQualifier,
     eSameArgWasDefinedMultipleTimes,
     eObjectExpected,
+    eOnlyLocalStorageDurationApplicable,
     eCnt
   };
 

@@ -335,6 +335,24 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eCTConstRequired, "");
 }
 
+// The semantic analizer shall handle this case independently of whether the
+// grammar already rules out this case or not, so the two are, well,
+// independent.
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_parameter_defined_with_non_local_storage_duration,
+    transform,
+    reports_eOnlyLocalStorageDurationApplicable)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef("foo",
+      AstFunDef::createArgs(
+        new AstDataDef("x",
+          make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+          StorageDuration::eStatic)),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      new AstNumber(42)),
+    Error::eOnlyLocalStorageDurationApplicable, "");
+}
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_simple_example_of_a_reference_to_an_unknown_name,
     transform,
