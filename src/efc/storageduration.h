@@ -7,7 +7,8 @@ enum class StorageDuration {
   /** Also applies to abstract objects which are not really stored. Also
   applies to objects which are optimized to live only as SSA value */
   eLocal,
-  eStatic
+  eStatic,
+  eMember
 };
 
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,

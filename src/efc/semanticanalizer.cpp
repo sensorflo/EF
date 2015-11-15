@@ -295,7 +295,7 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 
 void SemanticAnalizer::visit(AstDataDef& dataDef) {
   // let dataDecl.object() point a newly created symbol table entry
-  {
+  if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
     const auto& insertRet = m_env.insert( dataDef.name(), nullptr );
     auto& envs_entity_ptr = insertRet.first->second;
 
@@ -311,6 +311,9 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
   }
 
   if ( !dataDef.doNotInit() ) {
+    // default member initializer not yet supported
+    assert(dataDef.declaredStorageDuration() != StorageDuration::eMember);
+
     dataDef.ctorArgs().accept(*this);
 
     const auto ctorArgs = dataDef.ctorArgs().childs();
@@ -326,7 +329,14 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     }
   }
 
-  dataDef.object()->addAccess(dataDef.access());
+  // access is meaningless for the declaration of a data member of a
+  // class. That is a sign that declarations of data members should not be
+  // handled by AstDataDef but by an own class
+  if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
+    dataDef.object()->addAccess(dataDef.access());
+  } else {
+    dataDef.object()->addAccess(eIgnore);
+  }
 
   postConditionCheck(dataDef);
 }
@@ -436,7 +446,11 @@ void SemanticAnalizer::visit(AstObjTypePtr& ptr) {
 }
 
 void SemanticAnalizer::visit(AstClassDef& class_) {
-  assert(false); // not yet implemented
+  for (const auto& dataMember: class_.dataMembers()) {
+    dataMember->accept(*this);
+  }
+  class_.createAndSetObjType();
+  postConditionCheck(class_);
 }
 
 void SemanticAnalizer::callAcceptWithinNewScope(AstObject& node) {

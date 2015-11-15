@@ -249,6 +249,9 @@ public:
   bool is(EClass class_) const override;
   int size() const override;
 
+  const std::string& name() const { return m_name; }
+  const std::vector<std::shared_ptr<const ObjType>>& members() const { return m_members; }
+
 private:
   const std::string m_name;
   const std::vector<std::shared_ptr<const ObjType>> m_members;

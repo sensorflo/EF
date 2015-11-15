@@ -148,6 +148,28 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       ast->objType())
       << amendAst(ast.get());
   }
+
+  spec = "Example: class";
+  {
+    // setup
+    Env env;
+    ErrorHandler errorHandler;
+    TestingSemanticAnalizer UUT(env, errorHandler);
+    auto ast = make_unique<AstClassDef>(
+      "foo",
+      new AstDataDef("member1", ObjTypeFunda::eInt),
+      new AstDataDef("member2", ObjTypeFunda::eDouble));
+
+    // exercise
+    UUT.analyze(*ast);
+
+    // verify
+    const auto& objType = ast->objType();
+    EXPECT_EQ("foo", objType.name());
+    EXPECT_EQ(2, objType.members().size());
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), *objType.members().at(0));
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eDouble), *objType.members().at(1));
+  }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(

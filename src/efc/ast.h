@@ -146,6 +146,7 @@ private:
   AstObject* const m_body;
 };
 
+/** Also used for data members of a class. */
 class AstDataDef : public AstObject {
 public:
   static AstObject* const noInit;
@@ -184,7 +185,7 @@ private:
   std::shared_ptr<const ObjType> m_declaredObjType;
   /** Guaranteed to be not eUnknown */
   const StorageDuration m_declaredStorageDuration;
-  /** We're the owner. Is garanteed to be non-null.*/
+  /** We're the owner. Is garanteed to be non-null. */
   AstCtList* const m_ctorArgs;
   /** The members in m_ctorArgs where implicitely defined. I.e. the client
   passed zero ctorArgs to AstDataDef's ctor. */
@@ -466,6 +467,8 @@ public:
 
   const std::string& name() const { return m_name; }
   const std::vector<AstDataDef*>& dataMembers() const { return *m_dataMembers; }
+
+  void createAndSetObjType();
 
 private:
   const std::string m_name;

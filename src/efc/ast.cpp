@@ -559,6 +559,14 @@ shared_ptr<const ObjType> AstClassDef::objTypeAsSp() const {
   return m_objType;
 }
 
+void AstClassDef::createAndSetObjType() {
+  std::vector<std::shared_ptr<const ObjType>> dataMembersCopy;
+  for (const auto& dataMember : *m_dataMembers) {
+    dataMembersCopy.emplace_back(dataMember->declaredObjTypeAsSp());
+  }
+  m_objType = make_shared<ObjTypeClass>(m_name, move(dataMembersCopy));
+}
+
 /** The list's elements must be non-null */
 AstCtList::AstCtList(list<AstObject*>* childs) :
   m_childs(childs ? childs : new list<AstObject*>() ) {
