@@ -138,6 +138,7 @@ AstDataDef::AstDataDef(const std::string& name,
   m_declaredStorageDuration(declaredStorageDuration),
   m_ctorArgs(mkCtorArgs(ctorArgs, *m_declaredObjType,
       m_ctorArgsWereImplicitelyDefined, m_doNotInit)) {
+  assert(declaredStorageDuration != StorageDuration::eUnknown);
   assert(m_ctorArgs);
 }
 

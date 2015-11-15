@@ -182,6 +182,7 @@ private:
 
   const std::string m_name;
   std::shared_ptr<const ObjType> m_declaredObjType;
+  /** Guaranteed to be not eUnknown */
   const StorageDuration m_declaredStorageDuration;
   /** We're the owner. Is garanteed to be non-null.*/
   AstCtList* const m_ctorArgs;
