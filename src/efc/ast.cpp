@@ -526,7 +526,7 @@ void AstObjTypePtr::createAndSetObjType() {
   m_objType = make_shared<ObjTypePtr>(m_pointee->objTypeAsSp());
 }
 
-AstClassDef::AstClassDef(const std::string& name, std::vector<AstNode*>* dataMembers) :
+AstClassDef::AstClassDef(const std::string& name, std::vector<AstDataDef*>* dataMembers) :
   m_name(name),
   m_dataMembers(dataMembers) {
   assert(m_dataMembers);
@@ -535,10 +535,10 @@ AstClassDef::AstClassDef(const std::string& name, std::vector<AstNode*>* dataMem
   }
 }
 
-AstClassDef::AstClassDef(const std::string& name, AstNode* m1, AstNode* m2,
-  AstNode* m3) :
+AstClassDef::AstClassDef(const std::string& name, AstDataDef* m1, AstDataDef* m2,
+  AstDataDef* m3) :
   m_name(name),
-  m_dataMembers(make_unique<std::vector<AstNode*>>()) {
+  m_dataMembers(make_unique<std::vector<AstDataDef*>>()) {
   if (m1) {
     m_dataMembers->push_back(m1);  
   }

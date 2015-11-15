@@ -454,9 +454,9 @@ private:
 /** Definition of a class. See also ObjTypeClass */
 class AstClassDef : public AstObjType {
 public:
-  AstClassDef(const std::string& name, std::vector<AstNode*>* dataMembers);
-  AstClassDef(const std::string& name, AstNode* m1 = nullptr,
-    AstNode* m2 = nullptr, AstNode* m3 = nullptr);
+  AstClassDef(const std::string& name, std::vector<AstDataDef*>* dataMembers);
+  AstClassDef(const std::string& name, AstDataDef* m1 = nullptr,
+    AstDataDef* m2 = nullptr, AstDataDef* m3 = nullptr);
 
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
@@ -465,13 +465,13 @@ public:
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
 
   const std::string& name() const { return m_name; }
-  const std::vector<AstNode*>& dataMembers() const { return *m_dataMembers; }
+  const std::vector<AstDataDef*>& dataMembers() const { return *m_dataMembers; }
 
 private:
   const std::string m_name;
   /** We're the owner of the list and of the pointees. Pointers are garanteed
   to be non null, also the pointer to the vector.*/
-  const std::unique_ptr<std::vector<AstNode*>> m_dataMembers;
+  const std::unique_ptr<std::vector<AstDataDef*>> m_dataMembers;
   std::shared_ptr<const ObjTypeClass> m_objType;
 };
 
