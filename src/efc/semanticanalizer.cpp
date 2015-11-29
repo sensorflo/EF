@@ -5,6 +5,7 @@
 #include "object.h"
 #include "errorhandler.h"
 #include "objtype.h"
+#include "envinserter.h"
 using namespace std;
 
 SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
@@ -13,6 +14,8 @@ SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
 }
 
 void SemanticAnalizer::analyze(AstNode& root) {
+  EnvInserter envinserter(m_env, m_errorHandler);
+  envinserter.insertIntoEnv(root);
   root.accept(*this);
 }
 
