@@ -76,6 +76,5 @@ public:
 private:
   NEITHER_COPY_NOR_MOVEABLE(ParserExt);
 
-  Env& m_env;
   ErrorHandler& m_errorHandler;
 };

@@ -29,4 +29,7 @@ private:
   virtual void visit(AstObjTypeQuali& quali);
   virtual void visit(AstObjTypePtr& ptr);
   virtual void visit(AstClassDef& class_);
+
+  Env& m_env;
+  ErrorHandler& m_errorHandler;
 };

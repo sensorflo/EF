@@ -117,6 +117,10 @@ const ObjType& AstFunDef::retObjType() const {
   return *m_ret;
 }
 
+std::shared_ptr<const ObjType> AstFunDef::retObjTypeAsSp() const {
+  return m_ret;
+}
+
 list<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
   AstDataDef* arg2, AstDataDef* arg3) {
   list<AstDataDef*>* args = new list<AstDataDef*>;

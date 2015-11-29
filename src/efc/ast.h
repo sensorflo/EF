@@ -127,6 +127,7 @@ public:
   virtual const std::string& name() const { return m_name; }
   virtual std::list<AstDataDef*>const& args() const { return *m_args; }
   virtual const ObjType& retObjType() const;
+  std::shared_ptr<const ObjType> retObjTypeAsSp() const;
   virtual AstObject& body() const { return *m_body; }
   static std::list<AstDataDef*>* createArgs(AstDataDef* arg1 = NULL,
     AstDataDef* arg2 = NULL, AstDataDef* arg3 = NULL);
