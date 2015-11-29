@@ -2,88 +2,107 @@
 #include "ast.h"
 using namespace std;
 
-void AstDefaultIterator::visit(AstNop&) {
+void AstDefaultIterator::visit(AstNop& nop) {
+  nop.accept(m_visitor);
 }
 
 void AstDefaultIterator::visit(AstBlock& block) {
+  block.accept(m_visitor);
   block.body().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstCast& cast) {
-  cast.child().accept(m_visitor);
+  cast.accept(m_visitor);
+  cast.child().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstCtList& ctList) {
+  ctList.accept(m_visitor);
   list<AstObject*>& childs = ctList.childs();
   for (list<AstObject*>::const_iterator i=childs.begin();
        i!=childs.end(); ++i) {
-    (*i)->accept(m_visitor);
+    (*i)->accept(*this);
   }
 }
 
 void AstDefaultIterator::visit(AstSeq& seq) {
+  seq.accept(m_visitor);
   for (const auto& op: seq.operands()) {
-    op->accept(m_visitor);
+    op->accept(*this);
   }
 }
 
 void AstDefaultIterator::visit(AstOperator& op) {
-  op.args().accept(m_visitor);
+  op.accept(m_visitor);
+  op.args().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstNumber& number) {
+  number.accept(m_visitor);
 }
 
 void AstDefaultIterator::visit(AstSymbol& symbol) {
+  symbol.accept(m_visitor);
 }
 
 void AstDefaultIterator::visit(AstFunCall& funCall) {
-  funCall.address().accept(m_visitor);
-  funCall.args().accept(m_visitor);
+  funCall.accept(m_visitor);
+  funCall.address().accept(*this);
+  funCall.args().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstFunDef& funDef) {
+  funDef.accept(m_visitor);
   for (list<AstDataDef*>::const_iterator i=funDef.args().begin();
        i!=funDef.args().end(); ++i) {
-    (*i)->accept(m_visitor);
+    (*i)->accept(*this);
   }
-  funDef.body().accept(m_visitor);
+  funDef.body().accept(*this);
+
 }
 
 void AstDefaultIterator::visit(AstDataDef& dataDef) {
-  dataDef.ctorArgs().accept(m_visitor);
+  dataDef.accept(m_visitor);
+  dataDef.ctorArgs().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstIf& if_) {
-  if_.condition().accept(m_visitor);
-  if_.action().accept(m_visitor);
+  if_.accept(m_visitor);
+  if_.condition().accept(*this);
+  if_.action().accept(*this);
   if (if_.elseAction()) {
-    if_.elseAction()->accept(m_visitor);
+    if_.elseAction()->accept(*this);
   }
 }
 
 void AstDefaultIterator::visit(AstLoop& loop) {
-  loop.condition().accept(m_visitor);
-  loop.body().accept(m_visitor);
+  loop.accept(m_visitor);
+  loop.condition().accept(*this);
+  loop.body().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstReturn& return_) {
-  return_.retVal().accept(m_visitor);
+  return_.accept(m_visitor);
+  return_.retVal().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstObjTypeSymbol& symbol) {
-  assert(false); // not yet implemented
+  symbol.accept(m_visitor);
 }
 
 void AstDefaultIterator::visit(AstObjTypeQuali& quali) {
-  assert(false); // not yet implemented
+  quali.accept(m_visitor);
+  quali.targetType().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstObjTypePtr& ptr) {
-  assert(false); // not yet implemented
+  ptr.accept(m_visitor);
+  ptr.pointee().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstClassDef& class_) {
-  assert(false); // not yet implemented
+  class_.accept(m_visitor);
+  for (const auto& dataMember : class_.dataMembers()) {
+    dataMember->accept(*this);
+  }
 }
-

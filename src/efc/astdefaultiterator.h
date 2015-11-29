@@ -3,7 +3,7 @@
 
 
 /** Traverses AST: at each node, call its accept method and pass the vistor
-given in the ctor. */
+given in the ctor. Currently it's only pre order traversal. */
 class AstDefaultIterator : public AstVisitor {
 
 public:
