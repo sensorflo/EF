@@ -24,12 +24,12 @@ void SemanticAnalizer::visit(AstCast& cast) {
   // there's no need to set ObjType, AstCast knows its own ObjType
 
   // test if conversion is eligible
-  if ( !cast.objType().matchesSaufQualifiers(cast.child().objType())
-    && !cast.objType().hasConstructor(cast.child().objType()) ) {
+  if ( !cast.specifiedNewObjType().matchesSaufQualifiers(cast.child().objType())
+    && !cast.specifiedNewObjType().hasConstructor(cast.child().objType()) ) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 
-  // no need to set object since that is done by AST node itself
+  cast.createAndSetObjType();
 
   cast.object()->addAccess(cast.access());
 

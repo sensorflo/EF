@@ -34,7 +34,7 @@ void AstPrinter::visit(const AstBlock& block) {
 }
 
 void AstPrinter::visit(const AstCast& cast) {
-  m_os << cast.objType() << "(";
+  m_os << cast.specifiedNewObjType() << "(";
   cast.child().accept(*this);
   m_os << ")";
 }

@@ -100,15 +100,21 @@ private:
 
 class AstCast : public AstObject {
 public:
-  AstCast(ObjType* objType, AstObject* child);
-  AstCast(ObjTypeFunda::EType objType, AstObject* child);
+  AstCast(ObjType* specifiedNewObjType, AstObject* child);
+  AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child);
   virtual ~AstCast();
 
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   AstObject& child() const { return *m_child; }
 
+  const ObjType& specifiedNewObjType() const;
+
+  void createAndSetObjType();
+
 private:
+  /** Is guaranteed to be non-null */
+  std::shared_ptr<ObjType> m_specifiedNewObjType;
   /** We're the owner. Is guaranteed to be non-null */
   AstObject* m_child;
 };

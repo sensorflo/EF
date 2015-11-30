@@ -66,26 +66,31 @@ AstBlock::AstBlock(AstObject* body) :
 AstBlock::~AstBlock() {
 }
 
-AstCast::AstCast(ObjType* objType, AstObject* child) :
-  AstObject{
-    make_shared<Object>(
-      shared_ptr<ObjType>{
-        objType ? objType : new ObjTypeFunda(ObjTypeFunda::eInt)},
-      StorageDuration::eLocal)},
+AstCast::AstCast(ObjType* specifiedNewObjType, AstObject* child) :
+  AstObject(),
+  m_specifiedNewObjType(specifiedNewObjType ? specifiedNewObjType : new ObjTypeFunda(ObjTypeFunda::eInt)),
   m_child(child ? child : new AstNumber(0)) {
   assert(m_child);
 
   // only currently for simplicity; the cast, as most expression, creates a
   // temporary object, and temporary objects are immutable
-  assert(!(objType->qualifiers() & ObjType::eMutable));
+  assert(!(specifiedNewObjType->qualifiers() & ObjType::eMutable));
 }
 
-AstCast::AstCast(ObjTypeFunda::EType objType, AstObject* child) :
-  AstCast{new ObjTypeFunda(objType), child} {
+AstCast::AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child) :
+  AstCast{new ObjTypeFunda(specifiedNewOjType), child} {
 }
 
 AstCast::~AstCast() {
   delete m_child;
+}
+
+const ObjType& AstCast::specifiedNewObjType() const {
+  return *m_specifiedNewObjType;
+}
+
+void AstCast::createAndSetObjType() {
+  setObject(make_shared<Object>(m_specifiedNewObjType, StorageDuration::eLocal));
 }
 
 AstFunDef::AstFunDef(const string& name,
