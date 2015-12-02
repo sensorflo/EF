@@ -428,133 +428,133 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   string spec = "bool -> bool: is a nop";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eBool),
+      new AstObjTypeSymbol(ObjTypeFunda::eBool),
       new AstNumber(1, ObjTypeFunda::eBool)),
     true, spec);
 
   spec = "bool -> char: false is 0";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eChar),
+      new AstObjTypeSymbol(ObjTypeFunda::eChar),
       new AstNumber(0, ObjTypeFunda::eBool)),
     0, spec);
 
   spec = "bool -> char: true is 1";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eChar),
+      new AstObjTypeSymbol(ObjTypeFunda::eChar),
       new AstNumber(1, ObjTypeFunda::eBool)),
     1, spec);
 
   spec = "bool -> int: false is 0";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstNumber(0, ObjTypeFunda::eBool)),
     0, spec);
 
   spec = "bool -> int: true is 1";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstNumber(1, ObjTypeFunda::eBool)),
     1, spec);
 
   spec = "bool -> double: true is 1.0";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eDouble),
+      new AstObjTypeSymbol(ObjTypeFunda::eDouble),
       new AstNumber(1, ObjTypeFunda::eBool)),
     1.0, spec);
 
   spec = "char -> char: is a nop";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eChar),
+      new AstObjTypeSymbol(ObjTypeFunda::eChar),
       new AstNumber('x', ObjTypeFunda::eChar)),
     'x', spec);
 
   spec = "char (above 128) -> int";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstNumber(200, ObjTypeFunda::eChar)),
     200, spec);
 
   spec = "char (above 128) -> double";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eDouble),
+      new AstObjTypeSymbol(ObjTypeFunda::eDouble),
       new AstNumber(200, ObjTypeFunda::eChar)),
     200.0, spec);
 
   spec = "int -> bool: 0 is false";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eBool),
+      new AstObjTypeSymbol(ObjTypeFunda::eBool),
       new AstNumber(0, ObjTypeFunda::eInt)),
     false, spec);
 
   spec = "int -> bool: not 0 is true";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eBool),
+      new AstObjTypeSymbol(ObjTypeFunda::eBool),
       new AstNumber(42, ObjTypeFunda::eInt)),
     true, spec);
 
   spec = "int -> char";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eChar),
+      new AstObjTypeSymbol(ObjTypeFunda::eChar),
       new AstNumber(200, ObjTypeFunda::eInt)),
     200, spec);
 
   spec = "int -> int: is a nop";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstNumber(42, ObjTypeFunda::eInt)),
     42, spec);
 
   spec = "int -> double";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eDouble),
+      new AstObjTypeSymbol(ObjTypeFunda::eDouble),
       new AstNumber(42, ObjTypeFunda::eInt)),
     42.0, spec);
 
   spec = "double -> bool: 0.0 is false";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eBool),
+      new AstObjTypeSymbol(ObjTypeFunda::eBool),
       new AstNumber(0.0, ObjTypeFunda::eDouble)),
     false, spec);
 
   spec = "double -> bool: not 0.0 is true";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eBool),
+      new AstObjTypeSymbol(ObjTypeFunda::eBool),
       new AstNumber(42.77, ObjTypeFunda::eDouble)),
     true, spec);
 
   spec = "double -> char";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eChar),
+      new AstObjTypeSymbol(ObjTypeFunda::eChar),
       new AstNumber(200.22, ObjTypeFunda::eDouble)),
     200, spec);
 
   spec = "double -> int";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstNumber(42.77, ObjTypeFunda::eDouble)),
     42, spec);
 
   spec = "double -> double: is a nop";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
     new AstCast(
-      new ObjTypeFunda(ObjTypeFunda::eDouble),
+      new AstObjTypeSymbol(ObjTypeFunda::eDouble),
       new AstNumber(42.77, ObjTypeFunda::eDouble)),
     42.77, spec);
 }

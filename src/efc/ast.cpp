@@ -66,31 +66,32 @@ AstBlock::AstBlock(AstObject* body) :
 AstBlock::~AstBlock() {
 }
 
-AstCast::AstCast(ObjType* specifiedNewObjType, AstObject* child) :
+AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child) :
   AstObject(),
-  m_specifiedNewObjType(specifiedNewObjType ? specifiedNewObjType : new ObjTypeFunda(ObjTypeFunda::eInt)),
+  m_specifiedNewAstObjType(
+    specifiedNewAstObjType ?
+    unique_ptr<AstObjType>(specifiedNewAstObjType) :
+    make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt)),
   m_child(child ? child : new AstNumber(0)) {
   assert(m_child);
-
-  // only currently for simplicity; the cast, as most expression, creates a
-  // temporary object, and temporary objects are immutable
-  assert(!(specifiedNewObjType->qualifiers() & ObjType::eMutable));
+  assert(m_specifiedNewAstObjType);
 }
 
 AstCast::AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child) :
-  AstCast{new ObjTypeFunda(specifiedNewOjType), child} {
+  AstCast{new AstObjTypeSymbol(specifiedNewOjType), child} {
 }
 
 AstCast::~AstCast() {
   delete m_child;
 }
 
-const ObjType& AstCast::specifiedNewObjType() const {
-  return *m_specifiedNewObjType;
+AstObjType& AstCast::specifiedNewAstObjType() const {
+  return *m_specifiedNewAstObjType;
 }
 
 void AstCast::createAndSetObjType() {
-  setObject(make_shared<Object>(m_specifiedNewObjType, StorageDuration::eLocal));
+  setObject(make_shared<Object>(m_specifiedNewAstObjType->objTypeAsSp(),
+      StorageDuration::eLocal));
 }
 
 AstFunDef::AstFunDef(const string& name,

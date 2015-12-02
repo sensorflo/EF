@@ -21,11 +21,12 @@ void SemanticAnalizer::analyze(AstNode& root) {
 
 void SemanticAnalizer::visit(AstCast& cast) {
   cast.child().accept(*this);
-  // there's no need to set ObjType, AstCast knows its own ObjType
+  cast.specifiedNewAstObjType().accept(*this);
 
   // test if conversion is eligible
-  if ( !cast.specifiedNewObjType().matchesSaufQualifiers(cast.child().objType())
-    && !cast.specifiedNewObjType().hasConstructor(cast.child().objType()) ) {
+  const auto& specifiedNewObjType = cast.specifiedNewAstObjType().objType();
+  if ( !specifiedNewObjType.matchesSaufQualifiers(cast.child().objType())
+    && !specifiedNewObjType.hasConstructor(cast.child().objType()) ) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 

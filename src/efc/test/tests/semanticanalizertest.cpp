@@ -1021,7 +1021,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     ParserExt pe(UUT.m_env, UUT.m_errorHandler);
     unique_ptr<AstObject> ast{
       new AstCast(
-        new ObjTypeFunda(ObjTypeFunda::eInt),
+        new AstObjTypeSymbol(ObjTypeFunda::eInt),
         new AstNumber(0, ObjTypeFunda::eBool))};
 
     // exercise
@@ -1721,7 +1721,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 
     // AstCast needs to be wrapped into an AstFunDef since in some iterations
     // the child of AstCast is the return expression.
-    AstObject* UUT = new AstCast( new ObjTypeFunda(inputSpec.newType), castChild);
+    AstObject* UUT = new AstCast( new AstObjTypeSymbol(inputSpec.newType), castChild);
     AstObject* funbody =
       inputSpec.newType == ObjTypeFunda::eNoreturn ?
       UUT :
