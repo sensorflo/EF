@@ -146,7 +146,7 @@ AstDataDef::AstDataDef(const std::string& name,
     move(declaredObjType) :
     make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
   m_declaredStorageDuration(declaredStorageDuration),
-  m_ctorArgs(mkCtorArgs(ctorArgs, *m_declaredObjType, m_doNotInit)) {
+  m_ctorArgs(mkCtorArgs(ctorArgs, m_doNotInit)) {
   assert(declaredStorageDuration != StorageDuration::eUnknown);
   assert(m_ctorArgs);
 }
@@ -172,8 +172,7 @@ AstDataDef::~AstDataDef() {
   delete m_ctorArgs;
 }
 
-AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
-  const ObjType& declaredObjType, bool& doNotInit) {
+AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs, bool& doNotInit) {
   doNotInit = false; // assumption
   if (not ctorArgs) {
     ctorArgs = new AstCtList();

@@ -184,8 +184,7 @@ public:
 private:
   friend class AstPrinter;
 
-  static AstCtList* mkCtorArgs(AstCtList* ctorArgs,
-    const ObjType& declaredObjType, bool& doNotInit);
+  static AstCtList* mkCtorArgs(AstCtList* ctorArgs, bool& doNotInit);
 
   const std::string m_name;
   std::shared_ptr<const ObjType> m_declaredObjType;
