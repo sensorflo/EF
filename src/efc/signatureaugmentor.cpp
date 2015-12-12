@@ -23,7 +23,21 @@ void SignatureAugmentor::visit(AstSeq& seq) {}
 void SignatureAugmentor::visit(AstNumber& number) {}
 void SignatureAugmentor::visit(AstSymbol& symbol) {}
 void SignatureAugmentor::visit(AstFunCall& funCall) {}
-void SignatureAugmentor::visit(AstFunDef& funDef) {}
+
+void SignatureAugmentor::visit(AstFunDef& funDef) {
+  // create object type describing the function
+  const auto& argsObjType = new list<shared_ptr<const ObjType>>;
+  for (const auto& astArg: funDef.args()) {
+    argsObjType->push_back(astArg->declaredObjTypeAsSp());
+  }
+  auto&& objTypeFun = make_shared<const ObjTypeFun>(argsObjType,
+    funDef.retObjTypeAsSp());
+
+  // augment function object associated with funDef with it's signature, i.e
+  // the above created object type
+  funDef.object()->setObjType(move(objTypeFun));
+}
+
 void SignatureAugmentor::visit(AstDataDef& dataDef) {}
 void SignatureAugmentor::visit(AstIf& if_) {}
 void SignatureAugmentor::visit(AstLoop& loop) {}

@@ -37,21 +37,11 @@ void EnvInserter::visit(AstFunDef& funDef) {
   }
   auto& entityInEnvSp = insertRet.first->second;
 
-  // create function object type describing the function and an function
-  // object representing the function
-  const auto& argsObjType = new list<shared_ptr<const ObjType>>;
-  for (const auto& astArg: funDef.args()) {
-    argsObjType->push_back(astArg->declaredObjTypeAsSp());
-  }
-  auto&& objTypeFun = make_shared<const ObjTypeFun>(argsObjType,
-    funDef.retObjTypeAsSp());
-  auto&& funObjSp = make_shared<Object>(move(objTypeFun),
-    StorageDuration::eStatic);
-
-  // let environment node point to new function object
-  entityInEnvSp = funObjSp;
-
-  funDef.setObject(funObjSp);
+  // 1) create an function object representing the function, 2) associate it
+  // with env and 3) associate it with AST
+  auto&& objectSp = make_shared<Object>(StorageDuration::eStatic); // 1
+  entityInEnvSp = objectSp; // 2
+  funDef.setObject(move(objectSp)); // 3
 }
 
 void EnvInserter::visit(AstDataDef& dataDef) {}
