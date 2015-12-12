@@ -6,6 +6,7 @@
 #include "errorhandler.h"
 #include "objtype.h"
 #include "envinserter.h"
+#include "signatureaugmentor.h"
 using namespace std;
 
 SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
@@ -16,6 +17,10 @@ SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
 void SemanticAnalizer::analyze(AstNode& root) {
   EnvInserter envinserter(m_env, m_errorHandler);
   envinserter.insertIntoEnv(root);
+
+  SignatureAugmentor signatureaugmentor(m_env, m_errorHandler);
+  signatureaugmentor.augmentEntities(root);
+
   root.accept(*this);
 }
 

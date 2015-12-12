@@ -29,7 +29,8 @@ endef
 EFC_SRCS = driver.cpp parserext.cpp ast.cpp errorhandler.cpp objtype.cpp \
   astdefaultiterator.cpp env.cpp semanticanalizer.cpp irgen.cpp astprinter.cpp \
   efc.cpp executionengineadapter.cpp parserapiext.cpp tokenstreamlookahead.cpp \
-  tokenfilter.cpp storageduration.cpp object.cpp envinserter.cpp
+  tokenfilter.cpp storageduration.cpp object.cpp envinserter.cpp \
+  signatureaugmentor.cpp
 
 EFC_GEN_SRCS = parser.cpp scanner.cpp
 
