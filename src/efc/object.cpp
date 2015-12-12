@@ -6,12 +6,23 @@
 using namespace std;
 using namespace llvm;
 
+Object::Object(StorageDuration storageDuration) :
+  m_objType(nullptr),
+  m_storageDuration(storageDuration),
+  m_isModifiedOrRevealsAddr(false),
+  m_irValueOrAddr(nullptr) {}
+
 Object::Object(shared_ptr<const ObjType> objType,
   StorageDuration storageDuration) :
   m_objType( (assert(objType.get()), move(objType))),
   m_storageDuration(storageDuration),
   m_isModifiedOrRevealsAddr(false),
   m_irValueOrAddr(NULL) {}
+
+void Object::setObjType(std::shared_ptr<const ObjType> objType) {
+  assert(!m_objType); // doesn't make sense to set it twice
+  m_objType = move(objType);
+}
 
 void Object::addAccess(Access access) {
   m_isModifiedOrRevealsAddr =
@@ -76,6 +87,10 @@ basic_ostream<char>& Object::printTo(basic_ostream<char>& os) const {
   if ( m_storageDuration!=StorageDuration::eLocal ) {
     os << m_storageDuration << "/";
   }
-  os << *m_objType;
+  if ( m_objType ) {
+    os << *m_objType;
+  } else {
+    os << "<undefined>";
+  }
   return os;
 }

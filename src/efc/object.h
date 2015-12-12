@@ -20,12 +20,14 @@ feasible.
 Multiple AstObject nodes may refer to one Entity. */
 class Object : public Entity {
 public:
+  Object(StorageDuration storageDuration);
   Object(std::shared_ptr<const ObjType> objType,
     StorageDuration storageDuration);
 
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
 
-  const ObjType& objType() const { return *m_objType.get(); }
+  void setObjType(std::shared_ptr<const ObjType> objType);
+  const ObjType& objType() const { assert(m_objType); return *m_objType; }
   std::shared_ptr<const ObjType> objTypeAsSp() const { return m_objType; }
   StorageDuration storageDuration() const { return m_storageDuration; }
   void addAccess(Access access);
@@ -38,8 +40,7 @@ public:
   bool isStoredInMemory() const;
 
 private:
-  /** Is guaranteed to be non-null */
-  const std::shared_ptr<const ObjType> m_objType;
+  std::shared_ptr<const ObjType> m_objType;
   const StorageDuration m_storageDuration;
   bool m_isModifiedOrRevealsAddr;
 
