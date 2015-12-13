@@ -12,7 +12,7 @@ EnvInserter::EnvInserter(Env& env, ErrorHandler& errorHandler) :
 }
 
 void EnvInserter::insertIntoEnv(AstNode& root) {
-  AstDefaultIterator iter(*this);
+  AstDefaultIterator iter(this);
   root.accept(iter);
 }
 

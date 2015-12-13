@@ -10,7 +10,7 @@ SignatureAugmentor::SignatureAugmentor(Env& env, ErrorHandler& errorHandler) {
 }
 
 void SignatureAugmentor::augmentEntities(AstNode& root) {
-  AstDefaultIterator iter(*this);
+  AstDefaultIterator iter(this);
   root.accept(iter);
 }
 

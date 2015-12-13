@@ -1,6 +1,5 @@
 #include "semanticanalizer.h"
 #include "ast.h"
-#include "astdefaultiterator.h"
 #include "env.h"
 #include "object.h"
 #include "errorhandler.h"

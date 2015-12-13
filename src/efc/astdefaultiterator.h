@@ -7,7 +7,7 @@ given in the ctor. Currently it's only pre order traversal. */
 class AstDefaultIterator : public AstVisitor {
 
 public:
-  AstDefaultIterator(AstVisitor& visitor) :
+  AstDefaultIterator(AstVisitor* visitor = nullptr) :
     m_visitor(visitor) {}
 
   virtual void visit(AstNop& nop);
@@ -30,5 +30,5 @@ public:
   virtual void visit(AstClassDef& class_);
 
 private:
-  AstVisitor& m_visitor;
+  AstVisitor* m_visitor;
 };
