@@ -14,6 +14,10 @@ Env::Env() {
   m_ststack.push_front(SymbolTable());
 }
 
+Env::InsertRet Env::insertAtGlobalScope(const string& name, shared_ptr<Entity> entity) {
+  return m_ststack.back().insert(make_pair(name, move(entity)));
+}
+
 Env::InsertRet Env::insert(const string& name, shared_ptr<Entity> entity) {
   return insert(make_pair(name, move(entity)));
 }

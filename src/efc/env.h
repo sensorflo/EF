@@ -29,6 +29,8 @@ public:
 
   Env();
 
+  InsertRet insertAtGlobalScope(const std::string& name,
+    std::shared_ptr<Entity> entity = nullptr);
   InsertRet insert(const std::string& name, std::shared_ptr<Entity> entity = nullptr);
   InsertRet insert(const SymbolTable::KeyValue& keyValue);
   void find(const std::string& name, std::shared_ptr<Entity>& entity);
