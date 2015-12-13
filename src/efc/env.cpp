@@ -15,12 +15,12 @@ Env::Env() {
 }
 
 Env::InsertRet Env::insert(const string& name, shared_ptr<Entity> entity) {
-  return insert(make_pair(move(name), move(entity)));
+  return insert(make_pair(name, move(entity)));
 }
 
 /** \overload */
 Env::InsertRet Env::insert(const SymbolTable::KeyValue& keyValue) {
-  return m_ststack.front().insert(move(keyValue));
+  return m_ststack.front().insert(keyValue);
 }
 
 void Env::find(const string& name, shared_ptr<Entity>& entity) {
