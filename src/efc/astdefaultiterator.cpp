@@ -20,6 +20,7 @@ void AstDefaultIterator::visit(AstCast& cast) {
     cast.accept(*m_visitor);
   }
   cast.child().accept(*this);
+  cast.specifiedNewAstObjType().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstCtList& ctList) {
