@@ -50,9 +50,7 @@ void SemanticAnalizer::visit(AstNop& nop) {
 }
 
 void SemanticAnalizer::visit(AstBlock& block) {
-  { Env::AutoScope scope(m_env);
-    block.body().accept(*this);
-  }
+  callAcceptWithinNewScope(block.body());
 
   const auto& blockObjType = block.body().objType().unqualifiedObjType();
   block.setObject(make_shared<Object>(blockObjType, StorageDuration::eLocal));
