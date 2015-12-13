@@ -16,6 +16,11 @@ public:
 private:
   void visit(AstFunDef& funDef) override;
 
+  /** Inserts name into environment. The returned referenced shared pointer
+  is null and shall be reseated to new entity. If name is already in env, an
+  appropriate error is thrown. */
+  std::shared_ptr<Entity>& insertIntoEnv(const std::string& name);
+
   Env& m_env;
   ErrorHandler& m_errorHandler;
 };

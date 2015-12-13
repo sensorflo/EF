@@ -305,7 +305,7 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 void SemanticAnalizer::visit(AstDataDef& dataDef) {
   // let dataDecl.object() point a newly created symbol table entry
   if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
-    const auto& insertRet = m_env.insert( dataDef.name(), nullptr );
+    const auto& insertRet = m_env.insert( dataDef.name() );
     auto& envs_entity_ptr = insertRet.first->second;
 
     // name is not yet in env, thus insert new symbol table entry

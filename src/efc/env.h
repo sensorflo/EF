@@ -29,7 +29,7 @@ public:
 
   Env();
 
-  InsertRet insert(const std::string& name, std::shared_ptr<Entity> entity);
+  InsertRet insert(const std::string& name, std::shared_ptr<Entity> entity = nullptr);
   InsertRet insert(const SymbolTable::KeyValue& keyValue);
   void find(const std::string& name, std::shared_ptr<Entity>& entity);
   void pushScope();
