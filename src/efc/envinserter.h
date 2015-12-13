@@ -1,5 +1,5 @@
 #pragma once
-#include "nopastvisitor.h"
+#include "astdefaultiterator.h"
 
 class Env;
 class ErrorHandler;
@@ -8,7 +8,7 @@ class ObjType;
 /** Each definition occuring in AST inserts a new entity into the
 environment. Of each entity, only it's name and it's meta type is yet
 defined. */
-class EnvInserter : private NopAstVisitor {
+class EnvInserter : private AstDefaultIterator {
 public:
   EnvInserter(Env& env, ErrorHandler& errorHandler);
   void insertIntoEnv(AstNode& root);

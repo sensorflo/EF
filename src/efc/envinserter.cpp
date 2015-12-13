@@ -12,8 +12,7 @@ EnvInserter::EnvInserter(Env& env, ErrorHandler& errorHandler) :
 }
 
 void EnvInserter::insertIntoEnv(AstNode& root) {
-  AstDefaultIterator iter(this);
-  root.accept(iter);
+  root.accept(*this);
 }
 
 void EnvInserter::visit(AstFunDef& funDef) {
@@ -27,6 +26,8 @@ void EnvInserter::visit(AstFunDef& funDef) {
   auto&& objectSp = make_shared<Object>(StorageDuration::eStatic); // 1
   entityInEnvSp = objectSp; // 2
   funDef.setObject(move(objectSp)); // 3
+
+  AstDefaultIterator::visit(funDef);
 }
 
 std::shared_ptr<Entity>& EnvInserter::insertIntoEnv(const std::string& name) {

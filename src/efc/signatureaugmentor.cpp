@@ -10,8 +10,7 @@ SignatureAugmentor::SignatureAugmentor(Env& env, ErrorHandler& errorHandler) {
 }
 
 void SignatureAugmentor::augmentEntities(AstNode& root) {
-  AstDefaultIterator iter(this);
-  root.accept(iter);
+  root.accept(*this);
 }
 
 void SignatureAugmentor::visit(AstFunDef& funDef) {
@@ -26,4 +25,6 @@ void SignatureAugmentor::visit(AstFunDef& funDef) {
   // augment function object associated with funDef with it's signature, i.e
   // the above created object type
   funDef.object()->setObjType(move(objTypeFun));
+
+  AstDefaultIterator::visit(funDef);
 }
