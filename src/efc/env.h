@@ -42,8 +42,11 @@ private:
 
   NEITHER_COPY_NOR_MOVEABLE(Env);
 
-  /** symbol table stack. front() is top of stack */
-  std::list<SymbolTable> m_ststack;
+  /** symbol tables, organized as stack, where as front() is top of
+  stack. Each nested scope corresponds to an entry in the stack. Function body
+  is a top level scope, i.e. when in function body, m_sts.size() is 1, when
+  outside a function body m_sts.size() is 0.  */
+  std::list<SymbolTable> m_sts;
 };
 
 std::ostream& operator<<(std::ostream&, const Env&);

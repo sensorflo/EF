@@ -11,11 +11,11 @@ Env::AutoScope::~AutoScope() {
 }
 
 Env::Env() {
-  m_ststack.push_front(SymbolTable());
+  m_sts.push_front(SymbolTable());
 }
 
 Env::InsertRet Env::insertAtGlobalScope(const string& name, shared_ptr<Entity> entity) {
-  return m_ststack.back().insert(make_pair(name, move(entity)));
+  return m_sts.back().insert(make_pair(name, move(entity)));
 }
 
 Env::InsertRet Env::insert(const string& name, shared_ptr<Entity> entity) {
@@ -24,12 +24,12 @@ Env::InsertRet Env::insert(const string& name, shared_ptr<Entity> entity) {
 
 /** \overload */
 Env::InsertRet Env::insert(const SymbolTable::KeyValue& keyValue) {
-  return m_ststack.front().insert(keyValue);
+  return m_sts.front().insert(keyValue);
 }
 
 void Env::find(const string& name, shared_ptr<Entity>& entity) {
-  list<SymbolTable>::iterator iter = m_ststack.begin();
-  for ( /*nop*/; iter!=m_ststack.end(); ++iter ) {
+  list<SymbolTable>::iterator iter = m_sts.begin();
+  for ( /*nop*/; iter!=m_sts.end(); ++iter ) {
     SymbolTable& symbolTable = *iter;
     SymbolTable::iterator i = symbolTable.find(name);
     if (i!=symbolTable.end()) {
@@ -40,12 +40,12 @@ void Env::find(const string& name, shared_ptr<Entity>& entity) {
 }
 
 void Env::pushScope() {
-  m_ststack.push_front(SymbolTable());
+  m_sts.push_front(SymbolTable());
 }
 
 void Env::popScope() {
-  assert(!m_ststack.empty());
-  m_ststack.pop_front();
+  assert(!m_sts.empty());
+  m_sts.pop_front();
 }
 
 std::ostream& operator<<(std::ostream& os, const SymbolTable& st) {
@@ -69,7 +69,7 @@ std::ostream& operator<<(std::ostream& os, const SymbolTable& st) {
 std::ostream& operator<<(std::ostream& os, const Env& env) {
   os << "{";
   bool isFirstIter = true;
-  for (auto const& st: env.m_ststack) {
+  for (auto const& st: env.m_sts) {
     if ( !isFirstIter ) {
       os << ", ";
     }
