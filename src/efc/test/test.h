@@ -61,3 +61,25 @@ std::string amend(const Env& env);
 
 #define EXPECT_MATCHES_SAUF_QUALIFIERS( expected_obj_type, actual_obj_type )      \
   EXPECT_PRED2( ObjType::matchesSaufQualifiers_, expected_obj_type, actual_obj_type )
+
+template<typename T>
+std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
+  const std::shared_ptr<T>& sp) {
+  os << "{" << sp.get();
+  if ( sp ) {
+    os << "->" << *sp;
+  }
+  os << "}";
+  return os;
+}
+
+template<typename T>
+std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
+  const std::unique_ptr<T>& up) {
+  os << "{" << up.get();
+  if ( up ) {
+    os << "->" << *up;
+  }
+  os << "}";
+  return os;
+}
