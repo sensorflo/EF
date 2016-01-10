@@ -1,9 +1,9 @@
 #pragma once
 #include "declutils.h"
 #include "entity.h"
+#include "tree.h"
 #include <string>
 #include <map>
-#include <list>
 #include <memory>
 #include <ostream>
 
@@ -40,13 +40,16 @@ public:
 private:
   friend std::ostream& operator<<(std::ostream&, const Env&);
 
+  void printTo(std::ostream& os, tree<SymbolTable>::iterator node) const;
   NEITHER_COPY_NOR_MOVEABLE(Env);
 
-  /** symbol tables, organized as stack, where as front() is top of
-  stack. Each nested scope corresponds to an entry in the stack. Function body
-  is a top level scope, i.e. when in function body, m_sts.size() is 1, when
-  outside a function body m_sts.size() is 0.  */
-  std::list<SymbolTable> m_sts;
+  /** The environment is a tree of symbol tables. m_sts.begin() is the root
+  of the tree, i.e. the top level symbol table. */
+  tree<SymbolTable> m_sts;
+  /** Denotes, in the form of a stack, the current node (back()) within m_sts,
+  inclusive back trace up to the root (front()). Is guaranteed to always
+  contain at least one element. */
+  std::vector<tree<SymbolTable>::iterator> m_nestedScopes;
 };
 
 std::ostream& operator<<(std::ostream&, const Env&);

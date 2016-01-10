@@ -11,11 +11,12 @@ Env::AutoScope::~AutoScope() {
 }
 
 Env::Env() {
-  m_sts.push_front(SymbolTable());
+  // create the toplevel (aka root) symboltable
+  m_nestedScopes.push_back(m_sts.insert(m_sts.begin(), SymbolTable()));
 }
 
 Env::InsertRet Env::insertAtGlobalScope(const string& name, shared_ptr<Entity> entity) {
-  return m_sts.back().insert(make_pair(name, move(entity)));
+  return m_nestedScopes.front()->insert(make_pair(name, move(entity)));
 }
 
 Env::InsertRet Env::insert(const string& name, shared_ptr<Entity> entity) {
@@ -24,13 +25,12 @@ Env::InsertRet Env::insert(const string& name, shared_ptr<Entity> entity) {
 
 /** \overload */
 Env::InsertRet Env::insert(const SymbolTable::KeyValue& keyValue) {
-  return m_sts.front().insert(keyValue);
+  return m_nestedScopes.back()->insert(keyValue);
 }
 
 void Env::find(const string& name, shared_ptr<Entity>& entity) {
-  list<SymbolTable>::iterator iter = m_sts.begin();
-  for ( /*nop*/; iter!=m_sts.end(); ++iter ) {
-    SymbolTable& symbolTable = *iter;
+  for (auto iter = m_nestedScopes.rbegin(); iter!=m_nestedScopes.rend(); ++iter) {
+    SymbolTable& symbolTable = **iter;
     SymbolTable::iterator i = symbolTable.find(name);
     if (i!=symbolTable.end()) {
       entity = i->second;
@@ -40,12 +40,29 @@ void Env::find(const string& name, shared_ptr<Entity>& entity) {
 }
 
 void Env::pushScope() {
-  m_sts.push_front(SymbolTable());
+  m_nestedScopes.push_back(m_sts.append_child(m_nestedScopes.back(), SymbolTable()));
 }
 
 void Env::popScope() {
-  assert(!m_sts.empty());
-  m_sts.pop_front();
+  assert(m_nestedScopes.size()>=1); // we can't pop the top level symbol table
+  m_nestedScopes.pop_back();
+}
+
+void Env::printTo(std::ostream& os, tree<SymbolTable>::iterator node) const {
+  os << "{ST=" << *node;
+  os << ", childs=";
+
+  bool isFirstIter = true;
+  tree<SymbolTable>::sibling_iterator sib=m_sts.begin(node);
+  os << "{";
+  for ( ; sib!=m_sts.end(node); ++sib) {
+    if ( !isFirstIter ) {
+      os << ", ";
+    }
+    isFirstIter = false;
+    printTo(os, sib);
+  }
+  os << "}}";
 }
 
 std::ostream& operator<<(std::ostream& os, const SymbolTable& st) {
@@ -67,14 +84,6 @@ std::ostream& operator<<(std::ostream& os, const SymbolTable& st) {
 }
 
 std::ostream& operator<<(std::ostream& os, const Env& env) {
-  os << "{";
-  bool isFirstIter = true;
-  for (auto const& st: env.m_sts) {
-    if ( !isFirstIter ) {
-      os << ", ";
-    }
-    isFirstIter = false;
-    os << st;
-  }
-  return os << "}";
+  env.printTo(os, env.m_sts.begin());
+  return os;
 }

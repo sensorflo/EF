@@ -133,3 +133,38 @@ TEST(EnvTest, MAKE_TEST_NAME(
   EXPECT_EQ( entityOuter, foundEntity );
 }
 
+TEST(EnvTest, MAKE_TEST_NAME1(
+    ostream_operator)) {
+
+  // setup
+  Env UUT;
+  auto anEntity = createAnEntity();
+
+  UUT.insert("111", anEntity);
+  UUT.insert("112", anEntity);
+
+  UUT.pushScope();
+    UUT.insert("211", anEntity); // depth 2, 1st block, 1st entity
+    UUT.insert("212", anEntity);
+  UUT.popScope();
+
+  UUT.insert("113", anEntity); // depth 1, 1st block, 3rd entity
+
+  UUT.pushScope();
+    UUT.insert("221", anEntity); // depth 2, 2nd block, 1st entity
+  UUT.popScope();
+
+  stringstream ss;
+
+  // exercise
+  ss << UUT;
+
+  // verify
+  // the lhs of = is the name (aka key) of the entity in the symbol table, and
+  // the rhs is the entity itself
+  EXPECT_EQ(
+    "{ST={111=, 112=, 113=}, childs={" // depth 1
+      "{ST={211=, 212=}, childs={}}, " // depth 2, 1st block
+      "{ST={221=}, childs={}}}}",      // depth 2, 2nd block
+    ss.str());
+}
