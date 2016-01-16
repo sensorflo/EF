@@ -2,6 +2,7 @@
 #include "driverontmpfile.h"
 #include "../driver.h"
 #include "../errorhandler.h"
+#include <memory>
 using namespace testing;
 using namespace std;
 
@@ -18,7 +19,7 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstObject* astRoot,
 
   // setup
   ENV_ASSERT_TRUE( astRoot!=NULL );
-  auto_ptr<AstObject> astRootAp(astRoot);
+  unique_ptr<AstObject> dummy(astRoot);
   bool foreignExceptionThrown = false;
   string excptionwhat;
 
