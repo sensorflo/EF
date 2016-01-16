@@ -50,7 +50,10 @@ void SemanticAnalizer::visit(AstNop& nop) {
 }
 
 void SemanticAnalizer::visit(AstBlock& block) {
-  callAcceptWithinNewScope(block.body());
+  {
+    Env::AutoScope scope(m_env);
+    block.body().accept(*this);
+  }
 
   const auto& blockObjType = block.body().objType().unqualifiedObjType();
   block.setObject(make_shared<Object>(blockObjType, StorageDuration::eLocal));
@@ -464,11 +467,6 @@ void SemanticAnalizer::visit(AstClassDef& class_) {
   }
   class_.createAndSetObjType();
   postConditionCheck(class_);
-}
-
-void SemanticAnalizer::callAcceptWithinNewScope(AstObject& node) {
-  Env::AutoScope scope(m_env);
-  node.accept(*this);
 }
 
 void SemanticAnalizer::postConditionCheck(const AstObject& node) {

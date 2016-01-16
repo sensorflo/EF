@@ -35,7 +35,6 @@ private:
   virtual void visit(AstObjTypePtr& ptr);
   virtual void visit(AstClassDef& class_);
 
-  void callAcceptWithinNewScope(AstObject& node);
   void postConditionCheck(const AstObject& node);
   void postConditionCheck(const AstObjType& node);
 
