@@ -33,7 +33,7 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
   // verify no foreign exception where thrown
   EXPECT_FALSE( foreignThrow ) <<
     amendSpec(spec) << amendAst(ast) << amend(UUT.m_errorHandler) <<
-    "\nexceptionwhat: " << excptionwhat;
+    "\nexceptionwhat: " << excptionwhat << amend(UUT.m_env);
 
 
   // verify that as expected no error was reported
@@ -41,19 +41,22 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
   if ( expectedErrorNo == Error::eNone ) {
     EXPECT_TRUE(errors.empty()) <<
       "Expecting no error\n" <<
-      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast) <<
+      amend(UUT.m_env);
   }
 
   else {
     // verify that only exactly one error is reported
     EXPECT_EQ(1, errors.size()) <<
       "Expecting exactly one error\n" <<
-      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast) <<
+      amend(UUT.m_env);
 
     // ... and that that one error has the expected ErrorNo
     if ( ! errors.empty() ) {
       EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
-        amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast);
+        amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast) <<
+        amend(UUT.m_env);
     }
   }
 }
