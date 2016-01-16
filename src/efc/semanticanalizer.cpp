@@ -23,6 +23,16 @@ void SemanticAnalizer::analyze(AstNode& root) {
   root.accept(*this);
 }
 
+SemanticAnalizer::FunBodyHelper::FunBodyHelper(
+  stack<const ObjType*>& funRetObjTypes, const ObjType* objType) :
+  m_funRetObjTypes(funRetObjTypes) {
+  m_funRetObjTypes.push(objType);
+}
+
+SemanticAnalizer::FunBodyHelper::~FunBodyHelper() {
+  m_funRetObjTypes.pop();
+}
+
 void SemanticAnalizer::visit(AstCast& cast) {
   cast.child().accept(*this);
   cast.specifiedNewAstObjType().accept(*this);
@@ -274,7 +284,11 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   }
 
   {
-    m_funRetObjTypes.push(&funDef.retObjType());
+    FunBodyHelper dummy(m_funRetObjTypes, &funDef.retObjType());
+
+    // This is the outermost block. It is the owner of the functions
+    // parameters. Note that the due to the grammar, funDef.body() is always
+    // an AstBlock and thus yet another scope.
     Env::AutoScope scope(m_env);
 
     list<AstDataDef*>::const_iterator argDefIter = funDef.args().begin();
@@ -287,8 +301,6 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
     }
 
     funDef.body().accept(*this);
-
-    m_funRetObjTypes.pop();
   }
 
   const auto& bodyObjType = funDef.body().objType();

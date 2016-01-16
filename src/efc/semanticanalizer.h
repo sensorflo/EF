@@ -16,6 +16,15 @@ public:
   void analyze(AstNode& root);
 
 private:
+  class FunBodyHelper {
+  public:
+    FunBodyHelper(std::stack<const ObjType*>& funRetObjTypes,
+      const ObjType* objType);
+    ~FunBodyHelper();
+  private:
+    std::stack<const ObjType*>& m_funRetObjTypes;
+  };
+
   virtual void visit(AstNop& nop);
   virtual void visit(AstBlock& block);
   virtual void visit(AstCast& cast);
