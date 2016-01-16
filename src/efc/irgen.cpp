@@ -413,7 +413,7 @@ void IrGen::visit(AstDataDef& dataDef) {
 
   if ( object->storageDuration() == StorageDuration::eStatic ) {
     GlobalVariable* variableAddr = new GlobalVariable( *m_module, objType.llvmType(),
-      ! objType.qualifiers() & ObjType::eMutable, GlobalValue::InternalLinkage,
+      ! (objType.qualifiers() & ObjType::eMutable), GlobalValue::InternalLinkage,
       static_cast<Constant*>(initObj),
       dataDef.name());
     object->setIrAddr(variableAddr);
