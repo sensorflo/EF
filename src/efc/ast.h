@@ -92,9 +92,12 @@ public:
 
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+  const std::string& name() const { return m_name; }
   AstObject& body() const { return *m_body.get(); }
 
 private:
+  static std::string makeUniqueInternalName();
+  const std::string m_name;
   std::unique_ptr<AstObject> m_body;
 };
 

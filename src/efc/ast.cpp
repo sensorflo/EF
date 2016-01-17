@@ -60,10 +60,18 @@ AstNop::AstNop() :
 }
 
 AstBlock::AstBlock(AstObject* body) :
+  m_name(makeUniqueInternalName()),
   m_body(body) {
 }
 
 AstBlock::~AstBlock() {
+}
+
+string AstBlock::makeUniqueInternalName() {
+  static auto uniqueNumber = 0U;
+  stringstream ss;
+  ss << "$block" << ++uniqueNumber;
+  return ss.str();
 }
 
 AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child) :
