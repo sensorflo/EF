@@ -48,7 +48,8 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstObject* astRoot,
     amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(astRoot);
   if ( !errors.empty() ) {
     EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
-      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(astRoot);
+      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(astRoot) <<
+      amend(UUT.m_env);
   }
 }
 
@@ -101,7 +102,8 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
   EXPECT_EQ( 0, errorMsgFromDriver.str().length() ) <<
     "\n" <<
     "errorMsgFromDriver: \"" << errorMsgFromDriver.str() << "\"\n" <<
-    "EF program: \"" << well_formed_ef_program << "\"\n";
+    "EF program: \"" << well_formed_ef_program << "\"\n" <<
+    amend(UUT.m_env) << amendAst(UUT.m_astRoot);
 }
 
 TEST(DriverSystemTest, MAKE_TEST_NAME(
