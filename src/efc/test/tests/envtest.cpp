@@ -4,167 +4,290 @@
 using namespace testing;
 using namespace std;
 
-class AnEntity : public Entity {
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override  {
-    return os;
+TEST(EnvTest, MAKE_TEST_NAME3(
+    an_Env_with_name_x_not_yet_inserted_in_current_scope,
+    insert_WITH_name_x,
+    returns_non_null)) {
+
+  auto spec = "Current scope being root scope, using insertLeaf to insert";
+  {
+    // setup
+    Env UUT;
+    // exercise
+    shared_ptr<Entity>* entity = UUT.insertLeaf("x");
+    // verify
+    EXPECT_TRUE(nullptr!=entity) << amendSpec(spec) << amend(UUT);
   }
-};
 
-shared_ptr<Entity> createAnEntity() {
-  return make_shared<AnEntity>();
-}
+  spec = "Current scope being root scope, using AutoScope to insert";
+  {
+    // setup
+    Env UUT;
+    // exercise
+    shared_ptr<Entity>* entity;
+    Env::AutoScope scope(UUT, "x", entity, Env::AutoScope::insertScopeAndDescent);
+    // verify
+    EXPECT_TRUE(nullptr!=entity) << amendSpec(spec) << amend(UUT);
+  }
 
-TEST(EnvTest, MAKE_TEST_NAME2(
-    insert_WITH_name_x,
-    returns_a_pair_with_the_first_being_an_iterator_to_the_inserted_pair_and_the_second_being_true)) {
+  spec = "Current scope being _not_ root scope, using insertLeaf to insert";
+  {
+    // setup
+    Env UUT;
+    Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
+    // exercise
+    shared_ptr<Entity>* entity = UUT.insertLeaf("x");
+    // verify
+    EXPECT_TRUE(nullptr!=entity) << amendSpec(spec) << amend(UUT);
+  }
 
-  SymbolTable::KeyValue xPair = make_pair("x", createAnEntity());
-  Env UUT;
-  Env::InsertRet ret = UUT.insert(xPair.first, xPair.second);
-  EXPECT_EQ( xPair, *ret.first );
-  EXPECT_TRUE( ret.second );
+  spec = "Current scope being _not_ root scope, using AutoScope to insert";
+  {
+    // setup
+    Env UUT;
+    Env::AutoScope scope1(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
+    // exercise
+    shared_ptr<Entity>* entity;
+    Env::AutoScope scope2(UUT, "x", entity, Env::AutoScope::insertScopeAndDescent);
+    // verify
+    EXPECT_TRUE(nullptr!=entity) << amendSpec(spec) << amend(UUT);
+  }
 }
 
 TEST(EnvTest, MAKE_TEST_NAME(
-    an_Env_with_name_x_already_inserted,
-    insert_WITH_name_x,
-    returns_a_pair_with_the_first_being_an_iterator_to_the_allready_inserted_pair_and_the_second_being_false)) {
-  // setup
-  SymbolTable::KeyValue allreadyInsertedPair = make_pair("x", createAnEntity());
-  Env UUT;
-  UUT.insert(allreadyInsertedPair.first, allreadyInsertedPair.second);
-  auto anotherStEntry = createAnEntity();
+    an_Env_with_name_x_already_inserted_in_current_scope,
+    insertLeaf_WITH_name_x,
+    returns_null)) {
+  const auto name = "x"s;
 
-  // exercise
-  Env::InsertRet ret = UUT.insert("x", anotherStEntry);
+  auto spec = "Current scope being root scope, using insertLeaf to insert";
+  {
+    // setup
+    Env UUT;
+    UUT.insertLeaf(name);
+    // exercise
+    shared_ptr<Entity>* entity = UUT.insertLeaf(name);
+    // verify
+    EXPECT_EQ(nullptr, entity) << amendSpec(spec) << amend(UUT);
+  }
 
-  // verify
-  EXPECT_EQ( allreadyInsertedPair, *ret.first );
-  EXPECT_FALSE( ret.second );
+  spec = "Current scope being root scope, using AutoScope to insert";
+  {
+    // setup
+    Env UUT;
+    UUT.insertLeaf(name);
+    // exercise
+    shared_ptr<Entity>* entity;
+    Env::AutoScope scope(UUT, name, entity, Env::AutoScope::insertScopeAndDescent);
+    // verify
+    EXPECT_EQ(nullptr, entity) << amendSpec(spec) << amend(UUT);
+  }
+
+  spec = "Current scope being _not_ root scope, using insertLeaf to insert";
+  {
+    // setup
+    Env UUT;
+    Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
+    UUT.insertLeaf(name);
+    // exercise
+    shared_ptr<Entity>* entity = UUT.insertLeaf(name);
+    // verify
+    EXPECT_EQ(nullptr, entity) << amendSpec(spec) << amend(UUT);
+  }
+
+  spec = "Current scope being _not_ root scope, using AutoScope to insert";
+  {
+    // setup
+    Env UUT;
+    Env::AutoScope scope1(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
+    UUT.insertLeaf(name);
+    // exercise
+    shared_ptr<Entity>* entity;
+    Env::AutoScope scope2(UUT, name, entity, Env::AutoScope::insertScopeAndDescent);
+    // verify
+    EXPECT_EQ(nullptr, entity) << amendSpec(spec) << amend(UUT);
+  }
 }
 
-TEST(EnvTest, MAKE_TEST_NAME(
-    a_name_and_a_symbol_table_entry_pair,
-    insert_is_called_WITH_the_pair_as_argument_AND_then_find_is_called_with_the_name_as_argument,
-    returns_a_pointer_to_the_symbol_table_entry)) {
-  // setup
-  string name = "x";
-  auto entity = createAnEntity();
-  Env UUT;
+TEST(EnvTest, MAKE_TEST_NAME3(
+    an_env_with_name_x_already_inserted,
+    find_WITH_name_x,
+    returns_the_same_ptr_that_insert_already_returned)) {
+  const auto name = "x"s;
+  auto spec = "Using insertLeaf to insert";
+  {
+    // setup
+    Env UUT;
+    shared_ptr<Entity>* insertedEntity = UUT.insertLeaf(name);
 
-  // exercise
-  UUT.insert(name, entity);
-  shared_ptr<Entity> returnedEntity;
-  UUT.find(name, returnedEntity);
+    // exercise
+    shared_ptr<Entity>* foundEntity = UUT.find(name);
 
-  // verify
-  EXPECT_TRUE( NULL!=returnedEntity );
-  EXPECT_EQ( entity, returnedEntity );
+    // verify
+    EXPECT_EQ(insertedEntity, foundEntity) << amendSpec(spec) << amend(UUT);
+  }
+
+  spec = "Using AutoScope to insert";
+  {
+    // setup
+    Env UUT;
+    shared_ptr<Entity>* insertedEntity;
+    Env::AutoScope scope(UUT, name, insertedEntity, Env::AutoScope::insertScopeAndDescent);
+
+    // exercise
+    shared_ptr<Entity>* foundEntity = UUT.find(name);
+
+    // verify
+    EXPECT_EQ(insertedEntity, foundEntity) << amendSpec(spec) << amend(UUT);
+  }
 }
 
 TEST(EnvTest, MAKE_TEST_NAME2(
     find_WITH_an_nonexisting_name,
     returns_NULL)) {
   Env UUT;
-  shared_ptr<Entity> foundEntity;
-  UUT.find("x", foundEntity);
-  EXPECT_TRUE( NULL==foundEntity.get() );
+  shared_ptr<Entity>* foundEntity = UUT.find("x");
+  EXPECT_EQ(nullptr, foundEntity) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME4(
-    an_Env_with_name_x_already_inserted,
-    pushScope_is_called_AND_then_insert_is_called_with_name_x,
-    insert_behaves_as_when_name_x_was_not_inserted_before,
-    because_the_new_scope_allows_the_inner_x_to_shadow_the_outer_x)) {
+    an_Env_with_a_leaf_at_root_named_x,
+    a_new_empty_scope_is_inserted_and_descendet_to_AND_then_insertLeaf_WITH_name_x_is_called,
+    it_adds_a_new_leaf,
+    BECAUSE_the_new_scope_allows_the_inner_x_to_shadow_the_outer_x)) {
+
   // setup
   Env UUT;
-  UUT.insert("x", createAnEntity());
+  const auto name = "x"s;
+  const auto entityOuter = UUT.insertLeaf(name);
 
   // exercise
-  UUT.pushScope();
-  SymbolTable::KeyValue innerx = make_pair("x", createAnEntity());
-  Env::InsertRet ret = UUT.insert(innerx);
+  Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
+  const auto entityInner = UUT.insertLeaf(name);
 
   // verify
-  EXPECT_EQ( innerx, *ret.first );
-  EXPECT_TRUE( ret.second );
+  EXPECT_TRUE(nullptr!=entityInner) << amend(UUT);
+  EXPECT_NE(entityOuter, entityInner) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME4(
-    an_Env_with_name_x_already_inserted,
-    pushScope_is_called_AND_then_find_is_called_with_name_x,
-    find_behaves_as_when_pushScope_had_not_been_called,
-    because_the_new_scope_did_not_add_a_new_x_which_would_shadow_the_old_x)) {
+    an_Env_with_an_name_x_at_root,
+    a_new_scope_is_inserted_and_descended_to_AND_find_with_name_x_is_called,
+    find_finds_the_x_at_the_root_scope,
+    because_the_new_scope_did_not_add_a_new_x_which_would_shadow_the_x_at_root)) {
   // setup
-  string name = "x";
-  auto entity = createAnEntity();
-  shared_ptr<Entity> foundEntity;
   Env UUT;
-  UUT.insert(name, entity);
+  const auto name = "x"s;
+  const auto insertedEntity = UUT.insertLeaf(name);
 
   // exercise
-  UUT.pushScope();
-  UUT.find(name, foundEntity);
+  Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
+  const auto foundEntiy = UUT.find(name);
 
   // verify
-  EXPECT_TRUE( NULL!=foundEntity );
-  EXPECT_EQ( entity, foundEntity );
+  EXPECT_EQ(insertedEntity, foundEntiy) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME(
-    an_inner_and_outer_scope_AND_both_contain_a_name_x,
-    popScope_is_called_AND_then_find_is_called_WITH_name_x,
+    an_outer_and_inner_scope_AND_both_contain_a_name_x,
+    ascentScope_is_called_AND_then_find_is_called_WITH_name_x,
     find_behaves_as_if_the_part_from_pushScope_to_popScope_did_not_happen)) {
 
   // setup
   Env UUT;
-  auto entityOuter = createAnEntity();
-  UUT.insert("x", entityOuter);
-  UUT.pushScope();
-  UUT.insert("x", createAnEntity()); // inner symbol table entr
-  shared_ptr<Entity> foundEntity;
+  const auto name = "x"s;
+  const auto outerEntity = UUT.insertLeaf(name);
+  shared_ptr<Entity>* innerEntity{};
 
   // exercise
-  UUT.popScope();
-  UUT.find("x", foundEntity);
+  {
+    Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
+    innerEntity = UUT.insertLeaf(name);
+  }
+  const auto foundEntity = UUT.find(name);
 
   // verify
-  EXPECT_TRUE( NULL!=foundEntity );
-  EXPECT_EQ( entityOuter, foundEntity );
+  EXPECT_EQ(foundEntity, outerEntity) << amend(UUT) <<
+    "\ninnerEntity=" << (void*)innerEntity;
+}
+
+TEST(EnvTest, MAKE_TEST_NAME1(
+    descentScope)) {
+  Env UUT;
+  shared_ptr<Entity>* insertedEntity{};
+  shared_ptr<Entity>* foundEntity{};
+  {
+    Env::AutoScope scopeFoo(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
+    insertedEntity = UUT.insertLeaf("x");
+  }
+  {
+    Env::AutoScope scopeFoo(UUT, "foo", Env::AutoScope::descentScope);
+    foundEntity = UUT.find("x");
+  }
+  EXPECT_EQ(insertedEntity, foundEntity) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME1(
     ostream_operator)) {
 
-  // setup
-  Env UUT;
-  auto anEntity = createAnEntity();
+  auto spec = "Example: empty environment";
+  {
+    // setup
+    Env UUT;
+    stringstream ss;
 
-  UUT.insert("111", anEntity);
-  UUT.insert("112", anEntity);
+    // exercise
+    ss << UUT;
 
-  UUT.pushScope();
-    UUT.insert("211", anEntity); // depth 2, 1st block, 1st entity
-    UUT.insert("212", anEntity);
-  UUT.popScope();
+    // verify
+    EXPECT_EQ(
+      "{"
+        "currentScope=$root, "
+        "rootScope={"
+          "name=$root, "
+          "m_entity=null"
+        "}"
+      "}",
+      ss.str()) << amendSpec(spec);
+  }
 
-  UUT.insert("113", anEntity); // depth 1, 1st block, 3rd entity
+  spec = "Example with a few scopes and a few leafs";
+  {
+    // setup
+    Env UUT;
+    UUT.insertLeaf("1");
+    {
+      Env::AutoScope scope(UUT, "2_", Env::AutoScope::insertScopeAndDescent);
+      UUT.insertLeaf("2_1");
+      UUT.insertLeaf("2_2");
+    }
+    UUT.insertLeaf("3");
+    {
+      Env::AutoScope scope(UUT, "4_", Env::AutoScope::insertScopeAndDescent);
+      UUT.insertLeaf("4_1");
+    }
 
-  UUT.pushScope();
-    UUT.insert("221", anEntity); // depth 2, 2nd block, 1st entity
-  UUT.popScope();
+    stringstream ss;
 
-  stringstream ss;
+    // exercise
+    ss << UUT;
 
-  // exercise
-  ss << UUT;
-
-  // verify
-  // the lhs of = is the name (aka key) of the entity in the symbol table, and
-  // the rhs is the entity itself
-  EXPECT_EQ(
-    "{ST={111=, 112=, 113=}, childs={" // depth 1
-      "{ST={211=, 212=}, childs={}}, " // depth 2, 1st block
-      "{ST={221=}, childs={}}}}",      // depth 2, 2nd block
-    ss.str());
+    // verify
+    EXPECT_EQ(
+      "{currentScope=$root, "
+      "rootScope="
+      "{name=$root, m_entity=null, children={"
+      "{name=1, m_entity=null}, "
+      "{name=2_, m_entity=null, children={"
+      "{name=2_1, m_entity=null}, "
+      "{name=2_2, m_entity=null}"
+      "}}, "
+      "{name=3, m_entity=null}, "
+      "{name=4_, m_entity=null, children={"
+      "{name=4_1, m_entity=null}"
+      "}}"
+      "}}"
+      "}",
+      ss.str());
+  }
 }

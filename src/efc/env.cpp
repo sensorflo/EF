@@ -1,89 +1,164 @@
 #include "env.h"
 #include "entity.h"
+#include <algorithm>
 using namespace std;
 
-Env::AutoScope::AutoScope(Env& env) : m_env(env) {
-  m_env.pushScope();
+namespace {
+  thread_local shared_ptr<Entity>* dummyEntity;
+}
+
+Env::Node* Env::Node::insert(string name) {
+  if ( find(name) ) {
+    return nullptr;
+  } else {
+    m_children.emplace_back(move(name), this);
+    return &m_children.back();
+  }
+}
+
+Env::Node* Env::Node::find(const string& name) {
+  const auto foundNode = std::find_if(m_children.begin(), m_children.end(),
+    [&](const auto& x)->bool{return x.m_name == name;});
+  if ( foundNode==m_children.end() ) {
+    return nullptr;
+  } else {
+    return &(*foundNode);
+  }
+}
+
+Env::Node::Node(string name, Node* parent) :
+  m_name(move(name)),
+  m_parent(parent) {
+  assert(!m_name.empty());
+}
+
+Env::AutoScope::AutoScope(Env& env, const string& name,
+  Env::AutoScope::Action action) :
+  AutoScope(env, name, dummyEntity, action) {
+  assert(dummyEntity);
+}
+
+Env::AutoScope::AutoScope(Env& env, const string& name,
+  shared_ptr<Entity>*& entity, Env::AutoScope::Action action) :
+  m_env(env) {
+  entity = (action == insertScopeAndDescent) ?
+    m_env.insertScopeAndDescent(name) :
+    m_env.descentScope(name);
+  m_didDescent = (entity!=nullptr);
 }
 
 Env::AutoScope::~AutoScope() {
-  m_env.popScope();
-}
-
-Env::Env() {
-  // create the toplevel (aka root) symboltable
-  m_nestedScopes.push_back(m_sts.insert(m_sts.begin(), SymbolTable()));
-}
-
-Env::InsertRet Env::insertAtGlobalScope(const string& name, shared_ptr<Entity> entity) {
-  return m_nestedScopes.front()->insert(make_pair(name, move(entity)));
-}
-
-Env::InsertRet Env::insert(const string& name, shared_ptr<Entity> entity) {
-  return insert(make_pair(name, move(entity)));
-}
-
-/** \overload */
-Env::InsertRet Env::insert(const SymbolTable::KeyValue& keyValue) {
-  return m_nestedScopes.back()->insert(keyValue);
-}
-
-void Env::find(const string& name, shared_ptr<Entity>& entity) {
-  for (auto iter = m_nestedScopes.rbegin(); iter!=m_nestedScopes.rend(); ++iter) {
-    SymbolTable& symbolTable = **iter;
-    SymbolTable::iterator i = symbolTable.find(name);
-    if (i!=symbolTable.end()) {
-      entity = i->second;
-      return;
-    }
+  if ( m_didDescent ) {
+    m_env.ascentScope();
   }
 }
 
-void Env::pushScope() {
-  m_nestedScopes.push_back(m_sts.append_child(m_nestedScopes.back(), SymbolTable()));
+Env::Env() :
+  m_rootScope{"$root", nullptr},
+  m_currentScope{&m_rootScope} {
 }
 
-void Env::popScope() {
-  assert(m_nestedScopes.size()>=1); // we can't pop the top level symbol table
-  m_nestedScopes.pop_back();
+shared_ptr<Entity>* Env::insertLeaf(const string& name) {
+  const auto newNode = m_currentScope->insert(name);
+  return newNode ? &newNode->m_entity : nullptr;
 }
 
-void Env::printTo(std::ostream& os, tree<SymbolTable>::iterator node) const {
-  os << "{ST=" << *node;
-  os << ", childs=";
+shared_ptr<Entity>* Env::insertLeafAtGlobalScope(const string& name) {
+  const auto newNode = m_rootScope.insert(name);
+  return newNode ? &newNode->m_entity : nullptr;
+}
 
-  bool isFirstIter = true;
-  tree<SymbolTable>::sibling_iterator sib=m_sts.begin(node);
-  os << "{";
-  for ( ; sib!=m_sts.end(node); ++sib) {
+shared_ptr<Entity>* Env::insertScopeAndDescent(const string& name) {
+  const auto newNode = m_currentScope->insert(name);
+  if ( newNode ) {
+    m_currentScope = newNode;
+    return &newNode->m_entity;
+  } else {
+    return nullptr;
+  }
+}
+
+shared_ptr<Entity>* Env::descentScope(const string& name) {
+  const auto foundChildNode = m_currentScope->find(name);
+  if (foundChildNode) {
+    m_currentScope = foundChildNode;
+    return &foundChildNode->m_entity;
+  } else {
+    return nullptr;
+  }
+}
+
+shared_ptr<Entity>* Env::find(const string& name) {
+  for (auto currentScope = m_currentScope;
+       currentScope;
+       currentScope = currentScope->m_parent) {
+    const auto foundChildNode = currentScope->find(name);
+    if (foundChildNode) {
+      return &foundChildNode->m_entity;
+    }
+  }
+  return nullptr;
+}
+
+void Env::ascentScope() {
+  assert(m_currentScope);
+  assert(m_currentScope->m_parent);
+  m_currentScope = m_currentScope->m_parent;
+}
+
+bool Env::isAtGlobalScope() {
+  return m_currentScope == &m_rootScope;
+}
+
+void Env::printTo(ostream& os, const Env::Node& node) const {
+  os << "{name=" << node.m_name;
+
+  os << ", m_entity=";
+  if ( node.m_entity ) {
+    os << *node.m_entity;
+  } else {
+    os << "null";
+  }
+
+  if ( !node.m_children.empty() ) {
+    os << ", children={";
+    auto isFirstIter = true;
+    for ( const auto& child : node.m_children  ) {
+      if ( !isFirstIter ) {
+        os << ", ";
+      }
+      isFirstIter = false;
+      printTo(os, child);
+    }
+    os << "}";
+  }
+
+  os << "}";
+}
+
+void Env::printFullyQualifiedName(std::ostream& os, const Node& node) const {
+  std::stack<const Node*> pathToRoot;
+  for (auto currentNode = &node;
+       currentNode;
+       currentNode = currentNode->m_parent) {
+    pathToRoot.push(currentNode);
+  }
+  auto isFirstIter = true;
+  while (!pathToRoot.empty()) {
     if ( !isFirstIter ) {
-      os << ", ";
+      os << ".";
     }
     isFirstIter = false;
-    printTo(os, sib);
+    os << pathToRoot.top()->m_name;
+    pathToRoot.pop();
   }
-  os << "}}";
 }
 
-std::ostream& operator<<(std::ostream& os, const SymbolTable& st) {
-  os << "{";
-  bool isFirstIter = true;
-  for (const auto& stentry: st) {
-    if ( !isFirstIter ) {
-      os << ", ";
-    }
-    isFirstIter = false;
-    os << stentry.first << "=";
-    if ( stentry.second ) {
-      stentry.second->printTo(os);
-    } else {
-      os << "null";
-    }
-  }
-  return os << "}";
-}
-
-std::ostream& operator<<(std::ostream& os, const Env& env) {
-  env.printTo(os, env.m_sts.begin());
+ostream& operator<<(ostream& os, const Env& env) {
+  os << "{currentScope=";
+  env.printFullyQualifiedName(os, *env.m_currentScope);
+  os << ", rootScope=";
+  env.printTo(os, env.m_rootScope);
+  os << "}";
   return os;
 }

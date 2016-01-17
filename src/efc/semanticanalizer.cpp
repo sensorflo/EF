@@ -61,7 +61,7 @@ void SemanticAnalizer::visit(AstNop& nop) {
 
 void SemanticAnalizer::visit(AstBlock& block) {
   {
-    Env::AutoScope scope(m_env);
+    Env::AutoScope scope(m_env, block.name(), Env::AutoScope::descentScope);
     block.body().accept(*this);
   }
 
@@ -241,12 +241,11 @@ void SemanticAnalizer::visit(AstNumber& number) {
 }
 
 void SemanticAnalizer::visit(AstSymbol& symbol) {
-  shared_ptr<Entity> entity;
-  m_env.find(symbol.name(), entity);
-  if (NULL==entity) {
+  shared_ptr<Entity>* entity = m_env.find(symbol.name());
+  if (nullptr==entity) {
     Error::throwError(m_errorHandler, Error::eUnknownName);
   }
-  auto object = std::dynamic_pointer_cast<Object>(entity);
+  auto object = std::dynamic_pointer_cast<Object>(*entity);
   object->addAccess(symbol.access());
   symbol.setObject(move(object));
   postConditionCheck(symbol);
@@ -285,11 +284,7 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 
   {
     FunBodyHelper dummy(m_funRetObjTypes, &funDef.retObjType());
-
-    // This is the outermost block. It is the owner of the functions
-    // parameters. Note that the due to the grammar, funDef.body() is always
-    // an AstBlock and thus yet another scope.
-    Env::AutoScope scope(m_env);
+    Env::AutoScope scope(m_env, funDef.name(), Env::AutoScope::descentScope);
 
     list<AstDataDef*>::const_iterator argDefIter = funDef.args().begin();
     list<AstDataDef*>::const_iterator end = funDef.args().end();
@@ -317,16 +312,10 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 void SemanticAnalizer::visit(AstDataDef& dataDef) {
   // let dataDecl.object() point a newly created symbol table entry
   if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
-    const auto& insertRet = m_env.insert( dataDef.name() );
-    auto& envs_entity_ptr = insertRet.first->second;
-
-    // name is not yet in env, thus insert new symbol table entry
-    if (insertRet.second) {
-      envs_entity_ptr = dataDef.createAndSetObjectUsingDeclaredObjType();
-    }
-
-    // name is already in env: unless the type matches that is an error
-    else {
+    std::shared_ptr<Entity>* entity = m_env.insertLeaf(dataDef.name());
+    if (nullptr!=entity) {
+      *entity = dataDef.createAndSetObjectUsingDeclaredObjType();
+    } else {
       Error::throwError(m_errorHandler, Error::eRedefinition, dataDef.name());
     }
   }

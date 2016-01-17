@@ -13,5 +13,7 @@ public:
   void augmentEntities(AstNode& root);
 
 private:
+  void visit(AstBlock& block) override;
   void visit(AstFunDef& funDef) override;
+  Env& m_env;
 };

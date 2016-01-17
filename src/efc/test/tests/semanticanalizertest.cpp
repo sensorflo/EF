@@ -298,11 +298,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast);
 
     // verify
-    shared_ptr<Entity> entity;
+    shared_ptr<Entity>* entity = env.find("x");
     shared_ptr<Object> object;
-    env.find("x", entity);
-    EXPECT_TRUE( entity.get() ) << amendAst(ast.get());
-    EXPECT_NO_THROW( object = std::dynamic_pointer_cast<Object>(entity));
+    EXPECT_TRUE( entity ) << amendAst(ast.get());
+    EXPECT_NO_THROW( object = std::dynamic_pointer_cast<Object>(*entity));
     EXPECT_MATCHES_FULLY( *objType, object->objType()) << amendAst(ast.get());
   }
 
@@ -319,10 +318,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast);
 
     // verify
-    shared_ptr<Entity> entity;
-    env.find("x", entity);
-    EXPECT_TRUE( entity.get() ) << amendAst(ast.get());
-    const auto object = std::dynamic_pointer_cast<Object>(entity);
+    shared_ptr<Entity>* entity = env.find("x");
+    EXPECT_TRUE( entity ) << amendAst(ast.get());
+    const auto object = std::dynamic_pointer_cast<Object>(*entity);
     EXPECT_MATCHES_FULLY( *objType, object->objType()) << amendAst(ast.get());
   }
 
@@ -339,10 +337,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast);
 
     // verify
-    shared_ptr<Entity> entity;
-    env.find("x", entity);
-    EXPECT_TRUE( entity.get() ) << amendAst(ast.get());
-    const auto object = std::dynamic_pointer_cast<Object>(entity);
+    shared_ptr<Entity>* entity = env.find("x");
+    EXPECT_TRUE( entity ) << amendAst(ast.get());
+    const auto object = std::dynamic_pointer_cast<Object>(*entity);
     EXPECT_MATCHES_FULLY( *objType, object->objType()) << amendAst(ast.get());
   }
 }
@@ -533,12 +530,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   ErrorHandler errorHandler;
   TestingSemanticAnalizer UUT(env, errorHandler);
   ParserExt pe(env, errorHandler);
-  AstNode* ast =
+  unique_ptr<AstNode> ast(
     pe.mkFunDef("outer", ObjTypeFunda::eInt,
       new AstSeq(
         pe.mkFunDef("inner", ObjTypeFunda::eInt,
           new AstNumber(42)),
-        new AstNumber(42)));
+        new AstNumber(42))));
 
   // exercise
   UUT.analyze(*ast);
@@ -546,24 +543,23 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   // verify
   EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
 
-  ObjTypeFun funType{ ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
+  const ObjTypeFun funType{ObjTypeFun::createArgs(),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
 
-  shared_ptr<Entity> entityOuter;
-  shared_ptr<Object> objectOuter;
-  env.find("outer", entityOuter);
-  EXPECT_TRUE( entityOuter.get() ) << amendAst(ast);
-  EXPECT_NO_THROW( objectOuter = std::dynamic_pointer_cast<Object>(entityOuter));
+  auto entityOuter = env.find("outer");
+  EXPECT_TRUE( entityOuter ) << amendAst(ast);
+  auto objectOuter = std::dynamic_pointer_cast<Object>(*entityOuter);
+  EXPECT_TRUE( nullptr!=objectOuter );
   EXPECT_TRUE( objectOuter->objType().matchesFully(funType) );
 
-  shared_ptr<Entity> entityInner;
-  shared_ptr<Object> objectInner;
-  env.find("inner", entityInner);
-  EXPECT_TRUE( entityInner.get() ) << amendAst(ast);
-  EXPECT_NO_THROW( objectInner = std::dynamic_pointer_cast<Object>(entityInner));
-  EXPECT_TRUE( objectInner->objType().matchesFully(funType) );
-
-  // tear down
-  delete ast;
+  {
+    Env::AutoScope scope(env, "outer", Env::AutoScope::descentScope);
+    shared_ptr<Entity>* entityInner = env.find("inner");
+    EXPECT_TRUE( entityInner ) << amendAst(ast);
+    auto objectInner = std::dynamic_pointer_cast<Object>(*entityInner);
+    EXPECT_TRUE( nullptr!=objectInner );
+    EXPECT_TRUE( objectInner->objType().matchesFully(funType) );
+  }
 }
 
 // aka temporary objects are immutable

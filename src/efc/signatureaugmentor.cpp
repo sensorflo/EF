@@ -6,14 +6,22 @@
 #include "object.h"
 using namespace std;
 
-SignatureAugmentor::SignatureAugmentor(Env& env, ErrorHandler& errorHandler) {
+SignatureAugmentor::SignatureAugmentor(Env& env, ErrorHandler& errorHandler) :
+  m_env(env) {
 }
 
 void SignatureAugmentor::augmentEntities(AstNode& root) {
   root.accept(*this);
 }
 
+void SignatureAugmentor::visit(AstBlock& block) {
+  Env::AutoScope scope(m_env, block.name(), Env::AutoScope::descentScope);
+  AstDefaultIterator::visit(block);
+}
+
 void SignatureAugmentor::visit(AstFunDef& funDef) {
+  Env::AutoScope scope(m_env, funDef.name(), Env::AutoScope::descentScope);
+
   // create object type describing the function
   const auto& argsObjType = new list<shared_ptr<const ObjType>>;
   for (const auto& astArg: funDef.args()) {
