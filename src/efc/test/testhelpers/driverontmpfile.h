@@ -31,6 +31,17 @@ private:
   char m_fileName[10]; // at least 7 (6 needed by mkstemp + 1 for '\0')
 };
 
+class TestingDriver : public Driver {
+public:
+  TestingDriver(const std::string& fileName = "",
+    std::basic_ostream<char>* ostream = nullptr) :
+    Driver(fileName, ostream) {};
+
+  using Driver::m_errorHandler;
+  using Driver::m_parserExt;
+  using Driver::m_env;
+  using Driver::m_astRoot;
+};
 
 /** Wrapps a Driver which operates on a temporary file with the content given
 in the constructor. */
@@ -39,10 +50,11 @@ public:
   DriverOnTmpFile(const std::string& content, std::basic_ostream<char>* ostream = NULL) :
     m_tmpFile(content),
     m_driver(m_tmpFile.fileName(), ostream) {};
-  operator Driver&() { return m_driver; }
-  Driver& d() { return m_driver; }
+  operator TestingDriver&() { return m_driver; }
+  TestingDriver& d() { return m_driver; }
   Scanner& scanner() { return m_driver.scanner(); }
+
 private:
   TmpFile m_tmpFile;
-  Driver m_driver;
+  TestingDriver m_driver;
 };

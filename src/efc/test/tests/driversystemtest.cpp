@@ -6,14 +6,6 @@
 using namespace testing;
 using namespace std;
 
-class TestingDriver : public Driver {
-public:
-  TestingDriver() : Driver("") {};
-
-  using Driver::m_errorHandler;
-  using Driver::m_parserExt;
-};
-
 void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstObject* astRoot,
   Error::No expectedErrorNo, const string& spec = "") {
 
@@ -100,7 +92,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
   string well_formed_ef_program = "42";
   stringstream errorMsgFromDriver;
   DriverOnTmpFile driverOnTmpFile( well_formed_ef_program, &errorMsgFromDriver);
-  Driver& UUT = driverOnTmpFile;
+  TestingDriver& UUT = driverOnTmpFile;
 
   // execute
   UUT.compile();
