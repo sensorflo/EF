@@ -33,7 +33,8 @@ public:
 
   /** Unless given error is disabled, adds a new Error to ErrorHandler and
   throws an according BuildError. */
-  static void throwError(ErrorHandler& errorHandler, No no);
+  static void throwError(ErrorHandler& errorHandler, No no,
+    std::string additionalMsg = "");
 
   No no() const { return m_no; }
 

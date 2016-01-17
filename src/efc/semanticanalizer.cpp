@@ -327,7 +327,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 
     // name is already in env: unless the type matches that is an error
     else {
-      Error::throwError(m_errorHandler, Error::eRedefinition);
+      Error::throwError(m_errorHandler, Error::eRedefinition, dataDef.name());
     }
   }
 

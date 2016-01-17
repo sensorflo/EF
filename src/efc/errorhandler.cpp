@@ -6,12 +6,15 @@ Error::Error(Error::No no) :
   m_no(no) {
 }
 
-void Error::throwError(ErrorHandler& errorHandler, No no) {
+void Error::throwError(ErrorHandler& errorHandler, No no, string additionalMsg) {
   if ( !errorHandler.isReportingDisabledFor(no) ) {
     auto error = new Error(no);
     errorHandler.add(error);
     stringstream ss;
     ss << *error;
+    if ( !additionalMsg.empty() ) {
+      ss << ", " << additionalMsg;
+    }
     throw BuildError(ss.str());
   }
 }

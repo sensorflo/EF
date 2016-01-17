@@ -44,7 +44,7 @@ std::shared_ptr<Entity>& EnvInserter::insertIntoEnv(const std::string& name,
     m_env.insertAtGlobalScope(name);
   const auto& wasAlreadyInMap = !insertRet.second;
   if (wasAlreadyInMap) {
-    Error::throwError(m_errorHandler, Error::eRedefinition);
+    Error::throwError(m_errorHandler, Error::eRedefinition, name);
   }
   return insertRet.first->second;
 }
