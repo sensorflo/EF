@@ -131,10 +131,6 @@ const ObjType& AstFunDef::retObjType() const {
   return *m_ret;
 }
 
-std::shared_ptr<const ObjType> AstFunDef::retObjTypeAsSp() const {
-  return m_ret;
-}
-
 list<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
   AstDataDef* arg2, AstDataDef* arg3) {
   list<AstDataDef*>* args = new list<AstDataDef*>;
@@ -142,6 +138,18 @@ list<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
   if (arg2) { args->push_back(arg2); }
   if (arg3) { args->push_back(arg3); }
   return args;
+}
+
+void AstFunDef::createAndSetObjType() {
+  // create the ObjType of this function
+  const auto& argsObjType = new list<shared_ptr<const ObjType>>;
+  for (const auto& astArg: *m_args) {
+    argsObjType->push_back(astArg->declaredObjTypeAsSp());
+  }
+  auto&& objTypeOfFun = make_shared<const ObjTypeFun>(argsObjType, m_ret);
+
+  // the function Object is naturaly of the ObjType just created above
+  m_object->setObjType(move(objTypeOfFun));
 }
 
 AstObject* const AstDataDef::noInit = reinterpret_cast<AstObject*>(1);

@@ -21,18 +21,6 @@ void SignatureAugmentor::visit(AstBlock& block) {
 
 void SignatureAugmentor::visit(AstFunDef& funDef) {
   Env::AutoScope scope(m_env, funDef.name(), Env::AutoScope::descentScope);
-
-  // create object type describing the function
-  const auto& argsObjType = new list<shared_ptr<const ObjType>>;
-  for (const auto& astArg: funDef.args()) {
-    argsObjType->push_back(astArg->declaredObjTypeAsSp());
-  }
-  auto&& objTypeFun = make_shared<const ObjTypeFun>(argsObjType,
-    funDef.retObjTypeAsSp());
-
-  // augment function object associated with funDef with it's signature, i.e
-  // the above created object type
-  funDef.object()->setObjType(move(objTypeFun));
-
+  funDef.createAndSetObjType();
   AstDefaultIterator::visit(funDef);
 }
