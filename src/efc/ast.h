@@ -181,9 +181,10 @@ public:
   const ObjType& declaredObjType() const;
   std::shared_ptr<const ObjType>& declaredObjTypeAsSp();
   StorageDuration declaredStorageDuration() const;
-  std::shared_ptr<Object>& createAndSetObjectUsingDeclaredObjType();  
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   bool doNotInit() const { return m_doNotInit; }
+
+  void createAndSetObjType();
 
 private:
   friend class AstPrinter;

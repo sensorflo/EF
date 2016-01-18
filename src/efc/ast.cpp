@@ -215,9 +215,8 @@ StorageDuration AstDataDef::declaredStorageDuration() const {
   return m_declaredStorageDuration;
 }
 
-shared_ptr<Object>& AstDataDef::createAndSetObjectUsingDeclaredObjType() {
-  setObject(make_shared<Object>(m_declaredObjType, m_declaredStorageDuration));
-  return m_object;
+void AstDataDef::createAndSetObjType() {
+  m_object->setObjType(m_declaredObjType);
 }
 
 AstNumber::AstNumber(GeneralValue value, std::shared_ptr<const ObjTypeFunda> objType) :

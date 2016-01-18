@@ -19,6 +19,7 @@ private:
     eCurrentScope
   };
   void visit(AstBlock& block) override;
+  void visit(AstDataDef& dataDef) override;
   void visit(AstFunDef& funDef) override;
 
   Env& m_env;

@@ -402,14 +402,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       pe.mkFunDef("foo", ObjTypeFunda::eVoid, new AstNop())),
     "");
 
-  spec = "Example: static data - !!!! Not yet implemented, "
-    "currently behaves as local data !!!!";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  spec = "Example: static data";
+  TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
     new AstSeq(
       new AstSymbol("x"),
       new AstDataDef("x",
         make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), StorageDuration::eStatic)),
-    Error::eUnknownName, "");
+    "");
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(

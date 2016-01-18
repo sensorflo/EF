@@ -245,7 +245,9 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
   if (nullptr==entity) {
     Error::throwError(m_errorHandler, Error::eUnknownName);
   }
-  auto object = std::dynamic_pointer_cast<Object>(*entity);
+  assert(*entity);
+  const auto object = std::dynamic_pointer_cast<Object>(*entity);
+  assert(object);
   object->addAccess(symbol.access());
   symbol.setObject(move(object));
   postConditionCheck(symbol);
@@ -310,16 +312,6 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 }
 
 void SemanticAnalizer::visit(AstDataDef& dataDef) {
-  // let dataDecl.object() point a newly created symbol table entry
-  if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
-    std::shared_ptr<Entity>* entity = m_env.insertLeaf(dataDef.name());
-    if (nullptr!=entity) {
-      *entity = dataDef.createAndSetObjectUsingDeclaredObjType();
-    } else {
-      Error::throwError(m_errorHandler, Error::eRedefinition, dataDef.name());
-    }
-  }
-
   if ( !dataDef.doNotInit() ) {
     // default member initializer not yet supported
     assert(dataDef.declaredStorageDuration() != StorageDuration::eMember);

@@ -19,6 +19,11 @@ void SignatureAugmentor::visit(AstBlock& block) {
   AstDefaultIterator::visit(block);
 }
 
+void SignatureAugmentor::visit(AstDataDef& dataDef) {
+  AstDefaultIterator::visit(dataDef);
+  dataDef.createAndSetObjType();
+}
+
 void SignatureAugmentor::visit(AstFunDef& funDef) {
   Env::AutoScope scope(m_env, funDef.name(), Env::AutoScope::descentScope);
   AstDefaultIterator::visit(funDef);
