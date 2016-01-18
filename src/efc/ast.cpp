@@ -103,11 +103,9 @@ void AstCast::createAndSetObjType() {
 }
 
 AstFunDef::AstFunDef(const string& name,
-  shared_ptr<Object> object,
   std::list<AstDataDef*>* args,
   shared_ptr<const ObjType> ret,
   AstObject* body) :
-  AstObject{move(object)},
   m_name(name),
   m_args(args),
   m_ret(move(ret)),

@@ -92,23 +92,23 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
 
   spec = "AstFunDef";
   EXPECT_TOSTR_EQ( "fun(foo () int 42)",
-    AstFunDef("foo", nullptr,
+    AstFunDef("foo",
       AstFunDef::createArgs(),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
       new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "fun(foo () bool 1bool)",
-    AstFunDef("foo", nullptr,
+    AstFunDef("foo",
       AstFunDef::createArgs(),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eBool),
       new AstNumber(true, ObjTypeFunda::eBool)), spec);
   EXPECT_TOSTR_EQ( "fun(foo ((arg1 int)) int 42)",
-    AstFunDef("foo", nullptr,
+    AstFunDef("foo",
       AstFunDef::createArgs(
         new AstDataDef("arg1", ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
       new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "fun(foo ((arg1 int) (arg2 int)) int 42)",
-    AstFunDef("foo", nullptr,
+    AstFunDef("foo",
       AstFunDef::createArgs(
         new AstDataDef("arg1", ObjTypeFunda::eInt),
         new AstDataDef("arg2", ObjTypeFunda::eInt)),

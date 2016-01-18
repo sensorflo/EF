@@ -125,7 +125,6 @@ private:
 class AstFunDef : public AstObject {
 public:
   AstFunDef(const std::string& name,
-    std::shared_ptr<Object> object,
     std::list<AstDataDef*>* args,
     std::shared_ptr<const ObjType> ret,
     AstObject* body);

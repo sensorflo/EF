@@ -132,7 +132,7 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
 AstFunDef* ParserExt::mkFunDef(const string name, list<AstDataDef*>* astArgs,
   shared_ptr<const ObjType> retObjType, AstObject* astBody) {
   astArgs = astArgs ? astArgs : new list<AstDataDef*>();
-  return new AstFunDef(name, nullptr, astArgs, move(retObjType), astBody);
+  return new AstFunDef(name, astArgs, move(retObjType), astBody);
 }
 
 AstFunDef* ParserExt::mkFunDef(const string name, ObjTypeFunda::EType ret,
