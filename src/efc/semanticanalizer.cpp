@@ -446,19 +446,17 @@ void SemanticAnalizer::visit(AstReturn& return_) {
 }
 
 void SemanticAnalizer::visit(AstObjTypeSymbol& symbol) {
-  symbol.createAndSetObjType();
+  // nop, everything was already done in previous passes
   postConditionCheck(symbol);
 }
 
 void SemanticAnalizer::visit(AstObjTypeQuali& quali) {
-  quali.targetType().accept(*this);
-  quali.createAndSetObjType();
+  // nop, everything was already done in previous passes
   postConditionCheck(quali);
 }
 
 void SemanticAnalizer::visit(AstObjTypePtr& ptr) {
-  ptr.pointee().accept(*this);
-  ptr.createAndSetObjType();
+  // nop, everything was already done in previous passes
   postConditionCheck(ptr);
 }
 
@@ -466,7 +464,6 @@ void SemanticAnalizer::visit(AstClassDef& class_) {
   for (const auto& dataMember: class_.dataMembers()) {
     dataMember->accept(*this);
   }
-  class_.createAndSetObjType();
   postConditionCheck(class_);
 }
 

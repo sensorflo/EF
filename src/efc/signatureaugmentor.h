@@ -5,8 +5,12 @@ class Env;
 class ErrorHandler;
 class ObjType;
 
-/** Each definition occuring in AST augments its associated entity with it's
-signature, as defined in the AST. */
+/** Two responsibilities.
+1. 'Type template instanciaton'. AstObjType s create their associated
+   ObjType. EF does not yet have templates; but the builtin types raw pointer
+   and raw array can be viewed as type templates.
+2. Each definition occuring in AST augments its associated entity with it's
+   signature. */
 class SignatureAugmentor : private AstDefaultIterator {
 public:
   SignatureAugmentor(Env& env, ErrorHandler& errorHandler);
@@ -15,5 +19,10 @@ public:
 private:
   void visit(AstBlock& block) override;
   void visit(AstFunDef& funDef) override;
+  void visit(AstObjTypeSymbol& symbol) override;
+  void visit(AstObjTypeQuali& quali) override;
+  void visit(AstObjTypePtr& ptr) override;
+  void visit(AstClassDef& class_) override;
+
   Env& m_env;
 };
