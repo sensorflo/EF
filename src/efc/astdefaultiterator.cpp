@@ -78,6 +78,7 @@ void AstDefaultIterator::visit(AstFunDef& funDef) {
        i!=funDef.args().end(); ++i) {
     (*i)->accept(*this);
   }
+  funDef.declaredRetAstObjType().accept(*this);
   funDef.body().accept(*this);
 
 }
