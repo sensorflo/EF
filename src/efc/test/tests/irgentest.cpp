@@ -304,7 +304,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     new AstOperator(AstOperator::eDeref,
       new AstOperator('&',
         new AstDataDef("x",
-          make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+          new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
           new AstNumber(42, ObjTypeFunda::eInt)))),
     42, "");
 
@@ -315,7 +315,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstOperator('&',
           new AstOperator('&',
             new AstDataDef("x",
-              make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+              new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
               new AstNumber(42, ObjTypeFunda::eInt)))))),
     42, "");
 
@@ -324,9 +324,9 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("x",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
       new AstDataDef("p",
-        make_shared<ObjTypePtr>(make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+        new AstObjTypePtr(new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
         new AstOperator('&', new AstSymbol("x"))),
       new AstOperator("=",
         new AstOperator(AstOperator::eDeref, new AstSymbol("p")),
@@ -341,7 +341,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstDataDef("x", ObjTypeFunda::eInt,
         new AstNumber(42, ObjTypeFunda::eInt)),
       new AstDataDef("p",
-        make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         new AstOperator('&', new AstSymbol("x"))),
       new AstOperator(AstOperator::eDeref, new AstSymbol("p"))),
     42, "");
@@ -350,7 +350,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("p",
-        make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         new AstOperator('&', new AstNumber(42))),
       new AstOperator(AstOperator::eDeref, new AstSymbol("p"))),
     42, spec);
@@ -359,7 +359,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("p",
-        make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         new AstOperator('&',
           new AstOperator('+', new AstNumber(1), new AstNumber(2)))),
       new AstOperator(AstOperator::eDeref, new AstSymbol("p"))),
@@ -375,7 +375,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstSeq(
       new AstDataDef("x",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eBool)),
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eAnd,
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -387,7 +387,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstSeq(
       new AstDataDef("x",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eBool)),
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eAnd,
         new AstNumber(1, ObjTypeFunda::eBool),
@@ -399,7 +399,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstSeq(
       new AstDataDef("x",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eBool)),
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eOr,
         new AstNumber(1, ObjTypeFunda::eBool),
@@ -411,7 +411,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstSeq(
       new AstDataDef("x",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eBool)),
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eOr,
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -616,7 +616,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         AstFunDef::createArgs(
           new AstDataDef("arg1", ObjTypeFunda::eInt),
           new AstDataDef("arg2", ObjTypeFunda::eInt)),
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+        new AstObjTypeSymbol(ObjTypeFunda::eInt),
         new AstNumber(42)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
@@ -676,7 +676,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         AstFunDef::createArgs(
           new AstDataDef("arg1", ObjTypeFunda::eInt),
           new AstDataDef("arg2", ObjTypeFunda::eBool)),
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid),
+        new AstObjTypeSymbol(ObjTypeFunda::eVoid),
         new AstNop()));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
@@ -739,7 +739,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     pe.mkFunDef("foo",
       AstFunDef::createArgs(
         new AstDataDef("x", ObjTypeFunda::eInt)),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstSymbol("x")),
     spec, int, "foo", int, 42, 42);
 
@@ -749,7 +749,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       AstFunDef::createArgs(
         new AstDataDef("x", ObjTypeFunda::eInt),
         new AstDataDef("y", ObjTypeFunda::eInt)),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstOperator('*',
         new AstSymbol("x"),
         new AstSymbol("y"))),
@@ -761,7 +761,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       AstFunDef::createArgs(
         new AstDataDef("condition", ObjTypeFunda::eBool),
         new AstDataDef("thenValue", ObjTypeFunda::eInt)),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstIf(
         new AstSymbol("condition"),
         new AstSymbol("thenValue"),
@@ -804,7 +804,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
           new AstDataDef("x", ObjTypeFunda::eInt)),
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+        new AstObjTypeSymbol(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
     42, spec);
@@ -816,7 +816,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         AstFunDef::createArgs(
           new AstDataDef("x", ObjTypeFunda::eInt),
           new AstDataDef("y", ObjTypeFunda::eInt)),
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+        new AstObjTypeSymbol(ObjTypeFunda::eInt),
         new AstOperator('+',
           new AstSymbol("x"),
           new AstSymbol("y"))),
@@ -834,7 +834,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
       pe.mkFunDef("fact",
         AstFunDef::createArgs(
           new AstDataDef("x", ObjTypeFunda::eInt)),
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+        new AstObjTypeSymbol(ObjTypeFunda::eInt),
         new AstIf(
           new AstOperator("==", new AstSymbol("x"), new AstNumber(0)),
           new AstNumber(1),
@@ -865,7 +865,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstSeq(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(new AstDataDef("x", ObjTypeFunda::eInt)),
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+        new AstObjTypeSymbol(ObjTypeFunda::eInt),
         new AstOperator('/', new AstSymbol("x"), new AstSymbol("x"))),
       new AstDataDef("x", ObjTypeFunda::eInt, AstDataDef::noInit),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstSymbol("x")))),
@@ -881,7 +881,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     "of the data object after initialization, which in turn equals value of the initializer.";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstDataDef("foo",
-      make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+      new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
       new AstNumber(42)),
     42, spec);
 
@@ -889,7 +889,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("foo",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         new AstNumber(42)),
       new AstOperator('=',
         new AstSymbol("foo"),
@@ -902,7 +902,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstOperator('=',
         new AstDataDef("foo",
-          make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+          new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
           new AstNumber(42)),
         new AstNumber(77)),
       new AstSymbol("foo")),
@@ -916,14 +916,14 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   string spec = "Example: immutable static data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstDataDef("foo",
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), StorageDuration::eStatic,
+      new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eStatic,
       new AstNumber(42)),
     42, "");
 
   spec = "Example: mutable static data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstDataDef("foo",
-      make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)), StorageDuration::eStatic,
+      new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)), StorageDuration::eStatic,
       new AstNumber(42)),
     42, "");
 }
@@ -936,7 +936,7 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("spy_sum",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         StorageDuration::eStatic),
 
       pe.mkFunDef("foo", ObjTypeFunda::eVoid,
@@ -944,7 +944,7 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
           // Init UUT with true. This test is about that this happens _not_
           // when control flow reaches this place
           new AstDataDef("UUT",
-            make_shared<ObjTypeQuali>(ObjTypeFunda::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)),
+            new AstObjTypeQuali(ObjTypeFunda::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eBool)),
             StorageDuration::eStatic,
             new AstNumber(1, ObjTypeFunda::eBool)),
           new AstIf(
@@ -973,7 +973,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("foo",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
       new AstOperator(".=",
         new AstSymbol("foo"),
         new AstNumber(42))),
@@ -983,7 +983,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("foo",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
       new AstOperator('=',
         new AstOperator(".=",
           new AstSymbol("foo"),
@@ -1008,7 +1008,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("foo",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
       new AstOperator('=',
         new AstSeq(
           new AstNumber(42),
@@ -1034,7 +1034,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("x",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         new AstNumber(42)),
       new AstSymbol("x")),
     42, spec);
@@ -1043,7 +1043,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("x",
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+        new AstObjTypeSymbol(ObjTypeFunda::eInt),
         StorageDuration::eStatic,
         new AstNumber(42)),
       new AstSymbol("x")),
@@ -1053,7 +1053,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("x",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         StorageDuration::eStatic,
         new AstNumber(42)),
       new AstSymbol("x")),
@@ -1068,7 +1068,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("foo",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         new AstNumber(42)),
       new AstOperator('=',
         new AstSymbol("foo"),
@@ -1080,7 +1080,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("foo",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         new AstNumber(42)),
       new AstOperator(".=",
         new AstSymbol("foo"),
@@ -1092,7 +1092,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("foo",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         StorageDuration::eStatic,
         new AstNumber(42)),
       new AstOperator('=',
@@ -1108,7 +1108,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     returns_the_default_which_is_zero)) {
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstDataDef("foo",
-      make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
+      new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
     0, "");
 }
 
@@ -1127,8 +1127,8 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
           new AstDataDef("x",
-            make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)))),
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid),
+            new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)))),
+        new AstObjTypeSymbol(ObjTypeFunda::eVoid),
         new AstOperator('=',
           new AstSymbol("x"),
           new AstNumber(77))),
@@ -1216,7 +1216,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("x",
-        make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         new AstNumber(1)),
       new AstLoop(
         new AstOperator('!', new AstOperator("==", new AstSymbol("x"), new AstNumber(0))),

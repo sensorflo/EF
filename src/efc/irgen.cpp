@@ -314,11 +314,11 @@ void IrGen::visit(AstSymbol& symbol) {
 void IrGen::visit(AstFunDef& funDef) {
   // create IR function with given name and signature
   vector<Type*> llvmArgs;
-  for ( const auto& astArg : funDef.args() ) {
-    llvmArgs.push_back(astArg->declaredObjType().llvmType());
+  for ( const auto& astArg : funDef.declaredArgs() ) {
+    llvmArgs.push_back(astArg->objType().llvmType());
   }
   auto llvmFunctionType = FunctionType::get(
-    funDef.retObjType().llvmType(), llvmArgs, false);
+    funDef.declaredRetAstObjType().objType().llvmType(), llvmArgs, false);
   auto functionIr = Function::Create( llvmFunctionType,
     Function::ExternalLinkage, funDef.name(), m_module.get() );
   assert(functionIr);
@@ -342,7 +342,7 @@ void IrGen::visit(AstFunDef& funDef) {
   // Add all arguments to the symbol table and create their allocas. Also tell
   // llvm the name of each arg.
   Function::arg_iterator llvmArgIter = functionIr->arg_begin();
-  list<AstDataDef*>::const_iterator astArgIter = funDef.args().begin();
+  list<AstDataDef*>::const_iterator astArgIter = funDef.declaredArgs().begin();
   for (/*nop*/; llvmArgIter != functionIr->arg_end(); ++llvmArgIter, ++astArgIter) {
     auto object = (*astArgIter)->object();
     if ( object->isStoredInMemory() ) {

@@ -78,9 +78,9 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "data(foo int ())", AstDataDef("foo",
       ObjTypeFunda::eInt), spec);
   EXPECT_TOSTR_EQ( "data(foo mut-int (42))", AstDataDef("foo",
-      make_shared<ObjTypeQuali>(
+      new AstObjTypeQuali(
         ObjType::eMutable,
-        make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+        new AstObjTypeSymbol(ObjTypeFunda::eInt)),
       new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "data(foo int noinit)", AstDataDef("foo",
       ObjTypeFunda::eInt, AstDataDef::noInit), spec);
@@ -94,25 +94,25 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "fun(foo () int 42)",
     AstFunDef("foo",
       AstFunDef::createArgs(),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "fun(foo () bool 1bool)",
     AstFunDef("foo",
       AstFunDef::createArgs(),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eBool),
+      new AstObjTypeSymbol(ObjTypeFunda::eBool),
       new AstNumber(true, ObjTypeFunda::eBool)), spec);
   EXPECT_TOSTR_EQ( "fun(foo ((arg1 int)) int 42)",
     AstFunDef("foo",
       AstFunDef::createArgs(
         new AstDataDef("arg1", ObjTypeFunda::eInt)),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "fun(foo ((arg1 int) (arg2 int)) int 42)",
     AstFunDef("foo",
       AstFunDef::createArgs(
         new AstDataDef("arg1", ObjTypeFunda::eInt),
         new AstDataDef("arg2", ObjTypeFunda::eInt)),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstNumber(42)), spec);
 
   spec = "AstFunCall";

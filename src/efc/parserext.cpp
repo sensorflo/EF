@@ -10,17 +10,18 @@ using namespace std;
 RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler) :
   m_errorHandler{errorHandler},
   m_ctorArgs{},
+  m_astObjType{},
   m_isStorageDurationDefined{false},
   m_storageDuration{StorageDuration::eLocal} {
 }
 
 RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler, const std::string& name,
-  AstCtList* ctorArgs, shared_ptr<const ObjType> objType,
+  AstCtList* ctorArgs, AstObjType* astObjType,
   StorageDuration storageDuration) :
   m_errorHandler{errorHandler},
   m_name(name),
   m_ctorArgs(ctorArgs),
-  m_objType(move(objType)),
+  m_astObjType(astObjType),
   m_isStorageDurationDefined(false),
   m_storageDuration(storageDuration) {
 }
@@ -39,11 +40,11 @@ void RawAstDataDef::setCtorArgs(AstCtList* ctorArgs) {
   m_ctorArgs = ctorArgs;
 }
 
-void RawAstDataDef::setObjType(shared_ptr<const ObjType> objType) {
-  if ( m_objType ) {
+void RawAstDataDef::setAstObjType(AstObjType* astObjType) {
+  if ( m_astObjType ) {
     Error::throwError(m_errorHandler, Error::eSameArgWasDefinedMultipleTimes);
   }
-  m_objType = move(objType);
+  m_astObjType = astObjType;
 }
 
 void RawAstDataDef::setStorageDuration(StorageDuration storageDuration) {
@@ -114,38 +115,38 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
 
   assert(rawAstDataDef);
   assert(!rawAstDataDef->m_name.empty());
-  const auto unqualifiedObjType = rawAstDataDef->m_objType ?
-    rawAstDataDef->m_objType : make_shared<ObjTypeFunda>(ObjTypeFunda::eInt);
-  const auto qualifiedobjType =
-    make_shared<ObjTypeQuali>(qualifiers, unqualifiedObjType);
+  const auto unqualifiedAstObjType = rawAstDataDef->m_astObjType ?
+    rawAstDataDef->m_astObjType : new AstObjTypeSymbol(ObjTypeFunda::eInt);
+  const auto qualifiedAstObjType =
+    new AstObjTypeQuali(qualifiers, unqualifiedAstObjType);
 
   // add to environment everything except local data objects. Currently there
   // are only local data objects, so currently there is nothing todo.
 
   return new AstDataDef(
     rawAstDataDef->m_name,
-    qualifiedobjType,
+    qualifiedAstObjType,
     rawAstDataDef->m_storageDuration,
     rawAstDataDef->m_ctorArgs);
 }
 
 AstFunDef* ParserExt::mkFunDef(const string name, list<AstDataDef*>* astArgs,
-  shared_ptr<const ObjType> retObjType, AstObject* astBody) {
+  AstObjType* retAstObjType, AstObject* astBody) {
   astArgs = astArgs ? astArgs : new list<AstDataDef*>();
-  return new AstFunDef(name, astArgs, move(retObjType), astBody);
+  return new AstFunDef(name, astArgs, retAstObjType, astBody);
 }
 
 AstFunDef* ParserExt::mkFunDef(const string name, ObjTypeFunda::EType ret,
   AstObject* body) {
-  return mkFunDef(name, AstFunDef::createArgs(),
-    make_shared<const ObjTypeFunda>(ret), body);
+  return mkFunDef(name, AstFunDef::createArgs(), new AstObjTypeSymbol(ret),
+    body);
 }
 
-AstFunDef* ParserExt::mkFunDef(const string name, shared_ptr<const ObjType> ret,
+AstFunDef* ParserExt::mkFunDef(const string name, AstObjType* ret,
   AstObject* body) {
-  return mkFunDef(name, AstFunDef::createArgs(), move(ret), body);
+  return mkFunDef(name, AstFunDef::createArgs(), ret, body);
 }
 
 AstFunDef* ParserExt::mkMainFunDef(AstObject* body) {
-  return mkFunDef("main", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), body);
+  return mkFunDef("main", new AstObjTypeSymbol(ObjTypeFunda::eInt), body);
 }

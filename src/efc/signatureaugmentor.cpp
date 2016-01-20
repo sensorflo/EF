@@ -19,6 +19,11 @@ void SignatureAugmentor::visit(AstBlock& block) {
   AstDefaultIterator::visit(block);
 }
 
+void SignatureAugmentor::visit(AstCast& cast) {
+  AstDefaultIterator::visit(cast);
+  cast.createAndSetObjType();
+}
+
 void SignatureAugmentor::visit(AstDataDef& dataDef) {
   AstDefaultIterator::visit(dataDef);
   dataDef.createAndSetObjType();

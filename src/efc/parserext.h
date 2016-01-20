@@ -26,13 +26,13 @@ class RawAstDataDef final {
 public:
   RawAstDataDef(ErrorHandler& errorHandler);
   RawAstDataDef(ErrorHandler& errorHandler, const std::string& name,
-    AstCtList* ctorArgs, std::shared_ptr<const ObjType> objType,
+    AstCtList* ctorArgs, AstObjType* astObjType,
     StorageDuration storageDuration);
   ~RawAstDataDef() = default;
 
   void setName(const std::string& name);
   void setCtorArgs(AstCtList* ctorArgs);
-  void setObjType(std::shared_ptr<const ObjType> objType);
+  void setAstObjType(AstObjType* astObjType);
   void setStorageDuration(StorageDuration storageDuration);
 
 private:
@@ -43,7 +43,7 @@ private:
   ErrorHandler& m_errorHandler;
   std::string m_name;
   AstCtList* m_ctorArgs;
-  std::shared_ptr<const ObjType> m_objType;
+  AstObjType* m_astObjType;
   bool m_isStorageDurationDefined;
   StorageDuration m_storageDuration;
 };
@@ -63,10 +63,10 @@ public:
     RawAstDataDef*& rawAstDataDef);
 
   AstFunDef* mkFunDef(const std::string name, std::list<AstDataDef*>* astArgs,
-    std::shared_ptr<const ObjType> retObjType, AstObject* astBody);
+    AstObjType* retAstObjType, AstObject* astBody);
   AstFunDef* mkFunDef(const std::string name, ObjTypeFunda::EType ret,
     AstObject* body);
-  AstFunDef* mkFunDef(const std::string name, std::shared_ptr<const ObjType> ret,
+  AstFunDef* mkFunDef(const std::string name, AstObjType* ret,
     AstObject* body);
 
   AstFunDef* mkMainFunDef(AstObject* body);

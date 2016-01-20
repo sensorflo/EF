@@ -168,7 +168,7 @@ and by declaration of free function yylex */
 %type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
 %type <RawAstDataDef*> naked_data_def data_def_args
 %type <AstFunDef*> naked_fun_def
-%type <std::shared_ptr<const ObjType>> type opt_type type_arg opt_type_arg opt_ret_type
+%type <AstObjType*> type opt_type type_arg opt_type_arg opt_ret_type
 %type <ConditionActionPair> condition_action_pair_then
 
 /* Grammar rules section
@@ -246,18 +246,18 @@ pure_naked_param_ct_list
   ;
 
 param_decl
-  : ID COLON type                                   { $$ = new AstDataDef($1, std::shared_ptr<const ObjType>($3)); }
+  : ID COLON type                                   { $$ = new AstDataDef($1, $3); }
   ;
   
 type
-  : FUNDAMENTAL_TYPE                                { $$ = std::make_shared<ObjTypeFunda>($1); }
-  | STAR type                                       { $$ = std::make_shared<ObjTypePtr>($2); }
-  | type_qualifier type                             { $$ = std::make_shared<ObjTypeQuali>($1, $2); }
+  : FUNDAMENTAL_TYPE                                { $$ = new AstObjTypeSymbol($1); }
+  | STAR type                                       { $$ = new AstObjTypePtr($2); }
+  | type_qualifier type                             { $$ = new AstObjTypeQuali($1, $2); }
   | ID                                              { assert(false); /* user defined names not yet supported; but I wanted to have ID already in grammar*/ }
   ;
 
 opt_type
-  : %empty                                          { $$ = std::make_shared<ObjTypeFunda>(ObjTypeFunda::eInt); }
+  : %empty                                          { $$ = new AstObjTypeSymbol(ObjTypeFunda::eInt); }
   | type                                            { swap($$,$1); }
   ;
 
@@ -266,7 +266,7 @@ type_arg
   ;
 
 opt_type_arg
-  : %empty                                          { $$ = std::make_shared<ObjTypeFunda>(ObjTypeFunda::eInt); }
+  : %empty                                          { $$ = new AstObjTypeSymbol(ObjTypeFunda::eInt); }
   | type_arg                                        { swap($$,$1); }
   ;
 
@@ -338,7 +338,7 @@ operator_expr
   /* binary operators */
   | sub_expr EQUAL       sub_expr                   { $$ = new AstOperator('=', $1, $3); }
   | sub_expr DOT_EQUAL   sub_expr                   { $$ = new AstOperator(".=", $1, $3); }
-  | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt), StorageDuration::eLocal, new AstCtList($3)); }
+  | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eLocal, new AstCtList($3)); }
   | sub_expr OR          sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr PIPE_PIPE   sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr AND         sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
@@ -394,7 +394,7 @@ naked_data_def
 data_def_args
   : %empty                                                           { $$ = new RawAstDataDef(parserExt.errorHandler()); }
   | data_def_args initializer_arg                                    { ($1)->setCtorArgs($2); swap($$,$1); }
-  | data_def_args type_arg                                           { ($1)->setObjType($2); swap($$,$1); }
+  | data_def_args type_arg                                           { ($1)->setAstObjType($2); swap($$,$1); }
   | data_def_args storage_duration_arg                               { ($1)->setStorageDuration($2); swap($$,$1); }
   ;
 

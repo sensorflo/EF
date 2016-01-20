@@ -18,11 +18,11 @@ public:
 private:
   class FunBodyHelper {
   public:
-    FunBodyHelper(std::stack<const ObjType*>& funRetObjTypes,
-      const ObjType* objType);
+    FunBodyHelper(std::stack<const AstObjType*>& funRetAstObjTypes,
+      const AstObjType* objType);
     ~FunBodyHelper();
   private:
-    std::stack<const ObjType*>& m_funRetObjTypes;
+    std::stack<const AstObjType*>& m_funRetAstObjTypes;
   };
 
   virtual void visit(AstNop& nop);
@@ -51,5 +51,5 @@ private:
 
   Env& m_env;
   ErrorHandler& m_errorHandler;
-  std::stack<const ObjType*> m_funRetObjTypes;
+  std::stack<const AstObjType*> m_funRetAstObjTypes;
 };

@@ -108,14 +108,16 @@ void AstPrinter::visit(const AstFunCall& funCall) {
 
 void AstPrinter::visit(const AstFunDef& funDef) {
   m_os << "fun(" << funDef.name() << " (";
-  for (list<AstDataDef*>::const_iterator i=funDef.args().begin();
-       i!=funDef.args().end(); ++i) {
-    if (i!=funDef.args().begin()) { m_os << " "; }
+  for (list<AstDataDef*>::const_iterator i=funDef.declaredArgs().begin();
+       i!=funDef.declaredArgs().end(); ++i) {
+    if (i!=funDef.declaredArgs().begin()) { m_os << " "; }
     // as an exception, handle parameters directly, opposed to accept *i
-    m_os << "(" << (*i)->name() << " " << (*i)->declaredObjType() << ")";
+    m_os << "(" << (*i)->name() << " ";
+    (*i)->declaredAstObjType().accept(*this);
+    m_os << ")";
   }
   m_os << ") ";
-  m_os << funDef.retObjType();
+  funDef.declaredRetAstObjType().accept(*this);
   m_os << " ";
   funDef.body().accept(*this);
   m_os << ")";
@@ -128,7 +130,7 @@ void AstPrinter::visit(const AstDataDef& dataDef) {
   if ( dataDef.declaredStorageDuration()!=StorageDuration::eLocal ) {
     m_os << dataDef.declaredStorageDuration() << "/";
   }
-  m_os << dataDef.declaredObjType();
+  dataDef.declaredAstObjType().accept(*this);
 
   if ( dataDef.doNotInit() ) {
     m_os << " noinit";

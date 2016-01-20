@@ -24,13 +24,13 @@ void SemanticAnalizer::analyze(AstNode& root) {
 }
 
 SemanticAnalizer::FunBodyHelper::FunBodyHelper(
-  stack<const ObjType*>& funRetObjTypes, const ObjType* objType) :
-  m_funRetObjTypes(funRetObjTypes) {
-  m_funRetObjTypes.push(objType);
+  stack<const AstObjType*>& funRetAstObjTypes, const AstObjType* objType) :
+  m_funRetAstObjTypes(funRetAstObjTypes) {
+  m_funRetAstObjTypes.push(objType);
 }
 
 SemanticAnalizer::FunBodyHelper::~FunBodyHelper() {
-  m_funRetObjTypes.pop();
+  m_funRetAstObjTypes.pop();
 }
 
 void SemanticAnalizer::visit(AstCast& cast) {
@@ -43,8 +43,6 @@ void SemanticAnalizer::visit(AstCast& cast) {
     && !specifiedNewObjType.hasConstructor(cast.child().objType()) ) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
-
-  cast.createAndSetObjType();
 
   cast.object()->addAccess(cast.access());
 
@@ -280,16 +278,16 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
 }
 
 void SemanticAnalizer::visit(AstFunDef& funDef) {
-  if ( funDef.retObjType().qualifiers() & ObjType::eMutable ) {
+  if ( funDef.declaredRetAstObjType().objType().qualifiers() & ObjType::eMutable ) {
     Error::throwError(m_errorHandler, Error::eRetTypeCantHaveMutQualifier);
   }
 
   {
-    FunBodyHelper dummy(m_funRetObjTypes, &funDef.retObjType());
+    FunBodyHelper dummy(m_funRetAstObjTypes, &funDef.declaredRetAstObjType());
     Env::AutoScope scope(m_env, funDef.name(), Env::AutoScope::descentScope);
 
-    list<AstDataDef*>::const_iterator argDefIter = funDef.args().begin();
-    list<AstDataDef*>::const_iterator end = funDef.args().end();
+    list<AstDataDef*>::const_iterator argDefIter = funDef.declaredArgs().begin();
+    list<AstDataDef*>::const_iterator end = funDef.declaredArgs().end();
     for ( ; argDefIter!=end; ++argDefIter) {
       if ((*argDefIter)->declaredStorageDuration() != StorageDuration::eLocal) {
         Error::throwError(m_errorHandler, Error::eOnlyLocalStorageDurationApplicable);
@@ -301,7 +299,7 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   }
 
   const auto& bodyObjType = funDef.body().objType();
-  if ( ! bodyObjType.matchesSaufQualifiers( funDef.retObjType())
+  if ( ! bodyObjType.matchesSaufQualifiers( funDef.declaredRetAstObjType().objType())
     && ! bodyObjType.isNoreturn()) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
@@ -321,7 +319,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     // Currrently zero arguments are not supported. When none args are given,
     // a default arg is used.
     if (ctorArgs.empty() && !dataDef.doNotInit()) {
-      ctorArgs.push_back(dataDef.declaredObjType().createDefaultAstObject());
+      ctorArgs.push_back(dataDef.declaredAstObjType().objType().createDefaultAstObject());
     }
 
     dataDef.ctorArgs().accept(*this);
@@ -338,16 +336,13 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     }
   }
 
-  // access is meaningless for the declaration of a data member of a
-  // class. That is a sign that declarations of data members should not be
-  // handled by AstDataDef but by an own class
   if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
+    // AstDataDef with storage duration eMember have no associated Object, thus
+    // it's meaningless to assign 'that object' an access value.
     dataDef.object()->addAccess(dataDef.access());
-  } else {
-    dataDef.object()->addAccess(eIgnore);
-  }
 
-  postConditionCheck(dataDef);
+    postConditionCheck(dataDef);
+  }
 }
 
 void SemanticAnalizer::visit(AstIf& if_) {
@@ -421,11 +416,12 @@ void SemanticAnalizer::visit(AstLoop& loop) {
 }
 
 void SemanticAnalizer::visit(AstReturn& return_) {
-  if ( m_funRetObjTypes.empty() ) {
+  if ( m_funRetAstObjTypes.empty() ) {
     Error::throwError(m_errorHandler, Error::eNotInFunBodyContext);
   }
-  const auto& currentFunReturnType = *m_funRetObjTypes.top();
-  if ( ! return_.retVal().objType().matchesSaufQualifiers( currentFunReturnType ) ) {
+  const auto& currentFunReturnType = *m_funRetAstObjTypes.top();
+  if ( ! return_.retVal().objType().matchesSaufQualifiers(
+      currentFunReturnType.objType() ) ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
@@ -460,7 +456,8 @@ void SemanticAnalizer::visit(AstClassDef& class_) {
 }
 
 void SemanticAnalizer::postConditionCheck(const AstObject& node) {
-  assert(node.object());
+  assert(node.object()); //todo:move to signature augmentor
+  assert(node.object()->objTypeAsSp());
 }
 
 void SemanticAnalizer::postConditionCheck(const AstObjType& node) {

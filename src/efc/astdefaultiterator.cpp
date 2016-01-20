@@ -74,19 +74,19 @@ void AstDefaultIterator::visit(AstFunDef& funDef) {
   if ( m_visitor ) {
     funDef.accept(*m_visitor);
   }
-  for (list<AstDataDef*>::const_iterator i=funDef.args().begin();
-       i!=funDef.args().end(); ++i) {
+  for (list<AstDataDef*>::const_iterator i=funDef.declaredArgs().begin();
+       i!=funDef.declaredArgs().end(); ++i) {
     (*i)->accept(*this);
   }
   funDef.declaredRetAstObjType().accept(*this);
   funDef.body().accept(*this);
-
 }
 
 void AstDefaultIterator::visit(AstDataDef& dataDef) {
   if ( m_visitor ) {
     dataDef.accept(*m_visitor);
   }
+  dataDef.declaredAstObjType().accept(*this);
   dataDef.ctorArgs().accept(*this);
 }
 

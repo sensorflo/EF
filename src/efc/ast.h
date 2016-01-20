@@ -63,8 +63,8 @@ public:
  	Object* object() const { return m_object.get(); }
   std::shared_ptr<Object>& objectAsSp() { return m_object; }
  	void setObject(std::shared_ptr<Object> object);
- 	const ObjType& objType() const;
-  std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
   bool objectIsModifiedOrRevealsAddr() const;
   
 protected:
@@ -126,15 +126,15 @@ class AstFunDef : public AstObject {
 public:
   AstFunDef(const std::string& name,
     std::list<AstDataDef*>* args,
-    std::shared_ptr<const ObjType> ret,
+    AstObjType* ret,
     AstObject* body);
   virtual ~AstFunDef();
 
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
-  virtual std::list<AstDataDef*>const& args() const { return *m_args; }
-  virtual const ObjType& retObjType() const;
+  virtual std::list<AstDataDef*>const& declaredArgs() const { return *m_args; }
+  virtual AstObjType& declaredRetAstObjType() const;
   virtual AstObject& body() const { return *m_body; }
   static std::list<AstDataDef*>* createArgs(AstDataDef* arg1 = NULL,
     AstDataDef* arg2 = NULL, AstDataDef* arg3 = NULL);
@@ -151,23 +151,25 @@ private:
   std::list<AstDataDef*>* const m_args;
   /** Is garanteed to be non-null. Is redundant to
   dynamic_cast<ObjTypeFun>(objType()).ret().  */
-  const std::shared_ptr<const ObjType> m_ret;
+  const std::unique_ptr<AstObjType> m_ret;
   /** We're the owner. Is garanteed to be non-null */
   AstObject* const m_body;
 };
 
-/** Also used for data members of a class. */
+/** Also used for data members of a class, which is not entirerly a nice
+design since a member declaration is not yet an object, thus subtyping from
+AstObject is wrong in this case. */
 class AstDataDef : public AstObject {
 public:
   static AstObject* const noInit;
 
-  AstDataDef(const std::string& name, std::shared_ptr<const ObjType> declaredObjType,
+  AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
     StorageDuration declaredStorageDuration,
     AstCtList* ctorArgs = nullptr);
-  AstDataDef(const std::string& name, std::shared_ptr<const ObjType> declaredObjType,
+  AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
     StorageDuration declaredStorageDuration,
     AstObject* initObj);
-  AstDataDef(const std::string& name, std::shared_ptr<const ObjType> declaredObjType,
+  AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
     AstObject* initObj = nullptr);
   AstDataDef(const std::string& name, ObjTypeFunda::EType declaredObjType,
     AstObject* initObj = nullptr);
@@ -176,9 +178,11 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+
   virtual const std::string& name() const { return m_name; }
-  const ObjType& declaredObjType() const;
-  std::shared_ptr<const ObjType>& declaredObjTypeAsSp();
+  AstObjType& declaredAstObjType() const;
   StorageDuration declaredStorageDuration() const;
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   bool doNotInit() const { return m_doNotInit; }
@@ -188,10 +192,15 @@ public:
 private:
   friend class AstPrinter;
 
-  static AstCtList* mkCtorArgs(AstCtList* ctorArgs, bool& doNotInit);
+  static AstCtList* mkCtorArgs(AstCtList* ctorArgs,
+    StorageDuration storageDuration, bool& doNotInit);
 
   const std::string m_name;
-  std::shared_ptr<const ObjType> m_declaredObjType;
+  std::unique_ptr<AstObjType> m_declaredAstObjType;
+  /** Redundant with m_object->objType(). But since in the case of
+  m_declaredStorageDuration being eMember, there is no m_object, and then we
+  need to store it here.*/
+  std::shared_ptr<const ObjType> m_objType;
   /** Guaranteed to be not eUnknown */
   const StorageDuration m_declaredStorageDuration;
   /** We're the owner. Is garanteed to be non-null. Currently, zero args means

@@ -98,17 +98,19 @@ AstObjType& AstCast::specifiedNewAstObjType() const {
 }
 
 void AstCast::createAndSetObjType() {
+  assert(m_specifiedNewAstObjType);
+  assert(m_specifiedNewAstObjType->objTypeAsSp());
   setObject(make_shared<Object>(m_specifiedNewAstObjType->objTypeAsSp(),
       StorageDuration::eLocal));
 }
 
 AstFunDef::AstFunDef(const string& name,
   std::list<AstDataDef*>* args,
-  shared_ptr<const ObjType> ret,
+  AstObjType* ret,
   AstObject* body) :
   m_name(name),
   m_args(args),
-  m_ret(move(ret)),
+  m_ret(ret),
   m_body(body) {
   assert(m_args);
   assert(m_ret);
@@ -124,7 +126,7 @@ AstFunDef::~AstFunDef() {
   delete m_body;
 }
 
-const ObjType& AstFunDef::retObjType() const {
+AstObjType& AstFunDef::declaredRetAstObjType() const {
   assert(m_ret);
   return *m_ret;
 }
@@ -142,9 +144,13 @@ void AstFunDef::createAndSetObjType() {
   // create the ObjType of this function
   const auto& argsObjType = new list<shared_ptr<const ObjType>>;
   for (const auto& astArg: *m_args) {
-    argsObjType->push_back(astArg->declaredObjTypeAsSp());
+    assert(astArg);
+    assert(astArg->declaredAstObjType().objTypeAsSp());
+    argsObjType->push_back(astArg->declaredAstObjType().objTypeAsSp());
   }
-  auto&& objTypeOfFun = make_shared<const ObjTypeFun>(argsObjType, m_ret);
+  assert(m_ret->objTypeAsSp());
+  auto&& objTypeOfFun = make_shared<const ObjTypeFun>(argsObjType,
+    m_ret->objTypeAsSp());
 
   // the function Object is naturaly of the ObjType just created above
   m_object->setObjType(move(objTypeOfFun));
@@ -152,61 +158,76 @@ void AstFunDef::createAndSetObjType() {
 
 AstObject* const AstDataDef::noInit = reinterpret_cast<AstObject*>(1);
 
-AstDataDef::AstDataDef(const std::string& name,
-  shared_ptr<const ObjType> declaredObjType,
+AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
   StorageDuration declaredStorageDuration,  AstCtList* ctorArgs) :
   m_name(name),
-  m_declaredObjType(declaredObjType ?
-    move(declaredObjType) :
-    make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
+  m_declaredAstObjType(declaredAstObjType ?
+    unique_ptr<AstObjType>(declaredAstObjType) :
+    make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt)),
   m_declaredStorageDuration(declaredStorageDuration),
-  m_ctorArgs(mkCtorArgs(ctorArgs, m_doNotInit)) {
+  m_ctorArgs(mkCtorArgs(ctorArgs, m_declaredStorageDuration, m_doNotInit)) {
   assert(declaredStorageDuration != StorageDuration::eUnknown);
   assert(m_ctorArgs);
 }
 
-AstDataDef::AstDataDef(const std::string& name,
-  shared_ptr<const ObjType> declaredObjType,
+AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
   StorageDuration declaredStorageDuration, AstObject* initObj) :
-  AstDataDef(name, move(declaredObjType), declaredStorageDuration,
+  AstDataDef(name, declaredAstObjType, declaredStorageDuration,
     initObj ? new AstCtList(initObj) : nullptr) {
 }
 
-AstDataDef::AstDataDef(const std::string& name,
-  shared_ptr<const ObjType> declaredObjType, AstObject* initObj) :
-  AstDataDef(name, move(declaredObjType), StorageDuration::eLocal, initObj) {
+AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
+  AstObject* initObj) :
+  AstDataDef(name, declaredAstObjType, StorageDuration::eLocal, initObj) {
 }
 
 AstDataDef::AstDataDef(const std::string& name, ObjTypeFunda::EType declaredObjType,
   AstObject* initObj) :
-  AstDataDef(name, make_shared<ObjTypeFunda>(declaredObjType), initObj) {
+  AstDataDef(name, new AstObjTypeSymbol(declaredObjType), initObj) {
 }
 
 AstDataDef::~AstDataDef() {
   delete m_ctorArgs;
 }
 
-AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs, bool& doNotInit) {
-  doNotInit = false; // assumption
-  if (not ctorArgs) {
-    ctorArgs = new AstCtList();
-  }
-  if (not ctorArgs->childs().empty()) {
-    if ( ctorArgs->childs().front()==noInit ) {
-      doNotInit = true;
-      assert(ctorArgs->childs().size()==1);
-      ctorArgs->childs().clear();
+const ObjType& AstDataDef::objType() const {
+  assert(m_objType);
+  assert(!m_object || m_objType.get() == &m_object->objType());
+  return *m_objType;
+}
+
+shared_ptr<const ObjType> AstDataDef::objTypeAsSp() const {
+  assert(!m_object || m_objType.get() == &m_object->objType());
+  return m_objType;
+}
+
+AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
+  StorageDuration storageDuration, bool& doNotInit) {
+  if ( storageDuration==StorageDuration::eMember ) {
+    doNotInit = true;
+    assert(nullptr==ctorArgs || ctorArgs->childs().empty());
+    if ( nullptr==ctorArgs ) {
+      ctorArgs = new AstCtList();
+    }
+    return ctorArgs;
+  } else {
+    doNotInit = false; // assumption
+    if (not ctorArgs) {
+      ctorArgs = new AstCtList();
+    }
+    if (not ctorArgs->childs().empty()) {
+      if ( ctorArgs->childs().front()==noInit ) {
+        doNotInit = true;
+        assert(ctorArgs->childs().size()==1);
+        ctorArgs->childs().clear();
+      }
     }
   }
   return ctorArgs;
 }
 
-const ObjType& AstDataDef::declaredObjType() const {
-  return *m_declaredObjType.get();
-}
-
-shared_ptr<const ObjType>& AstDataDef::declaredObjTypeAsSp() {
-  return m_declaredObjType;
+AstObjType& AstDataDef::declaredAstObjType() const {
+  return *m_declaredAstObjType.get();
 }
 
 StorageDuration AstDataDef::declaredStorageDuration() const {
@@ -214,7 +235,13 @@ StorageDuration AstDataDef::declaredStorageDuration() const {
 }
 
 void AstDataDef::createAndSetObjType() {
-  m_object->setObjType(m_declaredObjType);
+  assert(m_declaredAstObjType);
+  assert(m_declaredAstObjType->objTypeAsSp());
+  assert(!m_objType); // it doesn't make sense to set it twice
+  m_objType = m_declaredAstObjType->objTypeAsSp();
+  if ( m_object ) {
+    m_object->setObjType(m_declaredAstObjType->objTypeAsSp());
+  }
 }
 
 AstNumber::AstNumber(GeneralValue value, std::shared_ptr<const ObjTypeFunda> objType) :
@@ -502,6 +529,7 @@ shared_ptr<const ObjType> AstObjTypeSymbol::objTypeAsSp() const {
 }
 
 void AstObjTypeSymbol::createAndSetObjType() {
+  assert(!m_objType); // it doesn't make sense to set it twice
   m_objType = make_shared<ObjTypeFunda>(toType(m_name));
 }
 
@@ -520,6 +548,9 @@ shared_ptr<const ObjType> AstObjTypeQuali::objTypeAsSp() const {
 }
 
 void AstObjTypeQuali::createAndSetObjType() {
+  assert(m_targetType);
+  assert(m_targetType->objTypeAsSp());
+  assert(!m_objType); // it doesn't make sense to set it twice
   m_objType = make_shared<ObjTypeQuali>(m_qualifiers, m_targetType->objTypeAsSp());
 }
 
@@ -537,6 +568,9 @@ shared_ptr<const ObjType> AstObjTypePtr::objTypeAsSp() const {
 }
 
 void AstObjTypePtr::createAndSetObjType() {
+  assert(m_pointee);
+  assert(m_pointee->objTypeAsSp());
+  assert(!m_objType); // it doesn't make sense to set it twice
   m_objType = make_shared<ObjTypePtr>(m_pointee->objTypeAsSp());
 }
 
@@ -574,9 +608,12 @@ shared_ptr<const ObjType> AstClassDef::objTypeAsSp() const {
 }
 
 void AstClassDef::createAndSetObjType() {
+  assert(!m_objType); // it doesn't make sense to set it twice
   std::vector<std::shared_ptr<const ObjType>> dataMembersCopy;
   for (const auto& dataMember : *m_dataMembers) {
-    dataMembersCopy.emplace_back(dataMember->declaredObjTypeAsSp());
+    assert(dataMember);
+    assert(dataMember->objTypeAsSp());
+    dataMembersCopy.emplace_back(dataMember->objTypeAsSp());
   }
   m_objType = make_shared<ObjTypeClass>(m_name, move(dataMembersCopy));
 }
