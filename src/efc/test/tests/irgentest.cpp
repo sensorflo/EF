@@ -1183,7 +1183,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       pe.mkFunDef("foo", ObjTypeFunda::eVoid,
-        new AstReturn(new AstNop)),
+        new AstReturn()),
       new AstFunCall(new AstSymbol("foo")),
       new AstNumber(42)),
     42, spec);

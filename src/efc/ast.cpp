@@ -450,7 +450,7 @@ AstReturn::AstReturn(AstObject* retVal) :
     make_shared<Object>(
       make_shared<ObjTypeFunda>(ObjTypeFunda::eNoreturn),
       StorageDuration::eLocal)},
-  m_retVal(retVal) {
+  m_retVal(retVal ? retVal : new AstNop()) {
   assert(m_retVal);
 }
 

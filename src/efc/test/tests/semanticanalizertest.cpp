@@ -1747,7 +1747,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     transform,
     reports_an_eNotInFunBodyContext)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstReturn( new AstNumber(0)),
+    new AstReturn(),
     Error::eNotInFunBodyContext, "");
 }
 

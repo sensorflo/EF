@@ -378,7 +378,7 @@ private:
 
 class AstReturn : public AstObject {
 public:
-  AstReturn(AstObject* retVal);
+  AstReturn(AstObject* retVal = nullptr);
   virtual ~AstReturn();
 
   virtual void accept(AstVisitor& visitor);

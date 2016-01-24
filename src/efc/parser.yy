@@ -455,7 +455,7 @@ condition_action_pair_then
   ;
 
 naked_return
-  : %empty                                                           { $$ = new AstReturn(new AstNop()); }
+  : %empty                                                           { $$ = new AstReturn(); }
   | standalone_expr                                                  { $$ = new AstReturn($1); }
   ;
 
