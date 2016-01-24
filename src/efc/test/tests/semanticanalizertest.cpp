@@ -1133,7 +1133,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   string spec = "Example: return expression as last (and only) expression in fun's body";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     pe.mkFunDef("foo", ObjTypeFunda::eInt,
-      new AstReturn(new AstNumber(42, ObjTypeFunda::eBool))),
+      new AstReturn(new AstNumber(0, ObjTypeFunda::eBool))),
     Error::eNoImplicitConversion, spec);
 
   spec = "Example: Early return, return expression in an if clause";
