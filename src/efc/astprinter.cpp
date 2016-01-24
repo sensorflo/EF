@@ -81,6 +81,8 @@ void AstPrinter::visit(const AstNumber& number) {
   // interest us at this point here
   if ( number.objType().type() == ObjTypeFunda::eChar) {
     m_os << "'" << char(number.value()) << "'";
+  } else if ( number.objType().type() == ObjTypeFunda::eNullptr ) {
+    m_os << "nullptr";
   } else {
     m_os << number.value();
     switch (number.objType().type()) {

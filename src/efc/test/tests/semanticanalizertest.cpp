@@ -1675,30 +1675,39 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     {ObjTypeFunda::eVoid, ObjTypeFunda::eBool, false},
     {ObjTypeFunda::eVoid, ObjTypeFunda::eInt, false},
     {ObjTypeFunda::eVoid, ObjTypeFunda::eDouble, false},
+    {ObjTypeFunda::eVoid, ObjTypeFunda::eNullptr, false},
 
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eNoreturn, true},
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eBool, false},
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eInt, false},
     {ObjTypeFunda::eNoreturn, ObjTypeFunda::eDouble, false},
+    {ObjTypeFunda::eNoreturn, ObjTypeFunda::eNullptr, false},
 
     {ObjTypeFunda::eBool, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eBool, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eBool, ObjTypeFunda::eBool, true},
     {ObjTypeFunda::eBool, ObjTypeFunda::eInt, true},
     {ObjTypeFunda::eBool, ObjTypeFunda::eDouble, true},
+    {ObjTypeFunda::eBool, ObjTypeFunda::eNullptr, false},
 
     {ObjTypeFunda::eInt, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eInt, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eInt, ObjTypeFunda::eBool, true},
     {ObjTypeFunda::eInt, ObjTypeFunda::eInt, true},
-    {ObjTypeFunda::eInt, ObjTypeFunda::eDouble, true},
+    {ObjTypeFunda::eInt, ObjTypeFunda::eNullptr, false},
 
     {ObjTypeFunda::eDouble, ObjTypeFunda::eVoid, false},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eNoreturn, false},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eBool, true},
     {ObjTypeFunda::eDouble, ObjTypeFunda::eInt, true},
-    {ObjTypeFunda::eDouble, ObjTypeFunda::eDouble, true}};
+    {ObjTypeFunda::eDouble, ObjTypeFunda::eNullptr, false},
+
+    {ObjTypeFunda::eNullptr, ObjTypeFunda::eVoid, false},
+    {ObjTypeFunda::eNullptr, ObjTypeFunda::eNoreturn, false},
+    {ObjTypeFunda::eNullptr, ObjTypeFunda::eBool, false},
+    {ObjTypeFunda::eNullptr, ObjTypeFunda::eInt, false},
+    {ObjTypeFunda::eNullptr, ObjTypeFunda::eNullptr, true}};
 
   for ( const auto& inputSpec : inputSpecs ) {
 
@@ -1714,7 +1723,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     case ObjTypeFunda::eBool: // fall through
     case ObjTypeFunda::eChar:  // fall through
     case ObjTypeFunda::eInt:  // fall through
-    case ObjTypeFunda::eDouble:
+    case ObjTypeFunda::eDouble:  // fall through
+    case ObjTypeFunda::eNullptr:
       castChild = new AstNumber(0, inputSpec.oldType);
       break; 
     case ObjTypeFunda::ePointer:

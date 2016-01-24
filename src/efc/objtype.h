@@ -44,7 +44,7 @@ public:
         eIntegral,
         eFloatingPoint,
 
-    eStoredAsIntegral,
+    eStoredAsIntegral, // applies also to unity types
 
     eFunction
   };
@@ -141,7 +141,8 @@ public:
     eInt,
     eBool,
     eDouble,
-      // implemented in derived classes 
+    eNullptr, // not itself a pointer
+      // implemented in derived classes
       ePointer,
 
     eTypeCnt

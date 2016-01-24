@@ -165,6 +165,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
   case eDouble: os << "double"; break;
+  case eNullptr: os << "Nullptr"; break;
   case ePointer: os << "raw*"; break;
   case eTypeCnt: assert(false);
   };
@@ -181,12 +182,14 @@ bool ObjTypeFunda::is(ObjType::EClass class_) const {
   case eInt:
   case eDouble:
   case ePointer:
+  case eNullptr:
     if (class_==eScalar) return true;
     if (class_==eStoredAsIntegral) return m_type!=eDouble;
     switch(m_type) {
     case eBool: // fall through
     case eChar: // fall through
-    case ePointer:
+    case ePointer: // fall through
+    case eNullptr:
       return false;
     case eInt:
     case eDouble:
@@ -206,6 +209,7 @@ int ObjTypeFunda::size() const {
   switch(m_type) {
   case eVoid:
   case eNoreturn: return -1;
+  case eNullptr: return 0;
   case eBool: return 1;
   case eChar: return 8;
   case eInt: return 32;
@@ -232,6 +236,7 @@ llvm::Type* ObjTypeFunda::llvmType() const {
   case eDouble: return Type::getDoubleTy(getGlobalContext());
   case eBool: return Type::getInt1Ty(getGlobalContext());
   case ePointer: assert(false); // actually implemented by derived class
+  case eNullptr: assert(false);
   case eTypeCnt: assert(false);
   };
   assert(false);
@@ -284,12 +289,23 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
   switch (m_type) {
   case eVoid: // fall through
   case eNoreturn: return false;
+
   case eBool: // fall through
   case eChar: // fall through
   case eDouble: // fall through
   case eInt: // fall through
   case ePointer:
-    return (otherFunda.m_type != eVoid) && (otherFunda.m_type != eNoreturn);
+    if ( (otherFunda.m_type == eVoid) || (otherFunda.m_type == eNoreturn) ) {
+      return false;
+    } else if ( ePointer==m_type ) {
+      return true;
+    } else {
+      return otherFunda.m_type != eNullptr;
+    }
+
+  case eNullptr:
+    return otherFunda.m_type == eNullptr;
+
   case eTypeCnt: assert(false);
   }
   return false;
@@ -305,6 +321,7 @@ bool ObjTypeFunda::isValueInRange(double val) const {
   case eBool: return val==0.0 || val==1.0;
     // currently pointer are assumed to have as many bits as ints
   case ePointer: return (val<=UINT_MAX) && (val==static_cast<unsigned int>(val));
+  case eNullptr: return val == 0.0;
   case eTypeCnt: assert(false);
   };
   assert(false);
