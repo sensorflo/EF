@@ -48,7 +48,7 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
   else {
     // verify that only exactly one error is reported
     EXPECT_EQ(1, errors.size()) <<
-      "Expecting exactly one error\n" <<
+      "Expecting error " << expectedErrorNo << "\n" <<
       amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast) <<
       amend(UUT.m_env);
 

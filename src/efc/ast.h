@@ -209,7 +209,9 @@ private:
   bool m_doNotInit;
 };
 
-/** Literal number */
+/** Literal 'scalar', where scalar means 'not an aggregation /
+composition'. Obviously a well defined term is needed, and then the class
+should be renamed. */
 class AstNumber : public AstObject {
 public:
   AstNumber(GeneralValue value, std::shared_ptr<const ObjTypeFunda> objType = nullptr);
