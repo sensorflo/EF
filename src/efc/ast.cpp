@@ -97,7 +97,7 @@ AstObjType& AstCast::specifiedNewAstObjType() const {
   return *m_specifiedNewAstObjType;
 }
 
-void AstCast::createAndSetObjType() {
+void AstCast::assignDeclaredObjTypeToAssociatedObject() {
   assert(m_specifiedNewAstObjType);
   assert(m_specifiedNewAstObjType->objTypeAsSp());
   setObject(make_shared<Object>(m_specifiedNewAstObjType->objTypeAsSp(),
@@ -140,7 +140,7 @@ list<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
   return args;
 }
 
-void AstFunDef::createAndSetObjType() {
+void AstFunDef::assignDeclaredObjTypeToAssociatedObject() {
   // create the ObjType of this function
   const auto& argsObjType = new list<shared_ptr<const ObjType>>;
   for (const auto& astArg: *m_args) {
@@ -234,7 +234,7 @@ StorageDuration AstDataDef::declaredStorageDuration() const {
   return m_declaredStorageDuration;
 }
 
-void AstDataDef::createAndSetObjType() {
+void AstDataDef::assignDeclaredObjTypeToAssociatedObject() {
   assert(m_declaredAstObjType);
   assert(m_declaredAstObjType->objTypeAsSp());
   assert(!m_objType); // it doesn't make sense to set it twice

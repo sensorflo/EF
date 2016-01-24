@@ -21,18 +21,18 @@ void SignatureAugmentor::visit(AstBlock& block) {
 
 void SignatureAugmentor::visit(AstCast& cast) {
   AstDefaultIterator::visit(cast);
-  cast.createAndSetObjType();
+  cast.assignDeclaredObjTypeToAssociatedObject();
 }
 
 void SignatureAugmentor::visit(AstDataDef& dataDef) {
   AstDefaultIterator::visit(dataDef);
-  dataDef.createAndSetObjType();
+  dataDef.assignDeclaredObjTypeToAssociatedObject();
 }
 
 void SignatureAugmentor::visit(AstFunDef& funDef) {
   Env::AutoScope scope(m_env, funDef.name(), Env::AutoScope::descentScope);
   AstDefaultIterator::visit(funDef);
-  funDef.createAndSetObjType();
+  funDef.assignDeclaredObjTypeToAssociatedObject();
 }
 
 void SignatureAugmentor::visit(AstObjTypeSymbol& symbol) {

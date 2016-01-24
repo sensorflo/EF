@@ -113,7 +113,7 @@ public:
 
   AstObjType& specifiedNewAstObjType() const;
 
-  void createAndSetObjType();
+  void assignDeclaredObjTypeToAssociatedObject();
 
 private:
   /** Is guaranteed to be non-null */
@@ -139,7 +139,7 @@ public:
   static std::list<AstDataDef*>* createArgs(AstDataDef* arg1 = NULL,
     AstDataDef* arg2 = NULL, AstDataDef* arg3 = NULL);
 
-  void createAndSetObjType();
+  void assignDeclaredObjTypeToAssociatedObject();
 
 private:
   void initObjType();
@@ -187,7 +187,7 @@ public:
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
   bool doNotInit() const { return m_doNotInit; }
 
-  void createAndSetObjType();
+  void assignDeclaredObjTypeToAssociatedObject();
 
 private:
   friend class AstPrinter;
