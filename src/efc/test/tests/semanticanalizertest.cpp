@@ -893,7 +893,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   auto ast = 
     new AstOperator(AstOperator::eDeref,
       new AstDataDef("x",
-        new AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt))));
+        new AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt)),
+        new AstCast(
+          new AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt)),
+          new AstNumber(0, ObjTypeFunda::eNullptr))));
 
   // exercise
   UUT.analyze(*ast);

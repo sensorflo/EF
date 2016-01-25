@@ -68,10 +68,6 @@ public:
 
   virtual Qualifiers qualifiers() const { return eNoQualifier; }
 
-  /** The objType of the created AstObject is immutable, since the AstObject has
-  the semantics of a temporary. Asserts in case of there is no default
-  AstObject */
-  virtual AstObject* createDefaultAstObject() const = 0;
   virtual llvm::Type* llvmType() const = 0;
 
   /** Returns true if this type has the given operator as member function.
@@ -114,7 +110,6 @@ public:
 
   bool is(EClass class_) const override;
   int size() const override;
-  AstObject* createDefaultAstObject() const override;
   llvm::Type* llvmType() const override;
   bool hasMember(int op) const override;
   bool hasConstructor(const ObjType& other) const override;
@@ -159,13 +154,10 @@ public:
   virtual int size() const;
 
   EType type() const { return m_type; }
-  virtual AstObject* createDefaultAstObject() const;
   virtual llvm::Type* llvmType() const;
 
   virtual bool hasMember(int op) const;
   virtual bool hasConstructor(const ObjType& other) const;
-
-  bool isValueInRange(double val) const;
 
 private:
   const EType m_type;
@@ -206,7 +198,6 @@ public:
   using ObjType::match2;
   virtual MatchType match2(const ObjTypeFun& src, bool isLevel0) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
-  virtual AstObject* createDefaultAstObject() const;
   virtual llvm::Type* llvmType() const;
   virtual bool hasMember(int) const { return false; }
   virtual bool hasConstructor(const ObjType& other) const { return false; }
@@ -243,7 +234,6 @@ public:
   MatchType match(const ObjType& dst, bool isLevel0) const override;
   using ObjType::match2;
   MatchType match2(const ObjTypeClass& src, bool isLevel0) const override;
-  AstObject* createDefaultAstObject() const override;
   llvm::Type* llvmType() const override;
   bool hasMember(int) const override;
   bool hasConstructor(const ObjType& other) const override;

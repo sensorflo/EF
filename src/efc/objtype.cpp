@@ -125,10 +125,6 @@ int ObjTypeQuali::size() const {
   return m_type->size();
 }
 
-AstObject* ObjTypeQuali::createDefaultAstObject() const {
-  return m_type->createDefaultAstObject();
-}
-
 llvm::Type* ObjTypeQuali::llvmType() const {
   return m_type->llvmType();
 }
@@ -221,12 +217,6 @@ int ObjTypeFunda::size() const {
   return -1;
 }
 
-AstObject* ObjTypeFunda::createDefaultAstObject() const {
-  assert(!is(eAbstract));
-  return new AstNumber(0,
-    static_pointer_cast<const ObjTypeFunda>(shared_from_this()));
-}
-
 llvm::Type* ObjTypeFunda::llvmType() const {
   switch (m_type) {
   case eVoid: return Type::getVoidTy(getGlobalContext());
@@ -308,23 +298,6 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
 
   case eTypeCnt: assert(false);
   }
-  return false;
-}
-
-bool ObjTypeFunda::isValueInRange(double val) const {
-  switch (m_type) {
-  case eVoid: return false;
-  case eNoreturn: return false;
-  case eChar: return (0<=val && val<=0xFF) && (val==static_cast<int>(val));
-  case eInt: return (INT_MIN<=val && val<=INT_MAX) && (val==static_cast<int>(val));
-  case eDouble: return true;
-  case eBool: return val==0.0 || val==1.0;
-    // currently pointer are assumed to have as many bits as ints
-  case ePointer: return (val<=UINT_MAX) && (val==static_cast<unsigned int>(val));
-  case eNullptr: return val == 0.0;
-  case eTypeCnt: assert(false);
-  };
-  assert(false);
   return false;
 }
 
@@ -428,14 +401,6 @@ list<shared_ptr<const ObjType> >* ObjTypeFun::createArgs(const ObjType* arg1, co
   return l;
 }
 
-AstObject* ObjTypeFun::createDefaultAstObject() const {
-  // The liskov substitution principle is broken here, ObjTypeFun cannot
-  // provide a createDefaultAstObject method. A possible solution would be to introduce
-  // a 'ObjTypeData' abstract class into the ObjType hierarchy, but currently
-  // I think that is overkill.
-  assert(false);
-}
-
 llvm::Type* ObjTypeFun::llvmType() const {
   assert(false); // not implemented yet
 }
@@ -499,11 +464,6 @@ int ObjTypeClass::size() const {
     sum += member->size();
   }
   return sum;
-}
-
-AstObject* ObjTypeClass::createDefaultAstObject() const {
-  assert(false);
-  return nullptr;
 }
 
 llvm::Type* ObjTypeClass::llvmType() const {

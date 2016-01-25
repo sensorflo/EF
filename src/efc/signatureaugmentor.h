@@ -18,7 +18,6 @@ public:
 
 private:
   void visit(AstBlock& block) override;
-  void visit(AstCast& cast) override;
   void visit(AstDataDef& dataDef) override;
   void visit(AstFunDef& funDef) override;
   void visit(AstObjTypeSymbol& symbol) override;

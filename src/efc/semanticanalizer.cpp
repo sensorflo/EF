@@ -44,6 +44,11 @@ void SemanticAnalizer::visit(AstCast& cast) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 
+  cast.setObject(
+    make_shared<Object>(
+      cast.specifiedNewAstObjType().objTypeAsSp(),
+      StorageDuration::eLocal));
+
   cast.object()->addAccess(cast.access());
 
   postConditionCheck(cast);
@@ -229,9 +234,12 @@ void SemanticAnalizer::visit(AstSeq& seq) {
 void SemanticAnalizer::visit(AstNumber& number) {
   // should allready have been caught by scanner, thus assert.  Intended to
   // catch errors when AST is build by hand instead by parser, e.g. in tests.
-  assert( number.objType().isValueInRange( number.value()));
+  assert(number.declaredAstObjType().isValueInRange(number.value()));
 
-  // no need to set object since that is done by AST node itself
+  number.setObject(
+    make_shared<Object>(
+      number.declaredAstObjType().objTypeAsSp(),
+      StorageDuration::eLocal));
 
   number.object()->addAccess(number.access());
 
@@ -319,7 +327,10 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     // Currrently zero arguments are not supported. When none args are given,
     // a default arg is used.
     if (ctorArgs.empty() && !dataDef.doNotInit()) {
-      ctorArgs.push_back(dataDef.declaredAstObjType().objType().createDefaultAstObject());
+      // Note that the AST node created here obviously is not visited by the
+      // passes prior to SemanticAnalizer
+      ctorArgs.push_back(dataDef.declaredAstObjType().
+        createDefaultAstObjectForSemanticAnalizer());
     }
 
     dataDef.ctorArgs().accept(*this);
@@ -416,17 +427,20 @@ void SemanticAnalizer::visit(AstLoop& loop) {
 }
 
 void SemanticAnalizer::visit(AstReturn& return_) {
+  return_.retVal().accept(*this);
+
   if ( m_funRetAstObjTypes.empty() ) {
     Error::throwError(m_errorHandler, Error::eNotInFunBodyContext);
   }
   const auto& currentFunReturnType = *m_funRetAstObjTypes.top();
+
   if ( ! return_.retVal().objType().matchesSaufQualifiers(
       currentFunReturnType.objType() ) ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
-  // no need to set object since that is done by AST node itself
-  // return_'s ObjType is always eNoreturn
+  // Object and it's ObjType, being ObjTypeFunda::eNoreturn, was already set
+  // in AstReturn's ctor.
 
   return_.object()->addAccess(return_.access());
 

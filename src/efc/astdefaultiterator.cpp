@@ -54,6 +54,7 @@ void AstDefaultIterator::visit(AstNumber& number) {
   if ( m_visitor ) {
     number.accept(*m_visitor);
   }
+  number.declaredAstObjType().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstSymbol& symbol) {

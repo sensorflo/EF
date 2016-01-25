@@ -289,20 +289,7 @@ void IrGen::visit(AstSeq& seq) {
 }
 
 void IrGen::visit(AstNumber& number) {
-  Value* value = nullptr;
-  switch (number.objType().type()) { 
-  case ObjTypeFunda::eChar: // fall through
-  case ObjTypeFunda::eInt:  // fall through
-  case ObjTypeFunda::eBool:
-    value = ConstantInt::get( getGlobalContext(),
-      APInt(number.objType().size(), number.value()));
-    break;
-  case ObjTypeFunda::eDouble:
-    value = ConstantFP::get( getGlobalContext(), APFloat(number.value()));
-    break;
-  default:
-    assert(false);
-  }
+  Value* value = number.declaredAstObjType().createLlvmValueFrom(number.value());
   number.object()->irInitLocal(value, m_builder, "literal");
 }
 

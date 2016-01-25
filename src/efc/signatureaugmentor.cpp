@@ -19,12 +19,9 @@ void SignatureAugmentor::visit(AstBlock& block) {
   AstDefaultIterator::visit(block);
 }
 
-void SignatureAugmentor::visit(AstCast& cast) {
-  AstDefaultIterator::visit(cast);
-  cast.assignDeclaredObjTypeToAssociatedObject();
-}
-
 void SignatureAugmentor::visit(AstDataDef& dataDef) {
+  // Note that in case SemanticAnalizer _will_ create an AST Node for the
+  // initializer, that future AST subtree obviously will not be visited here.
   AstDefaultIterator::visit(dataDef);
   dataDef.assignDeclaredObjTypeToAssociatedObject();
 }

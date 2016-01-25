@@ -77,21 +77,7 @@ void AstPrinter::visit(const AstSeq& seq) {
 }
 
 void AstPrinter::visit(const AstNumber& number) {
-  // if value is outside range of type, that is a topic that shall not
-  // interest us at this point here
-  if ( number.objType().type() == ObjTypeFunda::eChar) {
-    m_os << "'" << char(number.value()) << "'";
-  } else if ( number.objType().type() == ObjTypeFunda::eNullptr ) {
-    m_os << "nullptr";
-  } else {
-    m_os << number.value();
-    switch (number.objType().type()) {
-    case ObjTypeFunda::eBool: m_os << "bool"; break;
-    case ObjTypeFunda::eInt: break;
-    case ObjTypeFunda::eDouble: m_os << "d"; break;
-    default: assert(false);
-    }
-  }
+  number.declaredAstObjType().printValueTo(m_os, number.value());
 }
 
 void AstPrinter::visit(const AstSymbol& symbol) {

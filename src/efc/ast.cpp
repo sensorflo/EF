@@ -75,7 +75,6 @@ string AstBlock::makeUniqueInternalName() {
 }
 
 AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child) :
-  AstObject(),
   m_specifiedNewAstObjType(
     specifiedNewAstObjType ?
     unique_ptr<AstObjType>(specifiedNewAstObjType) :
@@ -95,13 +94,6 @@ AstCast::~AstCast() {
 
 AstObjType& AstCast::specifiedNewAstObjType() const {
   return *m_specifiedNewAstObjType;
-}
-
-void AstCast::assignDeclaredObjTypeToAssociatedObject() {
-  assert(m_specifiedNewAstObjType);
-  assert(m_specifiedNewAstObjType->objTypeAsSp());
-  setObject(make_shared<Object>(m_specifiedNewAstObjType->objTypeAsSp(),
-      StorageDuration::eLocal));
 }
 
 AstFunDef::AstFunDef(const string& name,
@@ -244,22 +236,23 @@ void AstDataDef::assignDeclaredObjTypeToAssociatedObject() {
   }
 }
 
-AstNumber::AstNumber(GeneralValue value, std::shared_ptr<const ObjTypeFunda> objType) :
-  AstObject{
-    make_shared<Object>(
-      objType ?
-      move(objType) :
-      make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt),
-      StorageDuration::eLocal)},
-  m_value(value) {
+AstNumber::AstNumber(GeneralValue value, AstObjType* astObjType) :
+  m_value(value),
+  m_declaredAstObjType(
+    astObjType ? astObjType : new AstObjTypeSymbol(ObjTypeFunda::eInt)) {
+  assert(m_declaredAstObjType);
 }
 
 AstNumber::AstNumber(GeneralValue value, ObjTypeFunda::EType eType) :
-  AstNumber(value, make_shared<ObjTypeFunda>(eType)) {
+  AstNumber(value, new AstObjTypeSymbol(eType)) {
 }
 
-const ObjTypeFunda& AstNumber::objType() const {
-  return static_cast<const ObjTypeFunda&>(AstObject::objType());
+AstNumber::~AstNumber() {
+}
+
+AstObjType& AstNumber::declaredAstObjType() const {
+  assert(m_declaredAstObjType);
+  return *m_declaredAstObjType;
 }
 
 const map<const string, const AstOperator::EOperation> AstOperator::m_opMap{
@@ -489,10 +482,12 @@ AstObjTypeSymbol::AstObjTypeSymbol(const std::string name) :
 
 AstObjTypeSymbol::AstObjTypeSymbol(ObjTypeFunda::EType fundaType) :
   m_name(toName(fundaType)) {
+  assert(fundaType!=ObjTypeFunda::ePointer);
 }
 
 string AstObjTypeSymbol::toName(ObjTypeFunda::EType fundaType) {
   initMap();
+  assert(fundaType!=ObjTypeFunda::ePointer);
   return m_typeToName[fundaType];
 }
 
@@ -506,18 +501,86 @@ ObjTypeFunda::EType AstObjTypeSymbol::toType(const string& name) {
 void AstObjTypeSymbol::initMap() {
   if ( !m_isMapInitialzied ) {
     m_isMapInitialzied = true;
-    m_typeToName[ObjTypeFunda::eVoid] = "void";
-    m_typeToName[ObjTypeFunda::eNoreturn] = "noreturn";
-    m_typeToName[ObjTypeFunda::eChar] = "char";
-    m_typeToName[ObjTypeFunda::eInt] = "int";
-    m_typeToName[ObjTypeFunda::eBool] = "bool";
-    m_typeToName[ObjTypeFunda::eDouble] = "double";
+    for ( int i = 0 ; i<ObjTypeFunda::eTypeCnt; ++i ) {
+      const auto type = static_cast<ObjTypeFunda::EType>(i);
+      if ( type==ObjTypeFunda::ePointer ) {
+        m_typeToName[i] = "<invalid(pointer)>";
+      } else {
+        m_typeToName[i] = ObjTypeFunda(type).toStr();
+      }
+    }
+    for ( const auto& x : m_typeToName ) {
+      assert(!x.empty());
+    }
   }
 }
 
-array<string, ObjTypeFunda::eTypeCnt> AstObjTypeSymbol::m_typeToName;
+array<string, ObjTypeFunda::eTypeCnt> AstObjTypeSymbol::m_typeToName{};
 
 bool AstObjTypeSymbol::m_isMapInitialzied = false;
+
+void AstObjTypeSymbol::printValueTo(ostream& os, GeneralValue value) const {
+  const auto type = toType(m_name);
+  if ( type == ObjTypeFunda::eChar) {
+    os << "'" << char(value) << "'";
+  } else if ( type == ObjTypeFunda::eNullptr ) {
+    os << "nullptr";
+  } else {
+    os << value;
+    switch ( type ) {
+    case ObjTypeFunda::eBool: os << "bool"; break;
+    case ObjTypeFunda::eInt: break;
+    case ObjTypeFunda::eDouble: os << "d"; break;
+    default: assert(false);
+    }
+  }
+}
+
+bool AstObjTypeSymbol::isValueInRange(GeneralValue value) const {
+  switch (toType(m_name)) {
+  case ObjTypeFunda::eVoid: return false;
+  case ObjTypeFunda::eNoreturn: return false;
+  case ObjTypeFunda::eChar: return (0<=value && value<=0xFF) && (value==static_cast<int>(value));
+  case ObjTypeFunda::eInt: return (INT_MIN<=value && value<=INT_MAX) && (value==static_cast<int>(value));
+  case ObjTypeFunda::eDouble: return true;
+  case ObjTypeFunda::eBool: return value==0.0 || value==1.0;
+  case ObjTypeFunda::eNullptr: return value==0.0;
+  case ObjTypeFunda::ePointer: assert(false); // AstObjTypeSymbol does not handle ObjTypeFunda::ePointer
+  case ObjTypeFunda::eTypeCnt: assert(false);
+  };
+  assert(false);
+  return false;
+}
+
+AstObject* AstObjTypeSymbol::createDefaultAstObjectForSemanticAnalizer() {
+  // What parser does
+  const auto newAstNode = new AstNumber(0, new AstObjTypeSymbol(m_name));
+
+  // What EnvInserter does: nothing
+
+  // What SignatureAugmentor does:
+  newAstNode->declaredAstObjType().createAndSetObjType();
+
+  // What SemanticAnalizer does: to be done by caller
+  return newAstNode;
+}
+
+llvm::Value* AstObjTypeSymbol::createLlvmValueFrom(GeneralValue value) const {
+  switch (toType(m_name)) {
+  case ObjTypeFunda::eChar: // fall through
+  case ObjTypeFunda::eInt:  // fall through
+  case ObjTypeFunda::eBool:
+    return llvm::ConstantInt::get( llvm::getGlobalContext(),
+      llvm::APInt(objType().size(), value));
+    break;
+  case ObjTypeFunda::eDouble:
+    return llvm::ConstantFP::get( llvm::getGlobalContext(), llvm::APFloat(value));
+    break;
+  default:
+    assert(false);
+  }
+  return nullptr;
+}
 
 const ObjType& AstObjTypeSymbol::objType() const {
   assert(m_objType);
@@ -538,6 +601,22 @@ AstObjTypeQuali::AstObjTypeQuali(ObjType::Qualifiers qualifiers, AstObjType* tar
   m_targetType(targetType) {
 }
 
+void AstObjTypeQuali::printValueTo(ostream& os, GeneralValue value) const {
+  m_targetType->printValueTo(os, value);
+}
+
+bool AstObjTypeQuali::isValueInRange(GeneralValue value) const {
+  return m_targetType->isValueInRange(value);
+}
+
+AstObject* AstObjTypeQuali::createDefaultAstObjectForSemanticAnalizer() {
+  return m_targetType->createDefaultAstObjectForSemanticAnalizer();
+}
+
+llvm::Value* AstObjTypeQuali::createLlvmValueFrom(GeneralValue value) const {
+  return m_targetType->createLlvmValueFrom(value);
+}
+
 const ObjType& AstObjTypeQuali::objType() const {
   assert(m_objType);
   return *m_objType;
@@ -556,6 +635,33 @@ void AstObjTypeQuali::createAndSetObjType() {
 
 AstObjTypePtr::AstObjTypePtr(AstObjType* pointee) :
   m_pointee(pointee) {
+}
+
+void AstObjTypePtr::printValueTo(ostream& os, GeneralValue value) const {
+  // not yet implemented
+  assert(false);
+}
+
+bool AstObjTypePtr::isValueInRange(GeneralValue value) const {
+  return (value<=UINT_MAX) && (value==static_cast<unsigned int>(value));
+}
+
+AstObject* AstObjTypePtr::createDefaultAstObjectForSemanticAnalizer() {
+  // What parser does
+  const auto newAstNode = new AstNumber(0, ObjTypeFunda::eNullptr);
+
+  // What EnvInserter does: nothing
+
+  // What SignatureAugmentor does:
+  newAstNode->declaredAstObjType().createAndSetObjType();
+
+  // What SemanticAnalizer does: to be done by caller
+  return newAstNode;
+}
+
+llvm::Value* AstObjTypePtr::createLlvmValueFrom(GeneralValue value) const {
+  // not yet implemented
+  assert(false);
 }
 
 const ObjTypePtr& AstObjTypePtr::objType() const {
@@ -596,6 +702,26 @@ AstClassDef::AstClassDef(const std::string& name, AstDataDef* m1, AstDataDef* m2
   if (m3) {
     m_dataMembers->push_back(m3);  
   }
+}
+
+void AstClassDef::printValueTo(ostream& os, GeneralValue value) const {
+  // The liskov substitution principle is broken here
+  assert(false);
+}
+
+bool AstClassDef::isValueInRange(GeneralValue value) const {
+  // The liskov substitution principle is broken here
+  assert(false);
+}
+
+AstObject* AstClassDef::createDefaultAstObjectForSemanticAnalizer() {
+  // The liskov substitution principle is broken here
+  assert(false);
+}
+
+llvm::Value* AstClassDef::createLlvmValueFrom(GeneralValue value) const {
+  // not yet implemented
+  assert(false);
 }
 
 const ObjTypeClass& AstClassDef::objType() const {

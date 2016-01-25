@@ -113,11 +113,9 @@ public:
 
   AstObjType& specifiedNewAstObjType() const;
 
-  void assignDeclaredObjTypeToAssociatedObject();
-
 private:
   /** Is guaranteed to be non-null */
-  std::unique_ptr<AstObjType> m_specifiedNewAstObjType;
+  const std::unique_ptr<AstObjType> m_specifiedNewAstObjType;
   /** We're the owner. Is guaranteed to be non-null */
   AstObject* m_child;
 };
@@ -214,17 +212,22 @@ composition'. Obviously a well defined term is needed, and then the class
 should be renamed. */
 class AstNumber : public AstObject {
 public:
-  AstNumber(GeneralValue value, std::shared_ptr<const ObjTypeFunda> objType = nullptr);
+  AstNumber(GeneralValue value, AstObjType* astObjType = nullptr);
   AstNumber(GeneralValue value, ObjTypeFunda::EType eType);
-
- 	const ObjTypeFunda& objType() const;
+  ~AstNumber();
 
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
   GeneralValue value() const { return m_value; }
+  AstObjType& declaredAstObjType() const;
+
   virtual bool isCTConst() const { return true; }
+
 private:
   const GeneralValue m_value;
+  /** Guaranteed to be non-null */
+  const std::unique_ptr<AstObjType> m_declaredAstObjType;
 };
 
 /** Here symbol as an synonym to identifier */
@@ -400,6 +403,17 @@ public:
   SemanticAnalizer. */
   virtual const ObjType& objType() const =0; 
   virtual std::shared_ptr<const ObjType> objTypeAsSp() const =0; 
+  virtual void createAndSetObjType() =0;
+  virtual void printValueTo(std::ostream& os, GeneralValue value) const =0;
+  virtual bool isValueInRange(GeneralValue value) const =0;
+  /** The objType of the created AstObject is immutable, since the AstObject
+  has the semantics of a temporary. Asserts in case of there is no default
+  AstObject. The returned AstObject is set up as if it had passed all passes
+  prior to SemanticAnalizer, but not yet passed SemanticAnalizer's pass. */
+  virtual AstObject* createDefaultAstObjectForSemanticAnalizer() = 0;
+
+  // decorations for IrGen
+  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const =0;
 };
 
 class AstObjTypeSymbol : public AstObjType {
@@ -409,13 +423,16 @@ public:
 
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
+  void printValueTo(std::ostream& os, GeneralValue value) const override;
+  bool isValueInRange(GeneralValue value) const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer() override;
 
   const ObjType& objType() const override; 
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
 
   const std::string name() const { return m_name; }
 
-  void createAndSetObjType();
+  void createAndSetObjType() override;
 
 private:
   friend class TestingAstObjTypeSymbol;
@@ -428,6 +445,10 @@ private:
 
   const std::string m_name;
   std::shared_ptr<const ObjType> m_objType;
+
+  // decorations for IrGen
+public:
+  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
 };
 
 class AstObjTypeQuali : public AstObjType {
@@ -436,6 +457,9 @@ public:
 
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
+  void printValueTo(std::ostream& os, GeneralValue value) const override;
+  bool isValueInRange(GeneralValue value) const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer() override;
 
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
@@ -443,12 +467,16 @@ public:
   ObjType::Qualifiers qualifiers() const { return m_qualifiers; }
   AstObjType& targetType() const { return *m_targetType; }
 
-  void createAndSetObjType();
+  void createAndSetObjType() override;
 
 private:
   ObjType::Qualifiers m_qualifiers;
   std::unique_ptr<AstObjType> m_targetType;
   std::shared_ptr<const ObjType> m_objType;
+
+  // decorations for IrGen
+public:
+  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
 };
 
 class AstObjTypePtr : public AstObjType {
@@ -457,17 +485,24 @@ public:
 
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
+  void printValueTo(std::ostream& os, GeneralValue value) const override;
+  bool isValueInRange(GeneralValue value) const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer() override;
 
   const ObjTypePtr& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
 
   AstObjType& pointee() const { return *m_pointee; }
 
-  void createAndSetObjType();
+  void createAndSetObjType() override;
 
 private:
   std::unique_ptr<AstObjType> m_pointee;
   std::shared_ptr<const ObjTypePtr> m_objType;
+
+  // decorations for IrGen
+public:
+  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
 };
 
 /** Definition of a class. See also ObjTypeClass */
@@ -479,6 +514,9 @@ public:
 
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
+  void printValueTo(std::ostream& os, GeneralValue value) const override;
+  bool isValueInRange(GeneralValue value) const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer() override;
 
   const ObjTypeClass& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
@@ -486,7 +524,7 @@ public:
   const std::string& name() const { return m_name; }
   const std::vector<AstDataDef*>& dataMembers() const { return *m_dataMembers; }
 
-  void createAndSetObjType();
+  void createAndSetObjType() override;
 
 private:
   const std::string m_name;
@@ -494,6 +532,10 @@ private:
   to be non null, also the pointer to the vector.*/
   const std::unique_ptr<std::vector<AstDataDef*>> m_dataMembers;
   std::shared_ptr<const ObjTypeClass> m_objType;
+
+  // decorations for IrGen
+public:
+  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
 };
 
 /** Maybe it should be an independent type, that is not derive from AstNode */

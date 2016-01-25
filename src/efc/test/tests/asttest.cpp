@@ -16,3 +16,66 @@ TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(toName)) {
 TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(toType)) {
   EXPECT_EQ(ObjTypeFunda::eInt, TestingAstObjTypeSymbol::toType("int"));
 }
+
+TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(
+    createDefaultAstObjectForSemanticAnalizer)) {
+
+  // examples: fundamental types
+  {
+    vector<ObjTypeFunda::EType> inputTypes = {
+      ObjTypeFunda::eBool, ObjTypeFunda::eChar, ObjTypeFunda::eInt,
+      ObjTypeFunda::eDouble};
+
+    for (const auto type : inputTypes ) {
+      // setup
+      const auto UUT = make_unique<AstObjTypeSymbol>(type);
+
+      // exercise
+      const auto defaultValue = unique_ptr<AstNumber>(
+        dynamic_cast<AstNumber*>(
+          UUT->createDefaultAstObjectForSemanticAnalizer()));
+
+      // verify
+      EXPECT_TRUE( defaultValue != nullptr );
+      EXPECT_EQ( 0.0, defaultValue->value());
+      EXPECT_TRUE( defaultValue->declaredAstObjType().objType().
+        matchesFully(ObjTypeFunda(type)));
+    }
+  }
+
+  // example: objType of created AstNumber is always immutable
+  {
+    // setup
+    const auto UUT = make_unique<AstObjTypeQuali>(ObjType::eMutable,
+      new AstObjTypeSymbol(ObjTypeFunda::eInt));
+
+    // exercise
+    const auto defaultValue = unique_ptr<AstNumber>(
+      dynamic_cast<AstNumber*>(
+        UUT->createDefaultAstObjectForSemanticAnalizer()));
+
+    // verify
+    EXPECT_TRUE( defaultValue != nullptr );
+    EXPECT_EQ( 0.0, defaultValue->value());
+    EXPECT_TRUE( defaultValue->declaredAstObjType().objType().
+      matchesFully(ObjTypeFunda(ObjTypeFunda::eInt)));
+  }
+
+  // example: pointer
+  {
+    // setup
+    const auto UUT = make_unique<AstObjTypePtr>(
+      new AstObjTypeSymbol(ObjTypeFunda::eInt));
+
+    // exercise
+    const auto defaultValue = unique_ptr<AstNumber>(
+      dynamic_cast<AstNumber*>(
+        UUT->createDefaultAstObjectForSemanticAnalizer()));
+
+    // verify
+    EXPECT_TRUE( defaultValue != nullptr );
+    EXPECT_EQ( 0.0, defaultValue->value());
+    EXPECT_TRUE( defaultValue->declaredAstObjType().objType().
+      matchesFully(ObjTypeFunda(ObjTypeFunda::eNullptr)));
+  }
+}
