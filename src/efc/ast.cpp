@@ -62,6 +62,7 @@ AstNop::AstNop() :
 AstBlock::AstBlock(AstObject* body) :
   m_name(makeUniqueInternalName()),
   m_body(body) {
+  assert(m_body);
 }
 
 AstBlock::~AstBlock() {

@@ -98,6 +98,7 @@ public:
 private:
   static std::string makeUniqueInternalName();
   const std::string m_name;
+  /** Guaranteed to be non-null */
   std::unique_ptr<AstObject> m_body;
 };
 
