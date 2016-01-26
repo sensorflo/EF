@@ -559,6 +559,61 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     42.77, spec);
 }
 
+
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_a_dot_assignment_expression,
+    THEN_its_value_is_the_lhs_data_object)) {
+
+  string spec = "Reading from the dot assignment expression gives the value "
+    "of the lhs after the assignment, which in turn equals value of the rhs.";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstSeq(
+      new AstDataDef("foo",
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
+      new AstOperator(".=",
+        new AstSymbol("foo"),
+        new AstNumber(42))),
+    42, spec);
+
+  spec = "Writing to the dot assignment expression modifies the lhs data object.";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstSeq(
+      new AstDataDef("foo",
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
+      new AstOperator('=',
+        new AstOperator(".=",
+          new AstSymbol("foo"),
+          new AstNumber(42)),
+        new AstNumber(77)),
+      new AstSymbol("foo")),
+    77, spec);
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_a_seq_expression,
+    THEN_its_lhs_is_evaluated_AND_then_its_rhs_is_evaluated_and_its_value_is_returned)) {
+
+  string spec = "Reading from the seq expression gives the value of the rhs";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstSeq(
+      new AstNumber(42),
+      new AstNumber(77)),
+    77, spec);
+
+  spec = "Writing to the seq assignment expression modifies the rhs data object.";
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstSeq(
+      new AstDataDef("foo",
+        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
+      new AstOperator('=',
+        new AstSeq(
+          new AstNumber(42),
+          new AstSymbol("foo")),
+        new AstNumber(77)),
+      new AstSymbol("foo")),
+    77, spec);
+}
+
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_seq_with_some_expressions_not_having_a_value_but_the_last_having_a_value,
     genIrInImplicitMain,
@@ -727,13 +782,6 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstNumber(42)),
     spec, int, "foo", 42)
 
-  spec = "Example: one argument, which however is ignored, returning "
-    "a literal";
-  TEST_GEN_IR_1ARG(
-    pe.mkFunDef("foo", ObjTypeFunda::eInt,
-      new AstNumber(42)),
-    spec, int, "foo", int, 42, 0);
-
   spec = "Example: one argument which is returned";
   TEST_GEN_IR_1ARG(
     pe.mkFunDef("foo",
@@ -770,62 +818,6 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
-    a_function_definition_in_a_function_body,
-    genIrInImplicitMain,
-    succeeds)) {
-  
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstSeq(
-      pe.mkFunDef("foo", ObjTypeFunda::eInt,
-        new AstSeq(
-          pe.mkFunDef("bar", ObjTypeFunda::eInt,
-            new AstNumber(42)),
-          new AstFunCall(new AstSymbol("bar")))),
-      new AstFunCall(new AstSymbol("foo"))),
-    42, "");
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
-    a_function_call_to_an_defined_function,
-    genIrInImplicitMain,
-    returns_result_of_that_function_call)) {
-
-  string spec = "Trivial function with zero arguments returning a constant";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstSeq(
-      pe.mkFunDef("foo", ObjTypeFunda::eInt,
-        new AstNumber(42)),
-      new AstFunCall(new AstSymbol("foo"))),
-    42, spec);
-
-  spec = "Simple function with one argument which is ignored and a constant is returned";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstSeq(
-      pe.mkFunDef("foo",
-        AstFunDef::createArgs(
-          new AstDataDef("x", ObjTypeFunda::eInt)),
-        new AstObjTypeSymbol(ObjTypeFunda::eInt),
-        new AstNumber(42)),
-      new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
-    42, spec);
-
-  spec = "Simple function with two arguments whichs sum is returned";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstSeq(
-      pe.mkFunDef("add",
-        AstFunDef::createArgs(
-          new AstDataDef("x", ObjTypeFunda::eInt),
-          new AstDataDef("y", ObjTypeFunda::eInt)),
-        new AstObjTypeSymbol(ObjTypeFunda::eInt),
-        new AstOperator('+',
-          new AstSymbol("x"),
-          new AstSymbol("y"))),
-      new AstFunCall(new AstSymbol("add"),
-        new AstCtList(new AstNumber(1), new AstNumber(2)))),
-    1+2, spec);
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME(
     a_call_to_a_terminating_recursive_function,
     genIrInImplicitMain,
     returns_result_of_that_function_call)) {
@@ -845,6 +837,22 @@ TEST(IrGenTest, MAKE_TEST_NAME(
               new AstCtList(new AstOperator("-", new AstSymbol("x"), new AstNumber(1))))))),
       new AstFunCall(new AstSymbol("fact"), new AstCtList(new AstNumber(2)))),
     2*1, "");
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME(
+    a_nested_function_definition_AND_calls_to_both,
+    genIrInImplicitMain,
+    succeeds)) {
+
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstSeq(
+      pe.mkFunDef("foo", ObjTypeFunda::eInt,
+        new AstSeq(
+          pe.mkFunDef("bar", ObjTypeFunda::eInt,
+            new AstNumber(42)),
+          new AstFunCall(new AstSymbol("bar")))),
+      new AstFunCall(new AstSymbol("foo"))),
+    42, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -962,60 +970,6 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
       new AstSymbol("spy_sum")),            // should have been increased once
                                             // -> value should be 1
     1, "");
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME2(
-    GIVEN_a_dot_assignment_expression,
-    THEN_its_value_is_the_lhs_data_object)) {
-
-  string spec = "Reading from the dot assignment expression gives the value "
-    "of the lhs after the assignment, which in turn equals value of the rhs.";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstSeq(
-      new AstDataDef("foo",
-        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
-      new AstOperator(".=",
-        new AstSymbol("foo"),
-        new AstNumber(42))),
-    42, spec);
-
-  spec = "Writing to the dot assignment expression modifies the lhs data object.";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstSeq(
-      new AstDataDef("foo",
-        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
-      new AstOperator('=',
-        new AstOperator(".=",
-          new AstSymbol("foo"),
-          new AstNumber(42)),
-        new AstNumber(77)),
-      new AstSymbol("foo")),
-    77, spec);
-}
-
-TEST(IrGenTest, MAKE_TEST_NAME2(
-    GIVEN_a_seq_expression,
-    THEN_its_value_is_the_rhs_data_object)) {
-
-  string spec = "Reading from the seq expression gives the value of the rhs";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstSeq(
-      new AstNumber(42),
-      new AstNumber(77)),
-    77, spec);
-
-  spec = "Writing to the seq assignment expression modifies the rhs data object.";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstSeq(
-      new AstDataDef("foo",
-        new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
-      new AstOperator('=',
-        new AstSeq(
-          new AstNumber(42),
-          new AstSymbol("foo")),
-        new AstNumber(77)),
-      new AstSymbol("foo")),
-    77, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(
