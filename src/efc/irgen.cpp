@@ -369,32 +369,30 @@ void IrGen::visit(AstDataDef& dataDef) {
   // note that AstDataDef being function parameters are _not_ handled here but
   // in visit of AstFunDef
 
-  Object*const object = dataDef.object();
-  assert(object);
-
-  const auto ctorArgs = dataDef.ctorArgs().childs();
-
-  // define m_value (type Value*) of symbol table entry. For values that is
-  // trivial. For variables aka allocas first an alloca has to be created.
+  // determine initializer object
+  const auto initObj_ = [&]() {
+    const auto ctorArgs = dataDef.ctorArgs().childs();
+    // currently a data object must be initialized withe exactly one
+    // initializer
+    assert(ctorArgs.size()==1);
+    return callAcceptOn(*ctorArgs.front());
+  };
   const ObjType& objType = dataDef.objType();
   const auto initObj = dataDef.doNotInit() ?
     UndefValue::get(objType.llvmType()) :
-    ( assert(ctorArgs.size()==1), // currently a data object must be initialized withe exactly one initializer
-      callAcceptOn(*ctorArgs.front()));
+    initObj_();
   assert(initObj);
 
+  // create LLVM value and assign it to Object's IrAddr
+  Object*const object = dataDef.object();
+  assert(object);
   if ( object->storageDuration() == StorageDuration::eStatic ) {
     GlobalVariable* variableAddr = new GlobalVariable( *m_module, objType.llvmType(),
       ! (objType.qualifiers() & ObjType::eMutable), GlobalValue::InternalLinkage,
       static_cast<Constant*>(initObj),
       dataDef.name());
     object->setIrAddr(variableAddr);
-    // don't object->setIrAddr(...) since the initialization of a static
-    // variable shall not occur again at run-time when controll flow reaches
-    // the data definition expresssion.
-  }
-
-  else {
+  } else {
     object->irInitLocal(initObj, m_builder, dataDef.name());
   }
 }
