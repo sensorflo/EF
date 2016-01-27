@@ -36,6 +36,7 @@ const char* toStr(Error::No no) {
   case Error::eSameArgWasDefinedMultipleTimes: return "eSameArgWasDefinedMultipleTimes";
   case Error::eObjectExpected: return "eObjectExpected";
   case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
+  case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization";
   case Error::eCnt: return "<unknown>";
   }
   return "<unknown>";

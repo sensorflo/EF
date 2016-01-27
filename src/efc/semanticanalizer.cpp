@@ -254,6 +254,16 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
   assert(*entity);
   const auto object = std::dynamic_pointer_cast<Object>(*entity);
   assert(object);
+
+  // 1) note that the access of this node is querried, as opposed to the
+  //    access of the associated object (which is cummulative)
+  if (object->storageDuration()==StorageDuration::eLocal &&
+    !object->isInitialized() &&
+    symbol.access() != eIgnore /*1)*/) {
+    Error::throwError(m_errorHandler,
+      Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization);
+  }
+
   object->addAccess(symbol.access());
   symbol.setObject(move(object));
   postConditionCheck(symbol);
@@ -351,6 +361,8 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     // AstDataDef with storage duration eMember have no associated Object, thus
     // it's meaningless to assign 'that object' an access value.
     dataDef.object()->addAccess(dataDef.access());
+
+    dataDef.object()->setIsInitialized(true);
 
     postConditionCheck(dataDef);
   }

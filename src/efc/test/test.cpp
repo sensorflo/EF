@@ -64,3 +64,24 @@ string amend(const Env& env) {
   ss << "\nEnvironment:\n" << env;
   return ss.str();
 }
+
+AstObject* createAccessTo(AstObject* obj, Access access) {
+  // All these have to honor the rule of not eIgnore-ing (see Access) an
+  // AstNode, details see eComputedValueNotUsed.
+  switch (access) {
+  case eRead:
+    return new AstDataDef(Env::makeUniqueInternalName(), ObjTypeFunda::eInt, obj);
+  case eWrite:
+    return new AstOperator('=', obj, new AstNumber(0));
+  case eTakeAddress:
+    return new AstDataDef(Env::makeUniqueInternalName(),
+      new AstObjTypePtr(new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
+      new AstOperator('&', obj));
+  case eIgnore:
+    return new AstSeq(obj, new AstNumber(0));
+  }
+}
+
+AstObject* createAccessTo(const string& symbolName, Access access) {
+  return createAccessTo(new AstSymbol(symbolName), access);
+}

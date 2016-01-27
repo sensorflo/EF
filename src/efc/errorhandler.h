@@ -20,12 +20,16 @@ public:
     eNoSuchMember,
     eNotInFunBodyContext,
     eUnreachableCode,
+    // Should actually be 'an astnode node without sideeffect and which's
+    // ObjType is neither of {eVoid, eNoreturn} cannot have an Access of
+    // eIgnore'
     eComputedValueNotUsed,
     eCTConstRequired,
     eRetTypeCantHaveMutQualifier,
     eSameArgWasDefinedMultipleTimes,
     eObjectExpected,
     eOnlyLocalStorageDurationApplicable,
+    eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization,
     eCnt
   };
 

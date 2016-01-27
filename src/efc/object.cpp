@@ -10,6 +10,7 @@ Object::Object(StorageDuration storageDuration) :
   m_objType(nullptr),
   m_storageDuration(storageDuration),
   m_isModifiedOrRevealsAddr(false),
+  m_isInitialized(false),
   m_irValueOrAddr(nullptr) {}
 
 Object::Object(shared_ptr<const ObjType> objType,
@@ -17,6 +18,7 @@ Object::Object(shared_ptr<const ObjType> objType,
   m_objType( (assert(objType.get()), move(objType))),
   m_storageDuration(storageDuration),
   m_isModifiedOrRevealsAddr(false),
+  m_isInitialized(false),
   m_irValueOrAddr(NULL) {}
 
 void Object::setObjType(std::shared_ptr<const ObjType> objType) {

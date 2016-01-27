@@ -38,11 +38,14 @@ public:
   (equals `can't be optimized to be a SSA value only') and `actually is stored
   in memory'. */
   bool isStoredInMemory() const;
+  bool isInitialized() { return m_isInitialized; }
+  void setIsInitialized(bool isInitialized) { m_isInitialized = isInitialized; }
 
 private:
   std::shared_ptr<const ObjType> m_objType;
   const StorageDuration m_storageDuration;
   bool m_isModifiedOrRevealsAddr;
+  bool m_isInitialized;
 
   // decorations for IrGen
 public:

@@ -169,7 +169,8 @@ public:
     AstObject* initObj);
   AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
     AstObject* initObj = nullptr);
-  AstDataDef(const std::string& name, ObjTypeFunda::EType declaredObjType,
+  AstDataDef(const std::string& name,
+    ObjTypeFunda::EType declaredObjType = ObjTypeFunda::eInt,
     AstObject* initObj = nullptr);
   virtual ~AstDataDef();
 

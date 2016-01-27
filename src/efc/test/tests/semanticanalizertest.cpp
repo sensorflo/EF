@@ -417,6 +417,60 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     "");
 }
 
+// Note that the error is
+// eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization, as opposed to
+// eUnknownName, because the name _is_ known and really refers to the local
+// data object, it's just not allowed to access it yet, except for eIgnore
+// access
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+    a_non_ignore_access_to_a_local_data_object_before_its_initialization,
+    transform,
+    reports_eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization)) {
+
+  for (const auto& access : {eRead, eWrite, eTakeAddress}) {
+    string spec = "Trivial example";
+    TEST_ASTTRAVERSAL_REPORTS_ERROR(
+      new AstSeq(
+        createAccessTo("x", access),
+        new AstDataDef("x")),
+      Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization, spec);
+
+    spec = "Within the initializer subtree the data object is not yet considered initialized";
+    TEST_ASTTRAVERSAL_REPORTS_ERROR(
+      new AstDataDef("x", ObjTypeFunda::eInt, createAccessTo("x", access)),
+      Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization, spec);
+  }
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+    an_ignore_access_to_a_local_data_object_before_its_initialization,
+    transform,
+    succeeds,
+    BECAUSE_the_name_really_is_valid_the_data_object_just_is_not_initialized_yet)) {
+  string spec = "Trivial example";
+  TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
+    new AstSeq(
+      createAccessTo("x", eIgnore),
+      new AstDataDef("x")), spec);
+
+  spec = "Within the initializer subtree the data object is not yet considered initialized";
+  TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
+    new AstDataDef("x", ObjTypeFunda::eInt, createAccessTo("x", eIgnore)),
+    spec);
+
+  spec = "A later valid non-ignore access shall not have an influence";
+  for (const auto& otherAccess : {eRead, eWrite, eTakeAddress}) {
+    TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
+      new AstSeq(
+        createAccessTo("x", eIgnore),
+        new AstDataDef("x",
+          new AstObjTypeQuali(ObjType::eMutable,
+            new AstObjTypeSymbol(ObjTypeFunda::eInt))),
+        createAccessTo("x", otherAccess)),
+      spec);
+  }
+}
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     a_data_obj_definition_in_a_block,
     transform,
