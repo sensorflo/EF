@@ -377,22 +377,21 @@ void IrGen::visit(AstDataDef& dataDef) {
     assert(ctorArgs.size()==1);
     return callAcceptOn(*ctorArgs.front());
   };
-  const ObjType& objType = dataDef.objType();
   const auto initObj = dataDef.doNotInit() ?
-    UndefValue::get(objType.llvmType()) :
+    UndefValue::get(dataDef.objType().llvmType()) :
     initObj_();
   assert(initObj);
 
-  // create LLVM value and assign it to Object's IrAddr
+  // initialize data object defined by dataDef with initObj.
   Object*const object = dataDef.object();
   assert(object);
   if ( object->storageDuration() == StorageDuration::eStatic ) {
-    GlobalVariable* variableAddr = new GlobalVariable( *m_module, objType.llvmType(),
-      ! (objType.qualifiers() & ObjType::eMutable), GlobalValue::InternalLinkage,
-      static_cast<Constant*>(initObj),
-      dataDef.name());
-    object->setIrAddr(variableAddr);
+    const auto variableAddr = dynamic_cast<GlobalVariable*>(
+      dataDef.object()->irAddr());
+    variableAddr->setInitializer(static_cast<Constant*>(initObj));
   } else {
+    // For local data objects no LLVM value has yet been created by
+    // IrGenForwardDeclarator, so do it now.
     object->irInitLocal(initObj, m_builder, dataDef.name());
   }
 }

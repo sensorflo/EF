@@ -16,6 +16,15 @@ void IrGenForwardDeclarator::operator()(AstNode& root) {
 
 void IrGenForwardDeclarator::visit(AstDataDef& dataDef) {
   AstDefaultIterator::visit(dataDef);
+
+  const auto object = dataDef.object();
+  assert(object);
+  if ( object->storageDuration() == StorageDuration::eStatic ) {
+    object->setIrAddr(
+      new GlobalVariable(m_module, dataDef.objType().llvmType(),
+        !(dataDef.objType().qualifiers() & ObjType::eMutable),
+        GlobalValue::InternalLinkage, nullptr, dataDef.name()));
+  }
 }
 
 void IrGenForwardDeclarator::visit(AstFunDef& funDef) {

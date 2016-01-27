@@ -987,6 +987,22 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_a_reference_to_an_static_data_object_before_its_defintion,
+    THEN_that_changes_nothing)) {
+
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstSeq(
+      new AstDataDef("x", ObjTypeFunda::eInt,
+        new AstSymbol("foo")),
+      new AstDataDef("foo",
+        new AstObjTypeSymbol(ObjTypeFunda::eInt),
+        StorageDuration::eStatic,
+        new AstNumber(42)),
+      new AstSymbol("x")),
+    42, "");
+}
+
+TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_data_object_defintion_with_an_explict_or_implicit_initialization,
     THEN_a_later_read_of_that_data_object_delivers_its_current_value)) {
 
