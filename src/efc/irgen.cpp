@@ -2,6 +2,7 @@
 #include "ast.h"
 #include "object.h"
 #include "errorhandler.h"
+#include "irgenforwarddeclarator.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/IR/Value.h"
 #include "llvm/IR/LLVMContext.h"
@@ -36,6 +37,8 @@ the AST, only declarations or definitions are allowed.
 \pre SemanticAnalizer must have massaged the AST and the Env */
 unique_ptr<Module> IrGen::genIr(AstNode& root) {
   m_module = std::make_unique<Module>("Main", getGlobalContext());
+
+  IrGenForwardDeclarator{m_errorHandler, *m_module}(root);
 
   root.accept(*this);
 
@@ -299,26 +302,8 @@ void IrGen::visit(AstSymbol& symbol) {
 }
 
 void IrGen::visit(AstFunDef& funDef) {
-  // create IR function with given name and signature
-  vector<Type*> llvmArgs;
-  for ( const auto& astArg : funDef.declaredArgs() ) {
-    llvmArgs.push_back(astArg->objType().llvmType());
-  }
-  auto llvmFunctionType = FunctionType::get(
-    funDef.declaredRetAstObjType().objType().llvmType(), llvmArgs, false);
-  auto functionIr = Function::Create( llvmFunctionType,
-    Function::ExternalLinkage, funDef.name(), m_module.get() );
+  const auto functionIr = dynamic_cast<llvm::Function*>(funDef.object()->irAddr());
   assert(functionIr);
-
-  // If the names differ that means a function with that name already existed,
-  // so LLVM automaticaly chose a new name. That cannot be since above our
-  // environment said the name is unique.
-  assert(functionIr->getName() == funDef.name());
-
-  // Before accepting the body to facilitate recursive calls. As soon as EF
-  // supports calling method which are defined later in the AST that should
-  // not be an relevant issue anymore.
-  funDef.object()->setIrAddr(functionIr);
 
   if ( m_builder.GetInsertBlock() ) {
     m_BasicBlockStack.push(m_builder.GetInsertBlock());

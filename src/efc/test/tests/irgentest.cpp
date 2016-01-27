@@ -839,6 +839,20 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     2*1, "");
 }
 
+TEST(IrGenTest, MAKE_TEST_NAME2(
+    GIVEN_a_function_call_before_that_functions_defintion,
+    THEN_that_changes_nothing)) {
+
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(
+    new AstSeq(
+      new AstDataDef("x", ObjTypeFunda::eInt,
+        new AstFunCall(new AstSymbol("foo"))),
+      pe.mkFunDef("foo", ObjTypeFunda::eInt,
+        new AstNumber(42)),
+      new AstSymbol("x")),
+    42, "");
+}
+
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_nested_function_definition_AND_calls_to_both,
     genIrInImplicitMain,
