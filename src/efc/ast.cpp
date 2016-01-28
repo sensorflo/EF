@@ -1,4 +1,5 @@
 #include "ast.h"
+#include "env.h"
 #include "astvisitor.h"
 #include "astprinter.h"
 #include "errorhandler.h"
@@ -60,19 +61,12 @@ AstNop::AstNop() :
 }
 
 AstBlock::AstBlock(AstObject* body) :
-  m_name(makeUniqueInternalName()),
+  m_name(Env::makeUniqueInternalName("$block")),
   m_body(body) {
   assert(m_body);
 }
 
 AstBlock::~AstBlock() {
-}
-
-string AstBlock::makeUniqueInternalName() {
-  static auto uniqueNumber = 0U;
-  stringstream ss;
-  ss << "$block" << ++uniqueNumber;
-  return ss.str();
 }
 
 AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child) :

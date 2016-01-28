@@ -1,6 +1,7 @@
 #include "env.h"
 #include "entity.h"
 #include <algorithm>
+#include <thread>
 using namespace std;
 
 namespace {
@@ -98,6 +99,17 @@ shared_ptr<Entity>* Env::find(const string& name) {
     }
   }
   return nullptr;
+}
+
+string Env::makeUniqueInternalName(string baseName) {
+  thread_local auto thread_local_cnt = 0U;
+  ++thread_local_cnt;
+  stringstream ss{baseName};
+  if ( baseName.empty() ) {
+    ss << "$tmp";
+  }
+  ss << this_thread::get_id() << "_" << thread_local_cnt;
+  return ss.str();
 }
 
 void Env::ascentScope() {

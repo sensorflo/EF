@@ -48,6 +48,8 @@ public:
   path up to the root, returning the first occurence found. */
   std::shared_ptr<Entity>* find(const std::string& name);
 
+  static std::string makeUniqueInternalName(std::string baseName = "");
+
 private:
   struct Node final {
   public:
