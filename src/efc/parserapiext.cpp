@@ -80,7 +80,7 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_NOP, {"NOP", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_RETURN, {"RETURN", SVTVoid, TKStarter}},
     { Parser::token::TOK_EQUAL, {"EQUAL", SVTVoid, TKComponentOrAmbigous}},
-    { Parser::token::TOK_DOT_EQUAL, {"DOT_EQUAL", SVTVoid, TKComponentOrAmbigous}},
+    { Parser::token::TOK_EQUAL_LESS, {"EQUAL_LESS", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_COLON_EQUAL, {"COLON_EQUAL", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_COMMA, {"COMMA", SVTVoid, TKSeparator}},
     { Parser::token::TOK_SEMICOLON, {"SEMICOLON", SVTVoid, TKSeparator}},

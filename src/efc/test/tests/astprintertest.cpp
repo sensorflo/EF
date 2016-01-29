@@ -37,7 +37,7 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
 
   spec = "AstOperator";
   EXPECT_TOSTR_EQ( "=(x 77)"   , AstOperator('='                , new AstSymbol("x"), new AstNumber(77)), spec);
-  EXPECT_TOSTR_EQ( ".=(x 77)"  , AstOperator(".="               , new AstSymbol("x"), new AstNumber(77)), spec);
+  EXPECT_TOSTR_EQ( "=<(x 77)"  , AstOperator("=<"               , new AstSymbol("x"), new AstNumber(77)), spec);
   EXPECT_TOSTR_EQ( "+(42 77)"  , AstOperator('+'                , new AstNumber(42), new AstNumber(77)), spec);
   EXPECT_TOSTR_EQ( "!(42)"     , AstOperator('!'                , new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "!(42)"     , AstOperator("not"              , new AstNumber(42)), spec);

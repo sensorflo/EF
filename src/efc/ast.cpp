@@ -256,7 +256,7 @@ const map<const string, const AstOperator::EOperation> AstOperator::m_opMap{
   {"or", eOr},
   {"||", eOr},
   {"==", eEqualTo},
-  {".=", eDotAssign},
+  {"=<", eAssign},
   {"not", eNot}};
 
 // in case of ambiguity, prefer one letters over symbols. Also note that
@@ -266,7 +266,7 @@ const map<const AstOperator::EOperation, const std::string> AstOperator::m_opRev
   {eAnd, "and"},
   {eOr, "or"},
   {eEqualTo, "=="},
-  {eDotAssign, ".="},
+  {eAssign, "=<"},
   {eDeref, "*"}};
 
 AstOperator::AstOperator(char op, AstCtList* args) :
@@ -311,8 +311,8 @@ bool AstOperator::isBinaryLogicalShortCircuit() const {
 
 AstOperator::EClass AstOperator::classOf(AstOperator::EOperation op) {
   switch (op) {
+  case eVoidAssign:
   case eAssign:
-  case eDotAssign:
     return eAssignment;
 
   case eAdd:

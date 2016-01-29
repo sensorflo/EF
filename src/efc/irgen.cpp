@@ -214,11 +214,11 @@ void IrGen::visit(AstOperator& op) {
   }
 
   // assignment operators
-  else if (op.op()==AstOperator::eDotAssign || op.op()==AstOperator::eAssign) {
+  else if (op.op()==AstOperator::eAssign || op.op()==AstOperator::eVoidAssign) {
     astOperands.front()->accept(*this);
     auto llvmRhs = callAcceptOn(*astOperands.back());
     m_builder.CreateStore( llvmRhs, astOperands.front()->object()->irAddr());
-    if ( op.op()==AstOperator::eAssign ) {
+    if ( op.op()==AstOperator::eVoidAssign ) {
       llvmResult = m_abstractObject; // void
     } else {
       // op.object() is the same as astOperands.front().object(), so

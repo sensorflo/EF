@@ -144,7 +144,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::
 "&&"                return yy::Parser::make_AMPER_AMPER(loc);
 "||"                return yy::Parser::make_PIPE_PIPE(loc);
 "=="                return yy::Parser::make_EQUAL_EQUAL(loc);
-".="                return yy::Parser::make_DOT_EQUAL(loc);
+"=<"                return yy::Parser::make_EQUAL_LESS(loc);
 ",="                return yy::Parser::make_COMMA_EQUAL(loc);
 "(="                return yy::Parser::make_LPAREN_EQUAL(loc);
 "($"                return yy::Parser::make_LPAREN_DOLLAR(loc);

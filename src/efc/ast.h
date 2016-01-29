@@ -267,7 +267,7 @@ private:
 class AstOperator : public AstObject {
 public:
   enum EOperation {
-    eAssign = '=',
+    eVoidAssign = '=',
     eAdd = '+',
     eSub = '-',
     eMul = '*', // '*' is ambigous. can also mean eDeref
@@ -277,7 +277,7 @@ public:
     eAnd = 128,
     eOr,
     eEqualTo,
-    eDotAssign,
+    eAssign,
     eDeref
   };
   enum EClass {

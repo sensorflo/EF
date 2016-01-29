@@ -162,11 +162,11 @@ void SemanticAnalizer::visit(AstOperator& op) {
       objType = std::make_unique<ObjTypeFunda>(ObjTypeFunda::eBool);
     }
     // The object denoted by the dot-assignment is exactly that of lhs
-    else if ( opop == AstOperator::eDotAssign ) {
+    else if ( opop == AstOperator::eAssign ) {
       op.setObject(argschilds.front()->objectAsSp());
     }
     // Assignment is always of object type void
-    else if ( opop == AstOperator::eAssign ) {
+    else if ( opop == AstOperator::eVoidAssign ) {
       objType = make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid);
     }
     // Addrof 

@@ -998,7 +998,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   TestingSemanticAnalizer UUT(env, errorHandler);
   ParserExt pe(UUT.m_env, UUT.m_errorHandler);
   AstObject* dotAssignmentAst =
-    new AstOperator(".=",
+    new AstOperator("=<",
       new AstSymbol("x"),
       new AstNumber(0, ObjTypeFunda::eInt));
   unique_ptr<AstObject> ast{

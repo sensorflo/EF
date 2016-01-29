@@ -379,7 +379,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eAnd,
         new AstNumber(0, ObjTypeFunda::eBool),
-        new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
+        new AstOperator("=<", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
       new AstSymbol("x")),
     true, "");
 
@@ -391,7 +391,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eAnd,
         new AstNumber(1, ObjTypeFunda::eBool),
-        new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
+        new AstOperator("=<", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
       new AstSymbol("x")),
     false, "");
 
@@ -403,7 +403,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eOr,
         new AstNumber(1, ObjTypeFunda::eBool),
-        new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
+        new AstOperator("=<", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
       new AstSymbol("x")),
     true, "");
 
@@ -415,7 +415,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
         new AstNumber(1, ObjTypeFunda::eBool)),
       new AstOperator(AstOperator::eOr,
         new AstNumber(0, ObjTypeFunda::eBool),
-        new AstOperator(".=", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
+        new AstOperator("=<", new AstSymbol("x"), new AstNumber(0, ObjTypeFunda::eBool))),
       new AstSymbol("x")),
     false, "");
 }
@@ -570,7 +570,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     new AstSeq(
       new AstDataDef("foo",
         new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
-      new AstOperator(".=",
+      new AstOperator("=<",
         new AstSymbol("foo"),
         new AstNumber(42))),
     42, spec);
@@ -581,7 +581,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstDataDef("foo",
         new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
       new AstOperator('=',
-        new AstOperator(".=",
+        new AstOperator("=<",
           new AstSymbol("foo"),
           new AstNumber(42)),
         new AstNumber(77)),
@@ -1060,13 +1060,13 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstSymbol("foo")),
     77, spec);
 
-  spec = "Example: local data object and using operator '.='";
+  spec = "Example: local data object and using operator '=<'";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("foo",
         new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         new AstNumber(42)),
-      new AstOperator(".=",
+      new AstOperator("=<",
         new AstSymbol("foo"),
         new AstNumber(77)),
       new AstSymbol("foo")),

@@ -104,7 +104,7 @@ and by declaration of free function yylex */
   NOP "nop"
   RETURN "return"
   EQUAL "="
-  DOT_EQUAL ".="
+  EQUAL_LESS "=<"
   COLON_EQUAL ":="
   COMMA ","
   SEMICOLON ";"
@@ -143,7 +143,7 @@ and by declaration of free function yylex */
 %token <std::string> ID "identifier"
 %token <NumberToken> NUMBER "number"
 %precedence ASSIGNEMENT
-%right EQUAL DOT_EQUAL
+%right EQUAL EQUAL_LESS
 %left PIPE_PIPE OR
 %left AMPER_AMPER AND
 %left EQUAL_EQUAL
@@ -337,7 +337,7 @@ operator_expr
 
   /* binary operators */
   | sub_expr EQUAL       sub_expr                   { $$ = new AstOperator('=', $1, $3); }
-  | sub_expr DOT_EQUAL   sub_expr                   { $$ = new AstOperator(".=", $1, $3); }
+  | sub_expr EQUAL_LESS  sub_expr                   { $$ = new AstOperator("=<", $1, $3); }
   | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eLocal, new AstCtList($3)); }
   | sub_expr OR          sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr PIPE_PIPE   sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
