@@ -510,6 +510,21 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_nested_non_local_definition_with_same_name_as_another_outer_non_local_definition,
+    genIr,
+    succeeds)) {
+  TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
+    new AstSeq(
+      pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(42)),
+      pe.mkFunDef("unrelated_name", ObjTypeFunda::eInt,
+        new AstSeq(
+          pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(42)),
+          new AstNumber(42))),
+      new AstNumber(42)),
+    "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_redefinition,
     transform,
     reports_eRedefinition)) {

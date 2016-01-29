@@ -104,12 +104,6 @@ shared_ptr<Entity>* Env::insertLeaf(const string& name,
     nullptr;
 }
 
-shared_ptr<Entity>* Env::insertLeafAtGlobalScope(const string& name) {
-  const FQNameProvider* dummy;
-  const auto newNode = m_rootScope.insert(name, dummy);
-  return newNode ? &newNode->m_entity : nullptr;
-}
-
 shared_ptr<Entity>* Env::insertScopeAndDescent(const string& name,
   const FQNameProvider*& fqNameProvider) {
   const auto newNode = m_currentScope->insert(name, fqNameProvider);
@@ -158,10 +152,6 @@ void Env::ascentScope() {
   assert(m_currentScope);
   assert(m_currentScope->m_parent);
   m_currentScope = m_currentScope->m_parent;
-}
-
-bool Env::isAtGlobalScope() {
-  return m_currentScope == &m_rootScope;
 }
 
 void Env::printTo(ostream& os, const Env::Node& node) const {

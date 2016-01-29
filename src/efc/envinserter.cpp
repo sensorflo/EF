@@ -25,8 +25,6 @@ void EnvInserter::visit(AstDataDef& dataDef) {
   AstDefaultIterator::visit(dataDef);
 
   if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
-    const auto isAtGlobalScope = m_env.isAtGlobalScope();
-
     const FQNameProvider* dummy;
     std::shared_ptr<Entity>* entity = m_env.insertLeaf(dataDef.name(), dummy);
     if (nullptr==entity) {
@@ -38,39 +36,16 @@ void EnvInserter::visit(AstDataDef& dataDef) {
     auto&& object = make_shared<Object>(dataDef.declaredStorageDuration()); // 1
     *entity = object; // 2
     dataDef.setObject(move(object)); // 3
-
-    // Insert name of static objects additionally also into root scope of
-    // environment. For more info see respective code fragment in
-    // visit(AstFunDef).
-    if ( !isAtGlobalScope &&
-      (dataDef.declaredStorageDuration() == StorageDuration::eStatic) ) {
-      auto entityAtGlobal = m_env.insertLeafAtGlobalScope(dataDef.name());
-      if ( !entityAtGlobal ) {
-        Error::throwError(m_errorHandler, Error::eRedefinition, dataDef.name());
-      }
-    }
   }
 }
 
 void EnvInserter::visit(AstFunDef& funDef) {
-  const auto isAtGlobalScope = m_env.isAtGlobalScope();
-
   std::shared_ptr<Entity>* entity{};
   const FQNameProvider* dummy;
   Env::AutoScope scope(m_env, funDef.name(), dummy, entity,
     Env::AutoScope::insertScopeAndDescent);
   if (!entity) {
     Error::throwError(m_errorHandler, Error::eRedefinition, funDef.name());
-  }
-
-  // Insert name additionally also into root scope of environment. This is
-  // because currently IrGen can't make a globally unique name out of a name
-  // nested within the environment.
-  if ( !isAtGlobalScope ) {
-    auto entityAtGlobal = m_env.insertLeafAtGlobalScope(funDef.name());
-    if ( !entityAtGlobal ) {
-      Error::throwError(m_errorHandler, Error::eRedefinition, funDef.name());
-    }
   }
 
   // 1) create an function object representing the function, 2) associate it

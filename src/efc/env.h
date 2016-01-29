@@ -42,10 +42,6 @@ public:
   if the current node already has a child with that name. */
   std::shared_ptr<Entity>* insertLeaf(const std::string& name,
     const FQNameProvider*& fqNameProvider);
-  /** As insert, but adds the child to the root, as opposed to the current
-  node. */
-  std::shared_ptr<Entity>* insertLeafAtGlobalScope(const std::string& name);
-  bool isAtGlobalScope();
 
   /** Starting at the current node, searches the name in each node, on the
   path up to the root, returning the first occurence found. */
