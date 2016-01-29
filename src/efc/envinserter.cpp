@@ -27,7 +27,8 @@ void EnvInserter::visit(AstDataDef& dataDef) {
   if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
     const auto isAtGlobalScope = m_env.isAtGlobalScope();
 
-    std::shared_ptr<Entity>* entity = m_env.insertLeaf(dataDef.name());
+    const FQNameProvider* dummy;
+    std::shared_ptr<Entity>* entity = m_env.insertLeaf(dataDef.name(), dummy);
     if (nullptr==entity) {
       Error::throwError(m_errorHandler, Error::eRedefinition, dataDef.name());
     }
@@ -55,7 +56,8 @@ void EnvInserter::visit(AstFunDef& funDef) {
   const auto isAtGlobalScope = m_env.isAtGlobalScope();
 
   std::shared_ptr<Entity>* entity{};
-  Env::AutoScope scope(m_env, funDef.name(), entity,
+  const FQNameProvider* dummy;
+  Env::AutoScope scope(m_env, funDef.name(), dummy, entity,
     Env::AutoScope::insertScopeAndDescent);
   if (!entity) {
     Error::throwError(m_errorHandler, Error::eRedefinition, funDef.name());

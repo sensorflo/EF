@@ -1,6 +1,7 @@
 #pragma once
 #include "declutils.h"
 #include "entity.h"
+#include "fqnameprovider.h"
 #include <string>
 #include <deque>
 #include <memory>
@@ -24,7 +25,8 @@ public:
 
     AutoScope(Env& env, const std::string& name, Action action);
     AutoScope(Env& env, const std::string& name,
-      std::shared_ptr<Entity>*& entity, Action action);
+      const FQNameProvider*& fqNameProvider, std::shared_ptr<Entity>*& entity,
+      Action action);
     ~AutoScope();
 
   private:
@@ -38,7 +40,8 @@ public:
   /** Inserts a new child node with the given name to the current node and
   returns a raw pointer to the entity member of the new node. Returns nullptr
   if the current node already has a child with that name. */
-  std::shared_ptr<Entity>* insertLeaf(const std::string& name);
+  std::shared_ptr<Entity>* insertLeaf(const std::string& name,
+    const FQNameProvider*& fqNameProvider);
   /** As insert, but adds the child to the root, as opposed to the current
   node. */
   std::shared_ptr<Entity>* insertLeafAtGlobalScope(const std::string& name);
@@ -51,16 +54,19 @@ public:
   static std::string makeUniqueInternalName(std::string baseName = "");
 
 private:
-  struct Node final {
+  class Node final : public FQNameProvider {
   public:
     Node(std::string name, Node* parent);
     /** Returns the just inserted node. Returns null if the given name already
     exists. */
-    Node* insert(std::string name);
+    Node* insert(std::string name, const FQNameProvider*& fqNameProvider);
     Node* find(const std::string& name);
+    const std::string& fqName() const override;
+    std::string createFqName() const;
 
     // guaranteed to be non-empty
     const std::string m_name;
+    mutable std::string m_fqName;
     // might be null, e.g. for AstBlocks
     std::shared_ptr<Entity> m_entity;
     // might be empty, e.g. for data objects. Note that it must be a container
@@ -72,11 +78,11 @@ private:
   friend std::ostream& operator<<(std::ostream&, const Env&);
 
   /** As insert, but additionally makes the new node the current node. */
-  std::shared_ptr<Entity>* insertScopeAndDescent(const std::string& name);
+  std::shared_ptr<Entity>* insertScopeAndDescent(const std::string& name,
+    const FQNameProvider*& fqNameProvider);
   std::shared_ptr<Entity>* descentScope(const std::string& name);
   void ascentScope();
   void printTo(std::ostream& os, const Node& node) const;
-  void printFullyQualifiedName(std::ostream& os, const Node& node) const;
   NEITHER_COPY_NOR_MOVEABLE(Env);
 
   Node m_rootScope;

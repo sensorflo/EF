@@ -2,17 +2,19 @@
 #include "entity.h"
 #include <algorithm>
 #include <thread>
+#include <deque>
 using namespace std;
 
 namespace {
   thread_local shared_ptr<Entity>* dummyEntity;
 }
 
-Env::Node* Env::Node::insert(string name) {
+Env::Node* Env::Node::insert(string name, const FQNameProvider*& fqNameProvider) {
   if ( find(name) ) {
     return nullptr;
   } else {
     m_children.emplace_back(move(name), this);
+    fqNameProvider = &m_children.back();
     return &m_children.back();
   }
 }
@@ -27,23 +29,58 @@ Env::Node* Env::Node::find(const string& name) {
   }
 }
 
+const string& Env::Node::fqName() const {
+  if ( m_fqName.empty() ) {
+    m_fqName = createFqName();
+  }
+  return m_fqName;
+}
+
+// special case:
+//   fully qualified name of root is equal to roots unqualified name: "$root"
+//
+// normal cases: any descendant of root. Think that roots name is cut away.
+//   fully qualified name of a roots child is ".foo"
+//   fully qualified name of a roots child child is ".foo.bar"
+string Env::Node::createFqName() const {
+  const auto thisIsRoot = nullptr == this->m_parent;
+  if ( thisIsRoot ) {
+    return m_name;
+  }
+
+  deque<const Node*> nodes{};
+  for (auto node = this; node && node->m_parent; node = node->m_parent) {
+    nodes.push_front(node);
+  }
+  assert(!nodes.empty()); // would mean this is root, but that was handled above
+
+  string fqName{};
+  for (const auto& node: nodes) {
+    fqName += ".";
+    fqName += node->m_name;
+  }
+  return fqName;
+}
+
 Env::Node::Node(string name, Node* parent) :
   m_name(move(name)),
   m_parent(parent) {
   assert(!m_name.empty());
 }
 
+thread_local const FQNameProvider* dummyFqNameProvider{};
 Env::AutoScope::AutoScope(Env& env, const string& name,
   Env::AutoScope::Action action) :
-  AutoScope(env, name, dummyEntity, action) {
+  AutoScope(env, name, dummyFqNameProvider, dummyEntity, action) {
   assert(dummyEntity);
 }
 
 Env::AutoScope::AutoScope(Env& env, const string& name,
-  shared_ptr<Entity>*& entity, Env::AutoScope::Action action) :
+  const FQNameProvider*& fqNameProvider, shared_ptr<Entity>*& entity,
+  Env::AutoScope::Action action) :
   m_env(env) {
   entity = (action == insertScopeAndDescent) ?
-    m_env.insertScopeAndDescent(name) :
+    m_env.insertScopeAndDescent(name, fqNameProvider) :
     m_env.descentScope(name);
   m_didDescent = (entity!=nullptr);
 }
@@ -59,18 +96,23 @@ Env::Env() :
   m_currentScope{&m_rootScope} {
 }
 
-shared_ptr<Entity>* Env::insertLeaf(const string& name) {
-  const auto newNode = m_currentScope->insert(name);
-  return newNode ? &newNode->m_entity : nullptr;
+shared_ptr<Entity>* Env::insertLeaf(const string& name,
+  const FQNameProvider*& fqNameProvider) {
+  const auto newNode = m_currentScope->insert(name, fqNameProvider);
+  return newNode ?
+    (fqNameProvider = newNode, &newNode->m_entity) :
+    nullptr;
 }
 
 shared_ptr<Entity>* Env::insertLeafAtGlobalScope(const string& name) {
-  const auto newNode = m_rootScope.insert(name);
+  const FQNameProvider* dummy;
+  const auto newNode = m_rootScope.insert(name, dummy);
   return newNode ? &newNode->m_entity : nullptr;
 }
 
-shared_ptr<Entity>* Env::insertScopeAndDescent(const string& name) {
-  const auto newNode = m_currentScope->insert(name);
+shared_ptr<Entity>* Env::insertScopeAndDescent(const string& name,
+  const FQNameProvider*& fqNameProvider) {
+  const auto newNode = m_currentScope->insert(name, fqNameProvider);
   if ( newNode ) {
     m_currentScope = newNode;
     return &newNode->m_entity;
@@ -148,27 +190,9 @@ void Env::printTo(ostream& os, const Env::Node& node) const {
   os << "}";
 }
 
-void Env::printFullyQualifiedName(std::ostream& os, const Node& node) const {
-  std::stack<const Node*> pathToRoot;
-  for (auto currentNode = &node;
-       currentNode;
-       currentNode = currentNode->m_parent) {
-    pathToRoot.push(currentNode);
-  }
-  auto isFirstIter = true;
-  while (!pathToRoot.empty()) {
-    if ( !isFirstIter ) {
-      os << ".";
-    }
-    isFirstIter = false;
-    os << pathToRoot.top()->m_name;
-    pathToRoot.pop();
-  }
-}
-
 ostream& operator<<(ostream& os, const Env& env) {
   os << "{currentScope=";
-  env.printFullyQualifiedName(os, *env.m_currentScope);
+  os << env.m_currentScope->fqName();
   os << ", rootScope=";
   env.printTo(os, env.m_rootScope);
   os << "}";
