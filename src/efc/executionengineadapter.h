@@ -21,8 +21,9 @@ public:
   template<typename TRet = int, typename...TArgs>
   TRet jitExecFunction(const std::string& name, TArgs...args) {
     m_executionEngine->finalizeObject();
-    void* functionVoidPtr =
-      m_executionEngine->getPointerToFunction(m_module.getFunction(name));
+    const auto function = m_module.getFunction(name);
+    assert(function);
+    void* functionVoidPtr = m_executionEngine->getPointerToFunction(function);
     assert(functionVoidPtr);
     TRet (*functionPtr)(TArgs...) = (TRet (*)(TArgs...))(intptr_t)functionVoidPtr;
     assert(functionPtr);
