@@ -31,7 +31,7 @@ JIT executing the given function, passing the given args, and verifying that
 it returns the expected result. */
 template<typename TRet, typename...TArgs>
 void testgenIr(TestingIrGen& UUT, AstObject* astRoot,
-  const string& spec, TRet expectedResult, const string functionName,
+  const string& spec, TRet expectedResult, const string fqFunctionName,
   TArgs...args) {
 
   ENV_ASSERT_TRUE( astRoot!=NULL );
@@ -49,7 +49,7 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot,
 
     // verify
     ExecutionEngineApater ee(move(module));
-    TRet result = ee.jitExecFunction<TRet,TArgs...>(functionName, args...);
+    TRet result = ee.jitExecFunction<TRet,TArgs...>(fqFunctionName, args...);
     EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot) <<
       amend(&ee.module());
   }
@@ -72,54 +72,54 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot,
 }
 
 #define TEST_GEN_IR_IN_IMPLICIT_MAIN(astRoot, expectedResult, spec) \
-  TEST_GEN_IR_0ARG(pe.mkMainFunDef(astRoot), spec, int, "main", expectedResult)
+  TEST_GEN_IR_0ARG(pe.mkMainFunDef(astRoot), spec, int, ".main", expectedResult)
 
 #define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(astRoot, expectedResult, spec) \
   TEST_GEN_IR_0ARG(                                                     \
     pe.mkFunDef("foo", ObjTypeFunda::eBool,                             \
       astRoot),                                                         \
-    spec, bool, "foo", expectedResult)
+    spec, bool, ".foo", expectedResult)
 
 #define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(astRoot, expectedResult, spec) \
   TEST_GEN_IR_0ARG(                                                     \
     pe.mkFunDef("foo", ObjTypeFunda::eChar,                             \
       astRoot),                                                         \
-    spec, unsigned char, "foo", expectedResult)
+    spec, unsigned char, ".foo", expectedResult)
 
 #define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(astRoot, expectedResult, spec) \
   TEST_GEN_IR_0ARG(                                                     \
     pe.mkFunDef("foo", ObjTypeFunda::eDouble,                           \
       astRoot),                                                         \
-    spec, double, "foo", expectedResult)
+    spec, double, ".foo", expectedResult)
 
-#define TEST_GEN_IR_0ARG(astRoot, spec, rettype, functionName,          \
+#define TEST_GEN_IR_0ARG(astRoot, spec, rettype, fqFunctionName,        \
   expectedResult)                                                       \
   {                                                                     \
     SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_0ARG)");  \
     TestingIrGen UUT;                                                   \
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
     testgenIr<rettype>(UUT, astRoot, spec, expectedResult,              \
-      functionName);                                                    \
+      fqFunctionName);                                                  \
   }
 
-#define TEST_GEN_IR_1ARG(astRoot, spec, rettype, functionName, arg1type,\
+#define TEST_GEN_IR_1ARG(astRoot, spec, rettype, fqFunctionName, arg1type, \
   expectedResult, arg1)                                                 \
   {                                                                     \
     SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_1ARG)");  \
     TestingIrGen UUT;                                                   \
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
     testgenIr<rettype, arg1type>(UUT, astRoot, spec, expectedResult,    \
-      functionName, arg1);                                              \
+      fqFunctionName, arg1);                                            \
   }
 
-#define TEST_GEN_IR_2ARG(astRoot, spec, rettype, functionName, arg1type,\
+#define TEST_GEN_IR_2ARG(astRoot, spec, rettype, fqFunctionName, arg1type,\
   arg2type, expectedResult, arg1, arg2)                                 \
   {                                                                     \
     SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_2ARG)");  \
     TestingIrGen UUT;                                                   \
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
     testgenIr<rettype, arg1type, arg2type>(UUT, astRoot, spec,          \
-      expectedResult, functionName, arg1, arg2);                        \
+      expectedResult, fqFunctionName, arg1, arg2);                      \
   }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -649,7 +649,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     auto module = UUT.genIr(*ast);
 
     // verify
-    Function* functionIr = module->getFunction("foo");
+    Function* functionIr = module->getFunction(".foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
@@ -679,7 +679,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     auto module = UUT.genIr(*ast);
 
     // verify
-    Function* functionIr = module->getFunction("foo");
+    Function* functionIr = module->getFunction(".foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
@@ -710,7 +710,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     auto module = UUT.genIr(*ast);
 
     // verify
-    Function* functionIr = module->getFunction("foo");
+    Function* functionIr = module->getFunction(".foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
@@ -739,7 +739,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     auto module = UUT.genIr(*ast);
 
     // verify
-    Function* functionIr = module->getFunction("foo");
+    Function* functionIr = module->getFunction(".foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getVoidTy(getGlobalContext()), functionIr->getReturnType())
@@ -768,7 +768,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // verify
   // todo: via e.g. global variable verify that function really was called
   ExecutionEngineApater ee(move(module));
-  EXPECT_NO_THROW( ee.jitExecFunction("foo"))
+  EXPECT_NO_THROW( ee.jitExecFunction(".foo"))
     << amendAst(ast) << amend(&ee.module());
 }
 
@@ -780,7 +780,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
   TEST_GEN_IR_0ARG(
     pe.mkFunDef("foo", ObjTypeFunda::eInt,
       new AstNumber(42)),
-    spec, int, "foo", 42)
+    spec, int, ".foo", 42)
 
   spec = "Example: one argument which is returned";
   TEST_GEN_IR_1ARG(
@@ -789,7 +789,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstDataDef("x", ObjTypeFunda::eInt)),
       new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstSymbol("x")),
-    spec, int, "foo", int, 42, 42);
+    spec, int, ".foo", int, 42, 42);
 
   spec = "Example: two arguments, returns the product";
   TEST_GEN_IR_2ARG(
@@ -801,7 +801,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
       new AstOperator('*',
         new AstSymbol("x"),
         new AstSymbol("y"))),
-    spec, int, "foo", int, int, 3*4, 3, 4);
+    spec, int, ".foo", int, int, 3*4, 3, 4);
 
   spec = "Example: multiple arguments, mixed argument types";
   TEST_GEN_IR_2ARG(
@@ -814,7 +814,23 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstSymbol("condition"),
         new AstSymbol("thenValue"),
         new AstNumber(77))),
-    spec, int, "foo", bool, int, true ? 42 : 77, true, 42);
+    spec, int, ".foo", bool, int, true ? 42 : 77, true, 42);
+
+  spec = "Example: nested function with same name as an outer function, calling outer";
+  TEST_GEN_IR_0ARG(
+    pe.mkFunDef("foo", ObjTypeFunda::eInt,
+      new AstSeq(
+        pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(42)),
+        new AstNumber(77))),
+    spec, int, ".foo", 77);
+
+  spec = "Example: nested function with same name as an outer function, calling inner";
+  TEST_GEN_IR_0ARG(
+    pe.mkFunDef("foo", ObjTypeFunda::eInt,
+      new AstSeq(
+        pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(42)),
+        new AstNumber(77))),
+    spec, int, ".foo.foo", 42);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(

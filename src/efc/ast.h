@@ -20,6 +20,7 @@ class AstConstVisitor;
 class AstVisitor;
 class Object;
 class ErrorHandler;
+class FQNameProvider;
 
 /** See also Entity */
 class AstNode {
@@ -131,6 +132,8 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
   virtual const std::string& name() const { return m_name; }
+  const std::string& fqName() const;
+  const FQNameProvider*& fqNameProvider() { return m_fqNameProvider; }
   virtual std::list<AstDataDef*>const& declaredArgs() const { return *m_args; }
   virtual AstObjType& declaredRetAstObjType() const;
   virtual AstObject& body() const { return *m_body; }
@@ -144,6 +147,7 @@ private:
 
   /** Redundant to the key of Env's key-value pair pointing to object(). */
   const std::string m_name;
+  const FQNameProvider* m_fqNameProvider;
   /** We're the owner. Is garanteed to be non-null. The shared_ptr<ObjType>
   instances are redundant to dynamic_cast<ObjTypeFun>(objType()).args().  */
   std::list<AstDataDef*>* const m_args;
@@ -181,6 +185,8 @@ public:
   virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
 
   virtual const std::string& name() const { return m_name; }
+  const std::string& fqName() const;
+  const FQNameProvider*& fqNameProvider() { return m_fqNameProvider; }
   AstObjType& declaredAstObjType() const;
   StorageDuration declaredStorageDuration() const;
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
@@ -195,6 +201,7 @@ private:
     StorageDuration storageDuration, bool& doNotInit);
 
   const std::string m_name;
+  const FQNameProvider* m_fqNameProvider;
   std::unique_ptr<AstObjType> m_declaredAstObjType;
   /** Redundant with m_object->objType(). But since in the case of
   m_declaredStorageDuration being eMember, there is no m_object, and then we

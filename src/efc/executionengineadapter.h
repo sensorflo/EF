@@ -19,9 +19,9 @@ public:
   llvm::Module& module() { return m_module; }
 
   template<typename TRet = int, typename...TArgs>
-  TRet jitExecFunction(const std::string& name, TArgs...args) {
+  TRet jitExecFunction(const std::string& fqName, TArgs...args) {
     m_executionEngine->finalizeObject();
-    const auto function = m_module.getFunction(name);
+    const auto function = m_module.getFunction(fqName);
     assert(function);
     void* functionVoidPtr = m_executionEngine->getPointerToFunction(function);
     assert(functionVoidPtr);

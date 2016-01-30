@@ -4,6 +4,7 @@
 #include "astprinter.h"
 #include "errorhandler.h"
 #include "object.h"
+#include "fqnameprovider.h"
 #include <cassert>
 #include <stdexcept>
 using namespace std;
@@ -96,6 +97,7 @@ AstFunDef::AstFunDef(const string& name,
   AstObjType* ret,
   AstObject* body) :
   m_name(name),
+  m_fqNameProvider{},
   m_args(args),
   m_ret(ret),
   m_body(body) {
@@ -127,6 +129,11 @@ list<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
   return args;
 }
 
+const string& AstFunDef::fqName() const {
+  assert(m_fqNameProvider);
+  return m_fqNameProvider->fqName();;
+}
+
 void AstFunDef::assignDeclaredObjTypeToAssociatedObject() {
   // create the ObjType of this function
   const auto& argsObjType = new list<shared_ptr<const ObjType>>;
@@ -148,6 +155,7 @@ AstObject* const AstDataDef::noInit = reinterpret_cast<AstObject*>(1);
 AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
   StorageDuration declaredStorageDuration,  AstCtList* ctorArgs) :
   m_name(name),
+  m_fqNameProvider{},
   m_declaredAstObjType(declaredAstObjType ?
     unique_ptr<AstObjType>(declaredAstObjType) :
     make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt)),
@@ -215,6 +223,11 @@ AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
 
 AstObjType& AstDataDef::declaredAstObjType() const {
   return *m_declaredAstObjType.get();
+}
+
+const string& AstDataDef::fqName() const {
+  assert(m_fqNameProvider);
+  return m_fqNameProvider->fqName();
 }
 
 StorageDuration AstDataDef::declaredStorageDuration() const {

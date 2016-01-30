@@ -110,7 +110,7 @@ void Driver::generateIr(AstNode& ast) {
 }
 
 int Driver::jitExecMain() {
-  return m_executionEngine->jitExecFunction("main");
+  return m_executionEngine->jitExecFunction(".main");
 }
 
 basic_ostream<char>& Driver::print(const location& loc) {

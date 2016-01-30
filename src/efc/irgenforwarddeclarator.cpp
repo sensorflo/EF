@@ -23,7 +23,7 @@ void IrGenForwardDeclarator::visit(AstDataDef& dataDef) {
     object->setIrAddr(
       new GlobalVariable(m_module, dataDef.objType().llvmType(),
         !(dataDef.objType().qualifiers() & ObjType::eMutable),
-        GlobalValue::InternalLinkage, nullptr, dataDef.name()));
+        GlobalValue::InternalLinkage, nullptr, dataDef.fqName()));
   }
 }
 
@@ -38,13 +38,13 @@ void IrGenForwardDeclarator::visit(AstFunDef& funDef) {
   auto llvmFunctionType = FunctionType::get(
     funDef.declaredRetAstObjType().objType().llvmType(), llvmArgs, false);
   auto functionIr = Function::Create( llvmFunctionType,
-    Function::ExternalLinkage, funDef.name(), &m_module);
+    Function::ExternalLinkage, funDef.fqName(), &m_module);
   assert(functionIr);
 
   // If the names differ that means a function with that name already existed,
   // so LLVM automaticaly chose a new name. That cannot be since above our
   // environment said the name is unique.
-  assert(functionIr->getName() == funDef.name());
+  assert(functionIr->getName() == funDef.fqName());
 
   funDef.object()->setIrAddr(functionIr);
 }
