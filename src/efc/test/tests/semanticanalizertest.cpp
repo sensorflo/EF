@@ -749,7 +749,6 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     // setup
     Env env;
     ErrorHandler errorHandler;
-    errorHandler.disableReportingOf(Error::eComputedValueNotUsed);
     TestingSemanticAnalizer UUT(env, errorHandler);
     AstObject* symbol = new AstSymbol("x");
     unique_ptr<AstObject> ast{
@@ -1845,20 +1844,6 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
         new AstReturn(new AstNumber(42)),
         new AstNumber(77))),
     Error::eUnreachableCode, "");
-}
-
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    an_node_computing_an_value_at_runtime_AND_has_no_side_effects_AND_its_result_is_not_used,
-    transform,
-    reports_eComputedValueNotUsed)) {
-  string spec = "Example: operator + being lhs of sequence operator";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstSeq(
-      new AstOperator('+',
-        new AstNumber(42),
-        new AstNumber(77)),
-      new AstNumber(11)),
-    Error::eComputedValueNotUsed, spec)
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(

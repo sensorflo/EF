@@ -30,7 +30,6 @@ const char* toStr(Error::No no) {
   case Error::eNoSuchMember: return "eNoSuchMember";
   case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
   case Error::eUnreachableCode: return "eUnreachableCode";
-  case Error::eComputedValueNotUsed: return "eComputedValueNotUsed";
   case Error::eCTConstRequired: return "eCTConstRequired";
   case Error::eRetTypeCantHaveMutQualifier: return "eRetTypeCantHaveMutQualifier";
   case Error::eSameArgWasDefinedMultipleTimes: return "eSameArgWasDefinedMultipleTimes";

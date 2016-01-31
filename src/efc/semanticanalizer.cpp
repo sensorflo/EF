@@ -152,14 +152,6 @@ void SemanticAnalizer::visit(AstOperator& op) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 
-  // On eComputedValueNotUsed
-  if ( opop!=AstOperator::eAnd // shirt circuit operator, is effectively flow control
-    && opop!=AstOperator::eOr  // dito
-    && class_!=AstOperator::eAssignment // have side effects
-    && op.access()==Access::eIgnore ) {
-    Error::throwError(m_errorHandler, Error::eComputedValueNotUsed);
-  }
-
   // Set the obj type and optionally also already the object of this
   // AstOperator node.
   shared_ptr<const ObjType> objType;

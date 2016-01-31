@@ -66,17 +66,13 @@ string amend(const Env& env) {
 }
 
 AstObject* createAccessTo(AstObject* obj, Access access) {
-  // All these have to honor the rule of not eIgnore-ing (see Access) an
-  // AstNode, details see eComputedValueNotUsed.
   switch (access) {
   case Access::eRead:
     return new AstDataDef(Env::makeUniqueInternalName(), ObjTypeFunda::eInt, obj);
   case Access::eWrite:
     return new AstOperator('=', obj, new AstNumber(0));
   case Access::eTakeAddress:
-    return new AstDataDef(Env::makeUniqueInternalName(),
-      new AstObjTypePtr(new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
-      new AstOperator('&', obj));
+    return new AstOperator('&', obj);
   case Access::eIgnore:
     return new AstSeq(obj, new AstNumber(0));
   }
