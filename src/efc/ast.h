@@ -33,7 +33,7 @@ public:
   /** See AstObject::m_access. For non-AstObject types, access can only be
   eIgnore. It's a kludge that this method is a member of AstNode, the author
   hasn't found another way to implement SemanticAnalizer::visit(AstSeq& seq).*/
-  virtual void setAccess(Access access) { assert(access==eIgnore); }
+  virtual void setAccess(Access access) { assert(access==Access::eIgnore); }
   /** For AstObject's, identical to objType().isNoreturn();, for all others it
   always returns false. It's a kludge that this method is a member of AstNode,
   see also setAccess. */
@@ -70,7 +70,7 @@ public:
   
 protected:
   AstObject(Access access, std::shared_ptr<Object> object);
-  AstObject(Access access = eRead);
+  AstObject(Access access = Access::eRead);
   AstObject(std::shared_ptr<Object> object);
 
   /** Access to this AST node. Contrast this with access to the object refered
@@ -241,7 +241,7 @@ private:
 /** Here symbol as an synonym to identifier */
 class AstSymbol : public AstObject {
 public:
-  AstSymbol(const std::string& name, Access access = eRead) :
+  AstSymbol(const std::string& name, Access access = Access::eRead) :
     AstObject(access), m_name(name) { }
 
   virtual void accept(AstVisitor& visitor);

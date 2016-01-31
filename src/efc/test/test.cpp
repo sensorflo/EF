@@ -69,15 +69,15 @@ AstObject* createAccessTo(AstObject* obj, Access access) {
   // All these have to honor the rule of not eIgnore-ing (see Access) an
   // AstNode, details see eComputedValueNotUsed.
   switch (access) {
-  case eRead:
+  case Access::eRead:
     return new AstDataDef(Env::makeUniqueInternalName(), ObjTypeFunda::eInt, obj);
-  case eWrite:
+  case Access::eWrite:
     return new AstOperator('=', obj, new AstNumber(0));
-  case eTakeAddress:
+  case Access::eTakeAddress:
     return new AstDataDef(Env::makeUniqueInternalName(),
       new AstObjTypePtr(new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
       new AstOperator('&', obj));
-  case eIgnore:
+  case Access::eIgnore:
     return new AstSeq(obj, new AstNumber(0));
   }
 }

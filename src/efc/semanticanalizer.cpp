@@ -96,9 +96,9 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // Set EAccess of childs.
   {
     if ( AstOperator::eAssignment == class_) {
-      argschilds.front()->setAccess(eWrite);
+      argschilds.front()->setAccess(Access::eWrite);
     } else if ( opop==AstOperator::eAddrOf ) {
-      argschilds.front()->setAccess(eTakeAddress);
+      argschilds.front()->setAccess(Access::eTakeAddress);
     }
   }
 
@@ -148,7 +148,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   if ( opop!=AstOperator::eAnd // shirt circuit operator, is effectively flow control
     && opop!=AstOperator::eOr  // dito
     && class_!=AstOperator::eAssignment // have side effects
-    && op.access()==eIgnore ) {
+    && op.access()==Access::eIgnore ) {
     Error::throwError(m_errorHandler, Error::eComputedValueNotUsed);
   }
 
@@ -187,7 +187,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
       // derefee object is obviously known (we're just dereferencing it), we
       // know that the address of the derefee object has been taken.
       op.setObject(make_shared<Object>(objType, StorageDuration::eUnknown));
-      op.object()->addAccess(eTakeAddress);    
+      op.object()->addAccess(Access::eTakeAddress);    
     }
     // For ther operands, the operator expression's objtype is, now that we
     // know the two operands have the same obj type, either operand's obj
@@ -212,7 +212,7 @@ void SemanticAnalizer::visit(AstSeq& seq) {
   const auto& lastOp = seq.operands().back();
   for (const auto& op: seq.operands()) {
     if (op!=lastOp) {
-      op->setAccess(eIgnore);
+      op->setAccess(Access::eIgnore);
       op->accept(*this);
       if (op->isObjTypeNoReturn()) {
         Error::throwError(m_errorHandler, Error::eUnreachableCode);
@@ -259,7 +259,7 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
   //    access of the associated object (which is cummulative)
   if (object->storageDuration()==StorageDuration::eLocal &&
     !object->isInitialized() &&
-    symbol.access() != eIgnore /*1)*/) {
+    symbol.access() != Access::eIgnore /*1)*/) {
     Error::throwError(m_errorHandler,
       Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization);
   }
@@ -371,11 +371,11 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 void SemanticAnalizer::visit(AstIf& if_) {
   if_.condition().accept(*this);
 
-  if_.action().setAccess(eRead);
+  if_.action().setAccess(Access::eRead);
   if_.action().accept(*this);
 
   if (if_.elseAction()) {
-    if_.elseAction()->setAccess(eRead);
+    if_.elseAction()->setAccess(Access::eRead);
     if_.elseAction()->accept(*this);
   }
 
@@ -422,7 +422,7 @@ void SemanticAnalizer::visit(AstLoop& loop) {
   // access to condition is eRead, which we  need not explicitely set
   loop.condition().accept(*this);
 
-  loop.body().setAccess(eIgnore);
+  loop.body().setAccess(Access::eIgnore);
   loop.body().accept(*this);
 
   if ( !loop.condition().objType().matchesSaufQualifiers(

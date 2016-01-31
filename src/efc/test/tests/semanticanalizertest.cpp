@@ -427,7 +427,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     transform,
     reports_eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization)) {
 
-  for (const auto& access : {eRead, eWrite, eTakeAddress}) {
+  for (const auto& access : {Access::eRead, Access::eWrite, Access::eTakeAddress}) {
     string spec = "Trivial example";
     TEST_ASTTRAVERSAL_REPORTS_ERROR(
       new AstSeq(
@@ -450,19 +450,20 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   string spec = "Trivial example";
   TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
     new AstSeq(
-      createAccessTo("x", eIgnore),
+      createAccessTo("x", Access::eIgnore),
       new AstDataDef("x")), spec);
 
   spec = "Within the initializer subtree the data object is not yet considered initialized";
   TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
-    new AstDataDef("x", ObjTypeFunda::eInt, createAccessTo("x", eIgnore)),
+    new AstDataDef("x", ObjTypeFunda::eInt, createAccessTo("x", Access::eIgnore)),
     spec);
 
   spec = "A later valid non-ignore access shall not have an influence";
-  for (const auto& otherAccess : {eRead, eWrite, eTakeAddress}) {
+  for (const auto& otherAccess :
+    {Access::eRead, Access::eWrite, Access::eTakeAddress}) {
     TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
       new AstSeq(
-        createAccessTo("x", eIgnore),
+        createAccessTo("x", Access::eIgnore),
         new AstDataDef("x",
           new AstObjTypeQuali(ObjType::eMutable,
             new AstObjTypeSymbol(ObjTypeFunda::eInt))),
@@ -696,7 +697,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( eTakeAddress, operand->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eTakeAddress, operand->access()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
@@ -784,7 +785,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( eRead, body->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eRead, body->access()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
@@ -809,8 +810,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( eIgnore, leadingOpAst->access()) << amendAst(ast);
-  EXPECT_EQ( eWrite, lastOpAst->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eIgnore, leadingOpAst->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eWrite, lastOpAst->access()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
@@ -1471,8 +1472,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_EQ( eRead, thenClauseAst->access()) << amendAst(ast);
-    EXPECT_EQ( eRead, thenClauseAst->access()) << amendAst(ast);
+    EXPECT_EQ( Access::eRead, thenClauseAst->access()) << amendAst(ast);
+    EXPECT_EQ( Access::eRead, thenClauseAst->access()) << amendAst(ast);
   }
 }
 
@@ -1541,8 +1542,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( eRead, condition->access()) << amendAst(ast);
-  EXPECT_EQ( eIgnore, body->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eRead, condition->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eIgnore, body->access()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(

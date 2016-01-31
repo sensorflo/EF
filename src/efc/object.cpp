@@ -29,7 +29,7 @@ void Object::setObjType(std::shared_ptr<const ObjType> objType) {
 void Object::addAccess(Access access) {
   m_isModifiedOrRevealsAddr =
     m_isModifiedOrRevealsAddr ||
-    access==eWrite || access==eTakeAddress;
+    access==Access::eWrite || access==Access::eTakeAddress;
 }
 
 bool Object::isModifiedOrRevealsAddr() const {
