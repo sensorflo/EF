@@ -13,17 +13,13 @@ string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
-AstObject::AstObject(Access access, std::shared_ptr<Object> object) :
-  m_access(access),
-  m_object(move(object)) {
-}
-
-AstObject::AstObject(Access access) :
-  AstObject(access, nullptr) {
+AstObject::AstObject() :
+  AstObject(nullptr) {
 }
 
 AstObject::AstObject(std::shared_ptr<Object> object) :
-  AstObject(Access::eUndefined, move(object)) {
+  m_access(Access::eUndefined),
+  m_object(move(object)) {
 }
 
 AstObject::~AstObject() {

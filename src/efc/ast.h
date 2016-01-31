@@ -69,8 +69,7 @@ public:
   bool objectIsModifiedOrRevealsAddr() const;
   
 protected:
-  AstObject(Access access, std::shared_ptr<Object> object);
-  AstObject(Access access = Access::eRead);
+  AstObject();
   AstObject(std::shared_ptr<Object> object);
 
   /** Access to this AST node. Contrast this with access to the object refered
@@ -241,8 +240,8 @@ private:
 /** Here symbol as an synonym to identifier */
 class AstSymbol : public AstObject {
 public:
-  AstSymbol(const std::string& name, Access access = Access::eRead) :
-    AstObject(access), m_name(name) { }
+  AstSymbol(const std::string& name) :
+    m_name(name) { }
 
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
