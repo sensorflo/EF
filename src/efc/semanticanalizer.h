@@ -44,6 +44,8 @@ private:
   virtual void visit(AstObjTypePtr& ptr);
   virtual void visit(AstClassDef& class_);
 
+  void preConditionCheck(const AstObject& node);
+  void preConditionCheck(const AstObjType& node);
   void postConditionCheck(const AstObject& node);
   void postConditionCheck(const AstObjType& node);
 

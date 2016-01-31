@@ -34,6 +34,8 @@ SemanticAnalizer::FunBodyHelper::~FunBodyHelper() {
 }
 
 void SemanticAnalizer::visit(AstCast& cast) {
+  preConditionCheck(cast);
+
   cast.child().accept(*this);
   cast.specifiedNewAstObjType().accept(*this);
 
@@ -55,6 +57,8 @@ void SemanticAnalizer::visit(AstCast& cast) {
 }
 
 void SemanticAnalizer::visit(AstNop& nop) {
+  preConditionCheck(nop);
+
   // no need to set object since that is done by AST node itself
 
   nop.object()->addAccess(nop.access());
@@ -63,6 +67,8 @@ void SemanticAnalizer::visit(AstNop& nop) {
 }
 
 void SemanticAnalizer::visit(AstBlock& block) {
+  preConditionCheck(block);
+
   {
     Env::AutoScope scope(m_env, block.name(), Env::AutoScope::descentScope);
     block.body().accept(*this);
@@ -83,6 +89,8 @@ void SemanticAnalizer::visit(AstCtList& ctList) {
 }
 
 void SemanticAnalizer::visit(AstOperator& op) {
+  preConditionCheck(op);
+
   const list<AstObject*>& argschilds = op.args().childs();
 
   // Note that orrect number of arguments was already handled in AstOperator's
@@ -208,6 +216,8 @@ void SemanticAnalizer::visit(AstOperator& op) {
 }
 
 void SemanticAnalizer::visit(AstSeq& seq) {
+  preConditionCheck(seq);
+
   assert(!seq.operands().empty());
   const auto& lastOp = seq.operands().back();
   for (const auto& op: seq.operands()) {
@@ -232,6 +242,8 @@ void SemanticAnalizer::visit(AstSeq& seq) {
 }
 
 void SemanticAnalizer::visit(AstNumber& number) {
+  preConditionCheck(number);
+
   // should allready have been caught by scanner, thus assert.  Intended to
   // catch errors when AST is build by hand instead by parser, e.g. in tests.
   assert(number.declaredAstObjType().isValueInRange(number.value()));
@@ -247,6 +259,8 @@ void SemanticAnalizer::visit(AstNumber& number) {
 }
 
 void SemanticAnalizer::visit(AstSymbol& symbol) {
+  preConditionCheck(symbol);
+
   shared_ptr<Entity>* entity = m_env.find(symbol.name());
   if (nullptr==entity) {
     Error::throwError(m_errorHandler, Error::eUnknownName);
@@ -270,6 +284,8 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
 }
 
 void SemanticAnalizer::visit(AstFunCall& funCall) {
+  preConditionCheck(funCall);
+
   funCall.address().accept(*this);
   for (const auto arg: funCall.args().childs()) {
     arg->accept(*this);
@@ -298,6 +314,8 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
 }
 
 void SemanticAnalizer::visit(AstFunDef& funDef) {
+  preConditionCheck(funDef);
+
   if ( funDef.declaredRetAstObjType().objType().qualifiers() & ObjType::eMutable ) {
     Error::throwError(m_errorHandler, Error::eRetTypeCantHaveMutQualifier);
   }
@@ -330,6 +348,8 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 }
 
 void SemanticAnalizer::visit(AstDataDef& dataDef) {
+  preConditionCheck(dataDef);
+
   if ( !dataDef.doNotInit() ) {
     // default member initializer not yet supported
     assert(dataDef.declaredStorageDuration() != StorageDuration::eMember);
@@ -373,6 +393,8 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 }
 
 void SemanticAnalizer::visit(AstIf& if_) {
+  preConditionCheck(if_);
+
   if_.condition().accept(*this);
 
   if_.action().setAccess(Access::eRead);
@@ -423,6 +445,8 @@ void SemanticAnalizer::visit(AstIf& if_) {
 }
 
 void SemanticAnalizer::visit(AstLoop& loop) {
+  preConditionCheck(loop);
+
   // access to condition is eRead, which we  need not explicitely set
   loop.condition().accept(*this);
 
@@ -443,6 +467,8 @@ void SemanticAnalizer::visit(AstLoop& loop) {
 }
 
 void SemanticAnalizer::visit(AstReturn& return_) {
+  preConditionCheck(return_);
+
   return_.retVal().accept(*this);
 
   if ( m_funRetAstObjTypes.empty() ) {
@@ -465,24 +491,36 @@ void SemanticAnalizer::visit(AstReturn& return_) {
 
 void SemanticAnalizer::visit(AstObjTypeSymbol& symbol) {
   // nop, everything was already done in previous passes
+  preConditionCheck(symbol);
   postConditionCheck(symbol);
 }
 
 void SemanticAnalizer::visit(AstObjTypeQuali& quali) {
   // nop, everything was already done in previous passes
+  preConditionCheck(quali);
   postConditionCheck(quali);
 }
 
 void SemanticAnalizer::visit(AstObjTypePtr& ptr) {
   // nop, everything was already done in previous passes
+  preConditionCheck(ptr);
   postConditionCheck(ptr);
 }
 
 void SemanticAnalizer::visit(AstClassDef& class_) {
+  preConditionCheck(class_);
   for (const auto& dataMember: class_.dataMembers()) {
     dataMember->accept(*this);
   }
   postConditionCheck(class_);
+}
+
+void SemanticAnalizer::preConditionCheck(const AstObject& node) {
+  // none yet
+}
+
+void SemanticAnalizer::preConditionCheck(const AstObjType& node) {
+  // none yet
 }
 
 void SemanticAnalizer::postConditionCheck(const AstObject& node) {
