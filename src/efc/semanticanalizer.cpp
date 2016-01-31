@@ -20,6 +20,7 @@ void SemanticAnalizer::analyze(AstNode& root) {
   SignatureAugmentor signatureaugmentor(m_env, m_errorHandler);
   signatureaugmentor.augmentEntities(root);
 
+  root.setAccess(Access::eIgnore);
   root.accept(*this);
 }
 
@@ -36,7 +37,8 @@ SemanticAnalizer::FunBodyHelper::~FunBodyHelper() {
 void SemanticAnalizer::visit(AstCast& cast) {
   preConditionCheck(cast);
 
-  cast.child().accept(*this);
+  setAccessAndCallAcceptOn(cast.child(), Access::eRead);
+
   cast.specifiedNewAstObjType().accept(*this);
 
   // test if conversion is eligible
@@ -71,7 +73,7 @@ void SemanticAnalizer::visit(AstBlock& block) {
 
   {
     Env::AutoScope scope(m_env, block.name(), Env::AutoScope::descentScope);
-    block.body().accept(*this);
+    setAccessAndCallAcceptOn(block.body(), Access::eRead);
   }
 
   const auto& blockObjType = block.body().objType().unqualifiedObjType();
@@ -99,17 +101,14 @@ void SemanticAnalizer::visit(AstOperator& op) {
   const auto class_ = op.class_();
   const auto opop = op.op();
 
-  // Set EAccess of childs.
-  {
-    if ( AstOperator::eAssignment == class_) {
-      argschilds.front()->setAccess(Access::eWrite);
-    } else if ( opop==AstOperator::eAddrOf ) {
-      argschilds.front()->setAccess(Access::eTakeAddress);
-    }
-  }
-
   for (const auto arg: op.args().childs()) {
-    arg->accept(*this);
+    Access access = Access::eRead;
+    if ( AstOperator::eAssignment == class_) {
+      access = Access::eWrite;
+    } else if ( opop==AstOperator::eAddrOf ) {
+      access = Access::eTakeAddress;
+    }
+    setAccessAndCallAcceptOn(*arg, access);
   }
 
   // Check that all operands are of the same obj type, sauf
@@ -214,15 +213,13 @@ void SemanticAnalizer::visit(AstSeq& seq) {
   const auto& lastOp = seq.operands().back();
   for (const auto& op: seq.operands()) {
     if (op!=lastOp) {
-      op->setAccess(Access::eIgnore);
-      op->accept(*this);
+      setAccessAndCallAcceptOn(*op, Access::eIgnore);
       if (op->isObjTypeNoReturn()) {
         Error::throwError(m_errorHandler, Error::eUnreachableCode);
       }
     } else {
       AstObject& lastOperand = seq.lastOperand(m_errorHandler);
-      lastOperand.setAccess(seq.access());
-      lastOperand.accept(*this);
+      setAccessAndCallAcceptOn(lastOperand, seq.access());
       // The Object denoted by the AstSeq node is exactly that of the
       // lastOperand
       seq.setObject(lastOperand.objectAsSp());
@@ -278,9 +275,9 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
 void SemanticAnalizer::visit(AstFunCall& funCall) {
   preConditionCheck(funCall);
 
-  funCall.address().accept(*this);
+  setAccessAndCallAcceptOn(funCall.address(), Access::eRead);
   for (const auto arg: funCall.args().childs()) {
-    arg->accept(*this);
+    setAccessAndCallAcceptOn(*arg, Access::eRead);
   }
 
   const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(funCall.address().objType());
@@ -322,10 +319,10 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
       if ((*argDefIter)->declaredStorageDuration() != StorageDuration::eLocal) {
         Error::throwError(m_errorHandler, Error::eOnlyLocalStorageDurationApplicable);
       }
-      (*argDefIter)->accept(*this);
+      setAccessAndCallAcceptOn(**argDefIter, Access::eIgnore);
     }
 
-    funDef.body().accept(*this);
+    setAccessAndCallAcceptOn(funDef.body(), Access::eRead);
   }
 
   const auto& bodyObjType = funDef.body().objType();
@@ -358,7 +355,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     }
 
     for (const auto arg: ctorArgs) {
-      arg->accept(*this);
+      setAccessAndCallAcceptOn(*arg, Access::eRead);
     }
 
     // currently a data object must be initialized with exactly one initializer
@@ -387,14 +384,10 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
 void SemanticAnalizer::visit(AstIf& if_) {
   preConditionCheck(if_);
 
-  if_.condition().accept(*this);
-
-  if_.action().setAccess(Access::eRead);
-  if_.action().accept(*this);
-
+  setAccessAndCallAcceptOn(if_.condition(), Access::eRead);
+  setAccessAndCallAcceptOn(if_.action(), Access::eRead);
   if (if_.elseAction()) {
-    if_.elseAction()->setAccess(Access::eRead);
-    if_.elseAction()->accept(*this);
+    setAccessAndCallAcceptOn(*if_.elseAction(), Access::eRead);
   }
 
   if ( !if_.condition().objType().matchesSaufQualifiers(
@@ -439,11 +432,8 @@ void SemanticAnalizer::visit(AstIf& if_) {
 void SemanticAnalizer::visit(AstLoop& loop) {
   preConditionCheck(loop);
 
-  // access to condition is eRead, which we  need not explicitely set
-  loop.condition().accept(*this);
-
-  loop.body().setAccess(Access::eIgnore);
-  loop.body().accept(*this);
+  setAccessAndCallAcceptOn(loop.condition(), Access::eRead);
+  setAccessAndCallAcceptOn(loop.body(), Access::eIgnore);
 
   if ( !loop.condition().objType().matchesSaufQualifiers(
       ObjTypeFunda(ObjTypeFunda::eBool)) ) {
@@ -461,7 +451,7 @@ void SemanticAnalizer::visit(AstLoop& loop) {
 void SemanticAnalizer::visit(AstReturn& return_) {
   preConditionCheck(return_);
 
-  return_.retVal().accept(*this);
+  setAccessAndCallAcceptOn(return_.retVal(), Access::eRead);
 
   if ( m_funRetAstObjTypes.empty() ) {
     Error::throwError(m_errorHandler, Error::eNotInFunBodyContext);
@@ -502,13 +492,13 @@ void SemanticAnalizer::visit(AstObjTypePtr& ptr) {
 void SemanticAnalizer::visit(AstClassDef& class_) {
   preConditionCheck(class_);
   for (const auto& dataMember: class_.dataMembers()) {
-    dataMember->accept(*this);
+    setAccessAndCallAcceptOn(*dataMember, Access::eIgnore);
   }
   postConditionCheck(class_);
 }
 
 void SemanticAnalizer::preConditionCheck(const AstObject& node) {
-  // none yet
+  assert(node.access()!=Access::eUndefined);
 }
 
 void SemanticAnalizer::preConditionCheck(const AstObjType& node) {
@@ -525,4 +515,12 @@ void SemanticAnalizer::postConditionCheck(const AstObjType& node) {
   // is undefined behavior. In practice however taking the address of it will
   // deliver again a nullptr, and we assert for that.
   assert(&node.objType());
+}
+
+// The purpose of this method is to help to remember that these two (almost)
+// always go together
+void SemanticAnalizer::setAccessAndCallAcceptOn(AstNode& node,
+  Access access) {
+  node.setAccess(access);
+  node.accept(*this);
 }

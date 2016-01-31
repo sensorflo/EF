@@ -49,6 +49,8 @@ private:
   void postConditionCheck(const AstObject& node);
   void postConditionCheck(const AstObjType& node);
 
+  void setAccessAndCallAcceptOn(AstNode& node, Access access);
+
   friend class TestingSemanticAnalizer;
 
   Env& m_env;

@@ -23,7 +23,7 @@ AstObject::AstObject(Access access) :
 }
 
 AstObject::AstObject(std::shared_ptr<Object> object) :
-  AstObject(Access::eRead, move(object)) {
+  AstObject(Access::eUndefined, move(object)) {
 }
 
 AstObject::~AstObject() {

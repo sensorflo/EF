@@ -75,6 +75,9 @@ AstObject* createAccessTo(AstObject* obj, Access access) {
     return new AstOperator('&', obj);
   case Access::eIgnore:
     return new AstSeq(obj, new AstNumber(0));
+  case Access::eUndefined:
+    assert(false);
+    return nullptr;
   }
 }
 
