@@ -20,7 +20,7 @@ void SemanticAnalizer::analyze(AstNode& root) {
   SignatureAugmentor signatureaugmentor(m_env, m_errorHandler);
   signatureaugmentor.augmentEntities(root);
 
-  root.setAccess(Access::eIgnore);
+  root.setAccess(Access::eIgnoreValueAndAddr);
   root.accept(*this);
 }
 
@@ -213,7 +213,7 @@ void SemanticAnalizer::visit(AstSeq& seq) {
   const auto& lastOp = seq.operands().back();
   for (const auto& op: seq.operands()) {
     if (op!=lastOp) {
-      setAccessAndCallAcceptOn(*op, Access::eIgnore);
+      setAccessAndCallAcceptOn(*op, Access::eIgnoreValueAndAddr);
       if (op->isObjTypeNoReturn()) {
         Error::throwError(m_errorHandler, Error::eUnreachableCode);
       }
@@ -262,7 +262,7 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
   //    access of the associated object (which is cummulative)
   if (object->storageDuration()==StorageDuration::eLocal &&
     !object->isInitialized() &&
-    symbol.access() != Access::eIgnore /*1)*/) {
+    symbol.access() != Access::eIgnoreValueAndAddr /*1)*/) {
     Error::throwError(m_errorHandler,
       Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization);
   }
@@ -319,7 +319,7 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
       if ((*argDefIter)->declaredStorageDuration() != StorageDuration::eLocal) {
         Error::throwError(m_errorHandler, Error::eOnlyLocalStorageDurationApplicable);
       }
-      setAccessAndCallAcceptOn(**argDefIter, Access::eIgnore);
+      setAccessAndCallAcceptOn(**argDefIter, Access::eIgnoreValueAndAddr);
     }
 
     setAccessAndCallAcceptOn(funDef.body(), Access::eRead);
@@ -433,7 +433,7 @@ void SemanticAnalizer::visit(AstLoop& loop) {
   preConditionCheck(loop);
 
   setAccessAndCallAcceptOn(loop.condition(), Access::eRead);
-  setAccessAndCallAcceptOn(loop.body(), Access::eIgnore);
+  setAccessAndCallAcceptOn(loop.body(), Access::eIgnoreValueAndAddr);
 
   if ( !loop.condition().objType().matchesSaufQualifiers(
       ObjTypeFunda(ObjTypeFunda::eBool)) ) {
@@ -492,7 +492,7 @@ void SemanticAnalizer::visit(AstObjTypePtr& ptr) {
 void SemanticAnalizer::visit(AstClassDef& class_) {
   preConditionCheck(class_);
   for (const auto& dataMember: class_.dataMembers()) {
-    setAccessAndCallAcceptOn(*dataMember, Access::eIgnore);
+    setAccessAndCallAcceptOn(*dataMember, Access::eIgnoreValueAndAddr);
   }
   postConditionCheck(class_);
 }

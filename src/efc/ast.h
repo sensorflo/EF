@@ -31,9 +31,10 @@ public:
   virtual void accept(AstConstVisitor& visitor) const =0;
 
   /** See AstObject::m_access. For non-AstObject types, access can only be
-  eIgnore. It's a kludge that this method is a member of AstNode, the author
-  hasn't found another way to implement SemanticAnalizer::visit(AstSeq& seq).*/
-  virtual void setAccess(Access access) { assert(access==Access::eIgnore); }
+  eIgnoreValueAndAddr. It's a kludge that this method is a member of AstNode,
+  the author hasn't found another way to implement
+  SemanticAnalizer::visit(AstSeq& seq).*/
+  virtual void setAccess(Access access) { assert(access==Access::eIgnoreValueAndAddr); }
   /** For AstObject's, identical to objType().isNoreturn();, for all others it
   always returns false. It's a kludge that this method is a member of AstNode,
   see also setAccess. */

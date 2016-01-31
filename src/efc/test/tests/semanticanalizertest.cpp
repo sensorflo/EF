@@ -420,8 +420,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 // Note that the error is
 // eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization, as opposed to
 // eUnknownName, because the name _is_ known and really refers to the local
-// data object, it's just not allowed to access it yet, except for eIgnore
-// access
+// data object, it's just not allowed to access it yet, except for
+// eIgnoreValueAndAddr access.
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     a_non_ignore_access_to_a_local_data_object_before_its_initialization,
     transform,
@@ -450,12 +450,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   string spec = "Trivial example";
   TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
     new AstSeq(
-      createAccessTo("x", Access::eIgnore),
+      createAccessTo("x", Access::eIgnoreValueAndAddr),
       new AstDataDef("x")), spec);
 
   spec = "Within the initializer subtree the data object is not yet considered initialized";
   TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
-    new AstDataDef("x", ObjTypeFunda::eInt, createAccessTo("x", Access::eIgnore)),
+    new AstDataDef("x", ObjTypeFunda::eInt,
+      createAccessTo("x", Access::eIgnoreValueAndAddr)),
     spec);
 
   spec = "A later valid non-ignore access shall not have an influence";
@@ -463,7 +464,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     {Access::eRead, Access::eWrite, Access::eTakeAddress}) {
     TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
       new AstSeq(
-        createAccessTo("x", Access::eIgnore),
+        createAccessTo("x", Access::eIgnoreValueAndAddr),
         new AstDataDef("x",
           new AstObjTypeQuali(ObjType::eMutable,
             new AstObjTypeSymbol(ObjTypeFunda::eInt))),
@@ -776,7 +777,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   TestingSemanticAnalizer UUT(env, errorHandler);
   AstObject* body = new AstNumber(42);
   unique_ptr<AstObject> ast{
-    new AstSeq( // imposes eIgnore access onto the block
+    new AstSeq( // imposes eIgnoreValueAndAddr access onto the block
       new AstBlock(body),
       new AstNumber(42))};
 
@@ -789,7 +790,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_access_to_a_sequence,
-    THEN_the_access_value_of_seqs_last_operand_equals_that_outer_access_value_AND_the_access_value_of_the_leading_operands_is_eIgnore))
+    THEN_the_access_value_of_seqs_last_operand_equals_that_outer_access_value_AND_the_access_value_of_the_leading_operands_is_eIgnoreValueAndAddr))
 {
   // setup
   Env env;
@@ -809,7 +810,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( Access::eIgnore, leadingOpAst->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eIgnoreValueAndAddr, leadingOpAst->access()) << amendAst(ast);
   EXPECT_EQ( Access::eWrite, lastOpAst->access()) << amendAst(ast);
 }
 
@@ -1452,7 +1453,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_any_access_to_an_if_expression,
     THEN_the_access_value_of_both_clauses_is_still_always_eRead))
 {
-  string spec = "Example: eIgnore access";
+  string spec = "Example: eIgnoreValueAndAddr access";
   {
     // setup
     Env env;
@@ -1461,7 +1462,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     AstObject* thenClauseAst = new AstNumber(42);
     AstObject* elseClauseAst = new AstNumber(42);
     unique_ptr<AstObject> ast{
-      new AstSeq( // imposes eIgnore access upon the if expression
+      new AstSeq( // imposes eIgnoreValueAndAddr access upon the if expression
         new AstIf( // the if expression under test
           new AstNumber(0, ObjTypeFunda::eBool),
           thenClauseAst, elseClauseAst),
@@ -1527,7 +1528,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_loop_expression,
-    THEN_the_access_value_of_the_condition_is_eRead_AND_the_access_value_of_the_body_is_eIgnore))
+    THEN_the_access_value_of_the_condition_is_eRead_AND_the_access_value_of_the_body_is_eIgnoreValueAndAddr))
 {
   // setup
   Env env;
@@ -1542,7 +1543,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 
   // verify
   EXPECT_EQ( Access::eRead, condition->access()) << amendAst(ast);
-  EXPECT_EQ( Access::eIgnore, body->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eIgnoreValueAndAddr, body->access()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(

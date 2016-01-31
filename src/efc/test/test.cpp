@@ -73,7 +73,7 @@ AstObject* createAccessTo(AstObject* obj, Access access) {
     return new AstOperator('=', obj, new AstNumber(0));
   case Access::eTakeAddress:
     return new AstOperator('&', obj);
-  case Access::eIgnore:
+  case Access::eIgnoreValueAndAddr:
     return new AstSeq(obj, new AstNumber(0));
   case Access::eUndefined:
     assert(false);
