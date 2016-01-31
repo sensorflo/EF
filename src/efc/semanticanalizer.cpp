@@ -77,11 +77,9 @@ void SemanticAnalizer::visit(AstBlock& block) {
 }
 
 void SemanticAnalizer::visit(AstCtList& ctList) {
-  list<AstObject*>& childs = ctList.childs();
-  for (list<AstObject*>::const_iterator i=childs.begin();
-       i!=childs.end(); ++i) {
-    (*i)->accept(*this);
-  }
+  // parent shall iterate itself so it can set access to each element
+  // independently
+  assert(false);
 }
 
 void SemanticAnalizer::visit(AstOperator& op) {
@@ -102,7 +100,9 @@ void SemanticAnalizer::visit(AstOperator& op) {
     }
   }
 
-  op.args().accept(*this);
+  for (const auto arg: op.args().childs()) {
+    arg->accept(*this);
+  }
 
   // Check that all operands are of the same obj type, sauf
   // qualifiers. Currently there are no implicit conversions. However the rhs
@@ -271,7 +271,9 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
 
 void SemanticAnalizer::visit(AstFunCall& funCall) {
   funCall.address().accept(*this);
-  funCall.args().accept(*this);
+  for (const auto arg: funCall.args().childs()) {
+    arg->accept(*this);
+  }
 
   const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(funCall.address().objType());
   const auto& argsCall = funCall.args().childs();
@@ -343,7 +345,9 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
         createDefaultAstObjectForSemanticAnalizer());
     }
 
-    dataDef.ctorArgs().accept(*this);
+    for (const auto arg: ctorArgs) {
+      arg->accept(*this);
+    }
 
     // currently a data object must be initialized with exactly one initializer
     assert(ctorArgs.size()==1);
