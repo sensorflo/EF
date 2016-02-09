@@ -22,9 +22,6 @@ AstObject::AstObject(std::shared_ptr<Object> object) :
   m_object(move(object)) {
 }
 
-AstObject::~AstObject() {
-}
-
 void AstObject::setAccess(Access access) {
   m_access = access;
 }
@@ -61,9 +58,6 @@ AstBlock::AstBlock(AstObject* body) :
   m_name(Env::makeUniqueInternalName("$block")),
   m_body(body) {
   assert(m_body);
-}
-
-AstBlock::~AstBlock() {
 }
 
 AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child) :
@@ -251,9 +245,6 @@ AstNumber::AstNumber(GeneralValue value, ObjTypeFunda::EType eType) :
   AstNumber(value, new AstObjTypeSymbol(eType)) {
 }
 
-AstNumber::~AstNumber() {
-}
-
 AstObjType& AstNumber::declaredAstObjType() const {
   assert(m_declaredAstObjType);
   return *m_declaredAstObjType;
@@ -286,7 +277,7 @@ AstOperator::AstOperator(const string& op, AstCtList* args) :
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
-  m_args(args ? args : new AstCtList) {
+  m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
   if ( '-' == m_op || '+' == m_op ) {
     const auto argCnt = args->childs().size();
     assert( argCnt==1 || argCnt==2 );
@@ -305,10 +296,6 @@ AstOperator::AstOperator(const string& op, AstObject* operand1, AstObject* opera
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstObject* operand1, AstObject* operand2) :
   AstOperator(op, new AstCtList(operand1, operand2)) {};
-
-AstOperator::~AstOperator() {
-  delete m_args;
-}
 
 AstOperator::EClass AstOperator::class_() const {
   return classOf(m_op);
@@ -451,9 +438,6 @@ AstReturn::AstReturn(AstObject* retVal) :
   assert(m_retVal);
 }
 
-AstReturn::~AstReturn() {
-}
-
 AstObject& AstReturn::retVal() const {
   assert(m_retVal);
   return *m_retVal.get();
@@ -461,13 +445,12 @@ AstObject& AstReturn::retVal() const {
 
 AstFunCall::AstFunCall(AstObject* address, AstCtList* args) :
   m_address(address ? address : new AstSymbol("")),
-  m_args(args ? args : new AstCtList()) {
+  m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
   assert(m_address);
   assert(m_args);
 }
 
 AstFunCall::~AstFunCall() {
-  delete m_args;
   delete m_address;
 }
 

@@ -52,8 +52,6 @@ private:
 /** See also Object */
 class AstObject : public AstNode {
 public:
-  virtual ~AstObject();
-
   virtual bool isCTConst() const { return false; }
   virtual Access access() const { return m_access; }
   virtual void setAccess(Access access) override;
@@ -82,6 +80,7 @@ protected:
 class AstNop : public AstObject {
 public:
   AstNop();
+
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 };
@@ -89,7 +88,6 @@ public:
 class AstBlock : public AstObject {
 public:
   AstBlock(AstObject* body);
-  virtual ~AstBlock();
 
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
@@ -163,8 +161,6 @@ design since a member declaration is not yet an object, thus subtyping from
 AstObject is wrong in this case. */
 class AstDataDef : public AstObject {
 public:
-  static AstObject* const noInit;
-
   AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
     StorageDuration declaredStorageDuration,
     AstCtList* ctorArgs = nullptr);
@@ -194,6 +190,8 @@ public:
 
   void assignDeclaredObjTypeToAssociatedObject();
 
+  static AstObject* const noInit;
+
 private:
   friend class AstPrinter;
 
@@ -222,7 +220,6 @@ class AstNumber : public AstObject {
 public:
   AstNumber(GeneralValue value, AstObjType* astObjType = nullptr);
   AstNumber(GeneralValue value, ObjTypeFunda::EType eType);
-  ~AstNumber();
 
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
@@ -268,7 +265,7 @@ private:
   /** We're the owner. Is garanteed to be non-null */
   AstObject* const m_address;
   /** We're the owner. Is garanteed to be non-null */
-  AstCtList* const m_args;
+  const std::unique_ptr<AstCtList> m_args;
 };
 
 class AstOperator : public AstObject {
@@ -302,7 +299,6 @@ public:
   AstOperator(char op, AstObject* operand1 = NULL, AstObject* operand2 = NULL);
   AstOperator(const std::string& op, AstObject* operand1 = NULL, AstObject* operand2 = NULL);
   AstOperator(EOperation op, AstObject* operand1 = NULL, AstObject* operand2 = NULL);
-  virtual ~AstOperator();
 
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
@@ -322,7 +318,8 @@ private:
 
   const EOperation m_op;
   /** We're the owner. Is garanteed to be non-null */
-  AstCtList* const m_args;
+  const std::unique_ptr<AstCtList> m_args;
+
   static const std::map<const std::string, const EOperation> m_opMap;
   static const std::map<const EOperation, const std::string> m_opReverseMap;
 };
@@ -392,7 +389,6 @@ private:
 class AstReturn : public AstObject {
 public:
   AstReturn(AstObject* retVal = nullptr);
-  virtual ~AstReturn();
 
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
@@ -410,7 +406,8 @@ public:
   /** Can only be called after this AstObjType has been visited by the
   SemanticAnalizer. */
   virtual const ObjType& objType() const =0; 
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const =0; 
+
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const =0;
   virtual void createAndSetObjType() =0;
   virtual void printValueTo(std::ostream& os, GeneralValue value) const =0;
   virtual bool isValueInRange(GeneralValue value) const =0;
