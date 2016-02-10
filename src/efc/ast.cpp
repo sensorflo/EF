@@ -87,10 +87,10 @@ AstFunDef::AstFunDef(const string& name,
   AstObjType* ret,
   AstObject* body) :
   m_name(name),
-  m_fqNameProvider{},
   m_args(args),
   m_ret(ret),
-  m_body(body) {
+  m_body(body),
+  m_fqNameProvider{} {
   assert(m_args);
   assert(m_ret);
   assert(m_body);
@@ -145,12 +145,12 @@ AstObject* const AstDataDef::noInit = reinterpret_cast<AstObject*>(1);
 AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
   StorageDuration declaredStorageDuration,  AstCtList* ctorArgs) :
   m_name(name),
-  m_fqNameProvider{},
   m_declaredAstObjType(declaredAstObjType ?
     unique_ptr<AstObjType>(declaredAstObjType) :
     make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt)),
   m_declaredStorageDuration(declaredStorageDuration),
-  m_ctorArgs(mkCtorArgs(ctorArgs, m_declaredStorageDuration, m_doNotInit)) {
+  m_ctorArgs(mkCtorArgs(ctorArgs, m_declaredStorageDuration, m_doNotInit)),
+  m_fqNameProvider{} {
   assert(declaredStorageDuration != StorageDuration::eUnknown);
   assert(m_ctorArgs);
 }
@@ -788,13 +788,6 @@ AstCtList* AstCtList::Add(AstObject* child1, AstObject* child2, AstObject* child
   Add(child3);
   return this;
 }
-
-const ObjType& AstCtList::objType() const {
-  // AstCtList is never the operand of an expression, thus it doesn't has an
-  // ObjType
-  assert(false);
-}
-
 
 void AstNop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstBlock::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }

@@ -58,7 +58,7 @@ public:
 
   virtual bool isObjTypeNoReturn() const override { return objType().isNoreturn(); }
 
-  // associated object
+  // -- associated object
   /** After SemanticAnalizer guaranteed to return non-null */
  	Object* object() const { return m_object.get(); }
   std::shared_ptr<Object>& objectAsSp() { return m_object; }
@@ -81,6 +81,7 @@ class AstNop : public AstObject {
 public:
   AstNop();
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 };
@@ -89,12 +90,16 @@ class AstBlock : public AstObject {
 public:
   AstBlock(AstObject* body);
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- childs of this node
   const std::string& name() const { return m_name; }
   AstObject& body() const { return *m_body.get(); }
 
 private:
+  // -- childs of this node
   const std::string m_name;
   /** Guaranteed to be non-null */
   std::unique_ptr<AstObject> m_body;
@@ -106,13 +111,16 @@ public:
   AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child);
   virtual ~AstCast();
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- childs of this node
+  AstObjType& specifiedNewAstObjType() const;
   AstObject& child() const { return *m_child; }
 
-  AstObjType& specifiedNewAstObjType() const;
-
 private:
+  // -- childs of this node
   /** Is guaranteed to be non-null */
   const std::unique_ptr<AstObjType> m_specifiedNewAstObjType;
   /** We're the owner. Is guaranteed to be non-null */
@@ -127,25 +135,29 @@ public:
     AstObject* body);
   virtual ~AstFunDef();
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- childs of this node
   virtual const std::string& name() const { return m_name; }
-  const std::string& fqName() const;
-  const FQNameProvider*& fqNameProvider() { return m_fqNameProvider; }
   virtual std::list<AstDataDef*>const& declaredArgs() const { return *m_args; }
   virtual AstObjType& declaredRetAstObjType() const;
   virtual AstObject& body() const { return *m_body; }
+
+  // -- misc
   static std::list<AstDataDef*>* createArgs(AstDataDef* arg1 = NULL,
     AstDataDef* arg2 = NULL, AstDataDef* arg3 = NULL);
-
   void assignDeclaredObjTypeToAssociatedObject();
+  const std::string& fqName() const;
+  const FQNameProvider*& fqNameProvider() { return m_fqNameProvider; }
 
 private:
   void initObjType();
 
+  // -- childs of this node
   /** Redundant to the key of Env's key-value pair pointing to object(). */
   const std::string m_name;
-  const FQNameProvider* m_fqNameProvider;
   /** We're the owner. Is garanteed to be non-null. The shared_ptr<ObjType>
   instances are redundant to dynamic_cast<ObjTypeFun>(objType()).args().  */
   std::list<AstDataDef*>* const m_args;
@@ -154,6 +166,9 @@ private:
   const std::unique_ptr<AstObjType> m_ret;
   /** We're the owner. Is garanteed to be non-null */
   AstObject* const m_body;
+
+  // -- misc
+  const FQNameProvider* m_fqNameProvider;
 };
 
 /** Also used for data members of a class, which is not entirerly a nice
@@ -174,21 +189,25 @@ public:
     AstObject* initObj = nullptr);
   virtual ~AstDataDef();
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
+  // -- object associated with this node
   virtual const ObjType& objType() const;
   virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
 
+  // -- childs of this node
   virtual const std::string& name() const { return m_name; }
-  const std::string& fqName() const;
-  const FQNameProvider*& fqNameProvider() { return m_fqNameProvider; }
   AstObjType& declaredAstObjType() const;
   StorageDuration declaredStorageDuration() const;
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
-  bool doNotInit() const { return m_doNotInit; }
 
+  // -- misc
+  const std::string& fqName() const;
+  const FQNameProvider*& fqNameProvider() { return m_fqNameProvider; }
   void assignDeclaredObjTypeToAssociatedObject();
+  bool doNotInit() const { return m_doNotInit; }
 
   static AstObject* const noInit;
 
@@ -198,18 +217,23 @@ private:
   static AstCtList* mkCtorArgs(AstCtList* ctorArgs,
     StorageDuration storageDuration, bool& doNotInit);
 
-  const std::string m_name;
-  const FQNameProvider* m_fqNameProvider;
-  std::unique_ptr<AstObjType> m_declaredAstObjType;
+  // -- object associated with this node
   /** Redundant with m_object->objType(). But since in the case of
   m_declaredStorageDuration being eMember, there is no m_object, and then we
   need to store it here.*/
   std::shared_ptr<const ObjType> m_objType;
+
+  // -- childs of this node
+  const std::string m_name;
+  std::unique_ptr<AstObjType> m_declaredAstObjType;
   /** Guaranteed to be not eUnknown */
   const StorageDuration m_declaredStorageDuration;
   /** We're the owner. Is garanteed to be non-null. Currently, zero args means
   to default initialize: semantic analizer will add an initilizer*/
   AstCtList* const m_ctorArgs;
+
+  // -- misc
+  const FQNameProvider* m_fqNameProvider;
   bool m_doNotInit;
 };
 
@@ -221,15 +245,19 @@ public:
   AstNumber(GeneralValue value, AstObjType* astObjType = nullptr);
   AstNumber(GeneralValue value, ObjTypeFunda::EType eType);
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
+  // -- overrides for AstObject
+  virtual bool isCTConst() const { return true; }
+
+  // -- childs of this node
   GeneralValue value() const { return m_value; }
   AstObjType& declaredAstObjType() const;
 
-  virtual bool isCTConst() const { return true; }
-
 private:
+  // -- childs of this node
   const GeneralValue m_value;
   /** Guaranteed to be non-null */
   const std::unique_ptr<AstObjType> m_declaredAstObjType;
@@ -241,11 +269,15 @@ public:
   AstSymbol(const std::string& name) :
     m_name(name) { }
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- childs of this node
   const std::string& name() const { return m_name; }
 
 private:
+  // -- childs of this node
   const std::string m_name;
 };
 
@@ -254,14 +286,19 @@ public:
   AstFunCall(AstObject* address, AstCtList* args = NULL);
   virtual ~AstFunCall();
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- childs of this node
   virtual AstObject& address () const { return *m_address; }
   AstCtList& args () const { return *m_args; }
 
+  // -- misc
   void createAndSetObjectUsingRetObjType();
 
 private:
+  // -- childs of this node
   /** We're the owner. Is garanteed to be non-null */
   AstObject* const m_address;
   /** We're the owner. Is garanteed to be non-null */
@@ -300,10 +337,15 @@ public:
   AstOperator(const std::string& op, AstObject* operand1 = NULL, AstObject* operand2 = NULL);
   AstOperator(EOperation op, AstObject* operand1 = NULL, AstObject* operand2 = NULL);
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- childs of this node
   EOperation op() const { return m_op; }
   AstCtList& args() const { return *m_args; }
+
+  // -- misc
   EClass class_() const;
   bool isBinaryLogicalShortCircuit() const;
   static EClass classOf(AstOperator::EOperation op);
@@ -316,10 +358,12 @@ private:
   friend std::basic_ostream<char>& operator<<(std::basic_ostream<char>&,
     AstOperator::EOperation);
 
+  // -- childs of this node
   const EOperation m_op;
   /** We're the owner. Is garanteed to be non-null */
   const std::unique_ptr<AstCtList> m_args;
 
+  // -- misc
   static const std::map<const std::string, const EOperation> m_opMap;
   static const std::map<const EOperation, const std::string> m_opReverseMap;
 };
@@ -336,13 +380,18 @@ public:
   AstSeq(AstNode* op1 = nullptr, AstNode* op2 = nullptr,
     AstNode* op3 = nullptr, AstNode* op4 = nullptr, AstNode* op5 = nullptr);
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
+  // -- childs of this node
   const std::vector<AstNode*>& operands() const { return *m_operands; }
+
+  // -- misc
   AstObject& lastOperand(ErrorHandler& errorHandler) const;
 
 private:
+  // -- childs of this node
   /** Pointers are garanteed to be non null. Garanteed to have at least one
   element. */
   std::unique_ptr<std::vector<AstNode*>> m_operands;
@@ -354,13 +403,17 @@ public:
   AstIf(AstObject* cond, AstObject* action, AstObject* elseAction = NULL);
   virtual ~AstIf();
 
+   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- childs of this node
   AstObject& condition() const { return *m_condition; }
   AstObject& action() const { return *m_action; }
   AstObject* elseAction() const { return m_elseAction; }
 
 private:
+  // -- childs of this node
   /** We're the owner. Is garanteed to be non-null */
   AstObject* const m_condition;
   /** We're the owner. Is garanteed to be non-null */
@@ -374,12 +427,16 @@ public:
   AstLoop(AstObject* cond, AstObject* body);
   virtual ~AstLoop();
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- childs of this node
   AstObject& condition() const { return *m_condition; }
   AstObject& body() const { return *m_body; }
 
 private:
+  // -- childs of this node
   /** We're the owner. Is garanteed to be non-null */
   AstObject* const m_condition;
   /** We're the owner. Is garanteed to be non-null */
@@ -390,12 +447,15 @@ class AstReturn : public AstObject {
 public:
   AstReturn(AstObject* retVal = nullptr);
 
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
+  // -- childs of this node
   AstObject& retVal() const;
 
 private:
+  // -- childs of this node
   /** Is garanteed to be non-null */
   const std::unique_ptr<AstObject> m_retVal;
 };
@@ -403,12 +463,7 @@ private:
 /** See also ObjType */
 class AstObjType : public AstNode {
 public:
-  /** Can only be called after this AstObjType has been visited by the
-  SemanticAnalizer. */
-  virtual const ObjType& objType() const =0; 
 
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const =0;
-  virtual void createAndSetObjType() =0;
   virtual void printValueTo(std::ostream& os, GeneralValue value) const =0;
   virtual bool isValueInRange(GeneralValue value) const =0;
   /** The objType of the created AstObject is immutable, since the AstObject
@@ -417,7 +472,13 @@ public:
   prior to SemanticAnalizer, but not yet passed SemanticAnalizer's pass. */
   virtual AstObject* createDefaultAstObjectForSemanticAnalizer() = 0;
 
-  // decorations for IrGen
+  /** Can only be called after this AstObjType has been visited by the
+  SemanticAnalizer. */
+  virtual const ObjType& objType() const =0; 
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const =0;
+  virtual void createAndSetObjType() =0;
+
+  // -- decorations for IrGen
   virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const =0;
 };
 
@@ -426,18 +487,21 @@ public:
   AstObjTypeSymbol(const std::string name);
   AstObjTypeSymbol(ObjTypeFunda::EType fundaType);
 
+  // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
+
+  // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
   AstObject* createDefaultAstObjectForSemanticAnalizer() override;
 
   const ObjType& objType() const override; 
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
-
-  const std::string name() const { return m_name; }
-
   void createAndSetObjType() override;
+
+  // -- childs of this node
+  const std::string name() const { return m_name; }
 
 private:
   friend class TestingAstObjTypeSymbol;
@@ -445,11 +509,16 @@ private:
   static std::string toName(ObjTypeFunda::EType fundaType);
   static ObjTypeFunda::EType toType(const std::string& name);
   static void initMap();
+
+  // -- to implement overrides
+  std::shared_ptr<const ObjType> m_objType;
+
+  // -- childs of this node
+  const std::string m_name;
+
+  // -- misc
   static std::array<std::string, ObjTypeFunda::eTypeCnt> m_typeToName;
   static bool m_isMapInitialzied;
-
-  const std::string m_name;
-  std::shared_ptr<const ObjType> m_objType;
 
   // decorations for IrGen
 public:
@@ -460,24 +529,30 @@ class AstObjTypeQuali : public AstObjType {
 public:
   AstObjTypeQuali(ObjType::Qualifiers qualifiers, AstObjType* targetType);
 
+  // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
+
+  // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
   AstObject* createDefaultAstObjectForSemanticAnalizer() override;
 
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
+  void createAndSetObjType() override;
 
+  // -- childs of this node
   ObjType::Qualifiers qualifiers() const { return m_qualifiers; }
   AstObjType& targetType() const { return *m_targetType; }
 
-  void createAndSetObjType() override;
-
 private:
+  // -- to implement overrides
+  std::shared_ptr<const ObjType> m_objType;
+
+  // -- childs of this node
   ObjType::Qualifiers m_qualifiers;
   std::unique_ptr<AstObjType> m_targetType;
-  std::shared_ptr<const ObjType> m_objType;
 
   // decorations for IrGen
 public:
@@ -488,22 +563,28 @@ class AstObjTypePtr : public AstObjType {
 public:
   AstObjTypePtr(AstObjType* pointee);
 
+  // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
+
+  // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
   AstObject* createDefaultAstObjectForSemanticAnalizer() override;
 
   const ObjTypePtr& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
-
-  AstObjType& pointee() const { return *m_pointee; }
-
   void createAndSetObjType() override;
 
+  // -- childs of this node
+  AstObjType& pointee() const { return *m_pointee; }
+
 private:
-  std::unique_ptr<AstObjType> m_pointee;
+  // -- to implement overrides
   std::shared_ptr<const ObjTypePtr> m_objType;
+
+  // -- childs of this node
+  std::unique_ptr<AstObjType> m_pointee;
 
   // decorations for IrGen
 public:
@@ -517,26 +598,32 @@ public:
   AstClassDef(const std::string& name, AstDataDef* m1 = nullptr,
     AstDataDef* m2 = nullptr, AstDataDef* m3 = nullptr);
 
+  // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
+
+  // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
   AstObject* createDefaultAstObjectForSemanticAnalizer() override;
 
   const ObjTypeClass& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override; 
+  void createAndSetObjType() override;
 
+  // -- childs of this node
   const std::string& name() const { return m_name; }
   const std::vector<AstDataDef*>& dataMembers() const { return *m_dataMembers; }
 
-  void createAndSetObjType() override;
-
 private:
+  // -- to implement overrides
+  std::shared_ptr<const ObjTypeClass> m_objType;
+
+  // -- childs of this node
   const std::string m_name;
   /** We're the owner of the list and of the pointees. Pointers are garanteed
   to be non null, also the pointer to the vector.*/
   const std::unique_ptr<std::vector<AstDataDef*>> m_dataMembers;
-  std::shared_ptr<const ObjTypeClass> m_objType;
 
   // decorations for IrGen
 public:
@@ -552,18 +639,25 @@ public:
     AstObject* child4 = NULL, AstObject* child5 = NULL, AstObject* child6 = NULL);
   virtual ~AstCtList();
 
-  void releaseOwnership();
+  // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor) override;
   virtual void accept(AstConstVisitor& visitor) const override;
-  AstCtList* Add(AstObject* child);
-  AstCtList* Add(AstObject* child1, AstObject* child2, AstObject* child3 = NULL);
+
+  // -- childs of this node
   /** The elements are guaranteed to be non-null */
   std::list<AstObject*>& childs() const { return *m_childs; }
-  virtual const ObjType& objType() const;
+
+  // -- misc
+  void releaseOwnership();
+  AstCtList* Add(AstObject* child);
+  AstCtList* Add(AstObject* child1, AstObject* child2, AstObject* child3 = NULL);
 
 private:
+  // -- childs of this node
   /** We're the owner of the list and of the pointees. Pointers are garanteed
   to be non null*/
   std::list<AstObject*>*const m_childs;
+
+  // -- misc
   bool m_owner = true;
 };
