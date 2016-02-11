@@ -314,7 +314,7 @@ void IrGen::visit(AstFunDef& funDef) {
   // Add all arguments to the symbol table and create their allocas. Also tell
   // llvm the name of each arg.
   Function::arg_iterator llvmArgIter = functionIr->arg_begin();
-  list<AstDataDef*>::const_iterator astArgIter = funDef.declaredArgs().begin();
+  auto astArgIter = funDef.declaredArgs().cbegin();
   for (/*nop*/; llvmArgIter != functionIr->arg_end(); ++llvmArgIter, ++astArgIter) {
     auto object = (*astArgIter)->object();
     if ( object->isStoredInMemory() ) {

@@ -349,14 +349,14 @@ std::shared_ptr<const ObjType> ObjTypePtr::pointee() const {
   return m_pointee;
 };
 
-ObjTypeFun::ObjTypeFun(list<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret) :
+ObjTypeFun::ObjTypeFun(vector<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret) :
   m_args{ args ?
-      std::unique_ptr<list<shared_ptr<const ObjType>>>{args} :
-    std::make_unique<list<shared_ptr<const ObjType>>>()},
+      std::unique_ptr<vector<shared_ptr<const ObjType>>>{args} :
+    std::make_unique<vector<shared_ptr<const ObjType>>>()},
   m_ret{ ret ? move(ret) : make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt)} {
   assert(m_args);
   assert(m_ret);
-  for (list<shared_ptr<const ObjType> >::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
+  for (auto i=m_args->begin(); i!=m_args->end(); ++i) {
     assert(*i);
   }
 }
@@ -367,7 +367,7 @@ ObjType::MatchType ObjTypeFun::match(const ObjType& dst, bool isLevel0) const {
 
 ObjType::MatchType ObjTypeFun::match2(const ObjTypeFun& src, bool isRoot) const {
   if (m_args->size() != src.m_args->size()) return eNoMatch;
-  for (list<shared_ptr<const ObjType> >::const_iterator i=m_args->begin(), isrc=src.m_args->begin();
+  for (auto i=m_args->begin(), isrc=src.m_args->begin();
        i!=m_args->end();
        ++i, ++isrc) {
     if ((*i)->match(**isrc) != eFullMatch) return eNoMatch;
@@ -382,7 +382,7 @@ bool ObjTypeFun::is(ObjType::EClass class_) const {
 
 basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {
   os << "fun((";
-  for (list<shared_ptr<const ObjType> >::const_iterator i=m_args->begin(); i!=m_args->end(); ++i) {
+  for (auto i=m_args->begin(); i!=m_args->end(); ++i) {
     if (i!=m_args->begin()) { os << ", "; }
     os << **i;
   }
@@ -392,9 +392,9 @@ basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {
   return os;
 }
 
-list<shared_ptr<const ObjType> >* ObjTypeFun::createArgs(const ObjType* arg1, const ObjType* arg2,
+vector<shared_ptr<const ObjType> >* ObjTypeFun::createArgs(const ObjType* arg1, const ObjType* arg2,
   const ObjType* arg3) {
-  list<shared_ptr<const ObjType> >* l = new list<shared_ptr<const ObjType> >;
+  auto l = new vector<shared_ptr<const ObjType> >;
   if (arg1) { l->push_back(shared_ptr<const ObjType>(arg1)); }
   if (arg2) { l->push_back(shared_ptr<const ObjType>(arg2)); }
   if (arg3) { l->push_back(shared_ptr<const ObjType>(arg3)); }

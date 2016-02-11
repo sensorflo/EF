@@ -27,9 +27,8 @@ void AstDefaultIterator::visit(AstCtList& ctList) {
   if ( m_visitor ) {
     ctList.accept(*m_visitor);
   }
-  list<AstObject*>& childs = ctList.childs();
-  for (list<AstObject*>::const_iterator i=childs.begin();
-       i!=childs.end(); ++i) {
+  auto& childs = ctList.childs();
+  for (auto i=childs.begin(); i!=childs.end(); ++i) {
     (*i)->accept(*this);
   }
 }
@@ -75,8 +74,7 @@ void AstDefaultIterator::visit(AstFunDef& funDef) {
   if ( m_visitor ) {
     funDef.accept(*m_visitor);
   }
-  for (list<AstDataDef*>::const_iterator i=funDef.declaredArgs().begin();
-       i!=funDef.declaredArgs().end(); ++i) {
+  for (auto i=funDef.declaredArgs().begin(); i!=funDef.declaredArgs().end(); ++i) {
     (*i)->accept(*this);
   }
   funDef.declaredRetAstObjType().accept(*this);

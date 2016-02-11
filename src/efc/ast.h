@@ -10,7 +10,7 @@
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Function.h"
 #include <string>
-#include <list>
+#include <vector>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -130,7 +130,7 @@ private:
 class AstFunDef : public AstObject {
 public:
   AstFunDef(const std::string& name,
-    std::list<AstDataDef*>* args,
+    std::vector<AstDataDef*>* args,
     AstObjType* ret,
     AstObject* body);
   virtual ~AstFunDef();
@@ -141,12 +141,12 @@ public:
 
   // -- childs of this node
   virtual const std::string& name() const { return m_name; }
-  virtual std::list<AstDataDef*>const& declaredArgs() const { return *m_args; }
+  virtual std::vector<AstDataDef*>const& declaredArgs() const { return *m_args; }
   virtual AstObjType& declaredRetAstObjType() const;
   virtual AstObject& body() const { return *m_body; }
 
   // -- misc
-  static std::list<AstDataDef*>* createArgs(AstDataDef* arg1 = NULL,
+  static std::vector<AstDataDef*>* createArgs(AstDataDef* arg1 = NULL,
     AstDataDef* arg2 = NULL, AstDataDef* arg3 = NULL);
   void assignDeclaredObjTypeToAssociatedObject();
   const std::string& fqName() const;
@@ -160,7 +160,7 @@ private:
   const std::string m_name;
   /** We're the owner. Is garanteed to be non-null. The shared_ptr<ObjType>
   instances are redundant to dynamic_cast<ObjTypeFun>(objType()).args().  */
-  std::list<AstDataDef*>* const m_args;
+  std::vector<AstDataDef*>* const m_args;
   /** Is garanteed to be non-null. Is redundant to
   dynamic_cast<ObjTypeFun>(objType()).ret().  */
   const std::unique_ptr<AstObjType> m_ret;
@@ -621,8 +621,8 @@ private:
 
   // -- childs of this node
   const std::string m_name;
-  /** We're the owner of the list and of the pointees. Pointers are garanteed
-  to be non null, also the pointer to the vector.*/
+  /** We're the owner of the pointees. Pointers are garanteed to be non null,
+  also the pointer to the vector.*/
   const std::unique_ptr<std::vector<AstDataDef*>> m_dataMembers;
 
   // decorations for IrGen
@@ -633,7 +633,7 @@ public:
 /** Maybe it should be an independent type, that is not derive from AstNode */
 class AstCtList : public AstNode {
 public:
-  AstCtList(std::list<AstObject*>* childs);
+  AstCtList(std::vector<AstObject*>* childs);
   AstCtList(AstObject* child1 = NULL);
   AstCtList(AstObject* child1, AstObject* child2, AstObject* child3 = NULL,
     AstObject* child4 = NULL, AstObject* child5 = NULL, AstObject* child6 = NULL);
@@ -645,7 +645,7 @@ public:
 
   // -- childs of this node
   /** The elements are guaranteed to be non-null */
-  std::list<AstObject*>& childs() const { return *m_childs; }
+  std::vector<AstObject*>& childs() const { return *m_childs; }
 
   // -- misc
   void releaseOwnership();
@@ -654,9 +654,8 @@ public:
 
 private:
   // -- childs of this node
-  /** We're the owner of the list and of the pointees. Pointers are garanteed
-  to be non null*/
-  std::list<AstObject*>*const m_childs;
+  /** We're the owner of the pointees. Pointers are garanteed to be non null*/
+  std::vector<AstObject*>*const m_childs;
 
   // -- misc
   bool m_owner = true;

@@ -53,7 +53,7 @@ std::ostream& operator<<(std::ostream& os, const Error& error);
 
 class ErrorHandler final {
 public:
-  typedef std::list<Error*> Container;
+  typedef std::vector<Error*> Container;
 
   ErrorHandler();
   ~ErrorHandler();

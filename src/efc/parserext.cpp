@@ -77,7 +77,7 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
   // right associative binary operator
   else if ( op == '=' ) {
     assert(args->childs().size() >= 2);
-    reverse_iterator<list<AstObject*>::iterator> ri = args->childs().rbegin();
+    auto ri = args->childs().rbegin();
     AstObject* last = *ri;
     AstObject* beforelast = *(++ri);
     tree = new AstOperator(op, beforelast, last);
@@ -89,7 +89,7 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
   // left associative binary operator
   else {
     assert(args->childs().size() >= 2);
-    list<AstObject*>::iterator i = args->childs().begin();
+    auto i = args->childs().begin();
     AstObject* first = *i;
     AstObject* second = *(++i);
     tree = new AstOperator(op, first, second);
@@ -130,9 +130,9 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
     rawAstDataDef->m_ctorArgs);
 }
 
-AstFunDef* ParserExt::mkFunDef(const string name, list<AstDataDef*>* astArgs,
+AstFunDef* ParserExt::mkFunDef(const string name, vector<AstDataDef*>* astArgs,
   AstObjType* retAstObjType, AstObject* astBody) {
-  astArgs = astArgs ? astArgs : new list<AstDataDef*>();
+  astArgs = astArgs ? astArgs : new vector<AstDataDef*>();
   return new AstFunDef(name, astArgs, retAstObjType, astBody);
 }
 

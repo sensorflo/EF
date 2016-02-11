@@ -3,7 +3,6 @@
 // analogous, redundant list in the Makefile
 #include "entity.h"
 #include <string>
-#include <list>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -188,10 +187,10 @@ private:
 /** Compound-type/function */
 class ObjTypeFun : public ObjType {
 public:
-  ObjTypeFun(std::list<std::shared_ptr<const ObjType> >* args,
+  ObjTypeFun(std::vector<std::shared_ptr<const ObjType> >* args,
     std::shared_ptr<const ObjType> ret = std::shared_ptr<const ObjType>());
 
-  static std::list<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = NULL,
+  static std::vector<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = NULL,
     const ObjType* arg2 = NULL, const ObjType* arg3 = NULL);
 
   virtual MatchType match(const ObjType& dst, bool isLevel0) const;
@@ -205,13 +204,13 @@ public:
   virtual bool is(EClass class_) const;
   virtual int size() const { return -1;}
 
-  const std::list<std::shared_ptr<const ObjType> >& args() const { return *m_args; }
+  const std::vector<std::shared_ptr<const ObjType> >& args() const { return *m_args; }
   const ObjType& ret() const { return *m_ret; }
 
 private:
   /** m_args itself and the pointers in the cointainer are garanteed to be
   non-null. */
-  const std::unique_ptr<std::list<std::shared_ptr<const ObjType>>> m_args;
+  const std::unique_ptr<std::vector<std::shared_ptr<const ObjType>>> m_args;
   const std::shared_ptr<const ObjType> m_ret;
 };
 

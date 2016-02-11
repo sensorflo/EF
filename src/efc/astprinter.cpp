@@ -1,6 +1,5 @@
 #include "astprinter.h"
 #include "ast.h"
-#include <list>
 #include <sstream>
 using namespace std;
 
@@ -41,9 +40,8 @@ void AstPrinter::visit(const AstCast& cast) {
 }
 
 void AstPrinter::visit(const AstCtList& ctList) {
-  list<AstObject*>& childs = ctList.childs();
-  for (list<AstObject*>::const_iterator i=childs.begin();
-       i!=childs.end(); ++i) {
+  auto& childs = ctList.childs();
+  for (auto i=childs.begin(); i!=childs.end(); ++i) {
     if (i!=childs.begin()) { m_os << " "; }
     (*i)->accept(*this);
   }
@@ -96,9 +94,8 @@ void AstPrinter::visit(const AstFunCall& funCall) {
 
 void AstPrinter::visit(const AstFunDef& funDef) {
   m_os << "fun(" << funDef.name() << " (";
-  for (list<AstDataDef*>::const_iterator i=funDef.declaredArgs().begin();
-       i!=funDef.declaredArgs().end(); ++i) {
-    if (i!=funDef.declaredArgs().begin()) { m_os << " "; }
+  for (auto i=funDef.declaredArgs().cbegin(); i!=funDef.declaredArgs().cend(); ++i) {
+    if (i!=funDef.declaredArgs().cbegin()) { m_os << " "; }
     // as an exception, handle parameters directly, opposed to accept *i
     m_os << "(" << (*i)->name() << " ";
     (*i)->declaredAstObjType().accept(*this);

@@ -83,7 +83,7 @@ AstObjType& AstCast::specifiedNewAstObjType() const {
 }
 
 AstFunDef::AstFunDef(const string& name,
-  std::list<AstDataDef*>* args,
+  std::vector<AstDataDef*>* args,
   AstObjType* ret,
   AstObject* body) :
   m_name(name),
@@ -97,8 +97,7 @@ AstFunDef::AstFunDef(const string& name,
 }
 
 AstFunDef::~AstFunDef() {
-  for (list<AstDataDef*>::const_iterator i=m_args->begin();
-       i!=m_args->end(); ++i) {
+  for (auto i=m_args->begin(); i!=m_args->end(); ++i) {
     delete *i;
   }
   delete m_args;
@@ -110,9 +109,9 @@ AstObjType& AstFunDef::declaredRetAstObjType() const {
   return *m_ret;
 }
 
-list<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
+vector<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
   AstDataDef* arg2, AstDataDef* arg3) {
-  list<AstDataDef*>* args = new list<AstDataDef*>;
+  auto args = new vector<AstDataDef*>;
   if (arg1) { args->push_back(arg1); }
   if (arg2) { args->push_back(arg2); }
   if (arg3) { args->push_back(arg3); }
@@ -126,7 +125,7 @@ const string& AstFunDef::fqName() const {
 
 void AstFunDef::assignDeclaredObjTypeToAssociatedObject() {
   // create the ObjType of this function
-  const auto& argsObjType = new list<shared_ptr<const ObjType>>;
+  const auto& argsObjType = new vector<shared_ptr<const ObjType>>;
   for (const auto& astArg: *m_args) {
     assert(astArg);
     assert(astArg->declaredAstObjType().objTypeAsSp());
@@ -731,20 +730,18 @@ void AstClassDef::createAndSetObjType() {
   m_objType = make_shared<ObjTypeClass>(m_name, move(dataMembersCopy));
 }
 
-/** The list's elements must be non-null */
-AstCtList::AstCtList(list<AstObject*>* childs) :
-  m_childs(childs ? childs : new list<AstObject*>() ) {
+/** The vectors's elements must be non-null */
+AstCtList::AstCtList(vector<AstObject*>* childs) :
+  m_childs(childs ? childs : new vector<AstObject*>() ) {
   assert(m_childs);
-  for (list<AstObject*>::iterator it = m_childs->begin();
-       it != m_childs->end();
-       ++it) {
+  for (auto it = m_childs->begin(); it != m_childs->end(); ++it) {
     assert(*it);
   }
 }
 
 /** When child is NULL it is ignored */
 AstCtList::AstCtList(AstObject* child) :
-  m_childs(new list<AstObject*>()) {
+  m_childs(new vector<AstObject*>()) {
   assert(m_childs);
   if (child) { m_childs->push_back(child); }
 }
@@ -752,7 +749,7 @@ AstCtList::AstCtList(AstObject* child) :
 /** NULL childs are ignored.*/
 AstCtList::AstCtList(AstObject* child1, AstObject* child2, AstObject* child3,
   AstObject* child4, AstObject* child5, AstObject* child6) :
-  m_childs(new list<AstObject*>()) {
+  m_childs(new vector<AstObject*>()) {
   assert(m_childs);
   if (child1) { m_childs->push_back(child1); }
   if (child2) { m_childs->push_back(child2); }
@@ -764,7 +761,7 @@ AstCtList::AstCtList(AstObject* child1, AstObject* child2, AstObject* child3,
 
 AstCtList::~AstCtList() {
   if ( m_owner ) {
-    for (list<AstObject*>::iterator i=m_childs->begin(); i!=m_childs->end(); ++i) {
+    for (auto i=m_childs->begin(); i!=m_childs->end(); ++i) {
       delete (*i);
     }
   }

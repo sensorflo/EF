@@ -93,7 +93,7 @@ void SemanticAnalizer::visit(AstCtList& ctList) {
 void SemanticAnalizer::visit(AstOperator& op) {
   preConditionCheck(op);
 
-  const list<AstObject*>& argschilds = op.args().childs();
+  auto& argschilds = op.args().childs();
 
   // Note that orrect number of arguments was already handled in AstOperator's
   // ctor; we're allowed to count on that.
@@ -313,8 +313,8 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
     FunBodyHelper dummy(m_funRetAstObjTypes, &funDef.declaredRetAstObjType());
     Env::AutoScope scope(m_env, funDef.name(), Env::AutoScope::descentScope);
 
-    list<AstDataDef*>::const_iterator argDefIter = funDef.declaredArgs().begin();
-    list<AstDataDef*>::const_iterator end = funDef.declaredArgs().end();
+    auto argDefIter = funDef.declaredArgs().cbegin();
+    auto end = funDef.declaredArgs().cend();
     for ( ; argDefIter!=end; ++argDefIter) {
       if ((*argDefIter)->declaredStorageDuration() != StorageDuration::eLocal) {
         Error::throwError(m_errorHandler, Error::eOnlyLocalStorageDurationApplicable);

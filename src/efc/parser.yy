@@ -159,8 +159,8 @@ and by declaration of free function yylex */
 
 %type <AstCtList*> ct_list initializer_arg initializer_special_arg
 %type <std::vector<AstNode*>*> pure_standalone_node_seq_expr
-%type <std::list<AstDataDef*>*> pure_naked_param_ct_list
-%type <std::list<AstObject*>*> pure_ct_list
+%type <std::vector<AstDataDef*>*> pure_naked_param_ct_list
+%type <std::vector<AstObject*>*> pure_ct_list
 %type <AstNode*> standalone_node 
 %type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstDataDef*> param_decl
@@ -236,12 +236,12 @@ ct_list
   ;
 
 pure_ct_list
-  : standalone_expr                                 { $$ = new std::list<AstObject*>(); ($$)->push_back($1); }
+  : standalone_expr                                 { $$ = new std::vector<AstObject*>(); ($$)->push_back($1); }
   | pure_ct_list COMMA standalone_expr              { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 pure_naked_param_ct_list
-  : param_decl                                      { $$ = new std::list<AstDataDef*>(); ($$)->push_back($1); }
+  : param_decl                                      { $$ = new std::vector<AstDataDef*>(); ($$)->push_back($1); }
   | pure_naked_param_ct_list COMMA param_decl       { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
