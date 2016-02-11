@@ -102,14 +102,13 @@ private:
   // -- childs of this node
   const std::string m_name;
   /** Guaranteed to be non-null */
-  std::unique_ptr<AstObject> m_body;
+  const std::unique_ptr<AstObject> m_body;
 };
 
 class AstCast : public AstObject {
 public:
   AstCast(AstObjType* specifiedNewAstObjType, AstObject* child);
   AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child);
-  virtual ~AstCast();
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -123,8 +122,8 @@ private:
   // -- childs of this node
   /** Is guaranteed to be non-null */
   const std::unique_ptr<AstObjType> m_specifiedNewAstObjType;
-  /** We're the owner. Is guaranteed to be non-null */
-  AstObject* m_child;
+  /** Is guaranteed to be non-null */
+  const std::unique_ptr<AstObject> m_child;
 };
 
 class AstFunDef : public AstObject {
@@ -133,7 +132,6 @@ public:
     std::vector<AstDataDef*>* args,
     AstObjType* ret,
     AstObject* body);
-  virtual ~AstFunDef();
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -141,7 +139,8 @@ public:
 
   // -- childs of this node
   virtual const std::string& name() const { return m_name; }
-  virtual std::vector<AstDataDef*>const& declaredArgs() const { return *m_args; }
+  virtual std::vector<std::unique_ptr<AstDataDef>>const& declaredArgs() const {
+    return m_args; }
   virtual AstObjType& declaredRetAstObjType() const;
   virtual AstObject& body() const { return *m_body; }
 
@@ -158,14 +157,14 @@ private:
   // -- childs of this node
   /** Redundant to the key of Env's key-value pair pointing to object(). */
   const std::string m_name;
-  /** We're the owner. Is garanteed to be non-null. The shared_ptr<ObjType>
-  instances are redundant to dynamic_cast<ObjTypeFun>(objType()).args().  */
-  std::vector<AstDataDef*>* const m_args;
+  /** The shared_ptr<ObjType> instances are redundant to
+  dynamic_cast<ObjTypeFun>(objType()).args(). */
+  const std::vector<std::unique_ptr<AstDataDef>> m_args;
   /** Is garanteed to be non-null. Is redundant to
   dynamic_cast<ObjTypeFun>(objType()).ret().  */
   const std::unique_ptr<AstObjType> m_ret;
-  /** We're the owner. Is garanteed to be non-null */
-  AstObject* const m_body;
+  /** Is garanteed to be non-null */
+  const std::unique_ptr<AstObject> m_body;
 
   // -- misc
   const FQNameProvider* m_fqNameProvider;
@@ -187,7 +186,6 @@ public:
   AstDataDef(const std::string& name,
     ObjTypeFunda::EType declaredObjType = ObjTypeFunda::eInt,
     AstObject* initObj = nullptr);
-  virtual ~AstDataDef();
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -214,7 +212,7 @@ public:
 private:
   friend class AstPrinter;
 
-  static AstCtList* mkCtorArgs(AstCtList* ctorArgs,
+  static std::unique_ptr<AstCtList> mkCtorArgs(AstCtList* ctorArgs,
     StorageDuration storageDuration, bool& doNotInit);
 
   // -- object associated with this node
@@ -225,12 +223,13 @@ private:
 
   // -- childs of this node
   const std::string m_name;
-  std::unique_ptr<AstObjType> m_declaredAstObjType;
+  /** Guaranteed to be not eUnknown */
+  const std::unique_ptr<AstObjType> m_declaredAstObjType;
   /** Guaranteed to be not eUnknown */
   const StorageDuration m_declaredStorageDuration;
-  /** We're the owner. Is garanteed to be non-null. Currently, zero args means
-  to default initialize: semantic analizer will add an initilizer*/
-  AstCtList* const m_ctorArgs;
+  /** Is garanteed to be non-null. Currently, zero args means to default
+  initialize: semantic analizer will add an initilizer*/
+  const std::unique_ptr<AstCtList> m_ctorArgs;
 
   // -- misc
   const FQNameProvider* m_fqNameProvider;
@@ -284,7 +283,6 @@ private:
 class AstFunCall : public AstObject {
 public:
   AstFunCall(AstObject* address, AstCtList* args = NULL);
-  virtual ~AstFunCall();
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -299,9 +297,9 @@ public:
 
 private:
   // -- childs of this node
-  /** We're the owner. Is garanteed to be non-null */
-  AstObject* const m_address;
-  /** We're the owner. Is garanteed to be non-null */
+  /** Is garanteed to be non-null */
+  const std::unique_ptr<AstObject> m_address;
+  /** Is garanteed to be non-null */
   const std::unique_ptr<AstCtList> m_args;
 };
 
@@ -360,7 +358,7 @@ private:
 
   // -- childs of this node
   const EOperation m_op;
-  /** We're the owner. Is garanteed to be non-null */
+  /** Is garanteed to be non-null */
   const std::unique_ptr<AstCtList> m_args;
 
   // -- misc
@@ -385,7 +383,7 @@ public:
   virtual void accept(AstConstVisitor& visitor) const;
 
   // -- childs of this node
-  const std::vector<AstNode*>& operands() const { return *m_operands; }
+  const std::vector<std::unique_ptr<AstNode>>& operands() const { return m_operands; }
 
   // -- misc
   AstObject& lastOperand(ErrorHandler& errorHandler) const;
@@ -394,14 +392,13 @@ private:
   // -- childs of this node
   /** Pointers are garanteed to be non null. Garanteed to have at least one
   element. */
-  std::unique_ptr<std::vector<AstNode*>> m_operands;
+  const std::vector<std::unique_ptr<AstNode>> m_operands;
 };
 
 /* If flow control expression */
 class AstIf : public AstObject {
 public:
   AstIf(AstObject* cond, AstObject* action, AstObject* elseAction = NULL);
-  virtual ~AstIf();
 
    // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -410,22 +407,21 @@ public:
   // -- childs of this node
   AstObject& condition() const { return *m_condition; }
   AstObject& action() const { return *m_action; }
-  AstObject* elseAction() const { return m_elseAction; }
+  AstObject* elseAction() const { return m_elseAction.get(); }
 
 private:
   // -- childs of this node
-  /** We're the owner. Is garanteed to be non-null */
-  AstObject* const m_condition;
-  /** We're the owner. Is garanteed to be non-null */
-  AstObject* const m_action;
-  /** We're the owner. Is NOT garanteed to be non-null */
-  AstObject* const m_elseAction;
+  /** Is garanteed to be non-null */
+  const std::unique_ptr<AstObject> m_condition;
+  /** Is garanteed to be non-null */
+  const std::unique_ptr<AstObject> m_action;
+  /** Is NOT garanteed to be non-null */
+  const std::unique_ptr<AstObject> m_elseAction;
 };
 
 class AstLoop : public AstObject {
 public:
   AstLoop(AstObject* cond, AstObject* body);
-  virtual ~AstLoop();
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -437,10 +433,10 @@ public:
 
 private:
   // -- childs of this node
-  /** We're the owner. Is garanteed to be non-null */
-  AstObject* const m_condition;
-  /** We're the owner. Is garanteed to be non-null */
-  AstObject* const m_body;
+  /** Is garanteed to be non-null */
+  const std::unique_ptr<AstObject> m_condition;
+  /** Is garanteed to be non-null */
+  const std::unique_ptr<AstObject> m_body;
 };
 
 class AstReturn : public AstObject {
@@ -551,8 +547,9 @@ private:
   std::shared_ptr<const ObjType> m_objType;
 
   // -- childs of this node
-  ObjType::Qualifiers m_qualifiers;
-  std::unique_ptr<AstObjType> m_targetType;
+  const ObjType::Qualifiers m_qualifiers;
+  /** Guaranteed to be non-null */
+  const std::unique_ptr<AstObjType> m_targetType;
 
   // decorations for IrGen
 public:
@@ -584,7 +581,8 @@ private:
   std::shared_ptr<const ObjTypePtr> m_objType;
 
   // -- childs of this node
-  std::unique_ptr<AstObjType> m_pointee;
+  /** Guaranteed to be non-null */
+  const std::unique_ptr<AstObjType> m_pointee;
 
   // decorations for IrGen
 public:
@@ -613,7 +611,8 @@ public:
 
   // -- childs of this node
   const std::string& name() const { return m_name; }
-  const std::vector<AstDataDef*>& dataMembers() const { return *m_dataMembers; }
+  const std::vector<std::unique_ptr<AstDataDef>>& dataMembers() const {
+    return m_dataMembers; }
 
 private:
   // -- to implement overrides
@@ -621,9 +620,8 @@ private:
 
   // -- childs of this node
   const std::string m_name;
-  /** We're the owner of the pointees. Pointers are garanteed to be non null,
-  also the pointer to the vector.*/
-  const std::unique_ptr<std::vector<AstDataDef*>> m_dataMembers;
+  /** Pointers are garanteed to be non null.*/
+  const std::vector<std::unique_ptr<AstDataDef>> m_dataMembers;
 
   // decorations for IrGen
 public:

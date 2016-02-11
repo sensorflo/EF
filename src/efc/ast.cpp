@@ -9,6 +9,33 @@
 #include <stdexcept>
 using namespace std;
 
+namespace {
+
+template<typename T>
+vector<unique_ptr<T>> toUniquePtrs(vector<T*>* src) {
+  assert(src);
+  const unique_ptr<vector<T*>> dummy(src);
+  vector<unique_ptr<T>> dst{};
+  for ( const auto& element : *src ) {
+    dst.emplace_back(element);
+  }
+  return dst;
+}
+
+template<typename T>
+vector<unique_ptr<T>> toUniquePtrs(T* src1 = nullptr, T* src2 = nullptr,
+  T* src3 = nullptr, T* src4 = nullptr, T* src5 = nullptr) {
+  vector<unique_ptr<T>> dst{};
+  for ( const auto& element : {src1, src2, src3, src4, src5} ) {
+    if ( element ) {
+      dst.emplace_back(element);
+    }
+  }
+  return dst;
+}
+
+}
+
 string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
@@ -65,17 +92,13 @@ AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child) :
     specifiedNewAstObjType ?
     unique_ptr<AstObjType>(specifiedNewAstObjType) :
     make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt)),
-  m_child(child ? child : new AstNumber(0)) {
+  m_child(child ? unique_ptr<AstObject>(child) : make_unique<AstNumber>(0)) {
   assert(m_child);
   assert(m_specifiedNewAstObjType);
 }
 
 AstCast::AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child) :
   AstCast{new AstObjTypeSymbol(specifiedNewOjType), child} {
-}
-
-AstCast::~AstCast() {
-  delete m_child;
 }
 
 AstObjType& AstCast::specifiedNewAstObjType() const {
@@ -87,21 +110,12 @@ AstFunDef::AstFunDef(const string& name,
   AstObjType* ret,
   AstObject* body) :
   m_name(name),
-  m_args(args),
+  m_args(toUniquePtrs(args)),
   m_ret(ret),
   m_body(body),
   m_fqNameProvider{} {
-  assert(m_args);
   assert(m_ret);
   assert(m_body);
-}
-
-AstFunDef::~AstFunDef() {
-  for (auto i=m_args->begin(); i!=m_args->end(); ++i) {
-    delete *i;
-  }
-  delete m_args;
-  delete m_body;
 }
 
 AstObjType& AstFunDef::declaredRetAstObjType() const {
@@ -126,7 +140,7 @@ const string& AstFunDef::fqName() const {
 void AstFunDef::assignDeclaredObjTypeToAssociatedObject() {
   // create the ObjType of this function
   const auto& argsObjType = new vector<shared_ptr<const ObjType>>;
-  for (const auto& astArg: *m_args) {
+  for (const auto& astArg: m_args) {
     assert(astArg);
     assert(astArg->declaredAstObjType().objTypeAsSp());
     argsObjType->push_back(astArg->declaredAstObjType().objTypeAsSp());
@@ -170,10 +184,6 @@ AstDataDef::AstDataDef(const std::string& name, ObjTypeFunda::EType declaredObjT
   AstDataDef(name, new AstObjTypeSymbol(declaredObjType), initObj) {
 }
 
-AstDataDef::~AstDataDef() {
-  delete m_ctorArgs;
-}
-
 const ObjType& AstDataDef::objType() const {
   assert(m_objType);
   assert(!m_object || m_objType.get() == &m_object->objType());
@@ -185,15 +195,16 @@ shared_ptr<const ObjType> AstDataDef::objTypeAsSp() const {
   return m_objType;
 }
 
-AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
+unique_ptr<AstCtList> AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
   StorageDuration storageDuration, bool& doNotInit) {
   if ( storageDuration==StorageDuration::eMember ) {
     doNotInit = true;
     assert(nullptr==ctorArgs || ctorArgs->childs().empty());
     if ( nullptr==ctorArgs ) {
-      ctorArgs = new AstCtList();
+      return make_unique<AstCtList>();
+    } else {
+      return unique_ptr<AstCtList>(ctorArgs);
     }
-    return ctorArgs;
   } else {
     doNotInit = false; // assumption
     if (not ctorArgs) {
@@ -207,7 +218,7 @@ AstCtList* AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
       }
     }
   }
-  return ctorArgs;
+  return unique_ptr<AstCtList>(ctorArgs);
 }
 
 AstObjType& AstDataDef::declaredAstObjType() const {
@@ -364,34 +375,21 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
 }
 
 AstSeq::AstSeq(std::vector<AstNode*>* operands) :
-  m_operands(operands) {
-  assert(m_operands);
-  assert(!m_operands->empty());
+  m_operands(toUniquePtrs(operands)) {
+  for ( const auto& operand : m_operands ) {
+    assert(operand);
+  }
+  assert(!m_operands.empty());
 }
 
 AstSeq::AstSeq(AstNode* op1, AstNode* op2, AstNode* op3, AstNode* op4,
   AstNode* op5) :
-  m_operands(std::make_unique<std::vector<AstNode*>>()) {
-  if ( op1 ) {
-    m_operands->push_back(op1);
-  }
-  if ( op2 ) {
-    m_operands->push_back(op2);
-  }
-  if ( op3 ) {
-    m_operands->push_back(op3);
-  }
-  if ( op4 ) {
-    m_operands->push_back(op4);
-  }
-  if ( op5 ) {
-    m_operands->push_back(op5);
-  }
-  assert(!m_operands->empty());
+  m_operands(toUniquePtrs(op1, op2, op3, op4, op5)) {
+  assert(!m_operands.empty());
 }
 
 AstObject& AstSeq::lastOperand(ErrorHandler& errorHandler) const {
-  auto obj = dynamic_cast<AstObject*>((*m_operands).back());
+  auto obj = dynamic_cast<AstObject*>(m_operands.back().get());
   if ( !obj ) {
     Error::throwError(errorHandler, Error::eObjectExpected);
   }
@@ -406,12 +404,6 @@ AstIf::AstIf(AstObject* cond, AstObject* action, AstObject* elseAction) :
   assert(m_action);
 }
 
-AstIf::~AstIf() {
-  delete m_condition;
-  delete m_action;
-  delete m_elseAction;
-}
-
 AstLoop::AstLoop(AstObject* cond, AstObject* body) :
   AstObject{
     make_shared<Object>(
@@ -421,11 +413,6 @@ AstLoop::AstLoop(AstObject* cond, AstObject* body) :
   m_body(body) {
   assert(m_condition);
   assert(m_body);
-}
-
-AstLoop::~AstLoop() {
-  delete m_condition;
-  delete m_body;
 }
 
 AstReturn::AstReturn(AstObject* retVal) :
@@ -443,14 +430,10 @@ AstObject& AstReturn::retVal() const {
 }
 
 AstFunCall::AstFunCall(AstObject* address, AstCtList* args) :
-  m_address(address ? address : new AstSymbol("")),
+  m_address(address ? unique_ptr<AstObject>(address) : make_unique<AstSymbol>("")),
   m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
   assert(m_address);
   assert(m_args);
-}
-
-AstFunCall::~AstFunCall() {
-  delete m_address;
 }
 
 void AstFunCall::createAndSetObjectUsingRetObjType() {
@@ -585,6 +568,7 @@ void AstObjTypeSymbol::createAndSetObjType() {
 AstObjTypeQuali::AstObjTypeQuali(ObjType::Qualifiers qualifiers, AstObjType* targetType) :
   m_qualifiers(qualifiers),
   m_targetType(targetType) {
+  assert(m_targetType);
 }
 
 void AstObjTypeQuali::printValueTo(ostream& os, GeneralValue value) const {
@@ -621,6 +605,7 @@ void AstObjTypeQuali::createAndSetObjType() {
 
 AstObjTypePtr::AstObjTypePtr(AstObjType* pointee) :
   m_pointee(pointee) {
+  assert(m_pointee);
 }
 
 void AstObjTypePtr::printValueTo(ostream& os, GeneralValue value) const {
@@ -660,7 +645,6 @@ shared_ptr<const ObjType> AstObjTypePtr::objTypeAsSp() const {
 }
 
 void AstObjTypePtr::createAndSetObjType() {
-  assert(m_pointee);
   assert(m_pointee->objTypeAsSp());
   assert(!m_objType); // it doesn't make sense to set it twice
   m_objType = make_shared<ObjTypePtr>(m_pointee->objTypeAsSp());
@@ -668,9 +652,8 @@ void AstObjTypePtr::createAndSetObjType() {
 
 AstClassDef::AstClassDef(const std::string& name, std::vector<AstDataDef*>* dataMembers) :
   m_name(name),
-  m_dataMembers(dataMembers) {
-  assert(m_dataMembers);
-  for (const auto& dataMember: *m_dataMembers) {
+  m_dataMembers(toUniquePtrs(dataMembers)) {
+  for (const auto& dataMember: m_dataMembers) {
     assert(dataMember);
   }
 }
@@ -678,16 +661,7 @@ AstClassDef::AstClassDef(const std::string& name, std::vector<AstDataDef*>* data
 AstClassDef::AstClassDef(const std::string& name, AstDataDef* m1, AstDataDef* m2,
   AstDataDef* m3) :
   m_name(name),
-  m_dataMembers(make_unique<std::vector<AstDataDef*>>()) {
-  if (m1) {
-    m_dataMembers->push_back(m1);  
-  }
-  if (m2) {
-    m_dataMembers->push_back(m2);  
-  }
-  if (m3) {
-    m_dataMembers->push_back(m3);  
-  }
+  m_dataMembers(toUniquePtrs(m1, m2, m3)) {
 }
 
 void AstClassDef::printValueTo(ostream& os, GeneralValue value) const {
@@ -722,7 +696,7 @@ shared_ptr<const ObjType> AstClassDef::objTypeAsSp() const {
 void AstClassDef::createAndSetObjType() {
   assert(!m_objType); // it doesn't make sense to set it twice
   std::vector<std::shared_ptr<const ObjType>> dataMembersCopy;
-  for (const auto& dataMember : *m_dataMembers) {
+  for (const auto& dataMember : m_dataMembers) {
     assert(dataMember);
     assert(dataMember->objTypeAsSp());
     dataMembersCopy.emplace_back(dataMember->objTypeAsSp());
