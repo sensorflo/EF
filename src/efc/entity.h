@@ -1,7 +1,6 @@
 #pragma once
 #include "declutils.h"
 #include <string>
-#include <sstream>
 #include <ostream>
 
 /** Represents an entity in the target program. Multiple AstNode s may refer
@@ -10,12 +9,11 @@ class Entity {
 public:
   virtual ~Entity() = default;
 
-  std::string toStr() const {
-    std::ostringstream ss;
-    printTo(ss);
-    return ss.str();
-  }
+  // -- pure virtual functions
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const = 0;
+
+  // -- misc
+  std::string toStr() const;
 
 protected:
   Entity() = default;
@@ -24,7 +22,5 @@ private:
   NEITHER_COPY_NOR_MOVEABLE(Entity);
 };
 
-inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  const Entity& ot) {
-  return ot.printTo(os);
-}
+std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
+  const Entity& ot);
