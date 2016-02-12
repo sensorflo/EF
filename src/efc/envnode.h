@@ -3,11 +3,9 @@
 #include <string>
 #include <ostream>
 
-/** Represents an entity in the target program. Multiple AstNode s may refer
-to the same Entity. */
-class Entity {
+class EnvNode {
 public:
-  virtual ~Entity() = default;
+  virtual ~EnvNode() = default;
 
   // -- pure virtual functions
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const = 0;
@@ -16,11 +14,11 @@ public:
   std::string toStr() const;
 
 protected:
-  Entity() = default;
+  EnvNode() = default;
 
 private:
-  NEITHER_COPY_NOR_MOVEABLE(Entity);
+  NEITHER_COPY_NOR_MOVEABLE(EnvNode);
 };
 
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  const Entity& ot);
+  const EnvNode& ot);

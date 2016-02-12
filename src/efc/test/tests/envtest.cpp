@@ -16,9 +16,9 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     // setup
     Env UUT;
     // exercise
-    shared_ptr<Entity>* entity = UUT.insertLeaf("x", dummyFQNameProvider);
+    shared_ptr<EnvNode>* node = UUT.insertLeaf("x", dummyFQNameProvider);
     // verify
-    EXPECT_TRUE(nullptr!=entity) << amendSpec(spec) << amend(UUT);
+    EXPECT_TRUE(nullptr!=node) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being root scope, using AutoScope to insert";
@@ -26,11 +26,11 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     // setup
     Env UUT;
     // exercise
-    shared_ptr<Entity>* entity;
-    Env::AutoScope scope(UUT, "x", dummyFQNameProvider, entity,
+    shared_ptr<EnvNode>* node;
+    Env::AutoScope scope(UUT, "x", dummyFQNameProvider, node,
       Env::AutoScope::insertScopeAndDescent);
     // verify
-    EXPECT_TRUE(nullptr!=entity) << amendSpec(spec) << amend(UUT);
+    EXPECT_TRUE(nullptr!=node) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being _not_ root scope, using insertLeaf to insert";
@@ -39,9 +39,9 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     Env UUT;
     Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
     // exercise
-    shared_ptr<Entity>* entity = UUT.insertLeaf("x", dummyFQNameProvider);
+    shared_ptr<EnvNode>* node = UUT.insertLeaf("x", dummyFQNameProvider);
     // verify
-    EXPECT_TRUE(nullptr!=entity) << amendSpec(spec) << amend(UUT);
+    EXPECT_TRUE(nullptr!=node) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being _not_ root scope, using AutoScope to insert";
@@ -50,11 +50,11 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     Env UUT;
     Env::AutoScope scope1(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
     // exercise
-    shared_ptr<Entity>* entity;
-    Env::AutoScope scope2(UUT, "x", dummyFQNameProvider, entity,
+    shared_ptr<EnvNode>* node;
+    Env::AutoScope scope2(UUT, "x", dummyFQNameProvider, node,
       Env::AutoScope::insertScopeAndDescent);
     // verify
-    EXPECT_TRUE(nullptr!=entity) << amendSpec(spec) << amend(UUT);
+    EXPECT_TRUE(nullptr!=node) << amendSpec(spec) << amend(UUT);
   }
 }
 
@@ -70,9 +70,9 @@ TEST(EnvTest, MAKE_TEST_NAME(
     Env UUT;
     UUT.insertLeaf(name, dummyFQNameProvider);
     // exercise
-    shared_ptr<Entity>* entity = UUT.insertLeaf(name, dummyFQNameProvider);
+    shared_ptr<EnvNode>* node = UUT.insertLeaf(name, dummyFQNameProvider);
     // verify
-    EXPECT_EQ(nullptr, entity) << amendSpec(spec) << amend(UUT);
+    EXPECT_EQ(nullptr, node) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being root scope, using AutoScope to insert";
@@ -81,11 +81,11 @@ TEST(EnvTest, MAKE_TEST_NAME(
     Env UUT;
     UUT.insertLeaf(name, dummyFQNameProvider);
     // exercise
-    shared_ptr<Entity>* entity;
-    Env::AutoScope scope(UUT, name, dummyFQNameProvider, entity,
+    shared_ptr<EnvNode>* node;
+    Env::AutoScope scope(UUT, name, dummyFQNameProvider, node,
       Env::AutoScope::insertScopeAndDescent);
     // verify
-    EXPECT_EQ(nullptr, entity) << amendSpec(spec) << amend(UUT);
+    EXPECT_EQ(nullptr, node) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being _not_ root scope, using insertLeaf to insert";
@@ -95,9 +95,9 @@ TEST(EnvTest, MAKE_TEST_NAME(
     Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
     UUT.insertLeaf(name, dummyFQNameProvider);
     // exercise
-    shared_ptr<Entity>* entity = UUT.insertLeaf(name, dummyFQNameProvider);
+    shared_ptr<EnvNode>* node = UUT.insertLeaf(name, dummyFQNameProvider);
     // verify
-    EXPECT_EQ(nullptr, entity) << amendSpec(spec) << amend(UUT);
+    EXPECT_EQ(nullptr, node) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being _not_ root scope, using AutoScope to insert";
@@ -107,11 +107,11 @@ TEST(EnvTest, MAKE_TEST_NAME(
     Env::AutoScope scope1(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
     UUT.insertLeaf(name, dummyFQNameProvider);
     // exercise
-    shared_ptr<Entity>* entity;
-    Env::AutoScope scope2(UUT, name, dummyFQNameProvider, entity,
+    shared_ptr<EnvNode>* node;
+    Env::AutoScope scope2(UUT, name, dummyFQNameProvider, node,
       Env::AutoScope::insertScopeAndDescent);
     // verify
-    EXPECT_EQ(nullptr, entity) << amendSpec(spec) << amend(UUT);
+    EXPECT_EQ(nullptr, node) << amendSpec(spec) << amend(UUT);
   }
 }
 
@@ -124,28 +124,28 @@ TEST(EnvTest, MAKE_TEST_NAME3(
   {
     // setup
     Env UUT;
-    shared_ptr<Entity>* insertedEntity = UUT.insertLeaf(name, dummyFQNameProvider);
+    shared_ptr<EnvNode>* insertedNode = UUT.insertLeaf(name, dummyFQNameProvider);
 
     // exercise
-    shared_ptr<Entity>* foundEntity = UUT.find(name);
+    shared_ptr<EnvNode>* foundNode = UUT.find(name);
 
     // verify
-    EXPECT_EQ(insertedEntity, foundEntity) << amendSpec(spec) << amend(UUT);
+    EXPECT_EQ(insertedNode, foundNode) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Using AutoScope to insert";
   {
     // setup
     Env UUT;
-    shared_ptr<Entity>* insertedEntity;
-    Env::AutoScope scope(UUT, name, dummyFQNameProvider, insertedEntity,
+    shared_ptr<EnvNode>* insertedNode;
+    Env::AutoScope scope(UUT, name, dummyFQNameProvider, insertedNode,
       Env::AutoScope::insertScopeAndDescent);
 
     // exercise
-    shared_ptr<Entity>* foundEntity = UUT.find(name);
+    shared_ptr<EnvNode>* foundNode = UUT.find(name);
 
     // verify
-    EXPECT_EQ(insertedEntity, foundEntity) << amendSpec(spec) << amend(UUT);
+    EXPECT_EQ(insertedNode, foundNode) << amendSpec(spec) << amend(UUT);
   }
 }
 
@@ -153,8 +153,8 @@ TEST(EnvTest, MAKE_TEST_NAME2(
     find_WITH_an_nonexisting_name,
     returns_NULL)) {
   Env UUT;
-  shared_ptr<Entity>* foundEntity = UUT.find("x");
-  EXPECT_EQ(nullptr, foundEntity) << amend(UUT);
+  shared_ptr<EnvNode>* foundNode = UUT.find("x");
+  EXPECT_EQ(nullptr, foundNode) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME4(
@@ -166,15 +166,15 @@ TEST(EnvTest, MAKE_TEST_NAME4(
   // setup
   Env UUT;
   const auto name = "x"s;
-  const auto entityOuter = UUT.insertLeaf(name, dummyFQNameProvider);
+  const auto nodeOuter = UUT.insertLeaf(name, dummyFQNameProvider);
 
   // exercise
   Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
-  const auto entityInner = UUT.insertLeaf(name, dummyFQNameProvider);
+  const auto nodeInner = UUT.insertLeaf(name, dummyFQNameProvider);
 
   // verify
-  EXPECT_TRUE(nullptr!=entityInner) << amend(UUT);
-  EXPECT_NE(entityOuter, entityInner) << amend(UUT);
+  EXPECT_TRUE(nullptr!=nodeInner) << amend(UUT);
+  EXPECT_NE(nodeOuter, nodeInner) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME4(
@@ -185,14 +185,14 @@ TEST(EnvTest, MAKE_TEST_NAME4(
   // setup
   Env UUT;
   const auto name = "x"s;
-  const auto insertedEntity = UUT.insertLeaf(name, dummyFQNameProvider);
+  const auto insertedNode = UUT.insertLeaf(name, dummyFQNameProvider);
 
   // exercise
   Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
   const auto foundEntiy = UUT.find(name);
 
   // verify
-  EXPECT_EQ(insertedEntity, foundEntiy) << amend(UUT);
+  EXPECT_EQ(insertedNode, foundEntiy) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME(
@@ -203,41 +203,41 @@ TEST(EnvTest, MAKE_TEST_NAME(
   // setup
   Env UUT;
   const auto name = "x"s;
-  const auto outerEntity = UUT.insertLeaf(name, dummyFQNameProvider);
-  shared_ptr<Entity>* innerEntity{};
+  const auto outerNode = UUT.insertLeaf(name, dummyFQNameProvider);
+  shared_ptr<EnvNode>* innerNode{};
 
   // exercise
   {
     Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
-    innerEntity = UUT.insertLeaf(name, dummyFQNameProvider);
+    innerNode = UUT.insertLeaf(name, dummyFQNameProvider);
   }
-  const auto foundEntity = UUT.find(name);
+  const auto foundNode = UUT.find(name);
 
   // verify
-  EXPECT_EQ(foundEntity, outerEntity) << amend(UUT) <<
-    "\ninnerEntity=" << (void*)innerEntity;
+  EXPECT_EQ(foundNode, outerNode) << amend(UUT) <<
+    "\ninnerNode=" << (void*)innerNode;
 }
 
 TEST(EnvTest, MAKE_TEST_NAME1(
     descentScope)) {
   Env UUT;
-  shared_ptr<Entity>* insertedEntity{};
-  shared_ptr<Entity>* foundEntity{};
+  shared_ptr<EnvNode>* insertedNode{};
+  shared_ptr<EnvNode>* foundNode{};
   {
     Env::AutoScope scopeFoo(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
-    insertedEntity = UUT.insertLeaf("x", dummyFQNameProvider);
+    insertedNode = UUT.insertLeaf("x", dummyFQNameProvider);
   }
   {
     Env::AutoScope scopeFoo(UUT, "foo", Env::AutoScope::descentScope);
-    foundEntity = UUT.find("x");
+    foundNode = UUT.find("x");
   }
-  EXPECT_EQ(insertedEntity, foundEntity) << amend(UUT);
+  EXPECT_EQ(insertedNode, foundNode) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME2(
     insertLeaf_or_AutoScope_constructor_is_called,
     it_returns_the_fully_qualified_name_of_the_just_inserted_name)) {
-  std::shared_ptr<Entity>* dummyEntity;
+  std::shared_ptr<EnvNode>* dummyNode;
 
   string spec = "insertLeaf called at root";
   {
@@ -259,7 +259,7 @@ TEST(EnvTest, MAKE_TEST_NAME2(
     const FQNameProvider* fqNameProvider;
 
     // exercise
-    Env::AutoScope scopeFoo(UUT, "foo", fqNameProvider, dummyEntity,
+    Env::AutoScope scopeFoo(UUT, "foo", fqNameProvider, dummyNode,
       Env::AutoScope::insertScopeAndDescent);
 
     // verify
@@ -288,7 +288,7 @@ TEST(EnvTest, MAKE_TEST_NAME2(
     Env::AutoScope scopeOther(UUT, "othername", Env::AutoScope::insertScopeAndDescent);
 
     // exercise
-    Env::AutoScope scopeFoo(UUT, "foo", fqNameProvider, dummyEntity,
+    Env::AutoScope scopeFoo(UUT, "foo", fqNameProvider, dummyNode,
       Env::AutoScope::insertScopeAndDescent);
 
     // verify
@@ -314,7 +314,7 @@ TEST(EnvTest, MAKE_TEST_NAME1(
         "currentScope=$root, "
         "rootScope={"
           "name=$root, "
-          "m_entity=null"
+          "m_node=null"
         "}"
       "}",
       ss.str()) << amendSpec(spec);
@@ -345,15 +345,15 @@ TEST(EnvTest, MAKE_TEST_NAME1(
     EXPECT_EQ(
       "{currentScope=$root, "
       "rootScope="
-      "{name=$root, m_entity=null, children={"
-      "{name=1, m_entity=null}, "
-      "{name=2_, m_entity=null, children={"
-      "{name=2_1, m_entity=null}, "
-      "{name=2_2, m_entity=null}"
+      "{name=$root, m_node=null, children={"
+      "{name=1, m_node=null}, "
+      "{name=2_, m_node=null, children={"
+      "{name=2_1, m_node=null}, "
+      "{name=2_2, m_node=null}"
       "}}, "
-      "{name=3, m_entity=null}, "
-      "{name=4_, m_entity=null, children={"
-      "{name=4_1, m_entity=null}"
+      "{name=3, m_node=null}, "
+      "{name=4_, m_node=null, children={"
+      "{name=4_1, m_node=null}"
       "}}"
       "}}"
       "}",

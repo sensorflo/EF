@@ -30,7 +30,7 @@ EFC_SRCS = driver.cpp parserext.cpp ast.cpp errorhandler.cpp objtype.cpp \
   astdefaultiterator.cpp env.cpp semanticanalizer.cpp irgen.cpp astprinter.cpp \
   efc.cpp executionengineadapter.cpp parserapiext.cpp tokenstreamlookahead.cpp \
   tokenfilter.cpp storageduration.cpp object.cpp envinserter.cpp \
-	signatureaugmentor.cpp irgenforwarddeclarator.cpp entity.cpp
+	signatureaugmentor.cpp irgenforwarddeclarator.cpp envnode.cpp
 
 EFC_GEN_SRCS = parser.cpp scanner.cpp
 
@@ -56,7 +56,7 @@ gensrc/scanner.cpp: scanner.l | gensrc
 # The author sadly doesn't know how to automatically make the dependencies,
 # that's why they are written explicitely and redundantely.
 efc.h.pch: efc.h objtype.h access.h ast.h generalvalue.h storageduration.h \
-           entity.h astforwards.h declutils.h
+					 envnode.h astforwards.h declutils.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
 out/%.o: gensrc/%.cpp efc.h.pch | out

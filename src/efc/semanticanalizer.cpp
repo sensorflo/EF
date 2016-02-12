@@ -250,12 +250,12 @@ void SemanticAnalizer::visit(AstNumber& number) {
 void SemanticAnalizer::visit(AstSymbol& symbol) {
   preConditionCheck(symbol);
 
-  shared_ptr<Entity>* entity = m_env.find(symbol.name());
-  if (nullptr==entity) {
+  shared_ptr<EnvNode>* node = m_env.find(symbol.name());
+  if (nullptr==node) {
     Error::throwError(m_errorHandler, Error::eUnknownName);
   }
-  assert(*entity);
-  const auto object = std::dynamic_pointer_cast<Object>(*entity);
+  assert(*node);
+  const auto object = std::dynamic_pointer_cast<Object>(*node);
   assert(object);
 
   // 1) note that the access of this node is querried, as opposed to the

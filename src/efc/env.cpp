@@ -1,5 +1,4 @@
 #include "env.h"
-#include "entity.h"
 #include <algorithm>
 #include <thread>
 #include <deque>
@@ -7,7 +6,7 @@
 using namespace std;
 
 namespace {
-  thread_local shared_ptr<Entity>* dummyEntity;
+  thread_local shared_ptr<EnvNode>* dummyNode;
 }
 
 Env::Node* Env::Node::insert(string name, const FQNameProvider*& fqNameProvider) {
@@ -72,18 +71,18 @@ Env::Node::Node(string name, Node* parent) :
 thread_local const FQNameProvider* dummyFqNameProvider{};
 Env::AutoScope::AutoScope(Env& env, const string& name,
   Env::AutoScope::Action action) :
-  AutoScope(env, name, dummyFqNameProvider, dummyEntity, action) {
-  assert(dummyEntity);
+  AutoScope(env, name, dummyFqNameProvider, dummyNode, action) {
+  assert(dummyNode);
 }
 
 Env::AutoScope::AutoScope(Env& env, const string& name,
-  const FQNameProvider*& fqNameProvider, shared_ptr<Entity>*& entity,
+  const FQNameProvider*& fqNameProvider, shared_ptr<EnvNode>*& node,
   Env::AutoScope::Action action) :
   m_env(env) {
-  entity = (action == insertScopeAndDescent) ?
+  node = (action == insertScopeAndDescent) ?
     m_env.insertScopeAndDescent(name, fqNameProvider) :
     m_env.descentScope(name);
-  m_didDescent = (entity!=nullptr);
+  m_didDescent = (node!=nullptr);
 }
 
 Env::AutoScope::~AutoScope() {
@@ -97,42 +96,42 @@ Env::Env() :
   m_currentScope{&m_rootScope} {
 }
 
-shared_ptr<Entity>* Env::insertLeaf(const string& name,
+shared_ptr<EnvNode>* Env::insertLeaf(const string& name,
   const FQNameProvider*& fqNameProvider) {
   const auto newNode = m_currentScope->insert(name, fqNameProvider);
   return newNode ?
-    (fqNameProvider = newNode, &newNode->m_entity) :
+    (fqNameProvider = newNode, &newNode->m_node) :
     nullptr;
 }
 
-shared_ptr<Entity>* Env::insertScopeAndDescent(const string& name,
+shared_ptr<EnvNode>* Env::insertScopeAndDescent(const string& name,
   const FQNameProvider*& fqNameProvider) {
   const auto newNode = m_currentScope->insert(name, fqNameProvider);
   if ( newNode ) {
     m_currentScope = newNode;
-    return &newNode->m_entity;
+    return &newNode->m_node;
   } else {
     return nullptr;
   }
 }
 
-shared_ptr<Entity>* Env::descentScope(const string& name) {
+shared_ptr<EnvNode>* Env::descentScope(const string& name) {
   const auto foundChildNode = m_currentScope->find(name);
   if (foundChildNode) {
     m_currentScope = foundChildNode;
-    return &foundChildNode->m_entity;
+    return &foundChildNode->m_node;
   } else {
     return nullptr;
   }
 }
 
-shared_ptr<Entity>* Env::find(const string& name) {
+shared_ptr<EnvNode>* Env::find(const string& name) {
   for (auto currentScope = m_currentScope;
        currentScope;
        currentScope = currentScope->m_parent) {
     const auto foundChildNode = currentScope->find(name);
     if (foundChildNode) {
-      return &foundChildNode->m_entity;
+      return &foundChildNode->m_node;
     }
   }
   return nullptr;
@@ -158,9 +157,9 @@ void Env::ascentScope() {
 void Env::printTo(ostream& os, const Env::Node& node) const {
   os << "{name=" << node.m_name;
 
-  os << ", m_entity=";
-  if ( node.m_entity ) {
-    os << *node.m_entity;
+  os << ", m_node=";
+  if ( node.m_node ) {
+    os << *node.m_node;
   } else {
     os << "null";
   }

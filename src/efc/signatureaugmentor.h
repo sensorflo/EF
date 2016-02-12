@@ -9,8 +9,7 @@ class ObjType;
 1. 'Type template instanciaton'. AstObjType s create their associated
    ObjType. EF does not yet have templates; but the builtin types raw pointer
    and raw array can be viewed as type templates.
-2. Each definition occuring in AST augments its associated entity with it's
-   signature. */
+2. Each definition occuring in AST is augmented with it's signature. */
 class SignatureAugmentor : private AstDefaultIterator {
 public:
   SignatureAugmentor(Env& env, ErrorHandler& errorHandler);

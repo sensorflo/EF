@@ -22,7 +22,6 @@ class Object;
 class ErrorHandler;
 class FQNameProvider;
 
-/** See also Entity */
 class AstNode {
 public:
   virtual ~AstNode() = default;

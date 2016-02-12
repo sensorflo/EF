@@ -1,6 +1,6 @@
 #pragma once
 #include "declutils.h"
-#include "entity.h"
+#include "envnode.h"
 #include "fqnameprovider.h"
 #include <string>
 #include <deque>
@@ -8,10 +8,10 @@
 #include <ostream>
 
 /** The environment is a tree. Each node has a name which is unqiue among its
-siblings. Each node is associated to an Entity. Internal nodes, i.e. notes
-with one or more children, are also called Scope. Insertion operations are
-relative to the so called current node. The current node can be reseated by
-the descent and ascent operations. */
+siblings. Internal nodes, i.e. nodes with one or more children, are also
+called Scope. Insertion operations are relative to the so called current
+node. The current node can be reseated by the descent and ascent
+operations. */
 class Env final {
 public:
   /** Ensures that ascentScope is always called when an insertAndDescent or
@@ -25,7 +25,7 @@ public:
 
     AutoScope(Env& env, const std::string& name, Action action);
     AutoScope(Env& env, const std::string& name,
-      const FQNameProvider*& fqNameProvider, std::shared_ptr<Entity>*& entity,
+      const FQNameProvider*& fqNameProvider, std::shared_ptr<EnvNode>*& node,
       Action action);
     ~AutoScope();
 
@@ -38,14 +38,14 @@ public:
   Env();
 
   /** Inserts a new child node with the given name to the current node and
-  returns a raw pointer to the entity member of the new node. Returns nullptr
+  returns a raw pointer to the node member of the new node. Returns nullptr
   if the current node already has a child with that name. */
-  std::shared_ptr<Entity>* insertLeaf(const std::string& name,
+  std::shared_ptr<EnvNode>* insertLeaf(const std::string& name,
     const FQNameProvider*& fqNameProvider);
 
   /** Starting at the current node, searches the name in each node, on the
   path up to the root, returning the first occurence found. */
-  std::shared_ptr<Entity>* find(const std::string& name);
+  std::shared_ptr<EnvNode>* find(const std::string& name);
 
   static std::string makeUniqueInternalName(std::string baseName = "");
 
@@ -64,7 +64,7 @@ private:
     const std::string m_name;
     mutable std::string m_fqName;
     // might be null, e.g. for AstBlocks
-    std::shared_ptr<Entity> m_entity;
+    std::shared_ptr<EnvNode> m_node;
     // might be empty, e.g. for data objects. Note that it must be a container
     // that does never invalidate pointers when adding elements.
     std::deque<Node> m_children;
@@ -74,9 +74,9 @@ private:
   friend std::ostream& operator<<(std::ostream&, const Env&);
 
   /** As insert, but additionally makes the new node the current node. */
-  std::shared_ptr<Entity>* insertScopeAndDescent(const std::string& name,
+  std::shared_ptr<EnvNode>* insertScopeAndDescent(const std::string& name,
     const FQNameProvider*& fqNameProvider);
-  std::shared_ptr<Entity>* descentScope(const std::string& name);
+  std::shared_ptr<EnvNode>* descentScope(const std::string& name);
   void ascentScope();
   void printTo(std::ostream& os, const Node& node) const;
   NEITHER_COPY_NOR_MOVEABLE(Env);

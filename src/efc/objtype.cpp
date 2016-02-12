@@ -448,9 +448,7 @@ ObjType::MatchType ObjTypeClass::match(const ObjType& dst, bool isLevel0) const 
 }
 
 ObjType::MatchType ObjTypeClass::match2(const ObjTypeClass& src, bool isRoot) const {
-  // Each ObjTypeClass instance represents a distinct type. Note that the name
-  // is irrelevant, it's the job of Env to make the relationship between names
-  // and entities (see class Entity).
+  // Each ObjTypeClass instance represents a distinct type
   return this == &src ? eFullMatch : eNoMatch;
 }
 

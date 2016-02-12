@@ -1,6 +1,6 @@
 #pragma once
 #include "storageduration.h"
-#include "entity.h"
+#include "envnode.h"
 #include "llvm/IR/IRBuilder.h"
 #include <string>
 #include <memory>
@@ -17,8 +17,8 @@ one object in the target program might have multiple associated Object
 instances. Actually we would want a one to one relationship, but that's not
 feasible.
 
-Multiple AstObject nodes may refer to one Entity. */
-class Object : public Entity {
+Multiple AstObject nodes may refer to one Object. */
+class Object : public EnvNode {
 public:
   Object(StorageDuration storageDuration);
   Object(std::shared_ptr<const ObjType> objType,

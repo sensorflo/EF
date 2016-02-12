@@ -1,7 +1,7 @@
 #pragma once
 // If you change this list of header files, you must also modify the
 // analogous, redundant list in the Makefile
-#include "entity.h"
+#include "envnode.h"
 #include <string>
 #include <iostream>
 #include <memory>
@@ -19,8 +19,8 @@ namespace llvm {
 
 /** Abstract base class for all object types.
 
-Multiple AstObjType nodes may refer to one Entity. */
-class ObjType : public Entity, public std::enable_shared_from_this<ObjType> {
+Multiple AstObjType nodes may refer to one ObjType. */
+class ObjType : public EnvNode, public std::enable_shared_from_this<ObjType> {
 public:
   // works as bit flags
   enum Qualifiers {

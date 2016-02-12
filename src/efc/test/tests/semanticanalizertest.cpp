@@ -299,10 +299,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast);
 
     // verify
-    const auto entity = env.find("x");
-    EXPECT_TRUE(nullptr!=entity) << amendAst(ast.get());
-    EXPECT_TRUE(nullptr!=*entity) << amendAst(ast.get());
-    const auto& object = dynamic_cast<Object&>(**entity);
+    const auto node = env.find("x");
+    EXPECT_TRUE(nullptr!=node) << amendAst(ast.get());
+    EXPECT_TRUE(nullptr!=*node) << amendAst(ast.get());
+    const auto& object = dynamic_cast<Object&>(**node);
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt),
       object.objType()) << amendAst(ast.get());
   }
@@ -320,10 +320,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast);
 
     // verify
-    const auto entity = env.find("x");
-    EXPECT_TRUE(nullptr!=entity) << amendAst(ast.get());
-    EXPECT_TRUE(nullptr!=*entity) << amendAst(ast.get());
-    const auto& object = dynamic_cast<Object&>(**entity);
+    const auto node = env.find("x");
+    EXPECT_TRUE(nullptr!=node) << amendAst(ast.get());
+    EXPECT_TRUE(nullptr!=*node) << amendAst(ast.get());
+    const auto& object = dynamic_cast<Object&>(**node);
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt),
       object.objType()) << amendAst(ast.get());
   }
@@ -341,10 +341,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast);
 
     // verify
-    const auto entity = env.find("x");
-    EXPECT_TRUE(nullptr!=entity) << amendAst(ast.get());
-    EXPECT_TRUE(nullptr!=*entity) << amendAst(ast.get());
-    const auto& object = dynamic_cast<Object&>(**entity);
+    const auto node = env.find("x");
+    EXPECT_TRUE(nullptr!=node) << amendAst(ast.get());
+    EXPECT_TRUE(nullptr!=*node) << amendAst(ast.get());
+    const auto& object = dynamic_cast<Object&>(**node);
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt),
       object.objType()) << amendAst(ast.get());
   }
@@ -622,17 +622,17 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   const ObjTypeFun funType{ObjTypeFun::createArgs(),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
 
-  auto entityOuter = env.find("outer");
-  EXPECT_TRUE( entityOuter ) << amendAst(ast);
-  auto objectOuter = std::dynamic_pointer_cast<Object>(*entityOuter);
+  auto nodeOuter = env.find("outer");
+  EXPECT_TRUE( nodeOuter ) << amendAst(ast);
+  auto objectOuter = std::dynamic_pointer_cast<Object>(*nodeOuter);
   EXPECT_TRUE( nullptr!=objectOuter );
   EXPECT_TRUE( objectOuter->objType().matchesFully(funType) );
 
   {
     Env::AutoScope scope(env, "outer", Env::AutoScope::descentScope);
-    shared_ptr<Entity>* entityInner = env.find("inner");
-    EXPECT_TRUE( entityInner ) << amendAst(ast);
-    auto objectInner = std::dynamic_pointer_cast<Object>(*entityInner);
+    shared_ptr<EnvNode>* nodeInner = env.find("inner");
+    EXPECT_TRUE( nodeInner ) << amendAst(ast);
+    auto objectInner = std::dynamic_pointer_cast<Object>(*nodeInner);
     EXPECT_TRUE( nullptr!=objectInner );
     EXPECT_TRUE( objectInner->objType().matchesFully(funType) );
   }
