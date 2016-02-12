@@ -18,12 +18,11 @@ void EnvInserter::insertIntoEnv(AstNode& root) {
 void EnvInserter::visit(AstBlock& block) {
   Env::AutoScope scope(m_env, block.name(),
     Env::AutoScope::insertScopeAndDescent);
+
   AstDefaultIterator::visit(block);
 }
 
 void EnvInserter::visit(AstDataDef& dataDef) {
-  AstDefaultIterator::visit(dataDef);
-
   if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
     std::shared_ptr<Entity>* entity = m_env.insertLeaf(dataDef.name(),
       dataDef.fqNameProvider());
@@ -37,6 +36,8 @@ void EnvInserter::visit(AstDataDef& dataDef) {
     *entity = object; // 2
     dataDef.setObject(move(object)); // 3
   }
+
+  AstDefaultIterator::visit(dataDef);
 }
 
 void EnvInserter::visit(AstFunDef& funDef) {
