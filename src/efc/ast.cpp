@@ -164,7 +164,7 @@ AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
   m_declaredStorageDuration(declaredStorageDuration),
   m_ctorArgs(mkCtorArgs(ctorArgs, m_declaredStorageDuration, m_doNotInit)),
   m_fqNameProvider{} {
-  assert(declaredStorageDuration != StorageDuration::eUnknown);
+  assert(declaredStorageDuration != StorageDuration::eYetUndefined);
   assert(m_ctorArgs);
 }
 

@@ -224,7 +224,7 @@ private:
   const std::string m_name;
   /** Guaranteed to be not eUnknown */
   const std::unique_ptr<AstObjType> m_declaredAstObjType;
-  /** Guaranteed to be not eUnknown */
+  /** Guaranteed to be not eYetUndefined */
   const StorageDuration m_declaredStorageDuration;
   /** Is garanteed to be non-null. Currently, zero args means to default
   initialize: semantic analizer will add an initilizer*/
