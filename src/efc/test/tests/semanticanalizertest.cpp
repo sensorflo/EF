@@ -595,11 +595,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eRedefinition, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_nested_function_definition,
     transform,
-    succeeds_AND_inserts_both_function_names_in_the_global_namespace,
-    BECAUSE_currently_for_simplicity_there_are_no_nested_namespaces)) {
+    succeeds_AND_inserts_both_appropriately_into_env)) {
 
   // setup
   Env env;
@@ -635,6 +634,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     auto objectInner = std::dynamic_pointer_cast<Object>(*nodeInner);
     EXPECT_TRUE( nullptr!=objectInner );
     EXPECT_TRUE( objectInner->objType().matchesFully(funType) );
+
+    EXPECT_NE( objectInner, objectOuter );
   }
 }
 
