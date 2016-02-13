@@ -45,7 +45,7 @@ AstObject::AstObject() :
 }
 
 AstObject::AstObject(std::shared_ptr<Object> object) :
-  m_access(Access::eUndefined),
+  m_access(Access::eYetUndefined),
   m_object(move(object)) {
 }
 

@@ -2,12 +2,19 @@
 #include <iostream>
 #include <cassert>
 
-enum class Access { eUndefined, eRead, eWrite, eTakeAddress, eIgnoreValueAndAddr };
+enum class Access {
+  /** For Access variables which's proper value is not yet defined. */
+  eYetUndefined,
+  eRead,
+  eWrite,
+  eTakeAddress,
+  eIgnoreValueAndAddr
+};
 
 inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   Access access) {
   switch (access) {
-  case Access::eUndefined: return os << "eUndefined";
+  case Access::eYetUndefined: return os << "eYetUndefined";
   case Access::eRead: return os << "eRead";
   case Access::eWrite: return os << "eWrite";
   case Access::eTakeAddress: return os << "eTakeAddress";

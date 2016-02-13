@@ -498,7 +498,7 @@ void SemanticAnalizer::visit(AstClassDef& class_) {
 }
 
 void SemanticAnalizer::preConditionCheck(const AstObject& node) {
-  assert(node.access()!=Access::eUndefined);
+  assert(node.access()!=Access::eYetUndefined);
 }
 
 void SemanticAnalizer::preConditionCheck(const AstObjType& node) {
