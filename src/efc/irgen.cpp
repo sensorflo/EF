@@ -57,15 +57,15 @@ unique_ptr<Module> IrGen::genIr(AstNode& root) {
 
 llvm::Value* IrGen::callAcceptOn(AstObject& node) {
   node.accept(*this);
-  return node.object()->irValue(m_builder);
+  return node.object()->irValueOfIrObject(m_builder);
 }
 
 void IrGen::visit(AstNop& nop) {
-  nop.object()->setIrValue(m_abstractObject, m_builder);//void
+  allocateAndInitLocalIrObjectFor(nop, m_abstractObject);
 }
 
 void IrGen::visit(AstBlock& block) {
-  block.object()->setIrValue(callAcceptOn(block.body()), m_builder);
+  allocateAndInitLocalIrObjectFor(block, callAcceptOn(block.body()), block.name());
 }
 
 void IrGen::visit(AstCast& cast) {
@@ -149,7 +149,7 @@ void IrGen::visit(AstCast& cast) {
     assert(false);
   }
 
-  cast.object()->irInitLocal( irResult, m_builder, irValueName );
+  allocateAndInitLocalIrObjectFor(cast, irResult, irValueName);
 }
 
 void IrGen::visit(AstCtList&) {
@@ -165,13 +165,9 @@ void IrGen::visit(AstOperator& op) {
     llvmResult = m_builder.CreateNot(callAcceptOn(*astOperands.front()), "not" );
   } else if (op.op()==AstOperator::eAddrOf) {
     astOperands.front()->accept(*this);
-    llvmResult = astOperands.front()->object()->irAddr();
+    llvmResult = astOperands.front()->object()->irAddrOfIrObject();
   } else if (op.op()==AstOperator::eDeref) {
-    auto llvmAddrOfDerefee = callAcceptOn(*astOperands.front());
-    // auto llvmm_builder.CreateLoad(llvmAddrOfDerefee, "deref"); 
-    // op.object is semantically a redunant copy of the object denoting the
-    // derefee. 'Copy' as good as we can.
-    op.object()->setIrAddr(llvmAddrOfDerefee);
+    op.object()->referToIrObject(callAcceptOn(*astOperands.front()));
   }
 
   // binary logical short circuit operators
@@ -217,7 +213,7 @@ void IrGen::visit(AstOperator& op) {
   else if (op.op()==AstOperator::eAssign || op.op()==AstOperator::eVoidAssign) {
     astOperands.front()->accept(*this);
     auto llvmRhs = callAcceptOn(*astOperands.back());
-    m_builder.CreateStore( llvmRhs, astOperands.front()->object()->irAddr());
+    m_builder.CreateStore( llvmRhs, astOperands.front()->object()->irAddrOfIrObject());
     if ( op.op()==AstOperator::eVoidAssign ) {
       llvmResult = m_abstractObject; // void
     } else {
@@ -278,7 +274,7 @@ void IrGen::visit(AstOperator& op) {
   }
 
   if ( llvmResult ) {
-    op.object()->irInitLocal(llvmResult, m_builder);
+    allocateAndInitLocalIrObjectFor(op, llvmResult);
   }
 }
 
@@ -293,16 +289,17 @@ void IrGen::visit(AstSeq& seq) {
 
 void IrGen::visit(AstNumber& number) {
   Value* value = number.declaredAstObjType().createLlvmValueFrom(number.value());
-  number.object()->irInitLocal(value, m_builder, "literal");
+  allocateAndInitLocalIrObjectFor(number, value, "literal");
 }
 
 void IrGen::visit(AstSymbol& symbol) {
-  // nop - irValue of object denoted by symbol.object() has been set/stored
-  // before and will be querried later by caller
+  // nop - irValueOfIrObject of object denoted by symbol.object() has
+  // been set/stored before and will be querried later by caller
 }
 
 void IrGen::visit(AstFunDef& funDef) {
-  const auto functionIr = dynamic_cast<llvm::Function*>(funDef.object()->irAddr());
+  const auto functionIr = dynamic_cast<llvm::Function*>(
+    funDef.object()->irAddrOfIrObject());
   assert(functionIr);
 
   if ( m_builder.GetInsertBlock() ) {
@@ -316,14 +313,8 @@ void IrGen::visit(AstFunDef& funDef) {
   Function::arg_iterator llvmArgIter = functionIr->arg_begin();
   auto astArgIter = funDef.declaredArgs().cbegin();
   for (/*nop*/; llvmArgIter != functionIr->arg_end(); ++llvmArgIter, ++astArgIter) {
-    auto object = (*astArgIter)->object();
-    if ( object->isStoredInMemory() ) {
-      AllocaInst* argAddr = createAllocaInEntryBlock(functionIr,
-        (*astArgIter)->name(), object->objType().llvmType());
-      object->setIrAddr(argAddr);
-    }
-    object->setIrValue(llvmArgIter, m_builder);
-
+    allocateAndInitLocalIrObjectFor(**astArgIter, llvmArgIter,
+      (*astArgIter)->name());
     llvmArgIter->setName((*astArgIter)->name());
   }
 
@@ -343,7 +334,8 @@ void IrGen::visit(AstFunDef& funDef) {
 
 void IrGen::visit(AstFunCall& funCall) {
   funCall.address().accept(*this);
-  Function* callee = static_cast<Function*>(funCall.address().object()->irAddr());
+  Function* callee = static_cast<Function*>(
+    funCall.address().object()->irAddrOfIrObject());
   assert(callee);
     
   const auto& astArgs = funCall.args().childs();
@@ -356,13 +348,14 @@ void IrGen::visit(AstFunCall& funCall) {
   }
 
   const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(funCall.address().objType());
+  Value* llvmResult{};
   if ( objTypeFun.ret().isVoid() ) {
     m_builder.CreateCall(callee, llvmArgs);
-    funCall.object()->irInitLocal(m_abstractObject, m_builder);
+    llvmResult = m_abstractObject;
   } else {
-    funCall.object()->irInitLocal(
-      m_builder.CreateCall(callee, llvmArgs, callee->getName()), m_builder);
+    llvmResult = m_builder.CreateCall(callee, llvmArgs, callee->getName());
   }
+  allocateAndInitLocalIrObjectFor(funCall, llvmResult);
 }
 
 void IrGen::visit(AstDataDef& dataDef) {
@@ -382,17 +375,12 @@ void IrGen::visit(AstDataDef& dataDef) {
     initObj_();
   assert(initObj);
 
-  // initialize data object defined by dataDef with initObj.
-  Object*const object = dataDef.object();
-  assert(object);
-  if ( object->storageDuration() == StorageDuration::eStatic ) {
-    const auto variableAddr = dynamic_cast<GlobalVariable*>(
-      dataDef.object()->irAddr());
-    variableAddr->setInitializer(static_cast<Constant*>(initObj));
-  } else {
-    // For local data objects no LLVM value has yet been created by
-    // IrGenForwardDeclarator, so do it now.
-    object->irInitLocal(initObj, m_builder, dataDef.name());
+  // allocate, if not allready done, and initialize.
+  if ( dataDef.object()->storageDuration()==StorageDuration::eStatic ) {
+    dataDef.object()->initializeIrObject(initObj, m_builder);
+  }
+  else if ( dataDef.object()->storageDuration()==StorageDuration::eLocal ) {
+    allocateAndInitLocalIrObjectFor(dataDef, initObj, dataDef.name());
   }
 }
 
@@ -442,9 +430,9 @@ void IrGen::visit(AstIf& if_) {
     assert(phi);
     phi->addIncoming(thenValue, ThenLastBB);
     phi->addIncoming(elseValue, ElseLastBB);
-    if_.object()->irInitLocal(phi, m_builder);
+    allocateAndInitLocalIrObjectFor(if_, phi);
   } else {
-    if_.object()->irInitLocal(m_abstractObject, m_builder);
+    allocateAndInitLocalIrObjectFor(if_, m_abstractObject);
   }
 }
 
@@ -478,7 +466,7 @@ void IrGen::visit(AstLoop& loop) {
   m_builder.SetInsertPoint(afterBB);
 
   //
-  loop.object()->irInitLocal(m_abstractObject, m_builder);
+  allocateAndInitLocalIrObjectFor(loop, m_abstractObject);
 }
 
 void IrGen::visit(AstReturn& return_) {
@@ -489,7 +477,7 @@ void IrGen::visit(AstReturn& return_) {
   } else {
     m_builder.CreateRet( retVal);
   }
-  return_.object()->irInitLocal(m_abstractObject, m_builder);
+  allocateAndInitLocalIrObjectFor(return_, m_abstractObject);
 }
 
 void IrGen::visit(AstObjTypeSymbol& symbol) {
@@ -506,6 +494,25 @@ void IrGen::visit(AstObjTypePtr& ptr) {
 
 void IrGen::visit(AstClassDef& class_){
   assert(false); // not yet implemented
+}
+
+void IrGen::allocateAndInitLocalIrObjectFor(AstObject& astObject,
+  Value* irInitializer, const string& name) {
+  auto& object = *astObject.object();
+  if ( object.isStoredInMemory() ) {
+    const auto functionIr = m_builder.GetInsertBlock()->getParent();
+    const auto addr = createAllocaInEntryBlock(functionIr, name,
+      object.objType().llvmType());
+    object.setAddrOfIrObject(addr);
+  } else {
+    // nop: the IR object is stored in an SSA value which will be defined in
+    // initializeIrObject.
+    // Note that the name is ignored, i.e. the SSA value will not have the
+    // name of the local, but the name as defined by the IR instruction having
+    // defined the SSA value.
+    object.irObjectIsAnSsaValue();
+  }
+  object.initializeIrObject(irInitializer, m_builder);
 }
 
 /** \internal We want allocas in the entry block to facilitate llvm's mem2reg

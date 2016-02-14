@@ -47,6 +47,8 @@ private:
 
   llvm::Value* callAcceptOn(AstObject&);
 
+  void allocateAndInitLocalIrObjectFor(AstObject& astObject,
+    llvm::Value* irInitializer, const std::string& name = "");
   llvm::AllocaInst* createAllocaInEntryBlock(llvm::Function* functionIr,
     const std::string& varName, llvm::Type* type);
 

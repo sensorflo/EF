@@ -1,6 +1,7 @@
 #include "object.h"
 #include "errorhandler.h"
 #include "llvm/IR/Value.h"
+#include "llvm/IR/GlobalVariable.h"
 #include <cassert>
 #include <sstream>
 using namespace std;
@@ -11,7 +12,8 @@ Object::Object(StorageDuration storageDuration) :
   m_storageDuration(storageDuration),
   m_isModifiedOrRevealsAddr(false),
   m_isInitialized(false),
-  m_irValueOrAddr(nullptr) {}
+  m_irValueOfObject(nullptr),
+  m_phase(eStart) {}
 
 Object::Object(shared_ptr<const ObjType> objType,
   StorageDuration storageDuration) :
@@ -19,7 +21,8 @@ Object::Object(shared_ptr<const ObjType> objType,
   m_storageDuration(storageDuration),
   m_isModifiedOrRevealsAddr(false),
   m_isInitialized(false),
-  m_irValueOrAddr(NULL) {}
+  m_irValueOfObject(nullptr),
+  m_phase(eStart) {}
 
 void Object::setObjType(std::shared_ptr<const ObjType> objType) {
   assert(!m_objType); // doesn't make sense to set it twice
@@ -37,52 +40,96 @@ bool Object::isModifiedOrRevealsAddr() const {
 }
 
 bool Object::isStoredInMemory() const {
+  assert(m_storageDuration!=StorageDuration::eYetUndefined);
   return m_storageDuration!=StorageDuration::eLocal ||
     m_isModifiedOrRevealsAddr;
 }
 
-void Object::irInitLocal(llvm::Value* irValue, llvm::IRBuilder<>& builder,
-  const std::string& name) {
-  assert( !m_irValueOrAddr );  // It doesn't make sense to set it twice
+void Object::setAddrOfIrObject(llvm::Value* irAddrOfIrObject) {
+  assert(eStart==m_phase);
+  assert(isStoredInMemory());
+  assert(irAddrOfIrObject);
+  assert(!m_irAddrOfIrObject); // doesn't make sense to set it twice
+  m_irAddrOfIrObject = irAddrOfIrObject;
+  m_phase = eAllocated;
+}
+
+void Object::irObjectIsAnSsaValue() {
+  assert(eStart==m_phase);
+  assert(m_storageDuration==StorageDuration::eLocal);
+  assert(!isStoredInMemory());
+  assert(!m_irValueOfObject); // must not yet be set, will be set in
+                              // initializeIrObject
+  m_phase = eAllocated;
+}
+
+void Object::initializeIrObject(Value* irValue, IRBuilder<>& builder) {
+  assert(eAllocated==m_phase);
+  assert(irValue);
   if ( isStoredInMemory() ) {
-    Function* functionIr = builder.GetInsertBlock()->getParent();
-    IRBuilder<> irBuilder(&functionIr->getEntryBlock(),
-      functionIr->getEntryBlock().begin());
-    m_irValueOrAddr = irBuilder.CreateAlloca(objType().llvmType(), 0, name);
-    builder.CreateStore(irValue, m_irValueOrAddr);
+    assert(m_irAddrOfIrObject);
+    if ( m_storageDuration==StorageDuration::eStatic ) {
+      const auto globalVariable = dynamic_cast<GlobalVariable*>(
+        m_irAddrOfIrObject);
+      const auto constantInitializer = dynamic_cast<Constant*>(irValue);
+      globalVariable->setInitializer(constantInitializer);
+    } else if ( m_storageDuration==StorageDuration::eLocal )  {
+      builder.CreateStore(irValue, m_irAddrOfIrObject);
+    }
   } else {
-    m_irValueOrAddr = irValue;
+    assert(!m_irValueOfObject);  // doesn't make sense to set it twice
+    m_irValueOfObject = irValue;
+  }
+  m_phase = eInitialized;
+}
+
+void Object::referToIrObject(llvm::Value* irAddrOfIrObject) {
+  assert(eStart==m_phase);
+  assert(m_storageDuration!=StorageDuration::eLocal);
+  assert(isStoredInMemory());
+  assert(!m_irAddrOfIrObject);  // doesn't make sense to set it twice
+  assert(irAddrOfIrObject);
+  m_irAddrOfIrObject = irAddrOfIrObject;
+  m_phase = eInitialized;
+}
+
+Value* Object::irValueOfIrObject(IRBuilder<>& builder, const string& name) const {
+  if ( m_storageDuration==StorageDuration::eLocal ) {
+    assert(eInitialized==m_phase);
+  } else {
+    assert(eStart!=m_phase);
+  }
+  if ( isStoredInMemory() ) {
+    assert(m_irAddrOfIrObject);
+    return builder.CreateLoad(m_irAddrOfIrObject, name);
+  } else {
+    assert(m_irValueOfObject);
+    return m_irValueOfObject;
   }
 }
 
-llvm::Value* Object::irValue(llvm::IRBuilder<>& builder, const string& name) const {
-  assert( m_irValueOrAddr );
-  if ( isStoredInMemory() ) {
-    return builder.CreateLoad(m_irValueOrAddr, name);
+void Object::setIrValueOfIrObject(Value* irValue, IRBuilder<>& builder) {
+  if ( m_storageDuration==StorageDuration::eLocal ) {
+    assert(eInitialized==m_phase);
   } else {
-    return m_irValueOrAddr;
+    assert(eStart!=m_phase);
   }
+  assert(isStoredInMemory()); // IR objects not in memmory are SSA values
+                              // which are immutable
+  assert(m_irAddrOfIrObject);
+  assert(irValue);
+  builder.CreateStore(irValue, m_irAddrOfIrObject);
 }
 
-void Object::setIrValue(llvm::Value* irValue, llvm::IRBuilder<>& builder) {
-  if ( isStoredInMemory() ) {
-    builder.CreateStore(irValue, m_irValueOrAddr);
+Value* Object::irAddrOfIrObject() const {
+  if ( m_storageDuration==StorageDuration::eLocal ) {
+    assert(eInitialized==m_phase);
   } else {
-    assert(irValue);
-    assert(!m_irValueOrAddr); // It doesn't make sense to set it twice
-    m_irValueOrAddr = irValue;
+    assert(eStart!=m_phase);
   }
-}
-
-llvm::Value* Object::irAddr() const {
-  assert( isStoredInMemory() );
-  return m_irValueOrAddr;
-}
-
-void Object::setIrAddr(llvm::Value* addr) {
-  assert( isStoredInMemory() );
-  assert( !m_irValueOrAddr ); // It doesn't make sense to set it twice
-  m_irValueOrAddr = addr;
+  assert(isStoredInMemory());
+  assert(m_irAddrOfIrObject);
+  return m_irAddrOfIrObject;
 }
 
 basic_ostream<char>& Object::printTo(basic_ostream<char>& os) const {

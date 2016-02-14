@@ -47,17 +47,39 @@ private:
   bool m_isModifiedOrRevealsAddr;
   bool m_isInitialized;
 
-  // decorations for IrGen
+  // -- decorations for IrGen
+  // Here an 'IR object' is of LLVM first class value type. An IR object is
+  // stored either directly as an (LLVM SSA aka IR) value, or in memory.
 public:
-  void irInitLocal(llvm::Value* irValue, llvm::IRBuilder<>& builder,
-    const std::string& name = "");
-  llvm::Value* irValue(llvm::IRBuilder<>& builder, const std::string& name = "") const;
-  void setIrValue(llvm::Value* irValue, llvm::IRBuilder<>& builder);
-  llvm::Value* irAddr() const;
-  void setIrAddr(llvm::Value* addr);
+  // ---- either allocate and initialize IR object or refer to an already
+  //      existing IR Object:
+
+  // ------ allocate IR object
+  void setAddrOfIrObject(llvm::Value* irAddrOfIrObject);
+  void irObjectIsAnSsaValue();
+
+  // ------ initialize (allocated) IR object
+  void initializeIrObject(llvm::Value* irValue, llvm::IRBuilder<>& builder);
+
+  // ------ refer to an already existing IR object
+  /** As setAddrOfIrObject, only that setAddrOfIrObject must be followed
+  by an initialization of the IR object whereas referToIrObject does notl. */
+  void referToIrObject(llvm::Value* irAddrOfIrObject);
+
+  // ---- use (initialized) IR object
+  llvm::Value* irValueOfIrObject(llvm::IRBuilder<>& builder,
+    const std::string& name = "") const;
+  void setIrValueOfIrObject(llvm::Value* irValue, llvm::IRBuilder<>& builder);
+  llvm::Value* irAddrOfIrObject() const;
 
 private:
-  /** is an irValue for isStoredInMemory() being false and an irAddr
-  otherwise */
-  llvm::Value* m_irValueOrAddr;
+  enum Phase { eStart, eAllocated, eInitialized };
+  union {
+    /** in case isStoredInMemory() is true: points to the IR object */
+    llvm::Value* m_irAddrOfIrObject;
+    /** in case isStoredInMemory() is false: directly the IR object. I.e. the
+    IR object is an SSA value. */
+    llvm::Value* m_irValueOfObject;
+  };
+  Phase m_phase;
 };
