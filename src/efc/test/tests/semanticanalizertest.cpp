@@ -819,14 +819,16 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_a_sequence_WITH_the_last_operator_not_being_an_AstObject,
     THEN_it_reports_eObjectExpected))
 {
-  typedef AstCtList AstNotAnObject; // i.e. not derived from AstObject
+  // an AstNode not derived from AstObject
+  const auto makeANoneAstObjectNode = [](){
+    return new AstObjTypeSymbol(ObjTypeFunda::eInt); };
 
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstSeq(new AstNotAnObject()),
+    new AstSeq(makeANoneAstObjectNode()),
     Error::eObjectExpected, "");
 
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstSeq(new AstNumber(42), new AstNotAnObject()),
+    new AstSeq(new AstNumber(42), makeANoneAstObjectNode()),
     Error::eObjectExpected, "");
 }
 
