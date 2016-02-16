@@ -388,7 +388,7 @@ AstSeq::AstSeq(AstNode* op1, AstNode* op2, AstNode* op3, AstNode* op4,
   assert(!m_operands.empty());
 }
 
-AstObject& AstSeq::lastOperand(ErrorHandler& errorHandler) const {
+AstObject& AstSeq::lastOperandAsAstObject(ErrorHandler& errorHandler) const {
   auto obj = dynamic_cast<AstObject*>(m_operands.back().get());
   if ( !obj ) {
     Error::throwError(errorHandler, Error::eObjectExpected);

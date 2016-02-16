@@ -385,7 +385,7 @@ public:
   const std::vector<std::unique_ptr<AstNode>>& operands() const { return m_operands; }
 
   // -- misc
-  AstObject& lastOperand(ErrorHandler& errorHandler) const;
+  AstObject& lastOperandAsAstObject(ErrorHandler& errorHandler) const;
 
 private:
   // -- childs of this node
