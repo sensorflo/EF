@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace {
-  thread_local shared_ptr<EnvNode>* dummyNode;
+  thread_local EnvNode** dummyNode;
 }
 
 Env::Node* Env::Node::insert(string name, const FQNameProvider*& fqNameProvider) {
@@ -64,6 +64,7 @@ string Env::Node::createFqName() const {
 
 Env::Node::Node(string name, Node* parent) :
   m_name(move(name)),
+  m_node(nullptr),
   m_parent(parent) {
   assert(!m_name.empty());
 }
@@ -76,7 +77,7 @@ Env::AutoScope::AutoScope(Env& env, const string& name,
 }
 
 Env::AutoScope::AutoScope(Env& env, const string& name,
-  const FQNameProvider*& fqNameProvider, shared_ptr<EnvNode>*& node,
+  const FQNameProvider*& fqNameProvider, EnvNode**& node,
   Env::AutoScope::Action action) :
   m_env(env) {
   node = (action == insertScopeAndDescent) ?
@@ -96,7 +97,7 @@ Env::Env() :
   m_currentScope{&m_rootScope} {
 }
 
-shared_ptr<EnvNode>* Env::insertLeaf(const string& name,
+EnvNode** Env::insertLeaf(const string& name,
   const FQNameProvider*& fqNameProvider) {
   const auto newNode = m_currentScope->insert(name, fqNameProvider);
   return newNode ?
@@ -104,7 +105,7 @@ shared_ptr<EnvNode>* Env::insertLeaf(const string& name,
     nullptr;
 }
 
-shared_ptr<EnvNode>* Env::insertScopeAndDescent(const string& name,
+EnvNode** Env::insertScopeAndDescent(const string& name,
   const FQNameProvider*& fqNameProvider) {
   const auto newNode = m_currentScope->insert(name, fqNameProvider);
   if ( newNode ) {
@@ -115,7 +116,7 @@ shared_ptr<EnvNode>* Env::insertScopeAndDescent(const string& name,
   }
 }
 
-shared_ptr<EnvNode>* Env::descentScope(const string& name) {
+EnvNode** Env::descentScope(const string& name) {
   const auto foundChildNode = m_currentScope->find(name);
   if (foundChildNode) {
     m_currentScope = foundChildNode;
@@ -125,7 +126,7 @@ shared_ptr<EnvNode>* Env::descentScope(const string& name) {
   }
 }
 
-shared_ptr<EnvNode>* Env::find(const string& name) {
+EnvNode** Env::find(const string& name) {
   for (auto currentScope = m_currentScope;
        currentScope;
        currentScope = currentScope->m_parent) {

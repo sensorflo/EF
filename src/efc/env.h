@@ -4,7 +4,6 @@
 #include "fqnameprovider.h"
 #include <string>
 #include <deque>
-#include <memory>
 #include <ostream>
 
 /** The environment is a tree. Each node has a name which is unqiue among its
@@ -25,7 +24,7 @@ public:
 
     AutoScope(Env& env, const std::string& name, Action action);
     AutoScope(Env& env, const std::string& name,
-      const FQNameProvider*& fqNameProvider, std::shared_ptr<EnvNode>*& node,
+      const FQNameProvider*& fqNameProvider, EnvNode**& node,
       Action action);
     ~AutoScope();
 
@@ -40,12 +39,12 @@ public:
   /** Inserts a new child node with the given name to the current node and
   returns a raw pointer to the node member of the new node. Returns nullptr
   if the current node already has a child with that name. */
-  std::shared_ptr<EnvNode>* insertLeaf(const std::string& name,
+  EnvNode** insertLeaf(const std::string& name,
     const FQNameProvider*& fqNameProvider);
 
   /** Starting at the current node, searches the name in each node, on the
   path up to the root, returning the first occurence found. */
-  std::shared_ptr<EnvNode>* find(const std::string& name);
+  EnvNode** find(const std::string& name);
 
   static std::string makeUniqueInternalName(std::string baseName = "");
 
@@ -64,19 +63,20 @@ private:
     const std::string m_name;
     mutable std::string m_fqName;
     // might be null, e.g. for AstBlocks
-    std::shared_ptr<EnvNode> m_node;
+    EnvNode* m_node;
     // might be empty, e.g. for data objects. Note that it must be a container
     // that does never invalidate pointers when adding elements.
     std::deque<Node> m_children;
+    // the root node has nullptr as parent, all other nodes are non-nullptr
     Node*const m_parent;
   };
 
   friend std::ostream& operator<<(std::ostream&, const Env&);
 
   /** As insert, but additionally makes the new node the current node. */
-  std::shared_ptr<EnvNode>* insertScopeAndDescent(const std::string& name,
+  EnvNode** insertScopeAndDescent(const std::string& name,
     const FQNameProvider*& fqNameProvider);
-  std::shared_ptr<EnvNode>* descentScope(const std::string& name);
+  EnvNode** descentScope(const std::string& name);
   void ascentScope();
   void printTo(std::ostream& os, const Node& node) const;
   NEITHER_COPY_NOR_MOVEABLE(Env);

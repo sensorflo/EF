@@ -2,10 +2,13 @@
 #include <iostream>
 #include <cassert>
 
+/** Access to an an Object. */
 enum class Access {
   /** For Access variables which's proper value is not yet defined. */
   eYetUndefined,
+  /** read the object's value, that is read from the underlying memory */
   eRead,
+  /** analogous to eRead. Initialization does _not_ count as write */
   eWrite,
   eTakeAddress,
   eIgnoreValueAndAddr

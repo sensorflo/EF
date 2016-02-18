@@ -16,7 +16,7 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     // setup
     Env UUT;
     // exercise
-    shared_ptr<EnvNode>* node = UUT.insertLeaf("x", dummyFQNameProvider);
+    EnvNode** node = UUT.insertLeaf("x", dummyFQNameProvider);
     // verify
     EXPECT_TRUE(nullptr!=node) << amendSpec(spec) << amend(UUT);
   }
@@ -26,7 +26,7 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     // setup
     Env UUT;
     // exercise
-    shared_ptr<EnvNode>* node;
+    EnvNode** node;
     Env::AutoScope scope(UUT, "x", dummyFQNameProvider, node,
       Env::AutoScope::insertScopeAndDescent);
     // verify
@@ -39,7 +39,7 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     Env UUT;
     Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
     // exercise
-    shared_ptr<EnvNode>* node = UUT.insertLeaf("x", dummyFQNameProvider);
+    EnvNode** node = UUT.insertLeaf("x", dummyFQNameProvider);
     // verify
     EXPECT_TRUE(nullptr!=node) << amendSpec(spec) << amend(UUT);
   }
@@ -50,7 +50,7 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     Env UUT;
     Env::AutoScope scope1(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
     // exercise
-    shared_ptr<EnvNode>* node;
+    EnvNode** node;
     Env::AutoScope scope2(UUT, "x", dummyFQNameProvider, node,
       Env::AutoScope::insertScopeAndDescent);
     // verify
@@ -70,7 +70,7 @@ TEST(EnvTest, MAKE_TEST_NAME(
     Env UUT;
     UUT.insertLeaf(name, dummyFQNameProvider);
     // exercise
-    shared_ptr<EnvNode>* node = UUT.insertLeaf(name, dummyFQNameProvider);
+    EnvNode** node = UUT.insertLeaf(name, dummyFQNameProvider);
     // verify
     EXPECT_EQ(nullptr, node) << amendSpec(spec) << amend(UUT);
   }
@@ -81,7 +81,7 @@ TEST(EnvTest, MAKE_TEST_NAME(
     Env UUT;
     UUT.insertLeaf(name, dummyFQNameProvider);
     // exercise
-    shared_ptr<EnvNode>* node;
+    EnvNode** node;
     Env::AutoScope scope(UUT, name, dummyFQNameProvider, node,
       Env::AutoScope::insertScopeAndDescent);
     // verify
@@ -95,7 +95,7 @@ TEST(EnvTest, MAKE_TEST_NAME(
     Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
     UUT.insertLeaf(name, dummyFQNameProvider);
     // exercise
-    shared_ptr<EnvNode>* node = UUT.insertLeaf(name, dummyFQNameProvider);
+    EnvNode** node = UUT.insertLeaf(name, dummyFQNameProvider);
     // verify
     EXPECT_EQ(nullptr, node) << amendSpec(spec) << amend(UUT);
   }
@@ -107,7 +107,7 @@ TEST(EnvTest, MAKE_TEST_NAME(
     Env::AutoScope scope1(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
     UUT.insertLeaf(name, dummyFQNameProvider);
     // exercise
-    shared_ptr<EnvNode>* node;
+    EnvNode** node;
     Env::AutoScope scope2(UUT, name, dummyFQNameProvider, node,
       Env::AutoScope::insertScopeAndDescent);
     // verify
@@ -124,10 +124,10 @@ TEST(EnvTest, MAKE_TEST_NAME3(
   {
     // setup
     Env UUT;
-    shared_ptr<EnvNode>* insertedNode = UUT.insertLeaf(name, dummyFQNameProvider);
+    EnvNode** insertedNode = UUT.insertLeaf(name, dummyFQNameProvider);
 
     // exercise
-    shared_ptr<EnvNode>* foundNode = UUT.find(name);
+    EnvNode** foundNode = UUT.find(name);
 
     // verify
     EXPECT_EQ(insertedNode, foundNode) << amendSpec(spec) << amend(UUT);
@@ -137,12 +137,12 @@ TEST(EnvTest, MAKE_TEST_NAME3(
   {
     // setup
     Env UUT;
-    shared_ptr<EnvNode>* insertedNode;
+    EnvNode** insertedNode;
     Env::AutoScope scope(UUT, name, dummyFQNameProvider, insertedNode,
       Env::AutoScope::insertScopeAndDescent);
 
     // exercise
-    shared_ptr<EnvNode>* foundNode = UUT.find(name);
+    EnvNode** foundNode = UUT.find(name);
 
     // verify
     EXPECT_EQ(insertedNode, foundNode) << amendSpec(spec) << amend(UUT);
@@ -153,7 +153,7 @@ TEST(EnvTest, MAKE_TEST_NAME2(
     find_WITH_an_nonexisting_name,
     returns_NULL)) {
   Env UUT;
-  shared_ptr<EnvNode>* foundNode = UUT.find("x");
+  EnvNode** foundNode = UUT.find("x");
   EXPECT_EQ(nullptr, foundNode) << amend(UUT);
 }
 
@@ -204,7 +204,7 @@ TEST(EnvTest, MAKE_TEST_NAME(
   Env UUT;
   const auto name = "x"s;
   const auto outerNode = UUT.insertLeaf(name, dummyFQNameProvider);
-  shared_ptr<EnvNode>* innerNode{};
+  EnvNode** innerNode{};
 
   // exercise
   {
@@ -221,8 +221,8 @@ TEST(EnvTest, MAKE_TEST_NAME(
 TEST(EnvTest, MAKE_TEST_NAME1(
     descentScope)) {
   Env UUT;
-  shared_ptr<EnvNode>* insertedNode{};
-  shared_ptr<EnvNode>* foundNode{};
+  EnvNode** insertedNode{};
+  EnvNode** foundNode{};
   {
     Env::AutoScope scopeFoo(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
     insertedNode = UUT.insertLeaf("x", dummyFQNameProvider);
@@ -237,7 +237,7 @@ TEST(EnvTest, MAKE_TEST_NAME1(
 TEST(EnvTest, MAKE_TEST_NAME2(
     insertLeaf_or_AutoScope_constructor_is_called,
     it_returns_the_fully_qualified_name_of_the_just_inserted_name)) {
-  std::shared_ptr<EnvNode>* dummyNode;
+  EnvNode** dummyNode;
 
   string spec = "insertLeaf called at root";
   {

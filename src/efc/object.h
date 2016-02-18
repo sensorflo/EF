@@ -1,10 +1,8 @@
 #pragma once
 #include "storageduration.h"
-#include "envnode.h"
 #include "llvm/IR/IRBuilder.h"
 #include <string>
 #include <memory>
-#include <ostream>
 
 class ObjType;
 class ErrorHandler;
@@ -12,40 +10,26 @@ namespace llvm {
   class Value;
 }
 
-/** Represents an object in the target program, however not uniquely. That is
-one object in the target program might have multiple associated Object
-instances. Actually we would want a one to one relationship, but that's not
-feasible.
-
-Multiple AstObject nodes may refer to one Object. */
-class Object : public EnvNode {
+class Object {
 public:
-  Object(StorageDuration storageDuration);
-  Object(std::shared_ptr<const ObjType> objType,
-    StorageDuration storageDuration);
+  Object();
+  virtual ~Object() = default;
 
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
+  // -- new (pure) virtual methods
+  virtual const ObjType& objType() const =0;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const =0;
+  virtual StorageDuration storageDuration() const =0;
 
-  void setObjType(std::shared_ptr<const ObjType> objType);
-  const ObjType& objType() const { assert(m_objType); return *m_objType; }
-  std::shared_ptr<const ObjType> objTypeAsSp() const { return m_objType; }
-  StorageDuration storageDuration() const { return m_storageDuration; }
+  // -- misc
+  /** See also AstNode::setAccessFromAstParent /
+  AstObject::m_accessFromAstParent. */
   void addAccess(Access access);
   bool isModifiedOrRevealsAddr() const;
-  /** Semantically every non-abstract object is stored in memory. However
-  certain objects can be optimized to live only as an SSA
-  value. `isStoredInMemory' is both in the sense of `must be stored in memory'
-  (equals `can't be optimized to be a SSA value only') and `actually is stored
-  in memory'. */
   bool isStoredInMemory() const;
-  bool isInitialized() { return m_isInitialized; }
-  void setIsInitialized(bool isInitialized) { m_isInitialized = isInitialized; }
 
 private:
-  std::shared_ptr<const ObjType> m_objType;
-  const StorageDuration m_storageDuration;
+  /** Combined accesses to the object associated with this AST node. */
   bool m_isModifiedOrRevealsAddr;
-  bool m_isInitialized;
 
   // -- decorations for IrGen
   // Here an 'IR object' is of LLVM first class value type. An IR object is

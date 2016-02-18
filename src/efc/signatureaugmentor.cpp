@@ -3,7 +3,6 @@
 #include "env.h"
 #include "errorhandler.h"
 #include "astdefaultiterator.h"
-#include "object.h"
 using namespace std;
 
 SignatureAugmentor::SignatureAugmentor(Env& env, ErrorHandler& errorHandler) :
@@ -23,13 +22,11 @@ void SignatureAugmentor::visit(AstDataDef& dataDef) {
   // Note that in case SemanticAnalizer _will_ create an AST Node for the
   // initializer, that future AST subtree obviously will not be visited here.
   AstDefaultIterator::visit(dataDef);
-  dataDef.assignDeclaredObjTypeToAssociatedObject();
 }
 
 void SignatureAugmentor::visit(AstFunDef& funDef) {
   Env::AutoScope scope(m_env, funDef.name(), Env::AutoScope::descentScope);
   AstDefaultIterator::visit(funDef);
-  funDef.assignDeclaredObjTypeToAssociatedObject();
 }
 
 void SignatureAugmentor::visit(AstObjTypeSymbol& symbol) {

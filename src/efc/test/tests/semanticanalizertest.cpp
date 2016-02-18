@@ -3,7 +3,6 @@
 #include "../ast.h"
 #include "../objtype.h"
 #include "../env.h"
-#include "../object.h"
 #include "../errorhandler.h"
 #include "../astdefaultiterator.h"
 #include "../parserext.h"
@@ -17,6 +16,12 @@ using namespace std;
 Since SemanticAnalizer and ParserExt don't have clearly separated
 responsibilities, see the comments of the two, this test test responsibilities
 which can be implemented by either of the two. */
+
+class TestingAstSymbol : public AstSymbol {
+public:
+  TestingAstSymbol(const std::string& name) : AstSymbol(name) {}
+  using AstSymbol::m_referencedAstObj;
+};
 
 class TestingSemanticAnalizer : public SemanticAnalizer {
 public:
@@ -302,9 +307,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     const auto node = env.find("x");
     EXPECT_TRUE(nullptr!=node) << amendAst(ast.get());
     EXPECT_TRUE(nullptr!=*node) << amendAst(ast.get());
-    const auto& object = dynamic_cast<Object&>(**node);
+    const auto& astObject = dynamic_cast<AstObject&>(**node);
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt),
-      object.objType()) << amendAst(ast.get());
+      astObject.object().objType()) << amendAst(ast.get());
   }
 
   spec = "Example: static immutable int";
@@ -323,9 +328,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     const auto node = env.find("x");
     EXPECT_TRUE(nullptr!=node) << amendAst(ast.get());
     EXPECT_TRUE(nullptr!=*node) << amendAst(ast.get());
-    const auto& object = dynamic_cast<Object&>(**node);
+    const auto& astObject = dynamic_cast<AstObject&>(**node);
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt),
-      object.objType()) << amendAst(ast.get());
+      astObject.object().objType()) << amendAst(ast.get());
   }
 
   spec = "Example: noinit initializer";
@@ -344,9 +349,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     const auto node = env.find("x");
     EXPECT_TRUE(nullptr!=node) << amendAst(ast.get());
     EXPECT_TRUE(nullptr!=*node) << amendAst(ast.get());
-    const auto& object = dynamic_cast<Object&>(**node);
+    const auto& astObject = dynamic_cast<AstObject&>(**node);
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt),
-      object.objType()) << amendAst(ast.get());
+      astObject.object().objType()) << amendAst(ast.get());
   }
 }
 
@@ -476,7 +481,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     a_data_obj_definition_in_a_block,
     transform,
-    inserts_a_symbol_table_entry_with_the_scope_of_the_block)) {
+    a_later_symbol_of_that_name_references_the_definition)) {
 
   // setup
   Env env;
@@ -484,7 +489,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   TestingSemanticAnalizer UUT(env, errorHandler);
   const auto dataDef =
     new AstDataDef("x", ObjTypeFunda::eInt);
-  const auto symbol = new AstSymbol("x");
+  const auto symbol = new TestingAstSymbol("x");
   unique_ptr<AstObject> ast{
     new AstBlock(
       new AstSeq( dataDef, symbol))};
@@ -493,9 +498,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   UUT.analyze(*ast.get());
 
   // verify
-  const auto dataDefObject = dataDef->object();
-  EXPECT_TRUE( nullptr!=dataDefObject ) << amendAst(ast);
-  EXPECT_EQ( dataDefObject, symbol->object()) << amendAst(ast);
+  EXPECT_EQ( dataDef, symbol->m_referencedAstObj) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -623,17 +626,17 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   auto nodeOuter = env.find("outer");
   EXPECT_TRUE( nodeOuter ) << amendAst(ast);
-  auto objectOuter = std::dynamic_pointer_cast<Object>(*nodeOuter);
+  auto objectOuter = dynamic_cast<AstObject*>(*nodeOuter);
   EXPECT_TRUE( nullptr!=objectOuter );
-  EXPECT_TRUE( objectOuter->objType().matchesFully(funType) );
+  EXPECT_TRUE( objectOuter->object().objType().matchesFully(funType) );
 
   {
     Env::AutoScope scope(env, "outer", Env::AutoScope::descentScope);
-    shared_ptr<EnvNode>* nodeInner = env.find("inner");
+    EnvNode** nodeInner = env.find("inner");
     EXPECT_TRUE( nodeInner ) << amendAst(ast);
-    auto objectInner = std::dynamic_pointer_cast<Object>(*nodeInner);
+    auto objectInner = dynamic_cast<AstObject*>(*nodeInner);
     EXPECT_TRUE( nullptr!=objectInner );
-    EXPECT_TRUE( objectInner->objType().matchesFully(funType) );
+    EXPECT_TRUE( objectInner->object().objType().matchesFully(funType) );
 
     EXPECT_NE( objectInner, objectOuter );
   }
@@ -659,7 +662,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 
@@ -679,14 +682,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_addrof_operator,
-    THEN_the_access_value_of_the_AstNode_operand_is_eTakeAddr))
+    THEN_the_operands_accessFromAstParent_is_eTakeAddr))
 {
   // setup
   Env env;
@@ -699,7 +702,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( Access::eTakeAddress, operand->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eTakeAddress, operand->accessFromAstParent()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
@@ -718,7 +721,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_FALSE( ast->objectIsModifiedOrRevealsAddr())
+    EXPECT_FALSE( ast->object().isModifiedOrRevealsAddr())
       << amendSpec(spec) << amendAst(ast);
   }
 }
@@ -740,7 +743,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_TRUE( operand->objectIsModifiedOrRevealsAddr())
+    EXPECT_TRUE( operand->object().isModifiedOrRevealsAddr())
       << amendSpec(spec) << amendAst(ast);
   }
 
@@ -763,14 +766,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_TRUE( symbol->objectIsModifiedOrRevealsAddr())
+    EXPECT_TRUE( symbol->object().isModifiedOrRevealsAddr())
       << amendSpec(spec) << amendAst(ast);
   }
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_any_access_to_a_bock,
-    THEN_the_access_value_of_its_body_is_still_always_eRead))
+    THEN_the_bodys_accessFromAstParent_is_still_always_eRead))
 {
   // setup
   Env env;
@@ -786,12 +789,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( Access::eRead, body->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eRead, body->accessFromAstParent()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_access_to_a_sequence,
-    THEN_the_access_value_of_seqs_last_operand_equals_that_outer_access_value_AND_the_access_value_of_the_leading_operands_is_eIgnoreValueAndAddr))
+    THEN_accessFromAstParent_to_seqs_last_operand_equals_that_outer_access_value_AND_accessFromAstParent_to_the_leading_operands_is_eIgnoreValueAndAddr))
 {
   // setup
   Env env;
@@ -811,8 +814,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( Access::eIgnoreValueAndAddr, leadingOpAst->access()) << amendAst(ast);
-  EXPECT_EQ( Access::eWrite, lastOpAst->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eIgnoreValueAndAddr,
+    leadingOpAst->accessFromAstParent()) << amendAst(ast);
+  EXPECT_EQ( Access::eWrite,
+    lastOpAst->accessFromAstParent()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
@@ -859,7 +864,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 
@@ -880,7 +885,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 
@@ -905,7 +910,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), opAst->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), opAst->object().objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 }
@@ -930,7 +935,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
     amendAst(ast);
 }
 
@@ -951,7 +956,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   // verify
   ObjTypePtr expectedObjType{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
-  EXPECT_MATCHES_FULLY( expectedObjType, ast->objType()) << amendAst(ast);
+  EXPECT_MATCHES_FULLY( expectedObjType, ast->object().objType()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -975,7 +980,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*ast);
 
   // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
     amendAst(ast);
 }
 
@@ -1002,7 +1007,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), assignmentAst->objType()) <<
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), assignmentAst->object().objType()) <<
     amendAst(ast);
 }
 
@@ -1032,7 +1037,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   // verify
   EXPECT_MATCHES_FULLY(
     ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
-    dotAssignmentAst->objType()) <<
+    dotAssignmentAst->object().objType()) <<
     amendAst(ast);
 }
 
@@ -1055,7 +1060,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
     amendAst(ast);
 }
 
@@ -1108,7 +1113,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
       amendAst(ast);
   }
 }
@@ -1131,7 +1136,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eNoreturn), retAst->objType()) <<
+  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eNoreturn), retAst->object().objType()) <<
     amendAst(ast);
 }
 
@@ -1263,7 +1268,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1284,7 +1289,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1311,7 +1316,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     // verify
     EXPECT_MATCHES_FULLY(
       ObjTypeFunda(ObjTypeFunda::eBool),
-      if_->objType()) <<
+      if_->object().objType()) <<
       amendAst(ast);
   }
 }
@@ -1343,7 +1348,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), astIf->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), astIf->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1370,7 +1375,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), astIf->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), astIf->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1394,7 +1399,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eNoreturn), astIf->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eNoreturn), astIf->object().objType()) <<
       amendAst(ast);
   }
 }
@@ -1420,7 +1425,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1445,7 +1450,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), astIf->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), astIf->object().objType()) <<
       amendAst(ast);
   }
 }
@@ -1454,7 +1459,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
 // call
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_any_access_to_an_if_expression,
-    THEN_the_access_value_of_both_clauses_is_still_always_eRead))
+    THEN_accessFromAstParent_to_both_clauses_is_still_always_eRead))
 {
   string spec = "Example: eIgnoreValueAndAddr access";
   {
@@ -1475,8 +1480,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_EQ( Access::eRead, thenClauseAst->access()) << amendAst(ast);
-    EXPECT_EQ( Access::eRead, thenClauseAst->access()) << amendAst(ast);
+    EXPECT_EQ( Access::eRead, thenClauseAst->accessFromAstParent()) << amendAst(ast);
+    EXPECT_EQ( Access::eRead, thenClauseAst->accessFromAstParent()) << amendAst(ast);
   }
 }
 
@@ -1501,7 +1506,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->objType()) <<
+    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1531,7 +1536,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_loop_expression,
-    THEN_the_access_value_of_the_condition_is_eRead_AND_the_access_value_of_the_body_is_eIgnoreValueAndAddr))
+    THEN_accessFromAstParent_to_the_condition_is_eRead_AND_accessFromAstParent_to_body_is_eIgnoreValueAndAddr))
 {
   // setup
   Env env;
@@ -1545,8 +1550,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( Access::eRead, condition->access()) << amendAst(ast);
-  EXPECT_EQ( Access::eIgnoreValueAndAddr, body->access()) << amendAst(ast);
+  EXPECT_EQ( Access::eRead, condition->accessFromAstParent()) << amendAst(ast);
+  EXPECT_EQ( Access::eIgnoreValueAndAddr, body->accessFromAstParent()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(

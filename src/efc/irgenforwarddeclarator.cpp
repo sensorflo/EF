@@ -1,5 +1,4 @@
 #include "irgenforwarddeclarator.h"
-#include "object.h"
 #include "llvm/IR/Module.h"
 #include <vector>
 using namespace std;
@@ -17,14 +16,12 @@ void IrGenForwardDeclarator::operator()(AstNode& root) {
 void IrGenForwardDeclarator::visit(AstDataDef& dataDef) {
   AstDefaultIterator::visit(dataDef);
 
-  const auto object = dataDef.object();
-  assert(object);
-  if ( object->storageDuration() == StorageDuration::eStatic ) {
+  if ( dataDef.storageDuration() == StorageDuration::eStatic ) {
     const auto addr = new GlobalVariable(m_module,
-      object->objType().llvmType(),
-      !(object->objType().qualifiers() & ObjType::eMutable),
+      dataDef.objType().llvmType(),
+      !(dataDef.objType().qualifiers() & ObjType::eMutable),
       GlobalValue::InternalLinkage, nullptr, dataDef.fqName());
-    object->setAddrOfIrObject(addr);
+    dataDef.setAddrOfIrObject(addr);
   }
 }
 
@@ -37,7 +34,7 @@ void IrGenForwardDeclarator::visit(AstFunDef& funDef) {
     llvmArgs.push_back(astArg->objType().llvmType());
   }
   auto llvmFunctionType = FunctionType::get(
-    funDef.declaredRetAstObjType().objType().llvmType(), llvmArgs, false);
+    funDef.ret().objType().llvmType(), llvmArgs, false);
   auto functionIr = Function::Create( llvmFunctionType,
     Function::ExternalLinkage, funDef.fqName(), &m_module);
   assert(functionIr);
@@ -47,5 +44,5 @@ void IrGenForwardDeclarator::visit(AstFunDef& funDef) {
   // environment said the name is unique.
   assert(functionIr->getName() == funDef.fqName());
 
-  funDef.object()->setAddrOfIrObject(functionIr);
+  funDef.setAddrOfIrObject(functionIr);
 }

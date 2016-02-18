@@ -2,11 +2,14 @@
 // If you change this list of header files, you must also modify the
 // analogous, redundant list in the Makefile
 #include "objtype.h"
+#include "object.h"
 #include "access.h"
 #include "generalvalue.h"
 #include "storageduration.h"
 #include "declutils.h"
+#include "envnode.h"
 
+#include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Function.h"
 #include <string>
@@ -18,7 +21,6 @@
 #include "astforwards.h"
 class AstConstVisitor;
 class AstVisitor;
-class Object;
 class ErrorHandler;
 class FQNameProvider;
 
@@ -29,15 +31,17 @@ public:
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
 
-  /** See AstObject::m_access. For non-AstObject types, access can only be
-  eIgnoreValueAndAddr. It's a kludge that this method is a member of AstNode,
+  /** See AstObject::m_accessFromAstParent. For non-AstObject types, access
+  can only be eIgnore. It's a kludge that this method is a member of AstNode,
   the author hasn't found another way to implement
   SemanticAnalizer::visit(AstSeq& seq).*/
-  virtual void setAccess(Access access) { assert(access==Access::eIgnoreValueAndAddr); }
-  /** For AstObject's, identical to objType().isNoreturn();, for all others it
-  always returns false. It's a kludge that this method is a member of AstNode,
-  see also setAccess. */
-  virtual bool isObjTypeNoReturn() const { return false;}
+  virtual void setAccessFromAstParent(Access access) = 0;
+
+  /** For AstObject's, identical to object().objType().isNoreturn(); for all
+  others it always returns false, i.e. also for
+  AstObjTypeSymbol(ObjTypeFunda::eNoReturn). It's a kludge that this method is
+  a member of AstNode, see also setAccessFromAstParent. */
+  virtual bool isObjTypeNoReturn() const { return false; }
 
   std::string toStr() const;
 
@@ -48,44 +52,71 @@ private:
   NEITHER_COPY_NOR_MOVEABLE(AstNode);
 };
 
-/** See also Object */
 class AstObject : public AstNode {
 public:
+  // -- overrides for AstNode
+  virtual bool isObjTypeNoReturn() const;
+
+  // -- new virtual methods
+  virtual Access accessFromAstParent() const =0;
   virtual bool isCTConst() const { return false; }
-  virtual Access access() const { return m_access; }
-  virtual void setAccess(Access access) override;
-
-  virtual bool isObjTypeNoReturn() const override { return objType().isNoreturn(); }
-
-  // -- associated object
-  /** After SemanticAnalizer guaranteed to return non-null */
- 	Object* object() const { return m_object.get(); }
-  std::shared_ptr<Object>& objectAsSp() { return m_object; }
- 	void setObject(std::shared_ptr<Object> object);
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  bool objectIsModifiedOrRevealsAddr() const;
-  
-protected:
-  AstObject();
-  AstObject(std::shared_ptr<Object> object);
-
-  /** Access to this AST node. Contrast this with access to the object refered
-  to by this AST node. */
-  Access m_access;
-  std::shared_ptr<Object> m_object;
+  virtual Object& object() =0;
+  virtual const Object& object() const =0;
 };
 
-class AstNop : public AstObject {
+/** AstObject directly being an Object, as opposed to refering to an Object. */
+class AstObjInstance : public AstObject, public Object {
 public:
-  AstNop();
+  AstObjInstance();
 
+  // -- overrides for AstNode
+  void setAccessFromAstParent(Access access) override;
+
+  // -- overrides for AstObject
+  Access accessFromAstParent() const override;
+
+  // -- new virtual methods
+  Object& object() override { return *this; }
+  const Object& object() const override { return *this; }
+
+private:
+  /** How the parent AST node accesses the Object associate to this AST
+  node. Note that other AST nodes, e.g. AstSymbol, migh access the same object
+  differently, see also Object::isModifiedOrRevealsAddr. */
+  Access m_accessFromAstParent;
+};
+
+class AstObjDef : public AstObjInstance, public EnvNode {
+public:
+  // -- overrides for EnvNode
+  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
+
+  // -- misc
+  bool isInitialized() const { return m_isInitialized; }
+  void notifyInitialized() { assert(!m_isInitialized); m_isInitialized = true; }
+
+private:
+  /** Relative to program order, which equals AST post-order traversal, childs
+  left to right. The property 'is initialized' is on AstObjDef instead of
+  AstObject mainly for simplicity reasons. There currently only is a value of
+  this property for symbols refering to a defined object. Anonymous objects
+  cannot be refered to prior to their 'definition' anyway. */
+  bool m_isInitialized = false;
+};
+
+class AstNop : public AstObjInstance {
+public:
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- overrides for Object
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
 };
 
-class AstBlock : public AstObject {
+class AstBlock : public AstObjInstance {
 public:
   AstBlock(AstObject* body);
 
@@ -93,6 +124,11 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
+  // -- overrides for Object
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
+ 
   // -- childs of this node
   const std::string& name() const { return m_name; }
   AstObject& body() const { return *m_body.get(); }
@@ -104,7 +140,7 @@ private:
   const std::unique_ptr<AstObject> m_body;
 };
 
-class AstCast : public AstObject {
+class AstCast : public AstObjInstance {
 public:
   AstCast(AstObjType* specifiedNewAstObjType, AstObject* child);
   AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child);
@@ -112,6 +148,11 @@ public:
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- overrides for Object
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
 
   // -- childs of this node
   AstObjType& specifiedNewAstObjType() const;
@@ -125,7 +166,7 @@ private:
   const std::unique_ptr<AstObject> m_child;
 };
 
-class AstFunDef : public AstObject {
+class AstFunDef : public AstObjDef {
 public:
   AstFunDef(const std::string& name,
     std::vector<AstDataDef*>* args,
@@ -136,31 +177,36 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
+  // -- overrides for Object
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
+
   // -- childs of this node
   virtual const std::string& name() const { return m_name; }
   virtual std::vector<std::unique_ptr<AstDataDef>>const& declaredArgs() const {
     return m_args; }
-  virtual AstObjType& declaredRetAstObjType() const;
-  virtual AstObject& body() const { return *m_body; }
+  virtual AstObjType& ret() const { assert(m_ret); return *m_ret; }
+  virtual AstObject& body() const { assert(m_body); return *m_body; }
 
   // -- misc
   static std::vector<AstDataDef*>* createArgs(AstDataDef* arg1 = NULL,
     AstDataDef* arg2 = NULL, AstDataDef* arg3 = NULL);
-  void assignDeclaredObjTypeToAssociatedObject();
+  void createAndSetObjType();
   const std::string& fqName() const;
   const FQNameProvider*& fqNameProvider() { return m_fqNameProvider; }
 
 private:
-  void initObjType();
+  // -- associated object
+  /** Redundant to m_args and m_ret */
+  mutable std::shared_ptr<const ObjTypeFun> m_objType;
 
   // -- childs of this node
   /** Redundant to the key of Env's key-value pair pointing to object(). */
   const std::string m_name;
-  /** The shared_ptr<ObjType> instances are redundant to
-  dynamic_cast<ObjTypeFun>(objType()).args(). */
+  /** The members are guaranteed to be non-null */
   const std::vector<std::unique_ptr<AstDataDef>> m_args;
-  /** Is garanteed to be non-null. Is redundant to
-  dynamic_cast<ObjTypeFun>(objType()).ret().  */
+  /** Is garanteed to be non-null. */
   const std::unique_ptr<AstObjType> m_ret;
   /** Is garanteed to be non-null */
   const std::unique_ptr<AstObject> m_body;
@@ -172,7 +218,7 @@ private:
 /** Also used for data members of a class, which is not entirerly a nice
 design since a member declaration is not yet an object, thus subtyping from
 AstObject is wrong in this case. */
-class AstDataDef : public AstObject {
+class AstDataDef : public AstObjDef {
 public:
   AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
     StorageDuration declaredStorageDuration,
@@ -190,20 +236,21 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
-  // -- object associated with this node
+  // -- overrides for Object
   virtual const ObjType& objType() const;
   virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  // storageDuration is below within childs section
 
   // -- childs of this node
   virtual const std::string& name() const { return m_name; }
   AstObjType& declaredAstObjType() const;
   StorageDuration declaredStorageDuration() const;
+  virtual StorageDuration storageDuration() const { return m_declaredStorageDuration; }
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
 
   // -- misc
   const std::string& fqName() const;
   const FQNameProvider*& fqNameProvider() { return m_fqNameProvider; }
-  void assignDeclaredObjTypeToAssociatedObject();
   bool doNotInit() const { return m_doNotInit; }
 
   static AstObject* const noInit;
@@ -214,15 +261,9 @@ private:
   static std::unique_ptr<AstCtList> mkCtorArgs(AstCtList* ctorArgs,
     StorageDuration storageDuration, bool& doNotInit);
 
-  // -- object associated with this node
-  /** Redundant with m_object->objType(). But since in the case of
-  m_declaredStorageDuration being eMember, there is no m_object, and then we
-  need to store it here.*/
-  std::shared_ptr<const ObjType> m_objType;
-
   // -- childs of this node
   const std::string m_name;
-  /** Guaranteed to be not eUnknown */
+  /** Guaranteed to be non-null. */
   const std::unique_ptr<AstObjType> m_declaredAstObjType;
   /** Guaranteed to be not eYetUndefined */
   const StorageDuration m_declaredStorageDuration;
@@ -238,7 +279,7 @@ private:
 /** Literal 'scalar', where scalar means 'not an aggregation /
 composition'. Obviously a well defined term is needed, and then the class
 should be renamed. */
-class AstNumber : public AstObject {
+class AstNumber : public AstObjInstance {
 public:
   AstNumber(GeneralValue value, AstObjType* astObjType = nullptr);
   AstNumber(GeneralValue value, ObjTypeFunda::EType eType);
@@ -247,8 +288,11 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
-  // -- overrides for AstObject
+  // -- overrides for Object
   virtual bool isCTConst() const { return true; }
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
 
   // -- childs of this node
   GeneralValue value() const { return m_value; }
@@ -265,21 +309,44 @@ private:
 class AstSymbol : public AstObject {
 public:
   AstSymbol(const std::string& name) :
+    m_referencedAstObj{}, m_accessFromAstParent{Access::eYetUndefined},
     m_name(name) { }
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+  virtual void setAccessFromAstParent(Access access);
+
+  // -- overrides for AstObject
+  virtual Access accessFromAstParent() const;
+  virtual Object& object();
+  virtual const Object& object() const;
+
+  // -- overrides for Object
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
 
   // -- childs of this node
   const std::string& name() const { return m_name; }
 
+  // -- misc
+  void setreferencedAstObjAndPropagateAccess(AstObjDef&);
+  bool isInitialized() const;
+
 private:
+  friend class TestingAstSymbol;
+
+  // -- associated object
+  AstObjDef* m_referencedAstObj;
+  /** See AstObjInstance::m_accessFromAstParent */
+  Access m_accessFromAstParent;
+
   // -- childs of this node
   const std::string m_name;
 };
 
-class AstFunCall : public AstObject {
+class AstFunCall : public AstObjInstance {
 public:
   AstFunCall(AstObject* address, AstCtList* args = NULL);
 
@@ -287,12 +354,14 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
+  // -- overrides for Object
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
+
   // -- childs of this node
   virtual AstObject& address () const { return *m_address; }
   AstCtList& args () const { return *m_args; }
-
-  // -- misc
-  void createAndSetObjectUsingRetObjType();
 
 private:
   // -- childs of this node
@@ -302,7 +371,10 @@ private:
   const std::unique_ptr<AstCtList> m_args;
 };
 
-class AstOperator : public AstObject {
+/** KLUDGE: In case of operators returning 'by reference' (eAssign and
+eDeref), the inheritance from AstObjInstance is not correct; in those cases
+we should derive from AstObject. */
+class AstOperator : public AstObject, private Object {
 public:
   enum EOperation {
     eVoidAssign = '=',
@@ -337,6 +409,12 @@ public:
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+  virtual void setAccessFromAstParent(Access access);
+
+  // -- overrides for AstObject
+  virtual Access accessFromAstParent() const;
+  virtual Object& object();
+  virtual const Object& object() const;
 
   // -- childs of this node
   EOperation op() const { return m_op; }
@@ -345,6 +423,11 @@ public:
   // -- misc
   EClass class_() const;
   bool isBinaryLogicalShortCircuit() const;
+  /** See m_referencedAstObj */
+  void setReferencedObjAndPropagateAccess(std::unique_ptr<Object>);
+  void setReferencedObjAndPropagateAccess(Object&);
+  void setObjType(std::shared_ptr<const ObjType>);
+  void setStorageDuration(StorageDuration);
   static EClass classOf(AstOperator::EOperation op);
   /** In case of ambiguity, chooses the binary operator */
   static EOperation toEOperationPreferingBinary(const std::string& op);
@@ -352,8 +435,30 @@ public:
   static EOperation toEOperation(const std::string& op);
 
 private:
+  // -- overrides for Object
+  // !see class comment! Private so they are not called accidentaly, callers
+  // must go via object()
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
+
   friend std::basic_ostream<char>& operator<<(std::basic_ostream<char>&,
     AstOperator::EOperation);
+
+  // -- associated object
+  /** For operands which return by reference: Currently only
+  AstOperator::eAssign */
+  Object* m_referencedObj;
+  /** See AstObjInstance::m_accessFromAstParent */
+  Access m_accessFromAstParent;
+  /** For the case we must be the owner of m_referencedObj's pointee */
+  std::unique_ptr<Object> m_dummy;
+  /** In case m_referencedObj is non-nullptr, redundant to
+  m_referencedObj->objTypeAsSp*/
+  std::shared_ptr<const ObjType> m_objType;
+  /** In case m_referencedObj is non-nullptr, redundant to
+  m_referencedObj->m_storageDuration */
+  StorageDuration m_storageDuration;
 
   // -- childs of this node
   const EOperation m_op;
@@ -380,14 +485,26 @@ public:
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+  virtual void setAccessFromAstParent(Access access);
+
+  // -- overrides for AstObject
+  virtual Access accessFromAstParent() const;
+  virtual Object& object();
+  virtual const Object& object() const;
 
   // -- childs of this node
   const std::vector<std::unique_ptr<AstNode>>& operands() const { return m_operands; }
 
   // -- misc
-  AstObject& lastOperandAsAstObject(ErrorHandler& errorHandler) const;
+  bool lastOperandIsAnObject() const;
 
 private:
+  AstObject& lastOperand() const;
+
+  // -- associated object
+  /** See AstObjInstance::m_accessFromAstParent */
+  Access m_accessFromAstParent;
+
   // -- childs of this node
   /** Pointers are garanteed to be non null. Garanteed to have at least one
   element. */
@@ -395,7 +512,7 @@ private:
 };
 
 /* If flow control expression */
-class AstIf : public AstObject {
+class AstIf : public AstObjInstance {
 public:
   AstIf(AstObject* cond, AstObject* action, AstObject* elseAction = NULL);
 
@@ -403,12 +520,23 @@ public:
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
 
+  // -- overrides for Object
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
+
   // -- childs of this node
   AstObject& condition() const { return *m_condition; }
   AstObject& action() const { return *m_action; }
   AstObject* elseAction() const { return m_elseAction.get(); }
 
+  // -- misc
+  void setObjectType(std::shared_ptr<const ObjType>);
+
 private:
+  // -- associated object
+  std::shared_ptr<const ObjType> m_objType;
+
   // -- childs of this node
   /** Is garanteed to be non-null */
   const std::unique_ptr<AstObject> m_condition;
@@ -418,13 +546,18 @@ private:
   const std::unique_ptr<AstObject> m_elseAction;
 };
 
-class AstLoop : public AstObject {
+class AstLoop : public AstObjInstance {
 public:
   AstLoop(AstObject* cond, AstObject* body);
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- overrides for Object
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
 
   // -- childs of this node
   AstObject& condition() const { return *m_condition; }
@@ -438,13 +571,18 @@ private:
   const std::unique_ptr<AstObject> m_body;
 };
 
-class AstReturn : public AstObject {
+class AstReturn : public AstObjInstance {
 public:
   AstReturn(AstObject* retVal = nullptr);
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
   virtual void accept(AstConstVisitor& visitor) const;
+
+  // -- overrides for Object
+  virtual const ObjType& objType() const;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  virtual StorageDuration storageDuration() const;
 
   // -- childs of this node
   AstObject& retVal() const;
@@ -458,6 +596,9 @@ private:
 /** See also ObjType */
 class AstObjType : public AstNode {
 public:
+
+  virtual void setAccessFromAstParent(Access access) override {
+    assert(access==Access::eIgnoreValueAndAddr); }
 
   virtual void printValueTo(std::ostream& os, GeneralValue value) const =0;
   virtual bool isValueInRange(GeneralValue value) const =0;
@@ -639,6 +780,8 @@ public:
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor) override;
   virtual void accept(AstConstVisitor& visitor) const override;
+  virtual void setAccessFromAstParent(Access access) override {
+    assert(access==Access::eIgnoreValueAndAddr); }
 
   // -- childs of this node
   /** The elements are guaranteed to be non-null */

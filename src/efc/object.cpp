@@ -7,27 +7,10 @@
 using namespace std;
 using namespace llvm;
 
-Object::Object(StorageDuration storageDuration) :
-  m_objType(nullptr),
-  m_storageDuration(storageDuration),
+Object::Object() :
   m_isModifiedOrRevealsAddr(false),
-  m_isInitialized(false),
   m_irValueOfObject(nullptr),
   m_phase(eStart) {}
-
-Object::Object(shared_ptr<const ObjType> objType,
-  StorageDuration storageDuration) :
-  m_objType( (assert(objType.get()), move(objType))),
-  m_storageDuration(storageDuration),
-  m_isModifiedOrRevealsAddr(false),
-  m_isInitialized(false),
-  m_irValueOfObject(nullptr),
-  m_phase(eStart) {}
-
-void Object::setObjType(std::shared_ptr<const ObjType> objType) {
-  assert(!m_objType); // doesn't make sense to set it twice
-  m_objType = move(objType);
-}
 
 void Object::addAccess(Access access) {
   m_isModifiedOrRevealsAddr =
@@ -40,8 +23,8 @@ bool Object::isModifiedOrRevealsAddr() const {
 }
 
 bool Object::isStoredInMemory() const {
-  assert(m_storageDuration!=StorageDuration::eYetUndefined);
-  return m_storageDuration!=StorageDuration::eLocal ||
+  assert(storageDuration()!=StorageDuration::eYetUndefined);
+  return storageDuration()!=StorageDuration::eLocal ||
     m_isModifiedOrRevealsAddr;
 }
 
@@ -56,7 +39,7 @@ void Object::setAddrOfIrObject(llvm::Value* irAddrOfIrObject) {
 
 void Object::irObjectIsAnSsaValue() {
   assert(eStart==m_phase);
-  assert(m_storageDuration==StorageDuration::eLocal);
+  assert(storageDuration()==StorageDuration::eLocal);
   assert(!isStoredInMemory());
   assert(!m_irValueOfObject); // must not yet be set, will be set in
                               // initializeIrObject
@@ -68,12 +51,12 @@ void Object::initializeIrObject(Value* irValue, IRBuilder<>& builder) {
   assert(irValue);
   if ( isStoredInMemory() ) {
     assert(m_irAddrOfIrObject);
-    if ( m_storageDuration==StorageDuration::eStatic ) {
+    if ( storageDuration()==StorageDuration::eStatic ) {
       const auto globalVariable = dynamic_cast<GlobalVariable*>(
         m_irAddrOfIrObject);
       const auto constantInitializer = dynamic_cast<Constant*>(irValue);
       globalVariable->setInitializer(constantInitializer);
-    } else if ( m_storageDuration==StorageDuration::eLocal )  {
+    } else if ( storageDuration()==StorageDuration::eLocal )  {
       builder.CreateStore(irValue, m_irAddrOfIrObject);
     }
   } else {
@@ -85,7 +68,7 @@ void Object::initializeIrObject(Value* irValue, IRBuilder<>& builder) {
 
 void Object::referToIrObject(llvm::Value* irAddrOfIrObject) {
   assert(eStart==m_phase);
-  assert(m_storageDuration!=StorageDuration::eLocal);
+  assert(storageDuration()!=StorageDuration::eLocal);
   assert(isStoredInMemory());
   assert(!m_irAddrOfIrObject);  // doesn't make sense to set it twice
   assert(irAddrOfIrObject);
@@ -94,7 +77,7 @@ void Object::referToIrObject(llvm::Value* irAddrOfIrObject) {
 }
 
 Value* Object::irValueOfIrObject(IRBuilder<>& builder, const string& name) const {
-  if ( m_storageDuration==StorageDuration::eLocal ) {
+  if ( storageDuration()==StorageDuration::eLocal ) {
     assert(eInitialized==m_phase);
   } else {
     assert(eStart!=m_phase);
@@ -109,7 +92,7 @@ Value* Object::irValueOfIrObject(IRBuilder<>& builder, const string& name) const
 }
 
 void Object::setIrValueOfIrObject(Value* irValue, IRBuilder<>& builder) {
-  if ( m_storageDuration==StorageDuration::eLocal ) {
+  if ( storageDuration()==StorageDuration::eLocal ) {
     assert(eInitialized==m_phase);
   } else {
     assert(eStart!=m_phase);
@@ -122,7 +105,7 @@ void Object::setIrValueOfIrObject(Value* irValue, IRBuilder<>& builder) {
 }
 
 Value* Object::irAddrOfIrObject() const {
-  if ( m_storageDuration==StorageDuration::eLocal ) {
+  if ( storageDuration()==StorageDuration::eLocal ) {
     assert(eInitialized==m_phase);
   } else {
     assert(eStart!=m_phase);
@@ -130,16 +113,4 @@ Value* Object::irAddrOfIrObject() const {
   assert(isStoredInMemory());
   assert(m_irAddrOfIrObject);
   return m_irAddrOfIrObject;
-}
-
-basic_ostream<char>& Object::printTo(basic_ostream<char>& os) const {
-  if ( m_storageDuration!=StorageDuration::eLocal ) {
-    os << m_storageDuration << "/";
-  }
-  if ( m_objType ) {
-    os << *m_objType;
-  } else {
-    os << "<undefined>";
-  }
-  return os;
 }

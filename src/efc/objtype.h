@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <cassert>
 
 class ObjTypeQuali;
 class ObjTypeFunda;
@@ -98,6 +99,7 @@ public:
   Qualifiers qualifiers() const override { return m_qualifiers; }
 
   std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
+  const std::string& name() const { assert(false); }   // Kludge during refectaring of moving ObjType into AstObjType
 
   MatchType match(const ObjType& dst, bool isLevel0 = true) const override;
   using ObjType::match2;
@@ -148,6 +150,7 @@ public:
   using ObjType::match2;
   virtual MatchType match2(const ObjTypeFunda& src, bool isRoot) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
+  virtual const std::string& name() const { assert(false); }   // Kludge during refectaring of moving ObjType into AstObjType
 
   virtual bool is(EClass class_) const;
   virtual int size() const;
@@ -174,6 +177,7 @@ public:
   virtual MatchType match2(const ObjTypePtr& src, bool isLevel0) const;
 
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
+  virtual const std::string& name() const { assert(false); }   // Kludge during refectaring of moving ObjType into AstObjType
 
   virtual llvm::Type* llvmType() const;
 
@@ -197,6 +201,7 @@ public:
   using ObjType::match2;
   virtual MatchType match2(const ObjTypeFun& src, bool isLevel0) const;
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
+  virtual std::string& name() const { assert(false); }   // Kludge during refectaring of moving ObjType into AstObjType
   virtual llvm::Type* llvmType() const;
   virtual bool hasMember(int) const { return false; }
   virtual bool hasConstructor(const ObjType& other) const { return false; }
@@ -230,6 +235,8 @@ public:
     std::shared_ptr<const ObjType> member3 = nullptr);
 
   std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
+  const std::string& name() const { return m_name; }
+
   MatchType match(const ObjType& dst, bool isLevel0) const override;
   using ObjType::match2;
   MatchType match2(const ObjTypeClass& src, bool isLevel0) const override;
@@ -239,7 +246,6 @@ public:
   bool is(EClass class_) const override;
   int size() const override;
 
-  const std::string& name() const { return m_name; }
   const std::vector<std::shared_ptr<const ObjType>>& members() const { return m_members; }
 
 private:

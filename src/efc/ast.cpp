@@ -3,7 +3,6 @@
 #include "astvisitor.h"
 #include "astprinter.h"
 #include "errorhandler.h"
-#include "object.h"
 #include "fqnameprovider.h"
 #include <cassert>
 #include <stdexcept>
@@ -34,57 +33,75 @@ vector<unique_ptr<T>> toUniquePtrs(T* src1 = nullptr, T* src2 = nullptr,
   return dst;
 }
 
+thread_local std::shared_ptr<const ObjTypeFunda> objTypeFundaVoid =
+  make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid);
+
+thread_local std::shared_ptr<const ObjTypeFunda> objTypeFundaNoreturn =
+  make_shared<ObjTypeFunda>(ObjTypeFunda::eNoreturn);
+
 }
 
 string AstNode::toStr() const {
   return AstPrinter::toStr(*this);
 }
 
-AstObject::AstObject() :
-  AstObject(nullptr) {
+bool AstObject::isObjTypeNoReturn() const {
+  return object().objType().isNoreturn();
 }
 
-AstObject::AstObject(std::shared_ptr<Object> object) :
-  m_access(Access::eYetUndefined),
-  m_object(move(object)) {
+AstObjInstance::AstObjInstance() :
+  m_accessFromAstParent{Access::eYetUndefined} {
 }
 
-void AstObject::setAccess(Access access) {
-  m_access = access;
+void AstObjInstance::setAccessFromAstParent(Access access) {
+  assert(Access::eYetUndefined!=access);
+  assert(Access::eYetUndefined==m_accessFromAstParent);
+  m_accessFromAstParent = access;
+  addAccess(access);
 }
 
-const ObjType& AstObject::objType() const {
-  assert(m_object);
-  return m_object->objType();
+Access AstObjInstance::accessFromAstParent() const {
+  assert(Access::eYetUndefined!=m_accessFromAstParent);
+  return m_accessFromAstParent;
 }
 
-shared_ptr<const ObjType> AstObject::objTypeAsSp() const {
-  assert(m_object);
-  return m_object->objTypeAsSp();
+basic_ostream<char>& AstObjDef::printTo(basic_ostream<char>& os) const {
+  const auto storageDuration_ = storageDuration();
+  if ( storageDuration_!=StorageDuration::eLocal ) {
+    os << storageDuration_ << "/";
+  }
+  os << objType();
+  return os;
 }
 
-bool AstObject::objectIsModifiedOrRevealsAddr() const {
-  assert(m_object);
-  return m_object->isModifiedOrRevealsAddr();
+const ObjType& AstNop::objType() const {
+  return *objTypeFundaVoid;
 }
 
-void AstObject::setObject(shared_ptr<Object> object) {
-  assert(object);
-  assert(!m_object.get()); // it makes no sense to set it twice
-  m_object = move(object);
+std::shared_ptr<const ObjType> AstNop::objTypeAsSp() const {
+  return objTypeFundaVoid;
 }
 
-AstNop::AstNop() :
-  AstObject{
-    make_shared<Object>(
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid),
-      StorageDuration::eLocal)} {
+StorageDuration AstNop::storageDuration() const {
+  return StorageDuration::eLocal;
 }
 
 AstBlock::AstBlock(AstObject* body) :
   m_name(Env::makeUniqueInternalName("$block")),
   m_body(body) {
   assert(m_body);
+}
+
+const ObjType& AstBlock::objType() const {
+  return *objTypeAsSp();
+}
+
+std::shared_ptr<const ObjType> AstBlock::objTypeAsSp() const {
+  return m_body->object().objType().unqualifiedObjType();
+}
+
+StorageDuration AstBlock::storageDuration() const {
+  return StorageDuration::eLocal;
 }
 
 AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child) :
@@ -105,6 +122,18 @@ AstObjType& AstCast::specifiedNewAstObjType() const {
   return *m_specifiedNewAstObjType;
 }
 
+const ObjType& AstCast::objType() const {
+  return m_specifiedNewAstObjType->objType();
+}
+
+std::shared_ptr<const ObjType> AstCast::objTypeAsSp() const {
+  return m_specifiedNewAstObjType->objTypeAsSp();
+}
+
+StorageDuration AstCast::storageDuration() const {
+  return StorageDuration::eLocal;
+}
+
 AstFunDef::AstFunDef(const string& name,
   std::vector<AstDataDef*>* args,
   AstObjType* ret,
@@ -116,11 +145,9 @@ AstFunDef::AstFunDef(const string& name,
   m_fqNameProvider{} {
   assert(m_ret);
   assert(m_body);
-}
-
-AstObjType& AstFunDef::declaredRetAstObjType() const {
-  assert(m_ret);
-  return *m_ret;
+  for ( const auto& arg : m_args ) {
+    assert(arg);
+  }
 }
 
 vector<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
@@ -137,20 +164,30 @@ const string& AstFunDef::fqName() const {
   return m_fqNameProvider->fqName();;
 }
 
-void AstFunDef::assignDeclaredObjTypeToAssociatedObject() {
-  // create the ObjType of this function
-  const auto& argsObjType = new vector<shared_ptr<const ObjType>>;
-  for (const auto& astArg: m_args) {
-    assert(astArg);
-    assert(astArg->declaredAstObjType().objTypeAsSp());
-    argsObjType->push_back(astArg->declaredAstObjType().objTypeAsSp());
+const ObjType& AstFunDef::objType() const {
+  if ( !m_objType ) {
+    objTypeAsSp(); // internally sets m_objType
   }
-  assert(m_ret->objTypeAsSp());
-  auto&& objTypeOfFun = make_shared<const ObjTypeFun>(argsObjType,
-    m_ret->objTypeAsSp());
+  return *m_objType;
+}
 
-  // the function Object is naturaly of the ObjType just created above
-  m_object->setObjType(move(objTypeOfFun));
+std::shared_ptr<const ObjType> AstFunDef::objTypeAsSp() const {
+  if ( !m_objType ) {
+    const auto& argsObjType = new vector<shared_ptr<const ObjType>>;
+    for (const auto& astArg: m_args) {
+      assert(astArg);
+      assert(astArg->declaredAstObjType().objTypeAsSp());
+      argsObjType->push_back(astArg->declaredAstObjType().objTypeAsSp());
+    }
+    assert(m_ret->objTypeAsSp());
+    m_objType = make_shared<const ObjTypeFun>(
+      argsObjType, m_ret->objTypeAsSp());
+  }
+  return m_objType;
+}
+
+StorageDuration AstFunDef::storageDuration() const {
+  return StorageDuration::eStatic;
 }
 
 AstObject* const AstDataDef::noInit = reinterpret_cast<AstObject*>(1);
@@ -185,14 +222,11 @@ AstDataDef::AstDataDef(const std::string& name, ObjTypeFunda::EType declaredObjT
 }
 
 const ObjType& AstDataDef::objType() const {
-  assert(m_objType);
-  assert(!m_object || m_objType.get() == &m_object->objType());
-  return *m_objType;
+  return m_declaredAstObjType->objType();
 }
 
 shared_ptr<const ObjType> AstDataDef::objTypeAsSp() const {
-  assert(!m_object || m_objType.get() == &m_object->objType());
-  return m_objType;
+  return m_declaredAstObjType->objTypeAsSp();
 }
 
 unique_ptr<AstCtList> AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
@@ -234,16 +268,6 @@ StorageDuration AstDataDef::declaredStorageDuration() const {
   return m_declaredStorageDuration;
 }
 
-void AstDataDef::assignDeclaredObjTypeToAssociatedObject() {
-  assert(m_declaredAstObjType);
-  assert(m_declaredAstObjType->objTypeAsSp());
-  assert(!m_objType); // it doesn't make sense to set it twice
-  m_objType = m_declaredAstObjType->objTypeAsSp();
-  if ( m_object ) {
-    m_object->setObjType(m_declaredAstObjType->objTypeAsSp());
-  }
-}
-
 AstNumber::AstNumber(GeneralValue value, AstObjType* astObjType) :
   m_value(value),
   m_declaredAstObjType(
@@ -258,6 +282,67 @@ AstNumber::AstNumber(GeneralValue value, ObjTypeFunda::EType eType) :
 AstObjType& AstNumber::declaredAstObjType() const {
   assert(m_declaredAstObjType);
   return *m_declaredAstObjType;
+}
+
+const ObjType& AstNumber::objType() const {
+  return m_declaredAstObjType->objType();
+};
+
+std::shared_ptr<const ObjType> AstNumber::objTypeAsSp() const {
+  return m_declaredAstObjType->objTypeAsSp();
+};
+
+StorageDuration AstNumber::storageDuration() const {
+  return StorageDuration::eLocal;
+};
+
+void AstSymbol::setAccessFromAstParent(Access access) {
+  assert(Access::eYetUndefined!=access);
+  assert(Access::eYetUndefined==m_accessFromAstParent);
+  m_accessFromAstParent = access;
+  if ( m_referencedAstObj ) {
+    m_referencedAstObj->addAccess(access);
+  }
+}
+
+Access AstSymbol::accessFromAstParent() const {
+  return m_accessFromAstParent;
+}
+
+Object& AstSymbol::object() {
+  assert(m_referencedAstObj);
+  return *m_referencedAstObj;
+}
+
+const Object& AstSymbol::object() const {
+  assert(m_referencedAstObj);
+  return *m_referencedAstObj;
+}
+
+const ObjType& AstSymbol::objType() const {
+  assert(m_referencedAstObj);
+  return m_referencedAstObj->objType();
+}
+
+std::shared_ptr<const ObjType> AstSymbol::objTypeAsSp() const {
+  assert(m_referencedAstObj);
+  return m_referencedAstObj->objTypeAsSp();
+}
+
+StorageDuration AstSymbol::storageDuration() const {
+  assert(m_referencedAstObj);
+  return m_referencedAstObj->storageDuration();
+}
+
+void AstSymbol::setreferencedAstObjAndPropagateAccess(AstObjDef& referencedAstObj) {
+  assert(!m_referencedAstObj); // it doesnt make sense to set it twice
+  m_referencedAstObj = &referencedAstObj;
+  m_referencedAstObj->addAccess(accessFromAstParent());
+}
+
+bool AstSymbol::isInitialized() const {
+  assert(m_referencedAstObj);
+  return m_referencedAstObj->isInitialized();
 }
 
 const map<const string, const AstOperator::EOperation> AstOperator::m_opMap{
@@ -286,6 +371,9 @@ AstOperator::AstOperator(const string& op, AstCtList* args) :
   AstOperator(toEOperation(op), args) {};
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
+  m_referencedObj{},
+  m_accessFromAstParent{Access::eYetUndefined},
+  m_storageDuration{StorageDuration::eYetUndefined},
   m_op(op),
   m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
   if ( '-' == m_op || '+' == m_op ) {
@@ -306,6 +394,72 @@ AstOperator::AstOperator(const string& op, AstObject* operand1, AstObject* opera
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstObject* operand1, AstObject* operand2) :
   AstOperator(op, new AstCtList(operand1, operand2)) {};
+
+void AstOperator::setAccessFromAstParent(Access access) {
+  assert(Access::eYetUndefined!=access);
+  assert(Access::eYetUndefined==m_accessFromAstParent);
+  m_accessFromAstParent = access;
+  if ( m_referencedObj ) {
+    m_referencedObj->addAccess(access);
+  }
+  addAccess(access);
+}
+
+Access AstOperator::accessFromAstParent() const {
+  assert(Access::eYetUndefined!=m_accessFromAstParent);
+  return m_accessFromAstParent;
+}
+
+Object& AstOperator::object() {
+  return m_referencedObj ? *m_referencedObj : *this;
+}
+
+const Object& AstOperator::object() const {
+  return m_referencedObj ? *m_referencedObj : static_cast<const Object&>(*this);
+}
+
+const ObjType& AstOperator::objType() const {
+  assert(m_objType);
+  return *m_objType;
+}
+
+std::shared_ptr<const ObjType> AstOperator::objTypeAsSp() const {
+  return m_objType;
+}
+
+StorageDuration AstOperator::storageDuration() const {
+  assert(m_storageDuration!=StorageDuration::eYetUndefined);
+  return m_storageDuration;
+}
+
+void AstOperator::setReferencedObjAndPropagateAccess(unique_ptr<Object> object) {
+  assert(!m_dummy); // it doesn't make sense to set it twice
+  assert(object);
+  setReferencedObjAndPropagateAccess(*object);
+  m_dummy = move(object);
+}
+
+void AstOperator::setReferencedObjAndPropagateAccess(Object& object) {
+  assert(!m_referencedObj); // it doesn't make sense to set it twice
+  m_referencedObj = &object;
+  assert(!m_objType);  // it doesn't make sense to set it twice
+  m_objType = m_referencedObj->objTypeAsSp();
+  assert(m_storageDuration==StorageDuration::eYetUndefined); // it doesn't make sense to set it twice
+  m_storageDuration = m_referencedObj->storageDuration();
+  m_referencedObj->addAccess(m_accessFromAstParent);
+}
+
+void AstOperator::setObjType(std::shared_ptr<const ObjType> objType) {
+  assert(objType);
+  assert(!m_objType);  // it doesn't make sense to set it twice
+  m_objType = move(objType);
+}
+
+void AstOperator::setStorageDuration(StorageDuration storageDuration) {
+  assert(storageDuration!=StorageDuration::eYetUndefined);
+  assert(m_storageDuration==StorageDuration::eYetUndefined); // it doesn't make sense to set it twice
+  m_storageDuration = storageDuration;
+}
 
 AstOperator::EClass AstOperator::class_() const {
   return classOf(m_op);
@@ -375,6 +529,7 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
 }
 
 AstSeq::AstSeq(std::vector<AstNode*>* operands) :
+  m_accessFromAstParent{Access::eYetUndefined},
   m_operands(toUniquePtrs(operands)) {
   for ( const auto& operand : m_operands ) {
     assert(operand);
@@ -384,15 +539,39 @@ AstSeq::AstSeq(std::vector<AstNode*>* operands) :
 
 AstSeq::AstSeq(AstNode* op1, AstNode* op2, AstNode* op3, AstNode* op4,
   AstNode* op5) :
+  m_accessFromAstParent{Access::eYetUndefined},
   m_operands(toUniquePtrs(op1, op2, op3, op4, op5)) {
   assert(!m_operands.empty());
 }
 
-AstObject& AstSeq::lastOperandAsAstObject(ErrorHandler& errorHandler) const {
-  auto obj = dynamic_cast<AstObject*>(m_operands.back().get());
-  if ( !obj ) {
-    Error::throwError(errorHandler, Error::eObjectExpected);
-  }
+void AstSeq::setAccessFromAstParent(Access access) {
+  assert(Access::eYetUndefined!=access);
+  assert(Access::eYetUndefined==m_accessFromAstParent);
+  m_accessFromAstParent = access;
+  // 'object().addAccess(m_accessFromAstParent)' is done in
+  // semanticanalizer. object() just delegates to lastoparand(), which
+  // currently might not yet know its object().
+}
+
+Access AstSeq::accessFromAstParent() const {
+  return m_accessFromAstParent;
+}
+
+Object& AstSeq::object() {
+  return lastOperand().object();
+}
+
+const Object& AstSeq::object() const {
+  return lastOperand().object();
+}
+
+bool AstSeq::lastOperandIsAnObject() const {
+  return nullptr!=dynamic_cast<AstObject*>(m_operands.back().get());
+}
+
+AstObject& AstSeq::lastOperand() const {
+  const auto obj = dynamic_cast<AstObject*>(m_operands.back().get());
+  assert(obj);
   return *obj;
 }
 
@@ -404,24 +583,60 @@ AstIf::AstIf(AstObject* cond, AstObject* action, AstObject* elseAction) :
   assert(m_action);
 }
 
+const ObjType& AstIf::objType() const {
+  assert(m_objType);
+  return *m_objType;
+}
+
+std::shared_ptr<const ObjType> AstIf::objTypeAsSp() const {
+  assert(m_objType);
+  return m_objType;
+}
+
+StorageDuration AstIf::storageDuration() const {
+  return StorageDuration::eLocal;
+}
+
+void AstIf::setObjectType(std::shared_ptr<const ObjType> objType) {
+  assert(objType);
+  assert(!m_objType); // doesn't make sense to set it twice
+  m_objType = move(objType);
+}
+
 AstLoop::AstLoop(AstObject* cond, AstObject* body) :
-  AstObject{
-    make_shared<Object>(
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid),
-      StorageDuration::eLocal)},
   m_condition(cond),
   m_body(body) {
   assert(m_condition);
   assert(m_body);
 }
 
+const ObjType& AstLoop::objType() const {
+  return *objTypeFundaVoid;
+}
+
+std::shared_ptr<const ObjType> AstLoop::objTypeAsSp() const {
+  return objTypeFundaVoid;
+}
+
+StorageDuration AstLoop::storageDuration() const {
+  return StorageDuration::eLocal;
+}
+
 AstReturn::AstReturn(AstObject* retVal) :
-  AstObject{
-    make_shared<Object>(
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eNoreturn),
-      StorageDuration::eLocal)},
   m_retVal(retVal ? retVal : new AstNop()) {
   assert(m_retVal);
+}
+
+const ObjType& AstReturn::objType() const {
+  return *objTypeFundaNoreturn;
+}
+
+std::shared_ptr<const ObjType> AstReturn::objTypeAsSp() const {
+  return objTypeFundaNoreturn;
+}
+
+StorageDuration AstReturn::storageDuration() const {
+  return StorageDuration::eLocal;
 }
 
 AstObject& AstReturn::retVal() const {
@@ -436,13 +651,19 @@ AstFunCall::AstFunCall(AstObject* address, AstCtList* args) :
   assert(m_args);
 }
 
-void AstFunCall::createAndSetObjectUsingRetObjType() {
-  const auto& objType = m_address->objType();
-  assert(typeid(objType)==typeid(ObjTypeFun));
-  const auto& objTypeFun = static_cast<const ObjTypeFun&>(objType);
-  setObject(make_shared<Object>(
-      objTypeFun.ret().unqualifiedObjType(),
-      StorageDuration::eLocal));
+const ObjType& AstFunCall::objType() const {
+  return *objTypeAsSp();
+}
+
+std::shared_ptr<const ObjType> AstFunCall::objTypeAsSp() const {
+  const auto objTypeFun = std::dynamic_pointer_cast<const ObjTypeFun>(
+    m_address->object().objTypeAsSp());
+  assert(objTypeFun);
+  return objTypeFun->ret().unqualifiedObjType();
+}
+
+StorageDuration AstFunCall::storageDuration() const {
+  return StorageDuration::eLocal;
 }
 
 AstObjTypeSymbol::AstObjTypeSymbol(const std::string name) :

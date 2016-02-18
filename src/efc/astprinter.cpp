@@ -102,7 +102,7 @@ void AstPrinter::visit(const AstFunDef& funDef) {
     m_os << ")";
   }
   m_os << ") ";
-  funDef.declaredRetAstObjType().accept(*this);
+  funDef.ret().accept(*this);
   m_os << " ";
   funDef.body().accept(*this);
   m_os << ")";
