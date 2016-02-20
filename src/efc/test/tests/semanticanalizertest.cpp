@@ -67,10 +67,10 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
 }
 
 #define TEST_ASTTRAVERSAL(ast, expectedErrorNo, spec)                   \
-  Env env;                                                              \
   ErrorHandler errorHandler;                                            \
+  Env env; /* must live shorter than the AST */                         \
+  ParserExt pe(env, errorHandler);                                      \
   TestingSemanticAnalizer UUT(env, errorHandler);                       \
-  ParserExt pe(UUT.m_env, UUT.m_errorHandler);                          \
   bool foreignThrow = false;                                            \
   string excptionwhat;                                                  \
   AstNode* ast_ = nullptr;                                              \
@@ -107,10 +107,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   string spec = "Example: int";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     auto ast = make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt);
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast);
@@ -123,11 +124,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Example: mut-double";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     auto ast = make_unique<AstObjTypeQuali>(
       ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt));
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast);
@@ -142,10 +144,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Example: pointer";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     auto ast = make_unique<AstObjTypePtr>(new AstObjTypeSymbol(ObjTypeFunda::eInt));
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast);
@@ -160,15 +163,16 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Example: class";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     auto ast = make_unique<AstClassDef>(
       "foo",
       new AstDataDef("member1", new AstObjTypeSymbol(ObjTypeFunda::eInt),
         StorageDuration::eMember),
       new AstDataDef("member2", new AstObjTypeSymbol(ObjTypeFunda::eDouble),
         StorageDuration::eMember));
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast);
@@ -295,10 +299,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   string spec = "Example: local immutable int";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     unique_ptr<AstNode> ast(new AstDataDef("x", ObjTypeFunda::eInt));
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast);
@@ -306,8 +311,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     // verify
     const auto node = env.find("x");
     EXPECT_TRUE(nullptr!=node) << amendAst(ast.get());
-    EXPECT_TRUE(nullptr!=*node) << amendAst(ast.get());
-    const auto& astObject = dynamic_cast<AstObject&>(**node);
+    const auto& astObject = dynamic_cast<AstObject&>(*node);
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt),
       astObject.object().objType()) << amendAst(ast.get());
   }
@@ -315,11 +319,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Example: static immutable int";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     unique_ptr<AstNode> ast(new AstDataDef("x",
         new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eStatic));
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast);
@@ -327,8 +332,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     // verify
     const auto node = env.find("x");
     EXPECT_TRUE(nullptr!=node) << amendAst(ast.get());
-    EXPECT_TRUE(nullptr!=*node) << amendAst(ast.get());
-    const auto& astObject = dynamic_cast<AstObject&>(**node);
+    const auto& astObject = dynamic_cast<AstObject&>(*node);
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt),
       astObject.object().objType()) << amendAst(ast.get());
   }
@@ -336,11 +340,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Example: noinit initializer";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     unique_ptr<AstNode> ast(new AstDataDef("x", ObjTypeFunda::eInt,
         AstDataDef::noInit));
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast);
@@ -348,8 +353,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     // verify
     const auto node = env.find("x");
     EXPECT_TRUE(nullptr!=node) << amendAst(ast.get());
-    EXPECT_TRUE(nullptr!=*node) << amendAst(ast.get());
-    const auto& astObject = dynamic_cast<AstObject&>(**node);
+    const auto& astObject = dynamic_cast<AstObject&>(*node);
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt),
       astObject.object().objType()) << amendAst(ast.get());
   }
@@ -484,15 +488,16 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     a_later_symbol_of_that_name_references_the_definition)) {
 
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
+  Env env;
   const auto dataDef =
     new AstDataDef("x", ObjTypeFunda::eInt);
   const auto symbol = new TestingAstSymbol("x");
   unique_ptr<AstObject> ast{
     new AstBlock(
       new AstSeq( dataDef, symbol))};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -604,41 +609,33 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     succeeds_AND_inserts_both_appropriately_into_env)) {
 
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
+  Env env;
   ParserExt pe(env, errorHandler);
-  unique_ptr<AstNode> ast(
+  const auto innerAstFunDef =
+    pe.mkFunDef("inner", ObjTypeFunda::eInt,
+      new AstNumber(42));
+  unique_ptr<AstFunDef> outerAstFunDef(
     pe.mkFunDef("outer", ObjTypeFunda::eInt,
       new AstSeq(
-        pe.mkFunDef("inner", ObjTypeFunda::eInt,
-          new AstNumber(42)),
+        innerAstFunDef,
         new AstNumber(42))));
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
-  UUT.analyze(*ast);
+  UUT.analyze(*outerAstFunDef);
 
   // verify
-  EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
+  EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(outerAstFunDef.get());
 
-  const ObjTypeFun funType{ObjTypeFun::createArgs(),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
-
-  auto nodeOuter = env.find("outer");
-  EXPECT_TRUE( nodeOuter ) << amendAst(ast);
-  auto objectOuter = dynamic_cast<AstObject*>(*nodeOuter);
-  EXPECT_TRUE( nullptr!=objectOuter );
-  EXPECT_TRUE( objectOuter->object().objType().matchesFully(funType) );
+  const auto outerFoundNode = env.find("outer");
+  EXPECT_EQ(outerAstFunDef.get(), outerFoundNode ) << amendAst(outerAstFunDef.get());
 
   {
-    Env::AutoScope scope(env, "outer", Env::AutoScope::descentScope);
-    EnvNode** nodeInner = env.find("inner");
-    EXPECT_TRUE( nodeInner ) << amendAst(ast);
-    auto objectInner = dynamic_cast<AstObject*>(*nodeInner);
-    EXPECT_TRUE( nullptr!=objectInner );
-    EXPECT_TRUE( objectInner->object().objType().matchesFully(funType) );
-
-    EXPECT_NE( objectInner, objectOuter );
+    Env::AutoScope scope(env, *outerAstFunDef, Env::AutoScope::descentScope);
+    const auto innerFoundNode = env.find("inner");
+    EXPECT_EQ(innerAstFunDef, innerFoundNode ) << amendAst(outerAstFunDef.get());
   }
 }
 
@@ -650,13 +647,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   string spec = "Example: block ends with a temporary (thus immutable) data object";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
     unique_ptr<AstObject> ast{
       new AstBlock(
         new AstNumber(42, ObjTypeFunda::eInt))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -669,14 +666,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   spec = "Example: block ends with a local mutable data object";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
     unique_ptr<AstObject> ast{
       new AstBlock(
         new AstDataDef("x",
           new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eBool))))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -692,11 +689,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     THEN_the_operands_accessFromAstParent_is_eTakeAddr))
 {
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
+  Env env;
   AstObject* operand = new AstNumber(42);
   unique_ptr<AstObject> ast{new AstOperator('&', operand)};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -712,10 +710,11 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   string spec = "Example: a single AstNode, i.e. a single object";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     unique_ptr<AstObject> ast{new AstNumber(42)};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -733,11 +732,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   string spec = "Example: Address-of operator on a temporary object";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     AstObject* operand = new AstNumber(42);
     unique_ptr<AstObject> ast{new AstOperator('&', operand)};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -752,15 +752,16 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     "object";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     AstObject* symbol = new AstSymbol("x");
     unique_ptr<AstObject> ast{
       new AstSeq(
         new AstOperator('&',
           new AstDataDef("x", ObjTypeFunda::eInt)),
         symbol)};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -776,14 +777,15 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     THEN_the_bodys_accessFromAstParent_is_still_always_eRead))
 {
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
+  Env env;
   AstObject* body = new AstNumber(42);
   unique_ptr<AstObject> ast{
     new AstSeq( // imposes eIgnoreValueAndAddr access onto the block
       new AstBlock(body),
       new AstNumber(42))};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -797,9 +799,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     THEN_accessFromAstParent_to_seqs_last_operand_equals_that_outer_access_value_AND_accessFromAstParent_to_the_leading_operands_is_eIgnoreValueAndAddr))
 {
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
+  Env env;
   AstObject* leadingOpAst = new AstNumber(42);
   AstObject* lastOpAst = new AstSymbol("x");
   unique_ptr<AstObject> ast{
@@ -809,6 +810,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
       new AstOperator('=', // imposes write access onto the sequence
         new AstSeq( leadingOpAst, lastOpAst), // the sequence under test
         new AstNumber(77)))};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -851,14 +854,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     "result temporary object must be of type int";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
     unique_ptr<AstObject> ast{
       new AstOperator('+',
         new AstNumber(0, ObjTypeFunda::eInt),
         new AstNumber(0, ObjTypeFunda::eInt))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -872,14 +875,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     "result temporary object must be of type bool";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
     unique_ptr<AstObject> ast{
       new AstOperator("&&",
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNumber(0, ObjTypeFunda::eBool))};
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -892,10 +894,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Example: two muttable operands -> result temporary object is still immutable";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
     AstObject* opAst =
       new AstOperator('+',
         new AstSymbol("x"),
@@ -905,6 +905,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstDataDef("x",
           new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
         opAst)};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -922,14 +924,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     sets_the_objectType_of_the_seq_node_to_the_type_of_the_last_operand)) {
 
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  Env env;
   unique_ptr<AstObject> ast{
     new AstSeq(
       new AstNumber(0, ObjTypeFunda::eInt),
       new AstNumber(0, ObjTypeFunda::eBool))};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -944,12 +946,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     transform,
     sets_the_objType_of_the_AstOperator_node_to_pointer_to_operands_type)) {
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  Env env;
   unique_ptr<AstObject> ast{
     new AstOperator('&', new AstNumber(0, ObjTypeFunda::eInt))};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -964,17 +966,17 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     transform,
     sets_the_objectType_of_the_AstOperator_node_)) {
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
-  auto ast = 
+  Env env;
+  auto ast =
     new AstOperator(AstOperator::eDeref,
       new AstDataDef("x",
         new AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt)),
         new AstCast(
           new AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt)),
           new AstNumber(0, ObjTypeFunda::eNullptr))));
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast);
@@ -990,10 +992,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     transform,
     sets_the_objectType_of_the_AstOperator_node_to_void)) {
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  Env env;
   AstObject* assignmentAst =
     new AstOperator("=",
       new AstSymbol("foo"),
@@ -1002,6 +1002,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     new AstSeq(
       new AstDataDef("foo", new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
       assignmentAst)};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -1017,10 +1019,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     sets_the_objectType_of_the_AstOperator_node_to_lhs_which_includes_being_mutable)) {
 
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  Env env;
   AstObject* dotAssignmentAst =
     new AstOperator("=<",
       new AstSymbol("x"),
@@ -1030,6 +1030,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
       new AstDataDef("x",
         new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
       dotAssignmentAst)};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -1047,14 +1049,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     transform,
     sets_the_objectType_of_the_AstOperator_node_to_immutable_bool)) {
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  Env env;
   unique_ptr<AstObject> ast{
     new AstOperator("==",
       new AstNumber(42),
       new AstNumber(77))};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -1073,16 +1075,17 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   string spec = "Example: function with no args returning bool";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     AstFunCall* funCall = new AstFunCall(new AstSymbol("foo"));
     unique_ptr<AstObject> ast{
       new AstSeq(
         pe.mkFunDef("foo", ObjTypeFunda::eBool,
           new AstNumber(0, ObjTypeFunda::eBool)),
         funCall)};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1100,14 +1103,15 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     unique_ptr<AstObject> ast{
       new AstCast(
         new AstObjTypeSymbol(ObjTypeFunda::eInt),
         new AstNumber(0, ObjTypeFunda::eBool))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1123,14 +1127,15 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     THEN_the_objType_is_noreturn)) {
 
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
-  ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+  Env env;
+  ParserExt pe(env, errorHandler);
   AstObject* retAst = new AstReturn(new AstNumber(42, ObjTypeFunda::eInt));
   unique_ptr<AstObject> ast{
     pe.mkFunDef("foo", ObjTypeFunda::eInt,
       retAst)};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -1147,13 +1152,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   string spec = "Example: return expression as last (and only) expression in fun's body";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     AstNode* ast =
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast);
@@ -1165,10 +1171,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   spec = "Example: Early return, return expression in an if clause";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     AstNode* ast =
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
         new AstSeq(
@@ -1176,6 +1181,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
             new AstNumber(0, ObjTypeFunda::eBool),
             new AstReturn(new AstNumber(42, ObjTypeFunda::eInt))), // early return
           new AstNumber(77, ObjTypeFunda::eInt)));
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
+
     // exercise
     UUT.analyze(*ast);
 
@@ -1186,10 +1194,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   spec = "Example: Nested functions with different return types.";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     AstNode* ast =
       pe.mkFunDef("outer", ObjTypeFunda::eInt,
         new AstSeq(
@@ -1198,6 +1205,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
             new AstReturn(new AstNumber(0, ObjTypeFunda::eBool))),
 
           new AstReturn(new AstNumber(42, ObjTypeFunda::eInt))));
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast);
@@ -1254,15 +1263,15 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   string spec = "Example: both clauses of type bool -> whole if is of type bool";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
     unique_ptr<AstObject> ast{
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNumber(1, ObjTypeFunda::eBool),
         new AstNumber(0, ObjTypeFunda::eBool))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1275,15 +1284,15 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   spec = "Example: both clauses of type void -> whole if is of type void";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
     unique_ptr<AstObject> ast{
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNop(),
         new AstNop())};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1296,10 +1305,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   spec = "Example: both clauses are of type mutable-bool -> whole if is of type (immutable) bool";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
     AstObject* if_ = new AstIf(
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstSymbol("x"),
@@ -1309,6 +1316,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
         new AstDataDef("x",
           new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eBool))),
         if_)};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1331,8 +1340,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     // setup
     Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    ParserExt pe(env, errorHandler);
     AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -1343,6 +1351,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
         new AstSeq(
           astIf,
           new AstNumber(42)))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1356,10 +1366,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     "the if expression's type is bool.";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -1370,6 +1379,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
         new AstSeq(
           astIf,
           new AstNumber(42)))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1382,10 +1393,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   spec = "Example: both clauses of type noreturn -> the if expression's type is noreturn.";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -1394,6 +1404,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     unique_ptr<AstObject> ast{
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
         astIf)};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1412,14 +1424,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   string spec = "Example: then clause is of type bool -> if expression is of type void.";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
     unique_ptr<AstObject> ast{
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNumber(1, ObjTypeFunda::eInt))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1432,10 +1444,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   spec = "Example: then clause is of type noreturn -> if expression is of type void.";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -1445,6 +1456,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
         new AstSeq(
           astIf,
           new AstNumber(42)))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1464,9 +1477,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   string spec = "Example: eIgnoreValueAndAddr access";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     AstObject* thenClauseAst = new AstNumber(42);
     AstObject* elseClauseAst = new AstNumber(42);
     unique_ptr<AstObject> ast{
@@ -1475,6 +1487,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
           new AstNumber(0, ObjTypeFunda::eBool),
           thenClauseAst, elseClauseAst),
         new AstNumber(42))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1494,13 +1508,14 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   string spec = "Example: obj type of body is int -> obj type of loop is still and always void";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
+    Env env;
     unique_ptr<AstObject> ast{
       new AstLoop(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstNumber(42))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1513,17 +1528,18 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   spec = "Example: obj type of body is noret -> obj type of loop is still and always void";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     AstLoop* loop =
       new AstLoop(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42)));
     unique_ptr<AstObject> ast{
-        pe.mkFunDef("foo", ObjTypeFunda::eInt,
-          new AstSeq( loop, new AstNumber(42)))};
+      pe.mkFunDef("foo", ObjTypeFunda::eInt,
+        new AstSeq( loop, new AstNumber(42)))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1539,12 +1555,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     THEN_accessFromAstParent_to_the_condition_is_eRead_AND_accessFromAstParent_to_body_is_eIgnoreValueAndAddr))
 {
   // setup
-  Env env;
   ErrorHandler errorHandler;
-  TestingSemanticAnalizer UUT(env, errorHandler);
+  Env env;
   AstObject* condition = new AstNumber(0, ObjTypeFunda::eBool);
   AstObject* body = new AstNumber(42);
   unique_ptr<AstObject> ast{ new AstLoop( condition, body)};
+  Env::AutoLetLooseNodes dummy(env);
+  TestingSemanticAnalizer UUT(env, errorHandler);
 
   // exercise
   UUT.analyze(*ast.get());
@@ -1645,10 +1662,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   string spec = "Parameter is immutable, argument is mutable";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     unique_ptr<AstObject> ast{
       new AstSeq(
         pe.mkFunDef("foo",
@@ -1659,6 +1675,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstDataDef("x", new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
         new AstFunCall(new AstSymbol("foo"),
           new AstCtList(new AstSymbol("x"))))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());
@@ -1670,10 +1688,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   spec = "Parameter is mutable, argument is immutable";
   {
     // setup
-    Env env;
     ErrorHandler errorHandler;
-    TestingSemanticAnalizer UUT(env, errorHandler);
-    ParserExt pe(UUT.m_env, UUT.m_errorHandler);
+    Env env;
+    ParserExt pe(env, errorHandler);
     unique_ptr<AstObject> ast{
       new AstSeq(
         pe.mkFunDef("foo",
@@ -1683,6 +1700,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
           new AstNumber(42)),
         new AstFunCall(new AstSymbol("foo"),
           new AstCtList(new AstNumber(0, ObjTypeFunda::eInt))))};
+    Env::AutoLetLooseNodes dummy(env);
+    TestingSemanticAnalizer UUT(env, errorHandler);
 
     // exercise
     UUT.analyze(*ast.get());

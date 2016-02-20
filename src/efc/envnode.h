@@ -2,23 +2,32 @@
 #include "declutils.h"
 #include <string>
 #include <ostream>
+#include <deque>
 
 class EnvNode {
 public:
+  explicit EnvNode(std::string name);
   virtual ~EnvNode() = default;
 
-  // -- pure virtual functions
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const = 0;
-
   // -- misc
-  std::string toStr() const;
-
-protected:
-  EnvNode() = default;
+  const std::string& name() const;
+  const std::string& fqName() const;
 
 private:
   NEITHER_COPY_NOR_MOVEABLE(EnvNode);
-};
 
-std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  const EnvNode& ot);
+  friend class Env;
+
+  bool insert(EnvNode& node);
+  EnvNode* find(const std::string& name);
+  std::string createFqName() const;
+
+  const std::string m_name;
+  mutable std::string m_fqName;
+  /** Might be empty, say for data objects. We're not the owner of the
+  pointees, see also Env's class comment */
+  std::deque<EnvNode*> m_envChildren;
+  /** The root node has nullptr as parent, all other nodes are
+  non-nullptr. We're not the owner, see also Env's class comment. */
+  EnvNode* m_envParent;
+};

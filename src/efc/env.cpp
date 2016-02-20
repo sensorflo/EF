@@ -5,85 +5,22 @@
 #include <sstream>
 using namespace std;
 
-namespace {
-  thread_local EnvNode** dummyNode;
+static bool dummyBool;
+
+Env::AutoScope::AutoScope(Env& env, EnvNode& node, Action action) :
+  AutoScope(env, node, action, dummyBool) {
 }
 
-Env::Node* Env::Node::insert(string name, const FQNameProvider*& fqNameProvider) {
-  if ( find(name) ) {
-    return nullptr;
-  } else {
-    m_children.emplace_back(move(name), this);
-    fqNameProvider = &m_children.back();
-    return &m_children.back();
-  }
-}
-
-Env::Node* Env::Node::find(const string& name) {
-  const auto foundNode = std::find_if(m_children.begin(), m_children.end(),
-    [&](const auto& x)->bool{return x.m_name == name;});
-  if ( foundNode==m_children.end() ) {
-    return nullptr;
-  } else {
-    return &(*foundNode);
-  }
-}
-
-const string& Env::Node::fqName() const {
-  if ( m_fqName.empty() ) {
-    m_fqName = createFqName();
-  }
-  return m_fqName;
-}
-
-// special case:
-//   fully qualified name of root is equal to roots unqualified name: "$root"
-//
-// normal cases: any descendant of root. Think that roots name is cut away.
-//   fully qualified name of a roots child is ".foo"
-//   fully qualified name of a roots child child is ".foo.bar"
-string Env::Node::createFqName() const {
-  const auto thisIsRoot = nullptr == this->m_parent;
-  if ( thisIsRoot ) {
-    return m_name;
-  }
-
-  deque<const Node*> nodes{};
-  for (auto node = this; node && node->m_parent; node = node->m_parent) {
-    nodes.push_front(node);
-  }
-  assert(!nodes.empty()); // would mean this is root, but that was handled above
-
-  string fqName{};
-  for (const auto& node: nodes) {
-    fqName += ".";
-    fqName += node->m_name;
-  }
-  return fqName;
-}
-
-Env::Node::Node(string name, Node* parent) :
-  m_name(move(name)),
-  m_node(nullptr),
-  m_parent(parent) {
-  assert(!m_name.empty());
-}
-
-thread_local const FQNameProvider* dummyFqNameProvider{};
-Env::AutoScope::AutoScope(Env& env, const string& name,
-  Env::AutoScope::Action action) :
-  AutoScope(env, name, dummyFqNameProvider, dummyNode, action) {
-  assert(dummyNode);
-}
-
-Env::AutoScope::AutoScope(Env& env, const string& name,
-  const FQNameProvider*& fqNameProvider, EnvNode**& node,
-  Env::AutoScope::Action action) :
+Env::AutoScope::AutoScope(Env& env, EnvNode& node,
+  Env::AutoScope::Action action, bool& success) :
   m_env(env) {
-  node = (action == insertScopeAndDescent) ?
-    m_env.insertScopeAndDescent(name, fqNameProvider) :
-    m_env.descentScope(name);
-  m_didDescent = (node!=nullptr);
+  if (action==insertScopeAndDescent) {
+    success = m_env.insertScopeAndDescent(node);
+  } else {
+    m_env.descentScope(node);
+    success = true;
+  }
+  m_didDescent = success;
 }
 
 Env::AutoScope::~AutoScope() {
@@ -92,47 +29,40 @@ Env::AutoScope::~AutoScope() {
   }
 }
 
+Env::AutoLetLooseNodes::AutoLetLooseNodes(Env& env) : m_env(env) {
+}
+
+Env::AutoLetLooseNodes::~AutoLetLooseNodes() {
+  m_env.letLooseNodes();
+}
+
 Env::Env() :
-  m_rootScope{"$root", nullptr},
+  m_rootScope{"$root"},
   m_currentScope{&m_rootScope} {
 }
 
-EnvNode** Env::insertLeaf(const string& name,
-  const FQNameProvider*& fqNameProvider) {
-  const auto newNode = m_currentScope->insert(name, fqNameProvider);
-  return newNode ?
-    (fqNameProvider = newNode, &newNode->m_node) :
-    nullptr;
+bool Env::insertLeaf(EnvNode& node) {
+  return m_currentScope->insert(node);
 }
 
-EnvNode** Env::insertScopeAndDescent(const string& name,
-  const FQNameProvider*& fqNameProvider) {
-  const auto newNode = m_currentScope->insert(name, fqNameProvider);
-  if ( newNode ) {
-    m_currentScope = newNode;
-    return &newNode->m_node;
-  } else {
-    return nullptr;
+bool Env::insertScopeAndDescent(EnvNode& node) {
+  const auto success = m_currentScope->insert(node);
+  if ( success ) {
+    m_currentScope = &node;
   }
+  return success;
 }
 
-EnvNode** Env::descentScope(const string& name) {
-  const auto foundChildNode = m_currentScope->find(name);
-  if (foundChildNode) {
-    m_currentScope = foundChildNode;
-    return &foundChildNode->m_node;
-  } else {
-    return nullptr;
-  }
+void Env::descentScope(EnvNode& node) {
+  assert(node.m_envParent == m_currentScope);
+  m_currentScope = &node;
 }
 
-EnvNode** Env::find(const string& name) {
-  for (auto currentScope = m_currentScope;
-       currentScope;
-       currentScope = currentScope->m_parent) {
-    const auto foundChildNode = currentScope->find(name);
-    if (foundChildNode) {
-      return &foundChildNode->m_node;
+EnvNode* Env::find(const string& name) {
+  for (auto scope = m_currentScope; scope; scope = scope->m_envParent) {
+    const auto node = scope->find(name);
+    if (node) {
+      return node;
     }
   }
   return nullptr;
@@ -151,34 +81,32 @@ string Env::makeUniqueInternalName(string baseName) {
 
 void Env::ascentScope() {
   assert(m_currentScope);
-  assert(m_currentScope->m_parent);
-  m_currentScope = m_currentScope->m_parent;
+  assert(m_currentScope->m_envParent);
+  m_currentScope = m_currentScope->m_envParent;
 }
 
-void Env::printTo(ostream& os, const Env::Node& node) const {
-  os << "{name=" << node.m_name;
+void Env::printTo(ostream& os, const EnvNode& node) const {
+  os << "{" << node.name();
 
-  os << ", m_node=";
-  if ( node.m_node ) {
-    os << *node.m_node;
-  } else {
-    os << "null";
-  }
-
-  if ( !node.m_children.empty() ) {
+  if ( !node.m_envChildren.empty() ) {
     os << ", children={";
     auto isFirstIter = true;
-    for ( const auto& child : node.m_children  ) {
+    for ( const auto& child : node.m_envChildren  ) {
       if ( !isFirstIter ) {
         os << ", ";
       }
       isFirstIter = false;
-      printTo(os, child);
+      printTo(os, *child);
     }
     os << "}";
   }
 
   os << "}";
+}
+
+void Env::letLooseNodes() {
+  m_rootScope.m_envChildren.clear();
+  m_currentScope = &m_rootScope;
 }
 
 ostream& operator<<(ostream& os, const Env& env) {

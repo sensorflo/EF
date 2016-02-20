@@ -75,7 +75,7 @@ void SemanticAnalizer::visit(AstBlock& block) {
 
   // -- responsibility 1: set access to direct childs and descent AST subtree
   {
-    Env::AutoScope scope(m_env, block.name(), Env::AutoScope::descentScope);
+    Env::AutoScope scope(m_env, block);
     setAccessAndCallAcceptOn(block.body(), Access::eRead);
   }
 
@@ -259,8 +259,7 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
   if (nullptr==node) {
     Error::throwError(m_errorHandler, Error::eUnknownName);
   }
-  assert(*node);
-  const auto object = dynamic_cast<AstObjDef*>(*node);
+  const auto object = dynamic_cast<AstObjDef*>(node);
   assert(object);
 
   // -- responsibility 3: set properties of associated object: type, sd, access
@@ -330,7 +329,7 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   // -- responsibility 1: set access to direct childs and descent AST subtree
   {
     FunBodyHelper dummy(m_funRetAstObjTypes, &funDef.ret());
-    Env::AutoScope scope(m_env, funDef.name(), Env::AutoScope::descentScope);
+    Env::AutoScope scope(m_env, funDef);
     for (const auto& arg : funDef.declaredArgs()) {
       setAccessAndCallAcceptOn(*arg, Access::eIgnoreValueAndAddr);
     }

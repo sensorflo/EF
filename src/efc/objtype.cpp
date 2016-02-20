@@ -6,6 +6,10 @@
 using namespace std;
 using namespace llvm;
 
+ObjType::ObjType(string name) :
+  EnvNode(move(name)) {
+}
+
 bool ObjType::isVoid() const {
   static const ObjTypeFunda voidType(ObjTypeFunda::eVoid);
   return matchesFully(voidType);
@@ -32,6 +36,17 @@ std::shared_ptr<const ObjType> ObjType::unqualifiedObjType() const {
   return shared_from_this();
 }
 
+string ObjType::toStr() const {
+  std::ostringstream ss;
+  printTo(ss);
+  return ss.str();
+}
+
+std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
+  const ObjType& objType) {
+  return objType.printTo(os);
+}
+
 basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::Qualifiers qualifiers) {
   if (ObjType::eNoQualifier==qualifiers) {
     return os << "no-qualifier";
@@ -53,6 +68,7 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os, ObjType::MatchType mt) 
 
 ObjTypeQuali::ObjTypeQuali(Qualifiers qualifiers,
   std::shared_ptr<const ObjType> type) :
+  ObjType(""),
   m_qualifiers(static_cast<Qualifiers>(qualifiers | type->qualifiers())),
   m_type((assert(type), type->unqualifiedObjType())) {
   assert(m_type);
@@ -142,6 +158,7 @@ std::shared_ptr<const ObjType> ObjTypeQuali::unqualifiedObjType() const {
 }
 
 ObjTypeFunda::ObjTypeFunda(EType type) :
+  ObjType(""),
   m_type(type) {
 }
 
@@ -350,6 +367,7 @@ std::shared_ptr<const ObjType> ObjTypePtr::pointee() const {
 };
 
 ObjTypeFun::ObjTypeFun(vector<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret) :
+  ObjType(""),
   m_args{ args ?
       std::unique_ptr<vector<shared_ptr<const ObjType>>>{args} :
     std::make_unique<vector<shared_ptr<const ObjType>>>()},
@@ -407,7 +425,7 @@ llvm::Type* ObjTypeFun::llvmType() const {
 
 ObjTypeClass::ObjTypeClass(const string& name,
   vector<shared_ptr<const ObjType>>&& members) :
-  m_name(name),
+  ObjType(move(name)),
   m_members(move(members)) {
 }
 
@@ -436,7 +454,7 @@ vector<shared_ptr<const ObjType>> ObjTypeClass::createMembers(
 }
 
 basic_ostream<char>& ObjTypeClass::printTo(basic_ostream<char>& os) const {
-  os << "class(" << m_name;
+  os << "class(" << name();
   for ( const auto& member: m_members ) {
     os << " " << *member;
   }

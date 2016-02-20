@@ -15,34 +15,29 @@ void EnvInserter::insertIntoEnv(AstNode& root) {
 }
 
 void EnvInserter::visit(AstBlock& block) {
-  Env::AutoScope scope(m_env, block.name(),
-    Env::AutoScope::insertScopeAndDescent);
+  Env::AutoScope scope(m_env, block, Env::AutoScope::insertScopeAndDescent);
 
   AstDefaultIterator::visit(block);
 }
 
 void EnvInserter::visit(AstDataDef& dataDef) {
   if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
-    const auto node = m_env.insertLeaf(dataDef.name(),      dataDef.fqNameProvider());
-    if (nullptr==node) {
+    const auto success = m_env.insertLeaf(dataDef);
+    if (!success) {
       Error::throwError(m_errorHandler, Error::eRedefinition, dataDef.name());
     }
-
-    *node = &dataDef;
   }
 
   AstDefaultIterator::visit(dataDef);
 }
 
 void EnvInserter::visit(AstFunDef& funDef) {
-  EnvNode** node{};
-  Env::AutoScope scope(m_env, funDef.name(), funDef.fqNameProvider(), node,
-    Env::AutoScope::insertScopeAndDescent);
-  if (!node) {
+  bool success{};
+  Env::AutoScope scope(m_env, funDef, Env::AutoScope::insertScopeAndDescent,
+    success);
+  if (!success) {
     Error::throwError(m_errorHandler, Error::eRedefinition, funDef.name());
   }
-
-  *node = &funDef;
 
   AstDefaultIterator::visit(funDef);
 }

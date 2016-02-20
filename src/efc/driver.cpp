@@ -73,6 +73,8 @@ ErrorHandler& Driver::errorHandler() {
 /** Compile = scann & parse & do semantic analysis & generate IR. */
 void Driver::compile() {
   try {
+    Env::AutoLetLooseNodes dummy(*m_env);
+
     auto astAfterParse = scanAndParse();
 
     // It's currently implied that the module wants an implicit main method

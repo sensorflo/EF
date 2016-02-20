@@ -3,7 +3,6 @@
 #include "astvisitor.h"
 #include "astprinter.h"
 #include "errorhandler.h"
-#include "fqnameprovider.h"
 #include <cassert>
 #include <stdexcept>
 using namespace std;
@@ -65,6 +64,10 @@ Access AstObjInstance::accessFromAstParent() const {
   return m_accessFromAstParent;
 }
 
+AstObjDef::AstObjDef(string name) :
+  EnvNode(move(name)) {
+}
+
 basic_ostream<char>& AstObjDef::printTo(basic_ostream<char>& os) const {
   const auto storageDuration_ = storageDuration();
   if ( storageDuration_!=StorageDuration::eLocal ) {
@@ -87,7 +90,7 @@ StorageDuration AstNop::storageDuration() const {
 }
 
 AstBlock::AstBlock(AstObject* body) :
-  m_name(Env::makeUniqueInternalName("$block")),
+  EnvNode(Env::makeUniqueInternalName("$block")),
   m_body(body) {
   assert(m_body);
 }
@@ -138,11 +141,10 @@ AstFunDef::AstFunDef(const string& name,
   std::vector<AstDataDef*>* args,
   AstObjType* ret,
   AstObject* body) :
-  m_name(name),
+  AstObjDef(name),
   m_args(toUniquePtrs(args)),
   m_ret(ret),
-  m_body(body),
-  m_fqNameProvider{} {
+  m_body(body) {
   assert(m_ret);
   assert(m_body);
   for ( const auto& arg : m_args ) {
@@ -157,11 +159,6 @@ vector<AstDataDef*>* AstFunDef::createArgs(AstDataDef* arg1,
   if (arg2) { args->push_back(arg2); }
   if (arg3) { args->push_back(arg3); }
   return args;
-}
-
-const string& AstFunDef::fqName() const {
-  assert(m_fqNameProvider);
-  return m_fqNameProvider->fqName();;
 }
 
 const ObjType& AstFunDef::objType() const {
@@ -194,13 +191,12 @@ AstObject* const AstDataDef::noInit = reinterpret_cast<AstObject*>(1);
 
 AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
   StorageDuration declaredStorageDuration,  AstCtList* ctorArgs) :
-  m_name(name),
+  AstObjDef(name),
   m_declaredAstObjType(declaredAstObjType ?
     unique_ptr<AstObjType>(declaredAstObjType) :
     make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt)),
   m_declaredStorageDuration(declaredStorageDuration),
-  m_ctorArgs(mkCtorArgs(ctorArgs, m_declaredStorageDuration, m_doNotInit)),
-  m_fqNameProvider{} {
+  m_ctorArgs(mkCtorArgs(ctorArgs, m_declaredStorageDuration, m_doNotInit)) {
   assert(declaredStorageDuration != StorageDuration::eYetUndefined);
   assert(m_ctorArgs);
 }
@@ -257,11 +253,6 @@ unique_ptr<AstCtList> AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
 
 AstObjType& AstDataDef::declaredAstObjType() const {
   return *m_declaredAstObjType.get();
-}
-
-const string& AstDataDef::fqName() const {
-  assert(m_fqNameProvider);
-  return m_fqNameProvider->fqName();
 }
 
 StorageDuration AstDataDef::declaredStorageDuration() const {

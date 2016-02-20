@@ -14,7 +14,7 @@ void SignatureAugmentor::augmentEntities(AstNode& root) {
 }
 
 void SignatureAugmentor::visit(AstBlock& block) {
-  Env::AutoScope scope(m_env, block.name(), Env::AutoScope::descentScope);
+  Env::AutoScope scope(m_env, block);
   AstDefaultIterator::visit(block);
 }
 
@@ -25,7 +25,7 @@ void SignatureAugmentor::visit(AstDataDef& dataDef) {
 }
 
 void SignatureAugmentor::visit(AstFunDef& funDef) {
-  Env::AutoScope scope(m_env, funDef.name(), Env::AutoScope::descentScope);
+  Env::AutoScope scope(m_env, funDef);
   AstDefaultIterator::visit(funDef);
 }
 

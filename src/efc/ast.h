@@ -22,7 +22,6 @@
 class AstConstVisitor;
 class AstVisitor;
 class ErrorHandler;
-class FQNameProvider;
 
 class AstNode {
 public:
@@ -95,6 +94,9 @@ public:
   bool isInitialized() const { return m_isInitialized; }
   void notifyInitialized() { assert(!m_isInitialized); m_isInitialized = true; }
 
+protected:
+  AstObjDef(std::string name);
+
 private:
   /** Relative to program order, which equals AST post-order traversal, childs
   left to right. The property 'is initialized' is on AstObjDef instead of
@@ -116,7 +118,7 @@ public:
   virtual StorageDuration storageDuration() const;
 };
 
-class AstBlock : public AstObjInstance {
+class AstBlock : public AstObjInstance, public EnvNode {
 public:
   AstBlock(AstObject* body);
 
@@ -130,12 +132,10 @@ public:
   virtual StorageDuration storageDuration() const;
  
   // -- childs of this node
-  const std::string& name() const { return m_name; }
   AstObject& body() const { return *m_body.get(); }
 
 private:
   // -- childs of this node
-  const std::string m_name;
   /** Guaranteed to be non-null */
   const std::unique_ptr<AstObject> m_body;
 };
@@ -183,7 +183,7 @@ public:
   virtual StorageDuration storageDuration() const;
 
   // -- childs of this node
-  virtual const std::string& name() const { return m_name; }
+  // name() is in EnvNode
   virtual std::vector<std::unique_ptr<AstDataDef>>const& declaredArgs() const {
     return m_args; }
   virtual AstObjType& ret() const { assert(m_ret); return *m_ret; }
@@ -193,8 +193,6 @@ public:
   static std::vector<AstDataDef*>* createArgs(AstDataDef* arg1 = NULL,
     AstDataDef* arg2 = NULL, AstDataDef* arg3 = NULL);
   void createAndSetObjType();
-  const std::string& fqName() const;
-  const FQNameProvider*& fqNameProvider() { return m_fqNameProvider; }
 
 private:
   // -- associated object
@@ -202,17 +200,13 @@ private:
   mutable std::shared_ptr<const ObjTypeFun> m_objType;
 
   // -- childs of this node
-  /** Redundant to the key of Env's key-value pair pointing to object(). */
-  const std::string m_name;
+  // m_name is in EnvNode
   /** The members are guaranteed to be non-null */
   const std::vector<std::unique_ptr<AstDataDef>> m_args;
   /** Is garanteed to be non-null. */
   const std::unique_ptr<AstObjType> m_ret;
   /** Is garanteed to be non-null */
   const std::unique_ptr<AstObject> m_body;
-
-  // -- misc
-  const FQNameProvider* m_fqNameProvider;
 };
 
 /** Also used for data members of a class, which is not entirerly a nice
@@ -242,15 +236,13 @@ public:
   // storageDuration is below within childs section
 
   // -- childs of this node
-  virtual const std::string& name() const { return m_name; }
+  // name() is in EnvNode
   AstObjType& declaredAstObjType() const;
   StorageDuration declaredStorageDuration() const;
   virtual StorageDuration storageDuration() const { return m_declaredStorageDuration; }
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
 
   // -- misc
-  const std::string& fqName() const;
-  const FQNameProvider*& fqNameProvider() { return m_fqNameProvider; }
   bool doNotInit() const { return m_doNotInit; }
 
   static AstObject* const noInit;
@@ -262,7 +254,7 @@ private:
     StorageDuration storageDuration, bool& doNotInit);
 
   // -- childs of this node
-  const std::string m_name;
+  // m_name is in EnvNode
   /** Guaranteed to be non-null. */
   const std::unique_ptr<AstObjType> m_declaredAstObjType;
   /** Guaranteed to be not eYetUndefined */
@@ -272,7 +264,6 @@ private:
   const std::unique_ptr<AstCtList> m_ctorArgs;
 
   // -- misc
-  const FQNameProvider* m_fqNameProvider;
   bool m_doNotInit;
 };
 

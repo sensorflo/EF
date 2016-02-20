@@ -54,7 +54,7 @@ void RawAstDataDef::setStorageDuration(StorageDuration storageDuration) {
   m_storageDuration = storageDuration;
 }
 
-ParserExt::ParserExt(Env& env, ErrorHandler& errorHandler) :
+ParserExt::ParserExt(Env&, ErrorHandler& errorHandler) :
   m_errorHandler(errorHandler) {
 }
 
@@ -118,9 +118,6 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
     rawAstDataDef->m_astObjType : new AstObjTypeSymbol(ObjTypeFunda::eInt);
   const auto qualifiedAstObjType =
     new AstObjTypeQuali(qualifiers, unqualifiedAstObjType);
-
-  // add to environment everything except local data objects. Currently there
-  // are only local data objects, so currently there is nothing todo.
 
   return new AstDataDef(
     rawAstDataDef->m_name,

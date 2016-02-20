@@ -4,114 +4,140 @@
 using namespace testing;
 using namespace std;
 
-const FQNameProvider* dummyFQNameProvider{};
-
 TEST(EnvTest, MAKE_TEST_NAME3(
     an_Env_with_name_x_not_yet_inserted_in_current_scope,
     insert_WITH_name_x,
-    returns_non_null)) {
+    returns_true_for_success)) {
 
   auto spec = "Current scope being root scope, using insertLeaf to insert";
   {
     // setup
-    Env UUT;
+    EnvNode node("x");
+    Env UUT; // env shall life shorter than it's nodes
+
     // exercise
-    EnvNode** node = UUT.insertLeaf("x", dummyFQNameProvider);
+    auto success = UUT.insertLeaf(node);
+
     // verify
-    EXPECT_TRUE(nullptr!=node) << amendSpec(spec) << amend(UUT);
+    EXPECT_TRUE(success) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being root scope, using AutoScope to insert";
   {
     // setup
-    Env UUT;
+    EnvNode node("x");
+    Env UUT; // env shall life shorter than it's nodes
+
     // exercise
-    EnvNode** node;
-    Env::AutoScope scope(UUT, "x", dummyFQNameProvider, node,
-      Env::AutoScope::insertScopeAndDescent);
+    bool success;
+    Env::AutoScope dummy(UUT, node, Env::AutoScope::insertScopeAndDescent, success);
+
     // verify
-    EXPECT_TRUE(nullptr!=node) << amendSpec(spec) << amend(UUT);
+    EXPECT_TRUE(success) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being _not_ root scope, using insertLeaf to insert";
   {
     // setup
-    Env UUT;
-    Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
+    EnvNode otherNode("otherName");
+    EnvNode node("x");
+    Env UUT; // env shall life shorter than it's nodes
+    Env::AutoScope dummy(UUT, otherNode, Env::AutoScope::insertScopeAndDescent);
+
     // exercise
-    EnvNode** node = UUT.insertLeaf("x", dummyFQNameProvider);
+    auto success = UUT.insertLeaf(node);
+
     // verify
-    EXPECT_TRUE(nullptr!=node) << amendSpec(spec) << amend(UUT);
+    EXPECT_TRUE(success) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being _not_ root scope, using AutoScope to insert";
   {
     // setup
-    Env UUT;
-    Env::AutoScope scope1(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
+    EnvNode otherNode("otherName");
+    EnvNode node("x");
+    Env UUT; // env shall life shorter than it's nodes
+    Env::AutoScope dummy1(UUT, otherNode, Env::AutoScope::insertScopeAndDescent);
+
     // exercise
-    EnvNode** node;
-    Env::AutoScope scope2(UUT, "x", dummyFQNameProvider, node,
-      Env::AutoScope::insertScopeAndDescent);
+    bool success;
+    Env::AutoScope dummy2(UUT, node, Env::AutoScope::insertScopeAndDescent, success);
+
     // verify
-    EXPECT_TRUE(nullptr!=node) << amendSpec(spec) << amend(UUT);
+    EXPECT_TRUE(success) << amendSpec(spec) << amend(UUT);
   }
 }
 
 TEST(EnvTest, MAKE_TEST_NAME(
     an_Env_with_name_x_already_inserted_in_current_scope,
     insertLeaf_WITH_name_x,
-    returns_null)) {
+    returns_false)) {
   const auto name = "x"s;
 
   auto spec = "Current scope being root scope, using insertLeaf to insert";
   {
     // setup
-    Env UUT;
-    UUT.insertLeaf(name, dummyFQNameProvider);
+    EnvNode meanNode(name);
+    EnvNode node(name);
+    Env UUT; // env shall life shorter than it's nodes
+    UUT.insertLeaf(meanNode);
+
     // exercise
-    EnvNode** node = UUT.insertLeaf(name, dummyFQNameProvider);
+    const auto success = UUT.insertLeaf(node);
+
     // verify
-    EXPECT_EQ(nullptr, node) << amendSpec(spec) << amend(UUT);
+    EXPECT_FALSE(success) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being root scope, using AutoScope to insert";
   {
     // setup
-    Env UUT;
-    UUT.insertLeaf(name, dummyFQNameProvider);
+    EnvNode meanNode(name);
+    EnvNode node(name);
+    Env UUT; // env shall life shorter than it's nodes
+    UUT.insertLeaf(meanNode);
+
     // exercise
-    EnvNode** node;
-    Env::AutoScope scope(UUT, name, dummyFQNameProvider, node,
-      Env::AutoScope::insertScopeAndDescent);
+    bool success;
+    Env::AutoScope dummy(UUT, node, Env::AutoScope::insertScopeAndDescent, success);
+
     // verify
-    EXPECT_EQ(nullptr, node) << amendSpec(spec) << amend(UUT);
+    EXPECT_FALSE(success) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being _not_ root scope, using insertLeaf to insert";
   {
     // setup
-    Env UUT;
-    Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
-    UUT.insertLeaf(name, dummyFQNameProvider);
+    EnvNode yetOtherNode("otherName");
+    EnvNode meanNode(name);
+    EnvNode node(name);
+    Env UUT; // env shall life shorter than it's nodes
+    Env::AutoScope dummy(UUT, yetOtherNode, Env::AutoScope::insertScopeAndDescent);
+    UUT.insertLeaf(meanNode);
+
     // exercise
-    EnvNode** node = UUT.insertLeaf(name, dummyFQNameProvider);
+    auto success = UUT.insertLeaf(node);
+
     // verify
-    EXPECT_EQ(nullptr, node) << amendSpec(spec) << amend(UUT);
+    EXPECT_FALSE(success) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Current scope being _not_ root scope, using AutoScope to insert";
   {
     // setup
-    Env UUT;
-    Env::AutoScope scope1(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
-    UUT.insertLeaf(name, dummyFQNameProvider);
+    EnvNode yetOtherNode("otherName");
+    EnvNode meanNode(name);
+    EnvNode node(name);
+    Env UUT; // env shall life shorter than it's nodes
+    Env::AutoScope dummy1(UUT, yetOtherNode, Env::AutoScope::insertScopeAndDescent);
+    UUT.insertLeaf(meanNode);
+
     // exercise
-    EnvNode** node;
-    Env::AutoScope scope2(UUT, name, dummyFQNameProvider, node,
-      Env::AutoScope::insertScopeAndDescent);
+    bool success;
+    Env::AutoScope dummy2(UUT, node, Env::AutoScope::insertScopeAndDescent, success);
+
     // verify
-    EXPECT_EQ(nullptr, node) << amendSpec(spec) << amend(UUT);
+    EXPECT_FALSE(success) << amendSpec(spec) << amend(UUT);
   }
 }
 
@@ -123,37 +149,38 @@ TEST(EnvTest, MAKE_TEST_NAME3(
   auto spec = "Using insertLeaf to insert";
   {
     // setup
-    Env UUT;
-    EnvNode** insertedNode = UUT.insertLeaf(name, dummyFQNameProvider);
+    EnvNode insertedNode(name);
+    Env UUT; // env shall life shorter than it's nodes
+    UUT.insertLeaf(insertedNode);
 
     // exercise
-    EnvNode** foundNode = UUT.find(name);
+    const auto foundNode = UUT.find(name);
 
     // verify
-    EXPECT_EQ(insertedNode, foundNode) << amendSpec(spec) << amend(UUT);
+    EXPECT_EQ(&insertedNode, foundNode) << amendSpec(spec) << amend(UUT);
   }
 
   spec = "Using AutoScope to insert";
   {
     // setup
-    Env UUT;
-    EnvNode** insertedNode;
-    Env::AutoScope scope(UUT, name, dummyFQNameProvider, insertedNode,
-      Env::AutoScope::insertScopeAndDescent);
+    EnvNode insertedNode(name);
+    Env UUT; // env shall life shorter than it's nodes
+    Env::AutoScope dummy(UUT, insertedNode, Env::AutoScope::insertScopeAndDescent);
 
     // exercise
-    EnvNode** foundNode = UUT.find(name);
+    const auto foundNode = UUT.find(name);
 
     // verify
-    EXPECT_EQ(insertedNode, foundNode) << amendSpec(spec) << amend(UUT);
+    EXPECT_EQ(&insertedNode, foundNode) << amendSpec(spec) << amend(UUT);
   }
 }
 
 TEST(EnvTest, MAKE_TEST_NAME2(
     find_WITH_an_nonexisting_name,
     returns_NULL)) {
-  Env UUT;
-  EnvNode** foundNode = UUT.find("x");
+  EnvNode insertedNode("x");
+  Env UUT; // env shall life shorter than it's nodes
+  const auto foundNode = UUT.find("cantfindme");
   EXPECT_EQ(nullptr, foundNode) << amend(UUT);
 }
 
@@ -164,17 +191,19 @@ TEST(EnvTest, MAKE_TEST_NAME4(
     BECAUSE_the_new_scope_allows_the_inner_x_to_shadow_the_outer_x)) {
 
   // setup
-  Env UUT;
   const auto name = "x"s;
-  const auto nodeOuter = UUT.insertLeaf(name, dummyFQNameProvider);
+  EnvNode nodeOuter(name);
+  EnvNode scopesNode("foo");
+  EnvNode nodeInner(name);
+  Env UUT; // env shall life shorter than it's nodes
+  UUT.insertLeaf(nodeOuter);
 
   // exercise
-  Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
-  const auto nodeInner = UUT.insertLeaf(name, dummyFQNameProvider);
+  Env::AutoScope dummy(UUT, scopesNode, Env::AutoScope::insertScopeAndDescent);
+  const auto success = UUT.insertLeaf(nodeInner);
 
   // verify
-  EXPECT_TRUE(nullptr!=nodeInner) << amend(UUT);
-  EXPECT_NE(nodeOuter, nodeInner) << amend(UUT);
+  EXPECT_TRUE(success) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME4(
@@ -183,16 +212,18 @@ TEST(EnvTest, MAKE_TEST_NAME4(
     find_finds_the_x_at_the_root_scope,
     because_the_new_scope_did_not_add_a_new_x_which_would_shadow_the_x_at_root)) {
   // setup
-  Env UUT;
   const auto name = "x"s;
-  const auto insertedNode = UUT.insertLeaf(name, dummyFQNameProvider);
+  EnvNode scopesNode("foo");
+  EnvNode insertedNode(name);
+  Env UUT; // env shall life shorter than it's nodes
+  UUT.insertLeaf(insertedNode);
 
   // exercise
-  Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
-  const auto foundEntiy = UUT.find(name);
+  Env::AutoScope scope(UUT, scopesNode, Env::AutoScope::insertScopeAndDescent);
+  const auto foundNode = UUT.find(name);
 
   // verify
-  EXPECT_EQ(insertedNode, foundEntiy) << amend(UUT);
+  EXPECT_EQ(&insertedNode, foundNode) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME(
@@ -201,98 +232,99 @@ TEST(EnvTest, MAKE_TEST_NAME(
     find_behaves_as_if_the_part_from_pushScope_to_popScope_did_not_happen)) {
 
   // setup
-  Env UUT;
   const auto name = "x"s;
-  const auto outerNode = UUT.insertLeaf(name, dummyFQNameProvider);
-  EnvNode** innerNode{};
+  EnvNode scopesNode("foo");
+  EnvNode outerNode(name);
+  EnvNode innerNode(name);
+  Env UUT; // env shall life shorter than it's nodes
+  UUT.insertLeaf(outerNode);
 
   // exercise
   {
-    Env::AutoScope scope(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
-    innerNode = UUT.insertLeaf(name, dummyFQNameProvider);
+    Env::AutoScope dummy(UUT, scopesNode, Env::AutoScope::insertScopeAndDescent);
+    UUT.insertLeaf(innerNode);
   }
   const auto foundNode = UUT.find(name);
 
   // verify
-  EXPECT_EQ(foundNode, outerNode) << amend(UUT) <<
-    "\ninnerNode=" << (void*)innerNode;
+  EXPECT_EQ(&outerNode, foundNode) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME1(
     descentScope)) {
-  Env UUT;
-  EnvNode** insertedNode{};
-  EnvNode** foundNode{};
+  EnvNode insertedNode("x");
+  EnvNode scopesNode("foo");
+  Env UUT; // env shall life shorter than it's nodes
   {
-    Env::AutoScope scopeFoo(UUT, "foo", Env::AutoScope::insertScopeAndDescent);
-    insertedNode = UUT.insertLeaf("x", dummyFQNameProvider);
+    Env::AutoScope dummy(UUT, scopesNode, Env::AutoScope::insertScopeAndDescent);
+    UUT.insertLeaf(insertedNode);
   }
+  EnvNode* foundNode{};
   {
-    Env::AutoScope scopeFoo(UUT, "foo", Env::AutoScope::descentScope);
+    Env::AutoScope dummy(UUT, scopesNode, Env::AutoScope::descentScope);
     foundNode = UUT.find("x");
   }
-  EXPECT_EQ(insertedNode, foundNode) << amend(UUT);
+  EXPECT_EQ(&insertedNode, foundNode) << amend(UUT);
 }
 
 TEST(EnvTest, MAKE_TEST_NAME2(
     insertLeaf_or_AutoScope_constructor_is_called,
     it_returns_the_fully_qualified_name_of_the_just_inserted_name)) {
-  EnvNode** dummyNode;
 
   string spec = "insertLeaf called at root";
   {
     // setup
-    Env UUT;
-    const FQNameProvider* fqNameProvider;
+    EnvNode node("foo");
+    Env UUT; // env shall life shorter than it's nodes
 
     // exercise
-    UUT.insertLeaf("foo", fqNameProvider);
+    UUT.insertLeaf(node);
 
     // verify
-    EXPECT_EQ(".foo", fqNameProvider->fqName()) << amend(UUT) << amendSpec(spec);
+    EXPECT_EQ(".foo", node.fqName()) << amend(UUT) << amendSpec(spec);
   }
 
   spec = "AutoScope at root";
   {
     // setup
-    Env UUT;
-    const FQNameProvider* fqNameProvider;
+    EnvNode node("foo");
+    Env UUT; // env shall life shorter than it's nodes
 
     // exercise
-    Env::AutoScope scopeFoo(UUT, "foo", fqNameProvider, dummyNode,
-      Env::AutoScope::insertScopeAndDescent);
+    Env::AutoScope dummy(UUT, node, Env::AutoScope::insertScopeAndDescent);
 
     // verify
-    EXPECT_EQ(".foo", fqNameProvider->fqName()) << amend(UUT) << amendSpec(spec);
+    EXPECT_EQ(".foo", node.fqName()) << amend(UUT) << amendSpec(spec);
   }
 
   spec = "insertLeaf called at a descendant of root";
   {
     // setup
-    Env UUT;
-    const FQNameProvider* fqNameProvider;
-    Env::AutoScope scopeFoo(UUT, "othername", Env::AutoScope::insertScopeAndDescent);
+    EnvNode scopesNode("othername");
+    EnvNode node("foo");
+    Env UUT; // env shall life shorter than it's nodes
+    Env::AutoScope dummy(UUT, scopesNode, Env::AutoScope::insertScopeAndDescent);
 
     // exercise
-    UUT.insertLeaf("foo", fqNameProvider);
+    UUT.insertLeaf(node);
 
     // verify
-    EXPECT_EQ(".othername.foo", fqNameProvider->fqName()) << amend(UUT) << amendSpec(spec);
+    EXPECT_EQ(".othername.foo", node.fqName()) << amend(UUT) << amendSpec(spec);
   }
 
   spec = "AutoScope at a descendant of root";
   {
     // setup
-    Env UUT;
-    const FQNameProvider* fqNameProvider;
-    Env::AutoScope scopeOther(UUT, "othername", Env::AutoScope::insertScopeAndDescent);
+    EnvNode scopesNode("othername");
+    EnvNode node("foo");
+    Env UUT; // env shall life shorter than it's nodes
+    Env::AutoScope dummy1(UUT, scopesNode, Env::AutoScope::insertScopeAndDescent);
 
     // exercise
-    Env::AutoScope scopeFoo(UUT, "foo", fqNameProvider, dummyNode,
-      Env::AutoScope::insertScopeAndDescent);
+    Env::AutoScope dummy2(UUT, node, Env::AutoScope::insertScopeAndDescent);
 
     // verify
-    EXPECT_EQ(".othername.foo", fqNameProvider->fqName()) << amend(UUT) << amendSpec(spec);
+    EXPECT_EQ(".othername.foo", node.fqName()) << amend(UUT) << amendSpec(spec);
   }
 }
 
@@ -313,8 +345,7 @@ TEST(EnvTest, MAKE_TEST_NAME1(
       "{"
         "currentScope=$root, "
         "rootScope={"
-          "name=$root, "
-          "m_node=null"
+          "$root"
         "}"
       "}",
       ss.str()) << amendSpec(spec);
@@ -323,17 +354,25 @@ TEST(EnvTest, MAKE_TEST_NAME1(
   spec = "Example with a few scopes and a few leafs";
   {
     // setup
-    Env UUT;
-    UUT.insertLeaf("1", dummyFQNameProvider);
+    EnvNode node1("1");
+    EnvNode node2("2_");
+    EnvNode node21("2_1");
+    EnvNode node22("2_2");
+    EnvNode node3("3");
+    EnvNode node4("4_");
+    EnvNode node41("4_1");
+    Env UUT; // env shall life shorter than it's nodes
+
+    UUT.insertLeaf(node1);
     {
-      Env::AutoScope scope(UUT, "2_", Env::AutoScope::insertScopeAndDescent);
-      UUT.insertLeaf("2_1", dummyFQNameProvider);
-      UUT.insertLeaf("2_2", dummyFQNameProvider);
+      Env::AutoScope dummy(UUT, node2, Env::AutoScope::insertScopeAndDescent);
+      UUT.insertLeaf(node21);
+      UUT.insertLeaf(node22);
     }
-    UUT.insertLeaf("3", dummyFQNameProvider);
+    UUT.insertLeaf(node3);
     {
-      Env::AutoScope scope(UUT, "4_", Env::AutoScope::insertScopeAndDescent);
-      UUT.insertLeaf("4_1", dummyFQNameProvider);
+      Env::AutoScope dummy(UUT, node4, Env::AutoScope::insertScopeAndDescent);
+      UUT.insertLeaf(node41);
     }
 
     stringstream ss;
@@ -344,18 +383,18 @@ TEST(EnvTest, MAKE_TEST_NAME1(
     // verify
     EXPECT_EQ(
       "{currentScope=$root, "
-      "rootScope="
-      "{name=$root, m_node=null, children={"
-      "{name=1, m_node=null}, "
-      "{name=2_, m_node=null, children={"
-      "{name=2_1, m_node=null}, "
-      "{name=2_2, m_node=null}"
-      "}}, "
-      "{name=3, m_node=null}, "
-      "{name=4_, m_node=null, children={"
-      "{name=4_1, m_node=null}"
-      "}}"
-      "}}"
+        "rootScope="
+        "{$root, children={"
+          "{1}, "
+          "{2_, children={"
+            "{2_1}, "
+            "{2_2}"
+          "}}, "
+          "{3}, "
+          "{4_, children={"
+            "{4_1}"
+          "}}"
+        "}}"
       "}",
       ss.str());
   }
