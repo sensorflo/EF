@@ -105,6 +105,9 @@ unique_ptr<AstObject> Driver::addImplicitMain(unique_ptr<AstNode> ast) {
   auto astAfterParseAsObject =
     unique_ptr<AstObject>(
       dynamic_cast<AstObject*>(ast.release()));
+  if (!astAfterParseAsObject) {
+    Error::throwError(*m_errorHandler, Error::eObjectExpected);
+  }
 
   auto astAfterImplicitMain =
     unique_ptr<AstObject>(
