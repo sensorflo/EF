@@ -29,7 +29,8 @@ public:
   ErrorHandler& errorHandler();
 
   void compile();
-  int scannAndParse(AstNode*& ast);
+  /** Guarantess to return non-null */
+  std::unique_ptr<AstNode> scanAndParse();
   void doSemanticAnalysis(AstNode& ast);
   void generateIr(AstNode& ast);
   int jitExecMain();
@@ -50,23 +51,31 @@ private:
 
   NEITHER_COPY_NOR_MOVEABLE(Driver);
 
+  /** Guarantess to return non-null */
+  std::unique_ptr<AstObject> addImplicitMain(std::unique_ptr<AstNode> ast);
   std::basic_ostream<char>& print(const yy::location& loc);
-  
+
   /** The name of the file being parsed */
   std::string m_fileName;
-  ErrorHandler& m_errorHandler;
-  Env& m_env;
+  /** Guaranteed to be non-null */
+  std::unique_ptr<ErrorHandler> m_errorHandler;
+  /** Guaranteed to be non-null */
+  std::unique_ptr<Env> m_env;
   bool m_gotError;
   bool m_gotWarning;
-  /** We're _not_ the owner */
   std::basic_ostream<char>& m_ostream;
+  /** Guaranteed to be non-NULL */
   std::unique_ptr<Scanner> m_scanner;
+  /** Guaranteed to be non-NULL */
   std::unique_ptr<TokenFilter> m_tokenFilter;
-  AstNode* m_astRoot;
-  ParserExt& m_parserExt;
-  /** We're the owner. Guaranteed to be non-NULL */
-  yy::Parser* m_parser;
-  IrGen& m_irGen;
-  SemanticAnalizer& m_semanticAnalizer;
+  std::unique_ptr<AstNode> m_astRootFromParser;
+  /** Guaranteed to be non-NULL */
+  std::unique_ptr<ParserExt> m_parserExt;
+  /** Guaranteed to be non-NULL */
+  std::unique_ptr<yy::Parser> m_parser;
+  /** Guaranteed to be non-null */
+  std::unique_ptr<IrGen> m_irGen;
+  /** Guaranteed to be non-null */
+  std::unique_ptr<SemanticAnalizer> m_semanticAnalizer;
   std::unique_ptr<ExecutionEngineApater> m_executionEngine;
 };

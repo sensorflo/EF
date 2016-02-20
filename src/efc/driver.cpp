@@ -26,18 +26,26 @@ extern void yyinitializeParserLoc(string* filename);
 /** \param osstream caller keeps ownership */
 Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
   m_fileName(fileName),
-  m_errorHandler(*new ErrorHandler),
-  m_env(*new Env),
+  m_errorHandler(make_unique<ErrorHandler>()),
+  m_env(make_unique<Env>()),
   m_gotError(false),
   m_gotWarning(false),
   m_ostream(ostream ? *ostream : cerr),
-  m_scanner(std::make_unique<Scanner>(*this)),
-  m_tokenFilter(std::make_unique<TokenFilter>(*m_scanner.get())),
-  m_astRoot(NULL),
-  m_parserExt(*new ParserExt(m_env, m_errorHandler)),
-  m_parser(new Parser(*m_tokenFilter.get(), *this, m_parserExt, m_astRoot)),
-  m_irGen(*new IrGen(m_errorHandler)),
-  m_semanticAnalizer(*new SemanticAnalizer(m_env, m_errorHandler)) {
+  m_scanner(make_unique<Scanner>(*this)),
+  m_tokenFilter(make_unique<TokenFilter>(*m_scanner.get())),
+  m_parserExt(make_unique<ParserExt>(*m_env, *m_errorHandler)),
+  m_parser(make_unique<Parser>(*m_tokenFilter.get(), *this, *m_parserExt, m_astRootFromParser)),
+  m_irGen(make_unique<IrGen>(*m_errorHandler)),
+  m_semanticAnalizer(make_unique<SemanticAnalizer>(*m_env, *m_errorHandler)) {
+
+  assert(m_errorHandler);
+  assert(m_env);
+  assert(m_scanner);
+  assert(m_tokenFilter);
+  assert(m_parser);
+  assert(m_parserExt);
+  assert(m_irGen);
+  assert(m_semanticAnalizer);
 
   // Ctor/Dtor must RAII yyin and m_parser
 
@@ -52,12 +60,6 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
 
 Driver::~Driver() {
   fclose(yyin);
-  delete &m_irGen;
-  delete &m_semanticAnalizer;
-  delete m_parser;
-  delete &m_parserExt;
-  delete &m_env;
-  delete &m_errorHandler;
 }
 
 Scanner& Driver::scanner() {
@@ -65,51 +67,63 @@ Scanner& Driver::scanner() {
 }
 
 ErrorHandler& Driver::errorHandler() {
-  return m_errorHandler;
+  return *m_errorHandler;
 }
 
 /** Compile = scann & parse & do semantic analysis & generate IR. */
 void Driver::compile() {
   try {
-    AstNode* astAfterParse = NULL;
-    int retParse = scannAndParse(astAfterParse);
-    if (retParse) {
-      throw runtime_error("parse failed");
-    }
-    assert(astAfterParse);
+    auto astAfterParse = scanAndParse();
 
     // It's currently implied that the module wants an implicit main method
-    AstObject* astAfterImplicitMain =
-      m_parserExt.mkMainFunDef(dynamic_cast<AstObject*>(astAfterParse));
+    const auto astAfterImplicitMain = addImplicitMain(move(astAfterParse));
 
     doSemanticAnalysis(*astAfterImplicitMain);
+
     generateIr(*astAfterImplicitMain);
   }
   catch (BuildError&) {
     // nop -- BuildError exception is handled below by printing any errors
   }
-  if (!m_errorHandler.errors().empty()) {
-    m_ostream << "Build error(s): " << m_errorHandler << "\n";
+  if (!m_errorHandler->errors().empty()) {
+    m_ostream << "Build error(s): " << *m_errorHandler << "\n";
   }
 }
 
-int Driver::scannAndParse(AstNode*& ast) {
+unique_ptr<AstNode> Driver::scanAndParse() {
   // the parser internally drives the scanner
-  int ret = m_parser->parse(); // as a side-effect, sets m_astRoot
-  ast = m_astRoot;
-  return ret;
+  const auto errorCode = m_parser->parse(); // as a side-effect, sets m_astRootFromParser
+  if (errorCode) {
+    throw runtime_error("parse failed");
+  }
+  assert(m_astRootFromParser);
+  return move(m_astRootFromParser);
+}
+
+unique_ptr<AstObject> Driver::addImplicitMain(unique_ptr<AstNode> ast) {
+  assert(ast);
+  auto astAfterParseAsObject =
+    unique_ptr<AstObject>(
+      dynamic_cast<AstObject*>(ast.release()));
+
+  auto astAfterImplicitMain =
+    unique_ptr<AstObject>(
+      m_parserExt->mkMainFunDef(astAfterParseAsObject.release()));
+  assert(astAfterImplicitMain);
+  return astAfterImplicitMain;
 }
 
 void Driver::doSemanticAnalysis(AstNode& ast) {
-  m_semanticAnalizer.analyze(ast);
+  m_semanticAnalizer->analyze(ast);
 }
 
 void Driver::generateIr(AstNode& ast) {
-  auto module = m_irGen.genIr(ast);
+  auto module = m_irGen->genIr(ast);
   m_executionEngine = std::make_unique<ExecutionEngineApater>(move(module));
 }
 
 int Driver::jitExecMain() {
+  assert(m_executionEngine);
   return m_executionEngine->jitExecFunction(".main");
 }
 

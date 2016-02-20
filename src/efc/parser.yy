@@ -52,7 +52,7 @@ scanner doesn't need to know */
 /** \internal Signature of yylex is redundantely defined here by %lex-param
 and by declaration of free function yylex */
 %lex-param { TokenStream& tokenStream }
-%parse-param { TokenStream& tokenStream } { Driver& driver } { ParserExt& parserExt } { AstNode*& astRoot }
+%parse-param { TokenStream& tokenStream } { Driver& driver } { ParserExt& parserExt } { std::unique_ptr<AstNode>& astRoot }
 
 %code provides
 {
@@ -196,7 +196,7 @@ opt
 %start program;
 
 program
-  : block_expr END_OF_FILE                          { astRoot = $1; }
+  : block_expr END_OF_FILE                          { astRoot = std::unique_ptr<AstNode>($1); }
   ;
 
 block_expr

@@ -40,16 +40,16 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstObject* astRoot,
   }
   EXPECT_FALSE(foreignExceptionThrown) <<
     "Expecting either no exceptions or Error exception\n" <<
-    amendSpec(spec) << amendAst(astRoot) << amend(UUT.m_errorHandler) <<
+    amendSpec(spec) << amendAst(astRoot) << amend(*UUT.m_errorHandler) <<
     "\nexceptionwhat: " << excptionwhat;
-  const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();
+  const ErrorHandler::Container& errors = UUT.m_errorHandler->errors();
   EXPECT_EQ(1, errors.size()) <<
     "Expecting exactly one error\n" << 
-    amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(astRoot);
+    amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
   if ( !errors.empty() ) {
     EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
-      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(astRoot) <<
-      amend(UUT.m_env);
+      amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot) <<
+      amend(*UUT.m_env);
   }
 }
 
@@ -103,7 +103,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
     "\n" <<
     "errorMsgFromDriver: \"" << errorMsgFromDriver.str() << "\"\n" <<
     "EF program: \"" << well_formed_ef_program << "\"\n" <<
-    amend(UUT.m_env) << amendAst(UUT.m_astRoot);
+    amend(*UUT.m_env) << amendAst(UUT.m_astRootFromParser);
 }
 
 TEST(DriverSystemTest, MAKE_TEST_NAME(

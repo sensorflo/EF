@@ -30,13 +30,12 @@ void testParseReportsError(const string efProgram, Error::No expectedErrorNo,
   const string& spec) {
   // setup
   DriverOnTmpFile driver(efProgram);
-  AstNode* dummy = NULL;
   bool foreignThrow = false;
   string excptionwhat;
 
   // exercise
   try {
-    driver.d().scannAndParse(dummy);
+    driver.d().scanAndParse();
   }
 
   // verify that ...
@@ -86,28 +85,20 @@ void testParse(const string& efProgram, const string& expectedAst,
   DriverOnTmpFile driver(efProgram);
 
   // exercise
-  AstNode* actualAst = NULL;
-  int res = driver.d().scannAndParse(actualAst);
+  const auto actualAst = driver.d().scanAndParse();
 
   // verify
   EXPECT_FALSE( driver.d().gotError() ) <<
     "Scanner or parser reported an error to Driver\n" <<
     amendSpec(spec) <<
     amendEfProgram(efProgram);
-  EXPECT_EQ( 0, res) <<
-    explainParseErrorCode(res) <<
-    amendSpec(spec) <<
-    amendEfProgram(efProgram);
   ASSERT_TRUE( NULL != actualAst ) <<
-    "scannAndParse did return NULL as actualAst\n" <<
+    "scanAndParse did return NULL as actualAst\n" <<
     amendSpec(spec) <<
     amendEfProgram(efProgram);
   EXPECT_EQ( expectedAst, actualAst->toStr() ) <<
     amendSpec(spec) <<
     amendEfProgram(efProgram);
-
-  // tear down
-  if (actualAst) { delete actualAst; }
 }
 
 #define TEST_PARSE( efProgram, expectedAst, spec ) \
@@ -118,14 +109,14 @@ void testParse(const string& efProgram, const string& expectedAst,
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_nop,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "nop", ":;nop", "trivial example");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_return_expression,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "return  42$", ":;return(42)", "trivial example");
   TEST_PARSE( "return($42)", ":;return(42)", "trivial example");
@@ -135,7 +126,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_literal,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "42", ":;42", "trivial example");
   TEST_PARSE( "false", ":;0bool", "trivial example");
@@ -144,7 +135,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_cast_expression,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "int(false)", ":;int(0bool)", "trivial example");
   TEST_PARSE( "bool(0)", ":;bool(0)", "trivial example");
@@ -152,14 +143,14 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_math_expression,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "42 + 77", ":;+(42 77)", "trivial example");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_math_expression,
-    scannAndParse,
+    scanAndParse,
     it_honors_precedence_and_associativity) ) {
 
   // for each precedence level
@@ -318,7 +309,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_sequence,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "Sequence are created not by ';'/newlines, but by the context "
@@ -342,7 +333,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_math_expression_containin_brace_grouping,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "(1+2)*(3-4)/5", ":;/(*(;+(1 2) ;-(3 4)) 5)",
     "(...) group: 1) overwrites precedence and 2) turns sub_expr into exp");
@@ -354,7 +345,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_operator_in_call_syntax,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   // unary
   TEST_PARSE( "op!(x)", ":;!(x)", "");
@@ -377,7 +368,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_assignement_expression,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "foo = 42", ":;=(foo 42)", "trivial example");
   TEST_PARSE( "foo = 1+2*3", ":;=(foo +(1 *(2 3)))", "simple example");
@@ -386,7 +377,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_reference_to_a_symbol_within_a_function_definition,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   string spec = "example with one argument and a body just returning the arg";
   TEST_PARSE( "fun foo: (x:int) int ,= x$", ":;fun(foo ((x int)) int :;x)", spec);
@@ -394,7 +385,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_function_definition,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "example with zero arguments and trivial body";
@@ -421,7 +412,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_function_call,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "trivial example";
@@ -435,7 +426,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_data_definition,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "trivial example with explicit init value";
@@ -543,7 +534,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 // note that it is a semantic error, not a grammar error
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_data_definition_WITH_multiple_same_arg,
-    scannAndParse,
+    scanAndParse,
     reports_eSameArgWasDefinedMultipleTimes) ) {
   TEST_PARSE_REPORTS_ERROR(
     "val foo ,=42 ,=42$", Error::eSameArgWasDefinedMultipleTimes, "");
@@ -557,7 +548,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_ifelse_flow_control_expression,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
 
   // common used variations
@@ -614,7 +605,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     an_loop_control_expression,
-    scannAndParse,
+    scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   TEST_PARSE( "while    x :  y $"  , ":;:while(x :;y)", "");
   TEST_PARSE( "while    x do y end", ":;:while(x :;y)", "");

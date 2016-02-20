@@ -40,7 +40,7 @@ public:
   using Driver::m_errorHandler;
   using Driver::m_parserExt;
   using Driver::m_env;
-  using Driver::m_astRoot;
+  using Driver::m_astRootFromParser;
 };
 
 /** Wrapps a Driver which operates on a temporary file with the content given
