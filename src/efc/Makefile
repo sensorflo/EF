@@ -31,7 +31,7 @@ EFC_SRCS = driver.cpp parserext.cpp ast.cpp errorhandler.cpp objtype.cpp \
   efc.cpp executionengineadapter.cpp parserapiext.cpp tokenstreamlookahead.cpp \
   tokenfilter.cpp storageduration.cpp object.cpp envinserter.cpp \
 	signatureaugmentor.cpp irgenforwarddeclarator.cpp envnode.cpp \
-	freefromastobject.cpp
+	freefromastobject.cpp objtype2.cpp
 
 EFC_GEN_SRCS = parser.cpp scanner.cpp
 
@@ -81,7 +81,7 @@ EFCTEST_TESTS_SRCS = errorhandlertest.cpp objtypetest.cpp parserexttest.cpp	\
   scannertest.cpp scannerandparsertest.cpp astprintertest.cpp	\
 	driversystemtest.cpp semanticanalizertest.cpp irgentest.cpp	\
   tutorialstest.cpp tokenstreamlookaheadtest.cpp tokenfiltertest.cpp \
-	envtest.cpp asttest.cpp
+	envtest.cpp asttest.cpp objtype2test.cpp
 
 EFCTEST_TESTHELPERS_SRCS = literaltokenstream.cpp tokentesthelper.cpp
 

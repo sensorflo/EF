@@ -11,11 +11,15 @@ namespace {
 
 template<typename T>
 vector<unique_ptr<T>> toUniquePtrs(vector<T*>* src) {
-  assert(src);
+  if ( !src ) {
+    return {};
+  }
   const unique_ptr<vector<T*>> dummy(src);
   vector<unique_ptr<T>> dst{};
   for ( const auto& element : *src ) {
-    dst.emplace_back(element);
+    if ( element ) {
+      dst.emplace_back(element);
+    }
   }
   return dst;
 }
@@ -23,13 +27,7 @@ vector<unique_ptr<T>> toUniquePtrs(vector<T*>* src) {
 template<typename T>
 vector<unique_ptr<T>> toUniquePtrs(T* src1 = nullptr, T* src2 = nullptr,
   T* src3 = nullptr, T* src4 = nullptr, T* src5 = nullptr) {
-  vector<unique_ptr<T>> dst{};
-  for ( const auto& element : {src1, src2, src3, src4, src5} ) {
-    if ( element ) {
-      dst.emplace_back(element);
-    }
-  }
-  return dst;
+  return toUniquePtrs(new vector<T*>{src1, src2, src3, src4, src5});
 }
 
 thread_local std::shared_ptr<const ObjTypeFunda> objTypeFundaVoid =
