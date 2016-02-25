@@ -9,6 +9,7 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   case StorageDuration::eStatic: return os << "static";
   case StorageDuration::eMember: return os << "member";
   }
+  return os;
 }
 
 

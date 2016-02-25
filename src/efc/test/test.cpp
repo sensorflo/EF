@@ -79,6 +79,7 @@ AstObject* createAccessTo(AstObject* obj, Access access) {
     assert(false);
     return nullptr;
   }
+  return nullptr;
 }
 
 AstObject* createAccessTo(const string& symbolName, Access access) {
