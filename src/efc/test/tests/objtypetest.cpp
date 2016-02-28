@@ -60,17 +60,6 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)
       ).toStr());
-
-  // class
-  EXPECT_EQ("class(foo)",
-    ObjTypeClass("foo").toStr());
-  EXPECT_EQ("class(foo int)",
-    ObjTypeClass("foo",
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
-  EXPECT_EQ("class(foo int bool)",
-    ObjTypeClass("foo",
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)).toStr());
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
@@ -170,34 +159,6 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
-
-  // class <-> class
-  // ---------------
-  const auto& class1 = ObjTypeClass("samename");
-  const auto& class2 = ObjTypeClass("samename");
-  TEST_MATCH( "", ObjType::eFullMatch, class1, class1);
-  TEST_MATCH( "", ObjType::eNoMatch, class1, class2);
-
-  // class <-> other / other <-> class
-  // ---------------------------------
-  TEST_MATCH( "", ObjType::eNoMatch,
-    class1,
-    ObjTypeFunda(ObjTypeFunda::eInt));
-  TEST_MATCH( "", ObjType::eNoMatch,
-    ObjTypeFunda(ObjTypeFunda::eInt),
-    class1);
-  TEST_MATCH( "", ObjType::eNoMatch,
-    class1,
-    ObjTypeFun(ObjTypeFun::createArgs()));
-  TEST_MATCH( "", ObjType::eNoMatch,
-    ObjTypeFun(ObjTypeFun::createArgs()),
-    class1);
-  TEST_MATCH( "", ObjType::eNoMatch,
-    class1,
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
-  TEST_MATCH( "", ObjType::eNoMatch,
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
-    class1);
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(
@@ -381,14 +342,4 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   EXPECT_EQ( 64, ObjTypeFunda(ObjTypeFunda::eDouble).size());
 
   EXPECT_EQ( -1, ObjTypeFun(ObjTypeFun::createArgs()).size());
-
-  const auto& charType = make_shared<ObjTypeFunda>(ObjTypeFunda::eChar);
-  const auto& intType = make_shared<ObjTypeFunda>(ObjTypeFunda::eInt);
-  EXPECT_EQ( 0, ObjTypeClass("").size());
-  EXPECT_EQ(
-    charType->size(),
-    ObjTypeClass("", charType).size());
-  EXPECT_EQ(
-    charType->size() + intType->size(),
-    ObjTypeClass("", charType, intType).size());
 }

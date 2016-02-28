@@ -22,7 +22,6 @@ private:
   void visit(AstObjTypeSymbol& symbol) override;
   void visit(AstObjTypeQuali& quali) override;
   void visit(AstObjTypePtr& ptr) override;
-  void visit(AstClassDef& class_) override;
 
   Env& m_env;
 };

@@ -44,7 +44,3 @@ void SignatureAugmentor::visit(AstObjTypePtr& ptr) {
   ptr.createAndSetObjType();
 }
 
-void SignatureAugmentor::visit(AstClassDef& class_) {
-  AstDefaultIterator::visit(class_);
-  class_.createAndSetObjType();
-}

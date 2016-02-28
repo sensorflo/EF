@@ -860,60 +860,6 @@ void AstObjTypePtr::createAndSetObjType() {
   m_objType = make_shared<ObjTypePtr>(m_pointee->objTypeAsSp());
 }
 
-AstClassDef::AstClassDef(const std::string& name, std::vector<AstDataDef*>* dataMembers) :
-  m_name(name),
-  m_dataMembers(toUniquePtrs(dataMembers)) {
-  for (const auto& dataMember: m_dataMembers) {
-    assert(dataMember);
-  }
-}
-
-AstClassDef::AstClassDef(const std::string& name, AstDataDef* m1, AstDataDef* m2,
-  AstDataDef* m3) :
-  m_name(name),
-  m_dataMembers(toUniquePtrs(m1, m2, m3)) {
-}
-
-void AstClassDef::printValueTo(ostream& os, GeneralValue value) const {
-  // The liskov substitution principle is broken here
-  assert(false);
-}
-
-bool AstClassDef::isValueInRange(GeneralValue value) const {
-  // The liskov substitution principle is broken here
-  assert(false);
-}
-
-AstObject* AstClassDef::createDefaultAstObjectForSemanticAnalizer() {
-  // The liskov substitution principle is broken here
-  assert(false);
-}
-
-llvm::Value* AstClassDef::createLlvmValueFrom(GeneralValue value) const {
-  // not yet implemented
-  assert(false);
-}
-
-const ObjTypeClass& AstClassDef::objType() const {
-  assert(m_objType);
-  return *m_objType;
-}
-
-shared_ptr<const ObjType> AstClassDef::objTypeAsSp() const {
-  return m_objType;
-}
-
-void AstClassDef::createAndSetObjType() {
-  assert(!m_objType); // it doesn't make sense to set it twice
-  std::vector<std::shared_ptr<const ObjType>> dataMembersCopy;
-  for (const auto& dataMember : m_dataMembers) {
-    assert(dataMember);
-    assert(dataMember->objTypeAsSp());
-    dataMembersCopy.emplace_back(dataMember->objTypeAsSp());
-  }
-  m_objType = make_shared<ObjTypeClass>(m_name, move(dataMembersCopy));
-}
-
 /** The vectors's elements must be non-null */
 AstCtList::AstCtList(vector<AstObject*>* childs) :
   m_childs(childs ? childs : new vector<AstObject*>() ) {
@@ -984,7 +930,6 @@ void AstIf::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstObjTypeSymbol::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstObjTypeQuali::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstObjTypePtr::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
-void AstClassDef::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstLoop::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstReturn::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
 void AstCtList::accept(AstConstVisitor& visitor) const { visitor.visit(*this); }
@@ -1003,7 +948,6 @@ void AstIf::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstObjTypeSymbol::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstObjTypeQuali::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstObjTypePtr::accept(AstVisitor& visitor) { visitor.visit(*this); }
-void AstClassDef::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstLoop::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstReturn::accept(AstVisitor& visitor) { visitor.visit(*this); }
 void AstCtList::accept(AstVisitor& visitor) { visitor.visit(*this); }

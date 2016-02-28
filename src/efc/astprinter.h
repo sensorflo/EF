@@ -33,7 +33,6 @@ private:
   virtual void visit(const AstObjTypeSymbol& symbol);
   virtual void visit(const AstObjTypeQuali& quali);
   virtual void visit(const AstObjTypePtr& ptr);
-  virtual void visit(const AstClassDef& class_);
-  
+
   std::basic_ostream<char>& m_os;
 };

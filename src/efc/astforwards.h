@@ -19,4 +19,3 @@ class AstObjType;
 class AstObjTypeSymbol;
 class AstObjTypeQuali;
 class AstObjTypePtr;
-class AstClassDef;

@@ -171,13 +171,3 @@ void AstPrinter::visit(const AstObjTypePtr& ptr) {
   m_os << "raw*";
   ptr.pointee().accept(*this);
 }
-
-void AstPrinter::visit(const AstClassDef& class_) {
-  m_os << "class(" << class_.name();
-  for (const auto& dataMember: class_.dataMembers()) {
-    m_os << " ";
-    dataMember->accept(*this);
-  }
-  m_os << ")";
-}
-

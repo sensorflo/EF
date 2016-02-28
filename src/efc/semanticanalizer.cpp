@@ -501,14 +501,6 @@ void SemanticAnalizer::visit(AstObjTypePtr& ptr) {
   postConditionCheck(ptr);
 }
 
-void SemanticAnalizer::visit(AstClassDef& class_) {
-  preConditionCheck(class_);
-  for (const auto& dataMember: class_.dataMembers()) {
-    setAccessAndCallAcceptOn(*dataMember, Access::eIgnoreValueAndAddr);
-  }
-  postConditionCheck(class_);
-}
-
 void SemanticAnalizer::preConditionCheck(const AstObject& node) {
   assert(node.accessFromAstParent()!=Access::eYetUndefined);
 }

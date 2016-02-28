@@ -43,7 +43,6 @@ private:
   virtual void visit(AstObjTypeSymbol& symbol);
   virtual void visit(AstObjTypeQuali& quali);
   virtual void visit(AstObjTypePtr& ptr);
-  virtual void visit(AstClassDef& class_);
 
   llvm::Value* callAcceptOn(AstObject&);
 

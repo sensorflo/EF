@@ -38,7 +38,8 @@ public:
   // initialized with T2.
   // currently wrongly only used to check whether cast is eligible. It should
   // e.g. also be used to check if initializer is eligible, but it currently
-  // isn't.
+  // isn't. Or from another view, all constructors are currently explicit and
+  // can be 'called' with an explicit cast only.
   virtual bool hasConstructor(const ObjType2& param1ObjType) const =0;
 
 protected:

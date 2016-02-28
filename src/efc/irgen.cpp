@@ -492,10 +492,6 @@ void IrGen::visit(AstObjTypePtr& ptr) {
   assert(false); // not yet implemented
 }
 
-void IrGen::visit(AstClassDef& class_){
-  assert(false); // not yet implemented
-}
-
 void IrGen::allocateAndInitLocalIrObjectFor(AstObject& astObject,
   Value* irInitializer, const string& name) {
   if ( astObject.object().isStoredInMemory() ) {

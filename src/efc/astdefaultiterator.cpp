@@ -135,11 +135,3 @@ void AstDefaultIterator::visit(AstObjTypePtr& ptr) {
   ptr.pointee().accept(*this);
 }
 
-void AstDefaultIterator::visit(AstClassDef& class_) {
-  if ( m_visitor ) {
-    class_.accept(*m_visitor);
-  }
-  for (const auto& dataMember : class_.dataMembers()) {
-    dataMember->accept(*this);
-  }
-}

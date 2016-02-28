@@ -722,45 +722,6 @@ public:
   virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
 };
 
-/** Definition of a class. See also ObjTypeClass */
-class AstClassDef : public AstObjType {
-public:
-  AstClassDef(const std::string& name, std::vector<AstDataDef*>* dataMembers);
-  AstClassDef(const std::string& name, AstDataDef* m1 = nullptr,
-    AstDataDef* m2 = nullptr, AstDataDef* m3 = nullptr);
-
-  // -- overrides for AstNode
-  void accept(AstVisitor& visitor) override;
-  void accept(AstConstVisitor& visitor) const override;
-
-  // -- overrides for AstObjType
-  void printValueTo(std::ostream& os, GeneralValue value) const override;
-  bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer() override;
-
-  const ObjTypeClass& objType() const override;
-  std::shared_ptr<const ObjType> objTypeAsSp() const override; 
-  void createAndSetObjType() override;
-
-  // -- childs of this node
-  const std::string& name() const { return m_name; }
-  const std::vector<std::unique_ptr<AstDataDef>>& dataMembers() const {
-    return m_dataMembers; }
-
-private:
-  // -- to implement overrides
-  std::shared_ptr<const ObjTypeClass> m_objType;
-
-  // -- childs of this node
-  const std::string m_name;
-  /** Pointers are garanteed to be non null.*/
-  const std::vector<std::unique_ptr<AstDataDef>> m_dataMembers;
-
-  // decorations for IrGen
-public:
-  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
-};
-
 /** Maybe it should be an independent type, that is not derive from AstNode */
 class AstCtList : public AstNode {
 public:

@@ -22,7 +22,6 @@ public:
   void visit(AstObjTypeSymbol& symbol) override {};
   void visit(AstObjTypeQuali& quali) override {};
   void visit(AstObjTypePtr& ptr) override {};
-  void visit(AstClassDef& class_) override {};
 
 protected:
   NopAstVisitor() = default;
@@ -48,7 +47,6 @@ public:
   void visit(const AstObjTypeSymbol& symbol) override {};
   void visit(const AstObjTypeQuali& quali) override {};
   void visit(const AstObjTypePtr& ptr) override {};
-  void visit(const AstClassDef& class_) override {};
 
 protected:
   NopAstConstVisitor() = default;

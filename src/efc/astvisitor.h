@@ -23,7 +23,6 @@ public:
   virtual void visit(AstObjTypeSymbol& symbol) =0;
   virtual void visit(AstObjTypeQuali& quali) =0;
   virtual void visit(AstObjTypePtr& ptr) =0;
-  virtual void visit(AstClassDef& class_) =0;
 
 protected:
   AstVisitor() = default;
@@ -53,7 +52,6 @@ public:
   virtual void visit(const AstObjTypeSymbol& symbol) =0;
   virtual void visit(const AstObjTypeQuali& quali) =0;
   virtual void visit(const AstObjTypePtr& ptr) =0;
-  virtual void visit(const AstClassDef& class_) =0;
 
 protected:
   AstConstVisitor() = default;

@@ -136,11 +136,4 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
     AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt)), spec);
   EXPECT_TOSTR_EQ( "raw*foo",
     AstObjTypePtr(new AstObjTypeSymbol("foo")), spec);
-
-  spec = "AstClassDef";
-  EXPECT_TOSTR_EQ( "class(foo)", AstClassDef("foo"), spec);
-  EXPECT_TOSTR_EQ( "class(foo data(m1 int ()) data(m2 int ()))",
-    AstClassDef("foo",
-      new AstDataDef("m1", ObjTypeFunda::eInt),
-      new AstDataDef("m2", ObjTypeFunda::eInt)), spec);
 }
