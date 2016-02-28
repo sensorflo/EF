@@ -240,6 +240,7 @@ void SemanticAnalizer::visit(AstNumber& number) {
   // -- responsibility 2: semantic analysis
   // should allready have been caught by scanner, thus assert.  Intended to
   // catch errors when AST is build by hand instead by parser, e.g. in tests.
+  // todo: move to impl of funda type
   assert(number.declaredAstObjType().isValueInRange(number.value()));
 
   // -- responsibility 3: set properties of associated object: type, sd, access

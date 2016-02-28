@@ -1,5 +1,6 @@
 #include "objtype2.h"
 #include "template.h"
+#include "llvm/IR/Type.h"
 #include <array>
 using namespace std;
 
@@ -28,6 +29,32 @@ namespace {
 
   class PtrObjType;
 
+  array<string, ObjType2::eTypeCnt> typeToNameMap{};
+
+  bool isTypeToNameMapInitialzied = false;
+
+  void initTypeToNameMap() {
+    if ( !isTypeToNameMapInitialzied ) {
+      isTypeToNameMapInitialzied = true;
+      typeToNameMap[ObjType2::eVoid] = "void";
+      typeToNameMap[ObjType2::eNoreturn] = "noreturn";
+      typeToNameMap[ObjType2::eBool] = "bool";
+      typeToNameMap[ObjType2::eChar] = "char";
+      typeToNameMap[ObjType2::eInt] = "int";
+      typeToNameMap[ObjType2::eDouble] = "double";
+      typeToNameMap[ObjType2::eNullptr] = "Nullptr";
+      for ( const auto& x : typeToNameMap ) {
+        assert(!x.empty());
+      }
+    }
+  }
+
+  const string& toName(ObjType2::EFundaType fundaType) {
+    initTypeToNameMap();
+    return typeToNameMap[fundaType];
+  }
+
+
   /** Adorns a given object type with given qualifiers. */
   class QualiAdornedObjType2: public ObjType2 {
   public:
@@ -46,6 +73,12 @@ namespace {
     }
 
     // -- overrides for ObjType2
+    bool isVoidIgnoringQualifiers() const override {
+      return m_objTypeWithoutQualifiers.isVoidIgnoringQualifiers();
+    }
+    bool isNoreturnIgnoringQualifiers() const override {
+      return m_objTypeWithoutQualifiers.isNoreturnIgnoringQualifiers();
+    }
     Qualifier qualifiers() const override {
       return m_qualifiers; }
     const ObjType2& canonicalObjTypeWithoutQualifiers() const override {
@@ -57,8 +90,11 @@ namespace {
     const ObjType2& canonicalObjTypeWithTheseQualifiers(Qualifier qualifiers) const override {
       return m_objTypeWithoutQualifiers.canonicalObjTypeWithTheseQualifiers(qualifiers);
     }
-    virtual bool hasConstructor(const ObjType2& param1ObjType) const override {
+    bool hasConstructor(const ObjType2& param1ObjType) const override {
       return m_objTypeWithoutQualifiers.hasConstructor(param1ObjType);
+    }
+    bool hasMember(int op) const override {
+      return m_objTypeWithoutQualifiers.hasMember(op);
     }
 
   private:
@@ -131,25 +167,192 @@ namespace {
   /** For all object type templates defining EF's fundamental types */
   class FundaDef: public ZeroArgObjTypeTemplateDef {
   public:
-    FundaDef(ObjTypeFunda::EType type) :
+    enum EClass {
+      eAbstract,
+
+      eScalar,
+        eArithmetic,
+          eIntegral,
+          eFloatingPoint,
+
+      eStoredAsIntegral, // applies also to unity types
+
+      eFunction
+    };
+
+    FundaDef(EFundaType type) :
       m_type{type},
-      m_name{AstObjTypeSymbol::toName(type)} {
+      m_name{toName(type)} {
     }
 
     // -- overrides for ObjTypeTemplate
     const string& name() const override { return m_name; }
 
     // -- overrides for ObjType2
+    bool isVoidIgnoringQualifiers() const override {
+      return m_type==eVoid;
+    }
+    bool isNoreturnIgnoringQualifiers() const override {
+      return m_type==eNoreturn;
+    }
     bool hasConstructor(const ObjType2& param1ObjType) const override;
+    bool hasMember(int op) const override {
+      // general rules
+      // -------------
+      // Abstract objects have no members at all.
+      if (is(eAbstract)) {
+        return false;
+      }
+      // The addrof operator is applicable to every concrete (i.e. non-abstact)
+      // object. It's never a member function operator
+      else if (op==AstOperator::eAddrOf) {
+        return true;
+      }
+
+      // rules specific per object type
+      // ------------------------------
+      // For abbreviation, summarazied / grouped by operator class and optionally
+      // by object type class
+      switch (AstOperator::classOf(static_cast<AstOperator::EOperation>(op))) {
+      case AstOperator::eAssignment: return is(eScalar);
+      case AstOperator::eArithmetic: return is(eArithmetic);
+      case AstOperator::eLogical: return m_type == eBool;
+      case AstOperator::eComparison: return is(eScalar);
+      case AstOperator::eMemberAccess:
+        if      (op==AstOperator::eDeref)  return false;
+        else if (op==AstOperator::eAddrOf) return !is(eAbstract);
+        else    break;
+      case AstOperator::eOther: break;
+      }
+
+      assert(false);
+      return false;
+    }
 
     // -- misc
-    ObjTypeFunda::EType type() const {
+    EFundaType type() const {
       return m_type;
+    }
+    bool is(EClass class_) const {
+      switch(m_type) {
+      case eVoid:
+      case eNoreturn:
+        return class_==eAbstract;
+      case eBool:
+      case eChar:
+      case eInt:
+      case eDouble:
+      case eNullptr:
+        if (class_==eScalar) return true;
+        if (class_==eStoredAsIntegral) return m_type!=eDouble;
+        switch(m_type) {
+        case eBool:
+        case eChar:
+        case eNullptr:
+          return false;
+        case eInt:
+        case eDouble:
+          if (class_==eArithmetic) return true;
+          if (class_==eIntegral) return m_type==eInt;
+          if (class_==eFloatingPoint) return m_type==eDouble;
+          return false;
+        default: assert(false);
+        }
+        return false;
+      case eTypeCnt: assert(false);
+      }
+      return false;
+    }
+    /** Size in bits */
+    int size() const {
+      switch(m_type) {
+      case eVoid:
+      case eNoreturn: return -1;
+      case eNullptr: return 0;
+      case eBool: return 1;
+      case eChar: return 8;
+      case eInt: return 32;
+      case eDouble: return 64;
+      case eTypeCnt: assert(false);
+      }
+      assert(false);
+      return -1;
+    }
+    void printValueTo(std::ostream& os, GeneralValue value) const {
+      if ( m_type == eChar) {
+        os << "'" << char(value) << "'";
+      } else if ( m_type == eNullptr ) {
+        os << "nullptr";
+      } else {
+        os << value;
+        switch ( m_type ) {
+        case eBool: os << "bool"; break;
+        case eInt: break;
+        case eDouble: os << "d"; break;
+        default: assert(false);
+        }
+      }
+    }
+    bool isValueInRange(GeneralValue value) const {
+      switch (m_type) {
+      case eVoid: return false;
+      case eNoreturn: return false;
+      case eBool: return value==0.0 || value==1.0;
+      case eChar: return (0<=value && value<=0xFF) && (value==static_cast<int>(value));
+      case eInt: return (INT_MIN<=value && value<=INT_MAX) && (value==static_cast<int>(value));
+      case eDouble: return true;
+      case eNullptr: return value==0.0;
+      case eTypeCnt: assert(false);
+      };
+      assert(false);
+      return false;
     }
 
   private:
-    const ObjTypeFunda::EType m_type;
+    const EFundaType m_type;
     const string& m_name;
+
+    // -- decorations for IrGen
+  public:
+    llvm::Value* createLlvmValueFrom(GeneralValue value) const override {
+      switch (m_type) {
+      case eBool:
+      case eChar:
+      case eInt:
+        return llvm::ConstantInt::get(llvm::getGlobalContext(),
+          llvm::APInt(size(), value));
+        break;
+      case eDouble:
+        return llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(value));
+        break;
+      default:
+        assert(false);
+      }
+      return nullptr;
+    }
+    llvm::Type* llvmType() const override {
+      switch (m_type) {
+      case eVoid:
+        return llvm::Type::getVoidTy(llvm::getGlobalContext());
+      case eNoreturn:
+        assert(false);
+        return nullptr;
+      case eBool:
+        return llvm::Type::getInt1Ty(llvm::getGlobalContext());
+      case eChar:
+        return llvm::Type::getInt8Ty(llvm::getGlobalContext());
+      case eInt:
+        return llvm::Type::getInt32Ty(llvm::getGlobalContext());
+      case eDouble:
+        return llvm::Type::getDoubleTy(llvm::getGlobalContext());
+      case eNullptr:
+      case eTypeCnt:
+        assert(false);
+        return nullptr;
+      };
+      assert(false);
+      return nullptr;
+    }
   };
 
   /** Builtin raw pointer object type. */
@@ -166,6 +369,18 @@ namespace {
 
     // -- overrides for ObjType2
     bool hasConstructor(const ObjType2& param1ObjType) const override;
+    bool hasMember(int op) const override {
+      // Currently there is no pointer arithmetic, and currently pointers can't
+      // be subtracted from each other, thus currently dereferencing is the only
+      // member function of the pointer type
+      return op==AstOperator::eDeref;
+    }
+
+    // -- misc
+    bool isValueInRange(GeneralValue value) const {
+      return (value<=UINT_MAX) &&
+        (value==static_cast<GeneralValue>(static_cast<unsigned int>(value)));
+    }
 
   private:
     const ObjType2& m_templateArg;
@@ -227,25 +442,26 @@ namespace {
   unique_ptr<PtrTemplateDef> PtrTemplateDef::m_instance;
 
   vector<unique_ptr<FundaDef>> makeFundas() {
-    vector<unique_ptr<FundaDef>> fundas{ObjTypeFunda::eTypeCnt};
-    for ( auto type = 0; type<ObjTypeFunda::eTypeCnt; ++type ) {
-      if ( type==ObjTypeFunda::ePointer ) {
-        continue;
-      }
+    vector<unique_ptr<FundaDef>> fundas{ObjType2::eTypeCnt};
+    for ( auto type = 0; type<ObjType2::eTypeCnt; ++type ) {
       fundas[type] = make_unique<FundaDef>(
-        static_cast<ObjTypeFunda::EType>(type));
+        static_cast<ObjType2::EFundaType>(type));
     }
     return fundas;
   }
   const auto fundaScalarTemplateDefs = makeFundas();
 
-  const ObjTypeTemplate& ObjTypeTemplateDefOf(ObjTypeFunda::EType type) {
-    if ( type==ObjTypeFunda::ePointer ) {
-      return PtrTemplateDef::instance();
+  const ObjTypeTemplate& ObjTypeTemplateDefOf(ObjType2::EFundaType type) {
+    const auto& def = fundaScalarTemplateDefs.at(type);
+    assert(def);
+    return *def;
+  }
+
+  const ObjTypeTemplate* ObjTypeTemplateDefOf(const string& name) {
+    if ( name==ObjType2::ptrTypeName ) {
+      return &PtrTemplateDef::instance();
     } else {
-      const auto& def = fundaScalarTemplateDefs.at(type);
-      assert(def);
-      return *def;
+      return nullptr;
     }
   }
 
@@ -256,25 +472,24 @@ namespace {
     if (typeid(FundaDef) == typeidOfParam1) {
       const auto& param1 = static_cast<const FundaDef&>(param1Canonical);
       switch (m_type) {
-      case ObjTypeFunda::eVoid: // fall through
-      case ObjTypeFunda::eNoreturn: return false;
+      case eVoid: // fall through
+      case eNoreturn: return false;
 
-      case ObjTypeFunda::eBool: // fall through
-      case ObjTypeFunda::eChar: // fall through
-      case ObjTypeFunda::eDouble: // fall through
-      case ObjTypeFunda::eInt:
-        if ( (param1.m_type == ObjTypeFunda::eVoid) ||
-          (param1.m_type == ObjTypeFunda::eNoreturn) ) {
+      case eBool: // fall through
+      case eChar: // fall through
+      case eDouble: // fall through
+      case eInt:
+        if ( (param1.m_type == eVoid) ||
+          (param1.m_type == eNoreturn) ) {
           return false;
         } else {
-          return param1.m_type != ObjTypeFunda::eNullptr;
+          return param1.m_type != eNullptr;
         }
 
-      case ObjTypeFunda::eNullptr:
-        return param1.m_type == ObjTypeFunda::eNullptr;
+      case eNullptr:
+        return param1.m_type == eNullptr;
 
-      case ObjTypeFunda::ePointer:
-      case ObjTypeFunda::eTypeCnt:
+      case eTypeCnt:
         assert(false);
       }
       return false;
@@ -282,9 +497,9 @@ namespace {
 
     else if (typeid(PtrObjType) == typeidOfParam1) {
       switch (m_type) {
-      case ObjTypeFunda::eVoid:
-      case ObjTypeFunda::eNoreturn:
-      case ObjTypeFunda::eNullptr: return false;
+      case eVoid:
+      case eNoreturn:
+      case eNullptr: return false;
       default: return true;
       }
     }
@@ -304,12 +519,12 @@ namespace {
       const auto param1 = static_cast<const FundaDef*>(&param1Canonical);
       assert(param1);
       switch (param1->type()) {
-      case ObjTypeFunda::eVoid: return false;
-      case ObjTypeFunda::eNoreturn: return false;
-      case ObjTypeFunda::eBool: return true;
-      case ObjTypeFunda::eChar: return true;
-      case ObjTypeFunda::eInt: return true;
-      case ObjTypeFunda::eDouble: return true;
+      case eVoid: return false;
+      case eNoreturn: return false;
+      case eBool: return true;
+      case eChar: return true;
+      case eInt: return true;
+      case eDouble: return true;
       default: assert(false);
       }
     }
@@ -333,6 +548,8 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
   templateParamType.printTo(os);
   return os;
 }
+
+const std::string ObjType2::ptrTypeName = "raw*";
 
 TemplateParamType::MatchType ObjType2::match(const TemplateParamType& lhs) const {
   return lhs.match2(*this);
@@ -365,17 +582,25 @@ AstObjTypeRef::AstObjTypeRef(string name, Qualifier qualifiers,
   m_name{move(name)},
   m_qualifiers{qualifiers},
   m_templateArgs{toUniquePtrs(templateArgs)},
-  m_def{},
+  m_def{ObjTypeTemplateDefOf(m_name)},
   m_canonicalObjType{},
   m_canonicalObjTypeWithMyQualifiers{} {
 }
 
-AstObjTypeRef::AstObjTypeRef(ObjTypeFunda::EType type, Qualifier qualifiers,
+AstObjTypeRef::AstObjTypeRef(std::string name, Qualifier qualifiers,
+  const TemplateParamType* templateArg1,
+  const TemplateParamType* templateArg2,
+  const TemplateParamType* templateArg3) :
+  AstObjTypeRef(move(name), qualifiers,
+    new vector<const TemplateParamType*>{templateArg1, templateArg2, templateArg3}){
+}
+
+AstObjTypeRef::AstObjTypeRef(EFundaType type, Qualifier qualifiers,
   TemplateParamsRaw* templateArgs) :
   AstObjTypeRef{ObjTypeTemplateDefOf(type), qualifiers, templateArgs} {
 }
 
-AstObjTypeRef::AstObjTypeRef(ObjTypeFunda::EType type, Qualifier qualifiers,
+AstObjTypeRef::AstObjTypeRef(EFundaType type, Qualifier qualifiers,
   const TemplateParamType* templateArg1,
   const TemplateParamType* templateArg2,
   const TemplateParamType* templateArg3) :
@@ -387,6 +612,7 @@ AstObjTypeRef::AstObjTypeRef(const ObjTypeTemplate& def,
   Qualifier qualifiers,
   TemplateParamsRaw* templateArgs) :
   AstObjTypeRef{def.name(), qualifiers, templateArgs} {
+  assert(!m_def); // it dosn't make sense to set it twice
   m_def = &def;
 }
 
@@ -397,6 +623,7 @@ AstObjTypeRef::AstObjTypeRef(const ObjTypeTemplate& def,
   const TemplateParamType* templateArg3) :
   AstObjTypeRef{def.name(), qualifiers,
     new vector<const TemplateParamType*>{templateArg1, templateArg2, templateArg3}} {
+  assert(!m_def); // it dosn't make sense to set it twice
   m_def = &def;
 }
 
@@ -441,4 +668,16 @@ const ObjType2& AstObjTypeRef::canonicalObjTypeInclQualifiers() const {
 
 bool AstObjTypeRef::hasConstructor(const ObjType2& param1ObjType) const {
   return canonicalObjTypeWithoutQualifiers().hasConstructor(param1ObjType);
+}
+
+bool AstObjTypeRef::hasMember(int op) const {
+  return canonicalObjTypeWithoutQualifiers().hasMember(op);
+}
+
+llvm::Value* AstObjTypeRef::createLlvmValueFrom(GeneralValue value) const {
+  return canonicalObjTypeWithoutQualifiers().createLlvmValueFrom(value);
+}
+
+llvm::Type* AstObjTypeRef::llvmType() const {
+  return canonicalObjTypeWithoutQualifiers().llvmType();
 }

@@ -2,6 +2,10 @@
 #include "templateparamtype.h"
 
 class ObjTypeTemplate;
+namespace llvm {
+  class Type;
+  class Value;
+}
 
 class ObjType2: public TemplateParamType {
 public:
@@ -9,6 +13,18 @@ public:
     eNoQualifier = 0,
     eMutable = 1,
     eQualifierCnt
+  };
+  enum EFundaType {
+    eVoid,
+    eNoreturn,
+
+    eBool,
+    eChar,
+    eInt,
+    eDouble,
+    eNullptr, // not itself a pointer
+
+    eTypeCnt
   };
 
   // -- overrides for TemplateParamType
@@ -23,6 +39,8 @@ public:
   MatchType match2(const ObjType2& other) const override;
 
   // -- new virtual methods
+  virtual bool isVoidIgnoringQualifiers() const { return false; }
+  virtual bool isNoreturnIgnoringQualifiers() const { return false; }
   virtual Qualifier qualifiers() const =0;
   // TODO: depending on the ObjType, it is the template wich instanciated me
   // or the template I am refering to.
@@ -41,9 +59,20 @@ public:
   // isn't. Or from another view, all constructors are currently explicit and
   // can be 'called' with an explicit cast only.
   virtual bool hasConstructor(const ObjType2& param1ObjType) const =0;
+  /** Returns true if this type has the given operator as member function.
+  Assumes that the operands are of the same type, except for logical and/or,
+  where the rhs additionaly can be of type noreturn.*/
+  virtual bool hasMember(int op) const = 0;
+
+  static const std::string ptrTypeName;
 
 protected:
   ObjType2() = default;
+
+  // -- decorations for IrGen
+public:
+  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const { assert(false); }
+  virtual llvm::Type* llvmType() const { assert(false); }
 };
 
 /** Refers to an specific ObjType2 via the name of an ObjTypeTemplate, a list
@@ -53,9 +82,13 @@ public:
   using TemplateParamsRaw = std::vector<const TemplateParamType*>;
   AstObjTypeRef(std::string name, Qualifier qualifiers = eNoQualifier,
     TemplateParamsRaw* templateArgs = nullptr);
-  AstObjTypeRef(ObjTypeFunda::EType type, Qualifier qualifiers = eNoQualifier,
+  AstObjTypeRef(std::string name, Qualifier qualifiers,
+    const TemplateParamType* templateArg1,
+    const TemplateParamType* templateArg2 = nullptr,
+    const TemplateParamType* templateArg3 = nullptr);
+  AstObjTypeRef(EFundaType type, Qualifier qualifiers = eNoQualifier,
     TemplateParamsRaw* templateArgs = nullptr);
-  AstObjTypeRef(ObjTypeFunda::EType type, Qualifier qualifiers,
+  AstObjTypeRef(EFundaType type, Qualifier qualifiers,
     const TemplateParamType* templateArg1,
     const TemplateParamType* templateArg2 = nullptr,
     const TemplateParamType* templateArg3 = nullptr);
@@ -77,10 +110,11 @@ public:
   Qualifier qualifiers() const override { return m_qualifiers; }
   const ObjType2& canonicalObjTypeWithoutQualifiers() const override;
   const ObjType2& canonicalObjTypeInclQualifiers() const override;
-  virtual bool hasConstructor(const ObjType2& param1ObjType) const override;
+  bool hasConstructor(const ObjType2& param1ObjType) const override;
+  bool hasMember(int op) const override;
 
   // -- childs of this node
-  virtual const std::string& name() const { return m_name; }
+  const std::string& name() const { return m_name; }
   // qualifiers is 'overrides for ObjType2'
 
   // -- misc
@@ -99,4 +133,9 @@ private:
   ObjTypeTemplate const * m_def;
   mutable ObjType2 const * m_canonicalObjType;
   mutable ObjType2 const * m_canonicalObjTypeWithMyQualifiers;
+
+  // -- decorations for IrGen
+public:
+  llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
+  llvm::Type* llvmType() const override;
 };

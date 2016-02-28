@@ -38,49 +38,49 @@ TEST(ObjType2Test, MAKE_TEST_NAME1(printTo)) {
   };
 
   // fundamental types
-  EXPECT_EQ("void",     toStr(AstObjTypeRef(ObjTypeFunda::eVoid)));
-  EXPECT_EQ("noreturn", toStr(AstObjTypeRef(ObjTypeFunda::eNoreturn)));
-  EXPECT_EQ("char",     toStr(AstObjTypeRef(ObjTypeFunda::eChar)));
-  EXPECT_EQ("int",      toStr(AstObjTypeRef(ObjTypeFunda::eInt)));
-  EXPECT_EQ("bool",     toStr(AstObjTypeRef(ObjTypeFunda::eBool)));
-  EXPECT_EQ("double",   toStr(AstObjTypeRef(ObjTypeFunda::eDouble)));
-  EXPECT_EQ("Nullptr",  toStr(AstObjTypeRef(ObjTypeFunda::eNullptr)));
+  EXPECT_EQ("void",     toStr(AstObjTypeRef(ObjType2::eVoid)));
+  EXPECT_EQ("noreturn", toStr(AstObjTypeRef(ObjType2::eNoreturn)));
+  EXPECT_EQ("char",     toStr(AstObjTypeRef(ObjType2::eChar)));
+  EXPECT_EQ("int",      toStr(AstObjTypeRef(ObjType2::eInt)));
+  EXPECT_EQ("bool",     toStr(AstObjTypeRef(ObjType2::eBool)));
+  EXPECT_EQ("double",   toStr(AstObjTypeRef(ObjType2::eDouble)));
+  EXPECT_EQ("Nullptr",  toStr(AstObjTypeRef(ObjType2::eNullptr)));
 
   // adorned with qualifiers
-  EXPECT_EQ("mut-int", toStr(AstObjTypeRef(ObjTypeFunda::eInt, ObjType2::eMutable)));
+  EXPECT_EQ("mut-int", toStr(AstObjTypeRef(ObjType2::eInt, ObjType2::eMutable)));
 
   // pointer type
   EXPECT_EQ("raw*int",
     toStr(
       AstObjTypeRef(
-        ObjTypeFunda::ePointer,
+        ObjType2::ptrTypeName,
         ObjType2::eNoQualifier,
-        new AstObjTypeRef(ObjTypeFunda::eInt))));
+        new AstObjTypeRef(ObjType2::eInt))));
 }
 
 TEST(ObjType2Test, MAKE_TEST_NAME1(match)) {
 
   // fundamental types
   TEST_MATCH("type and qualifier fully match", ObjType2::eFullMatch,
-    AstObjTypeRef(ObjTypeFunda::eInt),
-    AstObjTypeRef(ObjTypeFunda::eInt));
+    AstObjTypeRef(ObjType2::eInt),
+    AstObjTypeRef(ObjType2::eInt));
   TEST_MATCH("type mismatch", ObjType2::eNoMatch,
-    AstObjTypeRef(ObjTypeFunda::eInt),
-    AstObjTypeRef(ObjTypeFunda::eDouble));
+    AstObjTypeRef(ObjType2::eInt),
+    AstObjTypeRef(ObjType2::eDouble));
   TEST_MATCH("type matches, but dst has weaker qualifiers", ObjType2::eMatchButAllQualifiersAreWeaker,
-    AstObjTypeRef(ObjTypeFunda::eInt),
-    AstObjTypeRef(ObjTypeFunda::eInt, ObjType2::eMutable));
+    AstObjTypeRef(ObjType2::eInt),
+    AstObjTypeRef(ObjType2::eInt, ObjType2::eMutable));
   TEST_MATCH("type matches, but dst has stronger qualifiers", ObjType2::eMatchButAnyQualifierIsStronger,
-    AstObjTypeRef(ObjTypeFunda::eInt, ObjType2::eMutable),
-    AstObjTypeRef(ObjTypeFunda::eInt));
+    AstObjTypeRef(ObjType2::eInt, ObjType2::eMutable),
+    AstObjTypeRef(ObjType2::eInt));
 
   // pointer
-  AstObjTypeRef uut_raw_ptr_1_to_int(ObjTypeFunda::ePointer, ObjType2::eNoQualifier,
-    new AstObjTypeRef(ObjTypeFunda::eInt));
-  AstObjTypeRef uut_raw_ptr_2_to_int(ObjTypeFunda::ePointer, ObjType2::eNoQualifier,
-    new AstObjTypeRef(ObjTypeFunda::eInt));
-  AstObjTypeRef uut_raw_ptr_3_to_double(ObjTypeFunda::ePointer, ObjType2::eNoQualifier,
-    new AstObjTypeRef(ObjTypeFunda::eDouble));
+  AstObjTypeRef uut_raw_ptr_1_to_int(ObjType2::ptrTypeName, ObjType2::eNoQualifier,
+    new AstObjTypeRef(ObjType2::eInt));
+  AstObjTypeRef uut_raw_ptr_2_to_int(ObjType2::ptrTypeName, ObjType2::eNoQualifier,
+    new AstObjTypeRef(ObjType2::eInt));
+  AstObjTypeRef uut_raw_ptr_3_to_double(ObjType2::ptrTypeName, ObjType2::eNoQualifier,
+    new AstObjTypeRef(ObjType2::eDouble));
   TEST_MATCH("type and qualifier fully match", ObjType2::eFullMatch,
     uut_raw_ptr_1_to_int, uut_raw_ptr_2_to_int);
   TEST_MATCH("type mismatch", ObjType2::eNoMatch,
@@ -92,7 +92,6 @@ TEST(ObjType2Test, MAKE_TEST_NAME1(match)) {
   //   Also function pointers cannot yet be used to call functions
 }
 
-
 TEST(ObjType2Test, MAKE_TEST_NAME1(
     hasConstructor)) {
 
@@ -100,54 +99,54 @@ TEST(ObjType2Test, MAKE_TEST_NAME1(
   // =========================
   {
     struct T {
-      ObjTypeFunda::EType UUT;
-      ObjTypeFunda::EType arg;
+      ObjType2::EFundaType UUT;
+      ObjType2::EFundaType arg;
       bool hasConstructor;
     };
     vector<T> inputSpecs{
       // abstract types have no members
-      {ObjTypeFunda::eVoid, ObjTypeFunda::eVoid, false},
-      {ObjTypeFunda::eVoid, ObjTypeFunda::eNoreturn, false},
-      {ObjTypeFunda::eVoid, ObjTypeFunda::eBool, false},
-      {ObjTypeFunda::eVoid, ObjTypeFunda::eChar, false},
-      {ObjTypeFunda::eVoid, ObjTypeFunda::eInt, false},
-      {ObjTypeFunda::eVoid, ObjTypeFunda::eDouble, false},
-      {ObjTypeFunda::eNoreturn, ObjTypeFunda::eVoid, false},
-      {ObjTypeFunda::eNoreturn, ObjTypeFunda::eNoreturn, false},
-      {ObjTypeFunda::eNoreturn, ObjTypeFunda::eBool, false},
-      {ObjTypeFunda::eNoreturn, ObjTypeFunda::eChar, false},
-      {ObjTypeFunda::eNoreturn, ObjTypeFunda::eInt, false},
-      {ObjTypeFunda::eNoreturn, ObjTypeFunda::eDouble, false},
+      {ObjType2::eVoid, ObjType2::eVoid, false},
+      {ObjType2::eVoid, ObjType2::eNoreturn, false},
+      {ObjType2::eVoid, ObjType2::eBool, false},
+      {ObjType2::eVoid, ObjType2::eChar, false},
+      {ObjType2::eVoid, ObjType2::eInt, false},
+      {ObjType2::eVoid, ObjType2::eDouble, false},
+      {ObjType2::eNoreturn, ObjType2::eVoid, false},
+      {ObjType2::eNoreturn, ObjType2::eNoreturn, false},
+      {ObjType2::eNoreturn, ObjType2::eBool, false},
+      {ObjType2::eNoreturn, ObjType2::eChar, false},
+      {ObjType2::eNoreturn, ObjType2::eInt, false},
+      {ObjType2::eNoreturn, ObjType2::eDouble, false},
         // TODO: what about Nullptr?
 
         // all concrete fundamental types
         // - can _not_ be constructed with an abstract type
         // - can be constructed with a concrete fundamental type
-      {ObjTypeFunda::eBool, ObjTypeFunda::eVoid, false},
-      {ObjTypeFunda::eBool, ObjTypeFunda::eNoreturn, false},
-      {ObjTypeFunda::eBool, ObjTypeFunda::eBool, true},
-      {ObjTypeFunda::eBool, ObjTypeFunda::eChar, true},
-      {ObjTypeFunda::eBool, ObjTypeFunda::eInt, true},
-      {ObjTypeFunda::eBool, ObjTypeFunda::eDouble, true},
-      {ObjTypeFunda::eChar, ObjTypeFunda::eVoid, false},
-      {ObjTypeFunda::eChar, ObjTypeFunda::eNoreturn, false},
-      {ObjTypeFunda::eChar, ObjTypeFunda::eBool, true},
-      {ObjTypeFunda::eChar, ObjTypeFunda::eChar, true},
-      {ObjTypeFunda::eChar, ObjTypeFunda::eInt, true},
-      {ObjTypeFunda::eChar, ObjTypeFunda::eDouble, true},
-      {ObjTypeFunda::eInt, ObjTypeFunda::eVoid, false},
-      {ObjTypeFunda::eInt, ObjTypeFunda::eNoreturn, false},
-      {ObjTypeFunda::eInt, ObjTypeFunda::eBool, true},
-      {ObjTypeFunda::eInt, ObjTypeFunda::eChar, true},
-      {ObjTypeFunda::eInt, ObjTypeFunda::eInt, true},
-      {ObjTypeFunda::eInt, ObjTypeFunda::eDouble, true},
-      {ObjTypeFunda::eInt, ObjTypeFunda::eDouble, true},
-      {ObjTypeFunda::eDouble, ObjTypeFunda::eVoid, false},
-      {ObjTypeFunda::eDouble, ObjTypeFunda::eNoreturn, false},
-      {ObjTypeFunda::eDouble, ObjTypeFunda::eBool, true},
-      {ObjTypeFunda::eDouble, ObjTypeFunda::eChar, true},
-      {ObjTypeFunda::eDouble, ObjTypeFunda::eInt, true},
-      {ObjTypeFunda::eDouble, ObjTypeFunda::eDouble, true}};
+      {ObjType2::eBool, ObjType2::eVoid, false},
+      {ObjType2::eBool, ObjType2::eNoreturn, false},
+      {ObjType2::eBool, ObjType2::eBool, true},
+      {ObjType2::eBool, ObjType2::eChar, true},
+      {ObjType2::eBool, ObjType2::eInt, true},
+      {ObjType2::eBool, ObjType2::eDouble, true},
+      {ObjType2::eChar, ObjType2::eVoid, false},
+      {ObjType2::eChar, ObjType2::eNoreturn, false},
+      {ObjType2::eChar, ObjType2::eBool, true},
+      {ObjType2::eChar, ObjType2::eChar, true},
+      {ObjType2::eChar, ObjType2::eInt, true},
+      {ObjType2::eChar, ObjType2::eDouble, true},
+      {ObjType2::eInt, ObjType2::eVoid, false},
+      {ObjType2::eInt, ObjType2::eNoreturn, false},
+      {ObjType2::eInt, ObjType2::eBool, true},
+      {ObjType2::eInt, ObjType2::eChar, true},
+      {ObjType2::eInt, ObjType2::eInt, true},
+      {ObjType2::eInt, ObjType2::eDouble, true},
+      {ObjType2::eInt, ObjType2::eDouble, true},
+      {ObjType2::eDouble, ObjType2::eVoid, false},
+      {ObjType2::eDouble, ObjType2::eNoreturn, false},
+      {ObjType2::eDouble, ObjType2::eBool, true},
+      {ObjType2::eDouble, ObjType2::eChar, true},
+      {ObjType2::eDouble, ObjType2::eInt, true},
+      {ObjType2::eDouble, ObjType2::eDouble, true}};
 
     for ( const auto& inputSpec : inputSpecs ) {
       AstObjTypeRef UUT{inputSpec.UUT};
@@ -165,20 +164,20 @@ TEST(ObjType2Test, MAKE_TEST_NAME1(
   // =====================================
   {
     struct T {
-      ObjTypeFunda::EType arg;
+      ObjType2::EFundaType arg;
       bool hasConstructor; // pointer has constructor for arg
       bool hasConstructorInverseDirection; // arg has constructor for pointer
     };
     vector<T> inputSpecs{
-      {ObjTypeFunda::eVoid,     false, false},
-      {ObjTypeFunda::eNoreturn, false, false},
-      {ObjTypeFunda::eBool,     true , true},
-      {ObjTypeFunda::eChar,     true , true},
-      {ObjTypeFunda::eInt,      true , true},
-      {ObjTypeFunda::eDouble,   true , true}};
+      {ObjType2::eVoid,     false, false},
+      {ObjType2::eNoreturn, false, false},
+      {ObjType2::eBool,     true , true},
+      {ObjType2::eChar,     true , true},
+      {ObjType2::eInt,      true , true},
+      {ObjType2::eDouble,   true , true}};
 
-    AstObjTypeRef UUT{ObjTypeFunda::ePointer, ObjType2::eNoQualifier,
-        new AstObjTypeRef(ObjTypeFunda::eVoid)};
+    AstObjTypeRef UUT{ObjType2::ptrTypeName, ObjType2::eNoQualifier,
+        new AstObjTypeRef(ObjType2::eVoid)};
 
     for ( const auto& inputSpec : inputSpecs ) {
       AstObjTypeRef arg{inputSpec.arg};
@@ -195,20 +194,20 @@ TEST(ObjType2Test, MAKE_TEST_NAME1(
   // ================================
   // same types
   {
-    AstObjTypeRef UUT{ObjTypeFunda::ePointer, ObjType2::eNoQualifier,
-        new AstObjTypeRef(ObjTypeFunda::eVoid)};
-    AstObjTypeRef arg{ObjTypeFunda::ePointer, ObjType2::eNoQualifier,
-        new AstObjTypeRef(ObjTypeFunda::eVoid)};
+    AstObjTypeRef UUT{ObjType2::ptrTypeName, ObjType2::eNoQualifier,
+        new AstObjTypeRef(ObjType2::eVoid)};
+    AstObjTypeRef arg{ObjType2::ptrTypeName, ObjType2::eNoQualifier,
+        new AstObjTypeRef(ObjType2::eVoid)};
     EXPECT_TRUE( UUT.hasConstructor(arg))
       << "arg: " << arg << "\n"
       << "UUT: " << UUT << "\n";
   }
   // pointee types differ
   {
-    AstObjTypeRef UUT{ObjTypeFunda::ePointer, ObjType2::eNoQualifier,
-        new AstObjTypeRef(ObjTypeFunda::eVoid)};
-    AstObjTypeRef arg{ObjTypeFunda::ePointer, ObjType2::eNoQualifier,
-        new AstObjTypeRef(ObjTypeFunda::eDouble)};
+    AstObjTypeRef UUT{ObjType2::ptrTypeName, ObjType2::eNoQualifier,
+        new AstObjTypeRef(ObjType2::eVoid)};
+    AstObjTypeRef arg{ObjType2::ptrTypeName, ObjType2::eNoQualifier,
+        new AstObjTypeRef(ObjType2::eDouble)};
     EXPECT_FALSE( UUT.hasConstructor(arg))
       << "arg: " << arg << "\n"
       << "UUT: " << UUT << "\n";
