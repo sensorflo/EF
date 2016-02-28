@@ -1,8 +1,8 @@
 #include "objtype2.h"
+#include "template.h"
 #include <array>
 using namespace std;
 
-// copy from ast.cpp
 namespace {
 
   template<typename T>
@@ -25,6 +25,8 @@ namespace {
     T* src3 = nullptr, T* src4 = nullptr, T* src5 = nullptr) {
     return toUniquePtrs(new vector<T*>{src1, src2, src3, src4, src5});
   }
+
+  class PtrObjType;
 
   /** Adorns a given object type with given qualifiers. */
   class QualiAdornedObjType2: public ObjType2 {
@@ -67,9 +69,9 @@ namespace {
   /** Intended to be derived from. The derived class represents the
   unqualified canonical object type, while this base adds its canonical
   qualified variants. */
-  class CanonicalObjTyp2 : public ObjType2 {
+  class CanonicalObjType : public ObjType2 {
   public:
-    CanonicalObjTyp2() {
+    CanonicalObjType() {
       for ( auto qualifier = 1; qualifier<eQualifierCnt; ++qualifier ) {
         m_qualifiedVariants.emplace_back(
           make_unique<QualiAdornedObjType2>(
@@ -102,8 +104,8 @@ namespace {
 
   /** For ObjType(Template)Defs which have zero template arguments. That is
   the object type template defintion and its one single object type instance
-  collapse into one. */
-  class ZeroArgObjTypeTemplateDef: public ObjTypeTemplate, public CanonicalObjTyp2 {
+  collapse into one entity. */
+  class ZeroArgObjTypeTemplateDef: public ObjTypeTemplate, public CanonicalObjType {
   public:
     // -- overrides for Template
     const vector<TemplateParamType::Id>& paramTypeIds() const override {
@@ -126,52 +128,50 @@ namespace {
 
   const vector<TemplateParamType::Id> ZeroArgObjTypeTemplateDef::m_paramTypeIds{};
 
-
-  /** For all object type templates defining EF's fundamental scalar types */
-  class FundaScalarDef: public ZeroArgObjTypeTemplateDef {
+  /** For all object type templates defining EF's fundamental types */
+  class FundaDef: public ZeroArgObjTypeTemplateDef {
   public:
-    FundaScalarDef(ObjTypeFunda::EType type) {
+    FundaDef(ObjTypeFunda::EType type) :
+      m_type{type},
+      m_name{AstObjTypeSymbol::toName(type)} {
     }
 
     // -- overrides for ObjTypeTemplate
     const string& name() const override { return m_name; }
 
     // -- overrides for ObjType2
-    bool hasConstructor(const ObjType2& param1ObjType) const override {
-      assert(false); // not implemented yet
-      return false;
+    bool hasConstructor(const ObjType2& param1ObjType) const override;
+
+    // -- misc
+    ObjTypeFunda::EType type() const {
+      return m_type;
     }
 
   private:
-    //const ObjTypeFunda::EType m_type; // not used yet
-    const string m_name; // todo: initialize it
+    const ObjTypeFunda::EType m_type;
+    const string& m_name;
   };
 
-  FundaScalarDef intDef(ObjTypeFunda::eInt);
-  FundaScalarDef doubleDef(ObjTypeFunda::eDouble);
-
-  class PtrObjType2: public CanonicalObjTyp2 {
+  /** Builtin raw pointer object type. */
+  class PtrObjType: public CanonicalObjType {
   public:
-    PtrObjType2(const ObjType2& templateArg) :
+    PtrObjType(const ObjType2& templateArg) :
       m_templateArg(templateArg) {}
 
     // -- overrides for TemplateParamType
     void printTo(std::basic_ostream<char>& os) const override {
-      os << "Ptr{";
+      os << "raw*";
       m_templateArg.printTo(os);
-      os << "}";
     }
 
     // -- overrides for ObjType2
-    virtual bool hasConstructor(const ObjType2& param1ObjType) const override {
-      assert(false); // not tested yet
-      return eNoMatch != match(param1ObjType);
-    }
+    bool hasConstructor(const ObjType2& param1ObjType) const override;
 
   private:
     const ObjType2& m_templateArg;
   };
 
+  /** Builtin raw pointer object type template */
   class PtrTemplateDef: public ObjTypeTemplate {
   public:
     static const PtrTemplateDef& instance() {
@@ -204,7 +204,7 @@ namespace {
       else {
         const auto res = m_instances.emplace(
           &canonicalObjTypeOfTemplateParam,
-          make_unique<PtrObjType2>(canonicalObjTypeOfTemplateParam));
+          make_unique<PtrObjType>(canonicalObjTypeOfTemplateParam));
         return *(res.first->second);
       }
     };
@@ -217,7 +217,7 @@ namespace {
 
     /** Key is the template argument, that is the ObjType2 of the pointee
     (incl qualifiers), and the value is the associated canonical Ptr-ObjType2. */
-    mutable unordered_map<const ObjType2*, unique_ptr<PtrObjType2>> m_instances;
+    mutable unordered_map<const ObjType2*, unique_ptr<PtrObjType>> m_instances;
     const string m_name;
     const vector<TemplateParamType::Id> m_paramTypeIds;
     /** Singleton instance */
@@ -226,21 +226,95 @@ namespace {
 
   unique_ptr<PtrTemplateDef> PtrTemplateDef::m_instance;
 
-  vector<FundaScalarDef*> makeFundas() {
-    vector<FundaScalarDef*> fundas{ObjTypeFunda::eTypeCnt};
-    for ( auto&& funda: fundas ) {
-      funda = nullptr;
+  vector<unique_ptr<FundaDef>> makeFundas() {
+    vector<unique_ptr<FundaDef>> fundas{ObjTypeFunda::eTypeCnt};
+    for ( auto type = 0; type<ObjTypeFunda::eTypeCnt; ++type ) {
+      if ( type==ObjTypeFunda::ePointer ) {
+        continue;
+      }
+      fundas[type] = make_unique<FundaDef>(
+        static_cast<ObjTypeFunda::EType>(type));
     }
-    fundas[ObjTypeFunda::eInt] = &intDef;
-    fundas[ObjTypeFunda::eDouble] = &doubleDef;
     return fundas;
   }
   const auto fundaScalarTemplateDefs = makeFundas();
 
-  const FundaScalarDef& defOf(ObjTypeFunda::EType type) {
-    const auto def = fundaScalarTemplateDefs.at(type);
-    assert(def);
-    return *def;
+  const ObjTypeTemplate& ObjTypeTemplateDefOf(ObjTypeFunda::EType type) {
+    if ( type==ObjTypeFunda::ePointer ) {
+      return PtrTemplateDef::instance();
+    } else {
+      const auto& def = fundaScalarTemplateDefs.at(type);
+      assert(def);
+      return *def;
+    }
+  }
+
+  bool FundaDef::hasConstructor(const ObjType2& param1ObjType) const {
+    const auto& param1Canonical = param1ObjType.canonicalObjTypeInclQualifiers();
+
+    const auto& typeidOfParam1 = typeid(param1Canonical);
+    if (typeid(FundaDef) == typeidOfParam1) {
+      const auto& param1 = static_cast<const FundaDef&>(param1Canonical);
+      switch (m_type) {
+      case ObjTypeFunda::eVoid: // fall through
+      case ObjTypeFunda::eNoreturn: return false;
+
+      case ObjTypeFunda::eBool: // fall through
+      case ObjTypeFunda::eChar: // fall through
+      case ObjTypeFunda::eDouble: // fall through
+      case ObjTypeFunda::eInt:
+        if ( (param1.m_type == ObjTypeFunda::eVoid) ||
+          (param1.m_type == ObjTypeFunda::eNoreturn) ) {
+          return false;
+        } else {
+          return param1.m_type != ObjTypeFunda::eNullptr;
+        }
+
+      case ObjTypeFunda::eNullptr:
+        return param1.m_type == ObjTypeFunda::eNullptr;
+
+      case ObjTypeFunda::ePointer:
+      case ObjTypeFunda::eTypeCnt:
+        assert(false);
+      }
+      return false;
+    }
+
+    else if (typeid(PtrObjType) == typeidOfParam1) {
+      switch (m_type) {
+      case ObjTypeFunda::eVoid:
+      case ObjTypeFunda::eNoreturn:
+      case ObjTypeFunda::eNullptr: return false;
+      default: return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool PtrObjType::hasConstructor(const ObjType2& param1ObjType) const {
+    const auto& param1Canonical = param1ObjType.canonicalObjTypeInclQualifiers();
+
+    const auto& typeidOfParam1 = typeid(param1Canonical);
+    if (typeid(PtrObjType) == typeidOfParam1) {
+      return eNoMatch!=match(param1Canonical);
+    }
+
+    else if (typeid(FundaDef) == typeidOfParam1) {
+      const auto param1 = static_cast<const FundaDef*>(&param1Canonical);
+      assert(param1);
+      switch (param1->type()) {
+      case ObjTypeFunda::eVoid: return false;
+      case ObjTypeFunda::eNoreturn: return false;
+      case ObjTypeFunda::eBool: return true;
+      case ObjTypeFunda::eChar: return true;
+      case ObjTypeFunda::eInt: return true;
+      case ObjTypeFunda::eDouble: return true;
+      default: assert(false);
+      }
+    }
+
+    return false;
   }
 }
 
@@ -258,40 +332,6 @@ basic_ostream<char>& operator<<(basic_ostream<char>& os,
   const TemplateParamType& templateParamType) {
   templateParamType.printTo(os);
   return os;
-}
-
-ObjType2List::ObjType2List(ObjTypes2Iter begin, ObjTypes2Iter end) :
-  m_begin(begin),
-  m_end(end) {
-
-}
-
-void ObjType2List::printTo(basic_ostream<char>& os) const {
-  os << "(";
-  for (auto objType = m_begin; objType!=m_end; ++objType) {
-    if ( objType!=m_begin ) {
-        os << ", ";
-    }
-    os << **objType;
-  }
-  os << ")";
-}
-
-TemplateParamType::MatchType ObjType2List::match(const TemplateParamType& rhs) const {
-  return rhs.match2(*this);
-}
-
-TemplateParamType::MatchType ObjType2List::match2(const ObjType2List& lhs) const {
-  auto lhsObjType = lhs.m_begin;
-  auto objType = m_begin;
-  for ( /*nop*/;
-       objType!=m_end && lhsObjType!=lhs.m_end;
-       ++objType, ++lhsObjType) {
-    if ( eFullMatch!=(*lhsObjType)->match(**objType) ) {
-      return eNoMatch;
-    }
-  }
-  return objType==m_end && lhsObjType==lhs.m_end ? eFullMatch : eNoMatch;
 }
 
 TemplateParamType::MatchType ObjType2::match(const TemplateParamType& lhs) const {
@@ -332,7 +372,15 @@ AstObjTypeRef::AstObjTypeRef(string name, Qualifier qualifiers,
 
 AstObjTypeRef::AstObjTypeRef(ObjTypeFunda::EType type, Qualifier qualifiers,
   TemplateParamsRaw* templateArgs) :
-  AstObjTypeRef{defOf(type), qualifiers, templateArgs} {
+  AstObjTypeRef{ObjTypeTemplateDefOf(type), qualifiers, templateArgs} {
+}
+
+AstObjTypeRef::AstObjTypeRef(ObjTypeFunda::EType type, Qualifier qualifiers,
+  const TemplateParamType* templateArg1,
+  const TemplateParamType* templateArg2,
+  const TemplateParamType* templateArg3) :
+  AstObjTypeRef{ObjTypeTemplateDefOf(type), qualifiers,
+    templateArg1, templateArg2, templateArg3} {
 }
 
 AstObjTypeRef::AstObjTypeRef(const ObjTypeTemplate& def,
@@ -389,4 +437,8 @@ const ObjType2& AstObjTypeRef::canonicalObjTypeInclQualifiers() const {
       canonicalObjTypeWithTheseQualifiers(m_qualifiers);
   }
   return *m_canonicalObjTypeWithMyQualifiers;
+}
+
+bool AstObjTypeRef::hasConstructor(const ObjType2& param1ObjType) const {
+  return canonicalObjTypeWithoutQualifiers().hasConstructor(param1ObjType);
 }

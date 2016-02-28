@@ -1,97 +1,7 @@
 #pragma once
-#include "envnode.h"
-#include <vector>
+#include "templateparamtype.h"
 
-class ObjType2;
-class ObjType2List;
-
-/** This is an own kind of type. As ObjType is an own kind of type. That is
-it's _not_ about the ObjType of a template parameter. */
-class TemplateParamType {
-public:
-  /** The list is known at compile time. This is ok, since the parser, given a
-  reference to a template instance, needs to know the TemplateArg::Type of
-  each template argument anyway. */
-  enum Id {
-    /** see class ObjType2 */
-    objType2,
-    /** A list of objType2 */
-    objType2List,
-    /** An Object which is biuniquely mappable to an integral */
-    integralObj
-  };
-  enum MatchType {
-    eNoMatch,
-    eMatchButAllQualifiersAreWeaker,
-    eMatchButAnyQualifierIsStronger,
-    eFullMatch
-  };
-
-  virtual ~TemplateParamType() = default;
-
-  // -- new virtual methods
-  virtual Id id() const =0;
-  virtual void printTo(std::basic_ostream<char>& os) const =0;
-  virtual MatchType match(const TemplateParamType& lhs) const =0;
-  virtual MatchType match2(const ObjType2& rhs) const { return eNoMatch; }
-  virtual MatchType match2(const ObjType2List& rhs) const { return eNoMatch; }
-
-protected:
-  TemplateParamType() = default;
-
-private:
-  NEITHER_COPY_NOR_MOVEABLE(TemplateParamType);
-};
-
-std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  TemplateParamType::MatchType mt);
-
-std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  const TemplateParamType& templateParamType);
-
-using TemplateParams = std::vector<std::unique_ptr<const TemplateParamType>>;
-
-class Template {
-public:
-  virtual ~Template() = default;
-  virtual const std::vector<TemplateParamType::Id>& paramTypeIds() const =0;
-
-protected:
-  Template() = default;
-
-private:
-  NEITHER_COPY_NOR_MOVEABLE(Template);
-};
-
-class ObjTemplate: public Template {
-};
-
-class ObjTypeTemplate: public Template {
-public:
-  // -- new virtual methods
-  virtual const std::string& name() const =0;
-  virtual const ObjType2& instanceFor(const TemplateParams&) const =0;
-
-protected:
-  ObjTypeTemplate() = default;
-};
-
-class ObjType2List: public TemplateParamType {
-public:
-  using ObjTypes2Iter = std::vector<std::unique_ptr<ObjType2>>::iterator;
-
-  ObjType2List(ObjTypes2Iter begin, ObjTypes2Iter end);
-
-  // -- overrides for TemplateParamType
-  Id id() const override { return objType2List; }
-  void printTo(std::basic_ostream<char>& os) const override;
-  MatchType match(const TemplateParamType& rhs) const override;
-  MatchType match2(const ObjType2List& other) const override;
-
-private:
-  const ObjTypes2Iter m_begin;
-  const ObjTypes2Iter m_end;
-};
+class ObjTypeTemplate;
 
 class ObjType2: public TemplateParamType {
 public:
@@ -103,6 +13,12 @@ public:
 
   // -- overrides for TemplateParamType
   Id id() const override { return objType2; }
+
+  // match = is same (canonical) type, potentially different
+  // qualifiers. E.g. whether pointer can point to it.
+  // ??? pointers with these special qualifiers rules???
+  // later used ofr overload resoltion: which candidate is a better match for
+  // a given ObjType2
   MatchType match(const TemplateParamType& rhs) const override;
   MatchType match2(const ObjType2& other) const override;
 
@@ -112,7 +28,7 @@ public:
   // or the template I am refering to.
   virtual const ObjType2& canonicalObjTypeWithoutQualifiers() const =0;
   virtual const ObjType2& canonicalObjTypeInclQualifiers() const =0;
-  virtual const ObjType2& canonicalObjTypeWithTheseQualifiers(Qualifier qualifiers) const =0;
+  virtual const ObjType2& canonicalObjTypeWithTheseQualifiers(Qualifier qualifiers) const;
   // intermediate solution until ObjTypeTemplate / ObjType2 properly can have
   // member functions and ctors.
   // match vs hasconstructor. match:
@@ -120,6 +36,9 @@ public:
   // matters is the following, no?
   // 2)? match is a trivial copy ctor. I.e. no casts needed. &T1 can be
   // initialized with T2.
+  // currently wrongly only used to check whether cast is eligible. It should
+  // e.g. also be used to check if initializer is eligible, but it currently
+  // isn't.
   virtual bool hasConstructor(const ObjType2& param1ObjType) const =0;
 
 protected:
@@ -135,6 +54,10 @@ public:
     TemplateParamsRaw* templateArgs = nullptr);
   AstObjTypeRef(ObjTypeFunda::EType type, Qualifier qualifiers = eNoQualifier,
     TemplateParamsRaw* templateArgs = nullptr);
+  AstObjTypeRef(ObjTypeFunda::EType type, Qualifier qualifiers,
+    const TemplateParamType* templateArg1,
+    const TemplateParamType* templateArg2 = nullptr,
+    const TemplateParamType* templateArg3 = nullptr);
   /** Convenience ctor for tests. Note that in production code, def is not
   known at construction time, but is set later with setDef. */
   AstObjTypeRef(const ObjTypeTemplate& def,
@@ -153,6 +76,7 @@ public:
   Qualifier qualifiers() const override { return m_qualifiers; }
   const ObjType2& canonicalObjTypeWithoutQualifiers() const override;
   const ObjType2& canonicalObjTypeInclQualifiers() const override;
+  virtual bool hasConstructor(const ObjType2& param1ObjType) const override;
 
   // -- childs of this node
   virtual const std::string& name() const { return m_name; }

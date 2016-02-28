@@ -31,7 +31,7 @@ EFC_SRCS = driver.cpp parserext.cpp ast.cpp errorhandler.cpp objtype.cpp \
   efc.cpp executionengineadapter.cpp parserapiext.cpp tokenstreamlookahead.cpp \
   tokenfilter.cpp storageduration.cpp object.cpp envinserter.cpp \
 	signatureaugmentor.cpp irgenforwarddeclarator.cpp envnode.cpp \
-	freefromastobject.cpp objtype2.cpp
+	freefromastobject.cpp objtype2.cpp objtypelist.cpp
 
 EFC_GEN_SRCS = parser.cpp scanner.cpp
 

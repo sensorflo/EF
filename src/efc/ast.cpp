@@ -664,7 +664,7 @@ AstObjTypeSymbol::AstObjTypeSymbol(ObjTypeFunda::EType fundaType) :
   assert(fundaType!=ObjTypeFunda::ePointer);
 }
 
-string AstObjTypeSymbol::toName(ObjTypeFunda::EType fundaType) {
+const string& AstObjTypeSymbol::toName(ObjTypeFunda::EType fundaType) {
   initMap();
   assert(fundaType!=ObjTypeFunda::ePointer);
   return m_typeToName[fundaType];

@@ -630,11 +630,13 @@ public:
   // -- childs of this node
   const std::string name() const { return m_name; }
 
+  // !!! move !!!!!!!!!!!!!
+  static const std::string& toName(ObjTypeFunda::EType fundaType);
+  static ObjTypeFunda::EType toType(const std::string& name);
+
 private:
   friend class TestingAstObjTypeSymbol;
 
-  static std::string toName(ObjTypeFunda::EType fundaType);
-  static ObjTypeFunda::EType toType(const std::string& name);
   static void initMap();
 
   // -- to implement overrides
