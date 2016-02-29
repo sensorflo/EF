@@ -136,6 +136,7 @@ and by declaration of free function yylex */
   STATIC "static"
   LOCAL "local"
   NOINIT "noinit"
+  STATIC_CAST "static_cast"
 ;
 
 %token <ObjType::EType> FUNDAMENTAL_TYPE
@@ -325,7 +326,7 @@ operator_expr
   /* function call and cast */
   : sub_expr         LPAREN ct_list         RPAREN  { $$ = new AstFunCall($1, $3); }
   | OP_NAME          LPAREN ct_list         RPAREN  { $$ = parserExt.mkOperatorTree($1, $3); }
-  | FUNDAMENTAL_TYPE LPAREN standalone_expr RPAREN  { $$ = new AstCast($1, $3); }
+  | STATIC_CAST LBRACE FUNDAMENTAL_TYPE RBRACE LPAREN standalone_expr RPAREN  { $$ = new AstCast($3, $6); }
 
   /* unary prefix */
   | NOT  sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }

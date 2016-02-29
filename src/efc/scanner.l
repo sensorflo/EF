@@ -80,6 +80,7 @@ is                  return yy::Parser::make_IS(loc);
 static              return yy::Parser::make_STATIC(loc);
 local               return yy::Parser::make_LOCAL(loc);
 noinit              return yy::Parser::make_NOINIT(loc);
+static_cast         return yy::Parser::make_STATIC_CAST(loc);
 
 
   /* type keywords */

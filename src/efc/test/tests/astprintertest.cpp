@@ -27,9 +27,9 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "nullptr", AstNumber(0, ObjType::eNullptr), spec);
 
   spec = "AstCast";
-  EXPECT_TOSTR_EQ( "bool(0)",
+  EXPECT_TOSTR_EQ( "static_cast{bool}(0)",
     AstCast(ObjType::eBool, new AstNumber(0)), spec);
-  EXPECT_TOSTR_EQ( "int(0bool)",
+  EXPECT_TOSTR_EQ( "static_cast{int}(0bool)",
     AstCast(ObjType::eInt, new AstNumber(0, ObjType::eBool)), spec);
 
   spec = "AstSymbol";

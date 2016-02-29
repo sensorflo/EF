@@ -137,8 +137,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_cast_expression,
     scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "int(false)", ":;int(0bool)", "trivial example");
-  TEST_PARSE( "bool(0)", ":;bool(0)", "trivial example");
+  TEST_PARSE( "static_cast{int}(false)", ":;static_cast{int}(0bool)", "trivial example");
+  TEST_PARSE( "static_cast{bool}(0)", ":;static_cast{bool}(0)", "trivial example");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
