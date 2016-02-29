@@ -59,8 +59,7 @@ public:
     AstObject* child2, AstObject* child3 = NULL, AstObject* child4 = NULL,
     AstObject* child5 = NULL, AstObject* child6 = NULL);
 
-  AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,
-    RawAstDataDef*& rawAstDataDef);
+  AstDataDef* mkDataDef(RawAstDataDef*& rawAstDataDef);
 
   AstFunDef* mkFunDef(const std::string name, std::vector<AstDataDef*>* astArgs,
     AstObjType* retAstObjType, AstObject* astBody);

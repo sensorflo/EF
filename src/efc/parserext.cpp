@@ -109,19 +109,17 @@ AstOperator* ParserExt::mkOperatorTree(const string& op, AstObject* child1,
       child6));
 }
 
-AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
-  RawAstDataDef*& rawAstDataDef) {
+AstDataDef* ParserExt::mkDataDef(RawAstDataDef*& rawAstDataDef) {
 
   assert(rawAstDataDef);
   assert(!rawAstDataDef->m_name.empty());
-  const auto unqualifiedAstObjType = rawAstDataDef->m_astObjType ?
+
+  const auto astObjType = rawAstDataDef->m_astObjType ?
     rawAstDataDef->m_astObjType : new AstObjTypeSymbol(ObjType::eInt);
-  const auto qualifiedAstObjType =
-    new AstObjTypeQuali(qualifiers, unqualifiedAstObjType);
 
   return new AstDataDef(
     rawAstDataDef->m_name,
-    qualifiedAstObjType,
+    astObjType,
     rawAstDataDef->m_storageDuration,
     rawAstDataDef->m_ctorArgs);
 }

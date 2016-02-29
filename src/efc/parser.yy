@@ -97,8 +97,7 @@ and by declaration of free function yylex */
   WHILE "while"
   DO "do"
   FUN "fun"
-  VAL "val"
-  VAR "var"
+  DATA "data"
   RAW_NEW "raw_new"
   RAW_DELETE "raw_delete"
   NOP "nop"
@@ -165,7 +164,7 @@ and by declaration of free function yylex */
 %type <AstNode*> standalone_node 
 %type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstDataDef*> param_decl
-%type <ObjType::Qualifiers> valvar type_qualifier
+%type <ObjType::Qualifiers> type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
 %type <RawAstDataDef*> naked_data_def data_def_args
 %type <AstFunDef*> naked_fun_def
@@ -360,7 +359,7 @@ primary_expr
   ;
   
 list_expr
-  : valvar kwao naked_data_def kwac                 { $$ = parserExt.mkDataDef($1, $3); }
+  : DATA kwao naked_data_def kwac                   { $$ = parserExt.mkDataDef($3); }
   | FUN kwao naked_fun_def kwac                     { $$ = $3; }
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
   | WHILE kwao naked_while kwac                     { std::swap($$,$3); }
@@ -384,7 +383,7 @@ kwac
   ;
 
 id_or_keyword
-  : ID | IF | ELIF | ELSE | FUN | VAL | VAR | END | NOT | AND | OR | FUNDAMENTAL_TYPE
+  : ID | IF | ELIF | ELSE | FUN | DATA | END | NOT | AND | OR | FUNDAMENTAL_TYPE
   ;
 
 naked_data_def
@@ -420,11 +419,6 @@ initializer_special_arg
   : equal_as_sep standalone_expr                                     { $$ = new AstCtList($2); }
   | equal_as_sep NOINIT                                              { $$ = new AstCtList(AstDataDef::noInit); }
   | lparen_as_sep ct_list RPAREN                                     { swap($$,$2); }
-  ;
-
-valvar
-  : VAL                                                              { $$ = ObjType::eNoQualifier; }
-  | VAR	                                                             { $$ = ObjType::eMutable; }
   ;
 
 naked_if
