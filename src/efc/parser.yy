@@ -162,11 +162,11 @@ and by declaration of free function yylex */
 %type <std::vector<AstDataDef*>*> pure_naked_param_ct_list
 %type <std::vector<AstObject*>*> pure_ct_list
 %type <AstNode*> standalone_node 
-%type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
+%type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_data_def naked_if elif_chain opt_else naked_return naked_while
 %type <AstDataDef*> param_decl
 %type <ObjType::Qualifiers> type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
-%type <RawAstDataDef*> naked_data_def data_def_args
+%type <RawAstDataDef*> data_def_args
 %type <AstFunDef*> naked_fun_def
 %type <AstObjType*> type opt_type type_arg opt_type_arg opt_ret_type
 %type <ConditionActionPair> condition_action_pair_then
@@ -359,7 +359,7 @@ primary_expr
   ;
   
 list_expr
-  : DATA kwao naked_data_def kwac                   { $$ = parserExt.mkDataDef($3); }
+  : DATA kwao naked_data_def kwac                   { std::swap($$,$3); }
   | FUN kwao naked_fun_def kwac                     { $$ = $3; }
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
   | WHILE kwao naked_while kwac                     { std::swap($$,$3); }
@@ -387,8 +387,8 @@ id_or_keyword
   ;
 
 naked_data_def
-  : ID initializer_special_arg opt_type_arg opt_storage_duration_arg { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $3, $4); }
-  | ID data_def_args                                                 { $2->setName($1); swap($$,$2); }
+  : ID initializer_special_arg opt_type_arg opt_storage_duration_arg { $$ = new AstDataDef($1, $3, $4, $2); }
+  | ID data_def_args                                                 { $2->setName($1); $$ = parserExt.mkDataDef($2); }
   ;
 
 data_def_args
