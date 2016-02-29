@@ -19,18 +19,18 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
 
   spec = "AstNumber";
   EXPECT_TOSTR_EQ( "42", AstNumber(42), spec);
-  EXPECT_TOSTR_EQ( "42.77d", AstNumber(42.77, ObjTypeFunda::eDouble), spec);
-  EXPECT_TOSTR_EQ( "42d", AstNumber(42, ObjTypeFunda::eDouble), spec);
-  EXPECT_TOSTR_EQ( "0bool", AstNumber(0, ObjTypeFunda::eBool), spec);
-  EXPECT_TOSTR_EQ( "1bool", AstNumber(1, ObjTypeFunda::eBool), spec);
-  EXPECT_TOSTR_EQ( "'x'", AstNumber('x', ObjTypeFunda::eChar), spec);
-  EXPECT_TOSTR_EQ( "nullptr", AstNumber(0, ObjTypeFunda::eNullptr), spec);
+  EXPECT_TOSTR_EQ( "42.77d", AstNumber(42.77, ObjType::eDouble), spec);
+  EXPECT_TOSTR_EQ( "42d", AstNumber(42, ObjType::eDouble), spec);
+  EXPECT_TOSTR_EQ( "0bool", AstNumber(0, ObjType::eBool), spec);
+  EXPECT_TOSTR_EQ( "1bool", AstNumber(1, ObjType::eBool), spec);
+  EXPECT_TOSTR_EQ( "'x'", AstNumber('x', ObjType::eChar), spec);
+  EXPECT_TOSTR_EQ( "nullptr", AstNumber(0, ObjType::eNullptr), spec);
 
   spec = "AstCast";
   EXPECT_TOSTR_EQ( "bool(0)",
-    AstCast(ObjTypeFunda::eBool, new AstNumber(0)), spec);
+    AstCast(ObjType::eBool, new AstNumber(0)), spec);
   EXPECT_TOSTR_EQ( "int(0bool)",
-    AstCast(ObjTypeFunda::eInt, new AstNumber(0, ObjTypeFunda::eBool)), spec);
+    AstCast(ObjType::eInt, new AstNumber(0, ObjType::eBool)), spec);
 
   spec = "AstSymbol";
   EXPECT_TOSTR_EQ( "foo", AstSymbol("foo"), spec);
@@ -77,14 +77,14 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
 
   spec = "AstDataDef";
   EXPECT_TOSTR_EQ( "data(foo int ())", AstDataDef("foo",
-      ObjTypeFunda::eInt), spec);
+      ObjType::eInt), spec);
   EXPECT_TOSTR_EQ( "data(foo mut-int (42))", AstDataDef("foo",
       new AstObjTypeQuali(
         ObjType::eMutable,
-        new AstObjTypeSymbol(ObjTypeFunda::eInt)),
+        new AstObjTypeSymbol(ObjType::eInt)),
       new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "data(foo int noinit)", AstDataDef("foo",
-      ObjTypeFunda::eInt, AstDataDef::noInit), spec);
+      ObjType::eInt, AstDataDef::noInit), spec);
   
   spec = "AstCtList";
   EXPECT_TOSTR_EQ( "", AstCtList(), spec);
@@ -95,25 +95,25 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
   EXPECT_TOSTR_EQ( "fun(foo () int 42)",
     AstFunDef("foo",
       AstFunDef::createArgs(),
-      new AstObjTypeSymbol(ObjTypeFunda::eInt),
+      new AstObjTypeSymbol(ObjType::eInt),
       new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "fun(foo () bool 1bool)",
     AstFunDef("foo",
       AstFunDef::createArgs(),
-      new AstObjTypeSymbol(ObjTypeFunda::eBool),
-      new AstNumber(true, ObjTypeFunda::eBool)), spec);
+      new AstObjTypeSymbol(ObjType::eBool),
+      new AstNumber(true, ObjType::eBool)), spec);
   EXPECT_TOSTR_EQ( "fun(foo ((arg1 int)) int 42)",
     AstFunDef("foo",
       AstFunDef::createArgs(
-        new AstDataDef("arg1", ObjTypeFunda::eInt)),
-      new AstObjTypeSymbol(ObjTypeFunda::eInt),
+        new AstDataDef("arg1", ObjType::eInt)),
+      new AstObjTypeSymbol(ObjType::eInt),
       new AstNumber(42)), spec);
   EXPECT_TOSTR_EQ( "fun(foo ((arg1 int) (arg2 int)) int 42)",
     AstFunDef("foo",
       AstFunDef::createArgs(
-        new AstDataDef("arg1", ObjTypeFunda::eInt),
-        new AstDataDef("arg2", ObjTypeFunda::eInt)),
-      new AstObjTypeSymbol(ObjTypeFunda::eInt),
+        new AstDataDef("arg1", ObjType::eInt),
+        new AstDataDef("arg2", ObjType::eInt)),
+      new AstObjTypeSymbol(ObjType::eInt),
       new AstNumber(42)), spec);
 
   spec = "AstFunCall";
@@ -122,18 +122,18 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
       new AstCtList(new AstNumber(42), new AstNumber(77))), spec);
 
   spec = "AstObjTypeSymbol";
-  EXPECT_TOSTR_EQ( "int", AstObjTypeSymbol(ObjTypeFunda::eInt), spec);
+  EXPECT_TOSTR_EQ( "int", AstObjTypeSymbol(ObjType::eInt), spec);
   EXPECT_TOSTR_EQ( "foo", AstObjTypeSymbol("foo"), spec);
 
   spec = "AstObjTypeQuali";
   EXPECT_TOSTR_EQ( "mut-int",
-    AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt)), spec);
+    AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjType::eInt)), spec);
   EXPECT_TOSTR_EQ( "mut-foo",
     AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol("foo")), spec);
 
   spec = "AstObjTypePtr";
   EXPECT_TOSTR_EQ( "raw*int",
-    AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInt)), spec);
+    AstObjTypePtr(new AstObjTypeSymbol(ObjType::eInt)), spec);
   EXPECT_TOSTR_EQ( "raw*foo",
     AstObjTypePtr(new AstObjTypeSymbol("foo")), spec);
 }

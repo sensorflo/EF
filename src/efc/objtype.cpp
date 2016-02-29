@@ -11,12 +11,12 @@ ObjType::ObjType(string name) :
 }
 
 bool ObjType::isVoid() const {
-  static const ObjTypeFunda voidType(ObjTypeFunda::eVoid);
+  static const ObjTypeFunda voidType(ObjType::eVoid);
   return matchesFully(voidType);
 }
 
 bool ObjType::isNoreturn() const {
-  static const ObjTypeFunda noreturnType(ObjTypeFunda::eNoreturn);
+  static const ObjTypeFunda noreturnType(ObjType::eNoreturn);
   return matchesFully(noreturnType);
 }
 
@@ -371,7 +371,7 @@ ObjTypeFun::ObjTypeFun(vector<shared_ptr<const ObjType>>* args, shared_ptr<const
   m_args{ args ?
       std::unique_ptr<vector<shared_ptr<const ObjType>>>{args} :
     std::make_unique<vector<shared_ptr<const ObjType>>>()},
-  m_ret{ ret ? move(ret) : make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt)} {
+  m_ret{ ret ? move(ret) : make_shared<const ObjTypeFunda>(ObjType::eInt)} {
   assert(m_args);
   assert(m_ret);
   for (auto i=m_args->begin(); i!=m_args->end(); ++i) {

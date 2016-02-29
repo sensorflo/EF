@@ -68,7 +68,7 @@ string amend(const Env& env) {
 AstObject* createAccessTo(AstObject* obj, Access access) {
   switch (access) {
   case Access::eRead:
-    return new AstDataDef(Env::makeUniqueInternalName(), ObjTypeFunda::eInt, obj);
+    return new AstDataDef(Env::makeUniqueInternalName(), ObjType::eInt, obj);
   case Access::eWrite:
     return new AstOperator('=', obj, new AstNumber(0));
   case Access::eTakeAddress:

@@ -143,7 +143,7 @@ private:
 class AstCast : public AstObjInstance {
 public:
   AstCast(AstObjType* specifiedNewAstObjType, AstObject* child);
-  AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child);
+  AstCast(ObjType::EType specifiedNewOjType, AstObject* child);
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -223,7 +223,7 @@ public:
   AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
     AstObject* initObj = nullptr);
   AstDataDef(const std::string& name,
-    ObjTypeFunda::EType declaredObjType = ObjTypeFunda::eInt,
+    ObjType::EType declaredObjType = ObjType::eInt,
     AstObject* initObj = nullptr);
 
   // -- overrides for AstNode
@@ -273,7 +273,7 @@ should be renamed. */
 class AstNumber : public AstObjInstance {
 public:
   AstNumber(GeneralValue value, AstObjType* astObjType = nullptr);
-  AstNumber(GeneralValue value, ObjTypeFunda::EType eType);
+  AstNumber(GeneralValue value, ObjType::EType eType);
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -612,7 +612,7 @@ public:
 class AstObjTypeSymbol : public AstObjType {
 public:
   AstObjTypeSymbol(const std::string name);
-  AstObjTypeSymbol(ObjTypeFunda::EType fundaType);
+  AstObjTypeSymbol(ObjType::EType fundaType);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -631,8 +631,8 @@ public:
   const std::string name() const { return m_name; }
 
   // !!! move !!!!!!!!!!!!!
-  static const std::string& toName(ObjTypeFunda::EType fundaType);
-  static ObjTypeFunda::EType toType(const std::string& name);
+  static const std::string& toName(ObjType::EType fundaType);
+  static ObjType::EType toType(const std::string& name);
 
 private:
   friend class TestingAstObjTypeSymbol;
@@ -646,7 +646,7 @@ private:
   const std::string m_name;
 
   // -- misc
-  static std::array<std::string, ObjTypeFunda::eTypeCnt> m_typeToName;
+  static std::array<std::string, ObjType::eTypeCnt> m_typeToName;
   static bool m_isMapInitialzied;
 
   // decorations for IrGen

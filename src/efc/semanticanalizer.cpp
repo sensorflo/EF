@@ -127,7 +127,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
     if ( op.class_() == AstOperator::eLogical ) {
       if ( !lhs.matchesSaufQualifiers(rhs)
         && (!op.isBinaryLogicalShortCircuit() ||
-            !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eNoreturn)))) {
+            !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjType::eNoreturn)))) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
       }
     } else if ( class_ != AstOperator::eOther ) {
@@ -161,7 +161,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // -- responsibility 3: set properties of associated object: type, sd, access
 
   if ( class_ == AstOperator::eComparison ) {
-    op.setObjType(std::make_unique<ObjTypeFunda>(ObjTypeFunda::eBool));
+    op.setObjType(std::make_unique<ObjTypeFunda>(ObjType::eBool));
     op.setStorageDuration(StorageDuration::eLocal);
   }
   // The object denoted by the dot-assignment is exactly that of lhs
@@ -170,7 +170,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   }
   // Assignment is always of object type void
   else if ( opop == AstOperator::eVoidAssign ) {
-    op.setObjType(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid));
+    op.setObjType(make_shared<ObjTypeFunda>(ObjType::eVoid));
     op.setStorageDuration(StorageDuration::eLocal);
   }
   // Addrof
@@ -408,7 +408,7 @@ void SemanticAnalizer::visit(AstIf& if_) {
 
   // -- responsibility 2: semantic analysis
   if ( !if_.condition().object().objType().matchesSaufQualifiers(
-      ObjTypeFunda(ObjTypeFunda::eBool)) ) {
+      ObjTypeFunda(ObjType::eBool)) ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
@@ -437,7 +437,7 @@ void SemanticAnalizer::visit(AstIf& if_) {
       if_.setObjectType(if_.elseAction()->object().objType().unqualifiedObjType());
     }
   } else {
-    if_.setObjectType(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid));
+    if_.setObjectType(make_shared<ObjTypeFunda>(ObjType::eVoid));
   }
 
   postConditionCheck(if_);
@@ -452,7 +452,7 @@ void SemanticAnalizer::visit(AstLoop& loop) {
 
   // -- responsibility 2: semantic analysis
   if ( !loop.condition().object().objType().matchesSaufQualifiers(
-      ObjTypeFunda(ObjTypeFunda::eBool)) ) {
+      ObjTypeFunda(ObjType::eBool)) ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 

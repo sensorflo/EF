@@ -115,7 +115,7 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
   assert(rawAstDataDef);
   assert(!rawAstDataDef->m_name.empty());
   const auto unqualifiedAstObjType = rawAstDataDef->m_astObjType ?
-    rawAstDataDef->m_astObjType : new AstObjTypeSymbol(ObjTypeFunda::eInt);
+    rawAstDataDef->m_astObjType : new AstObjTypeSymbol(ObjType::eInt);
   const auto qualifiedAstObjType =
     new AstObjTypeQuali(qualifiers, unqualifiedAstObjType);
 
@@ -132,7 +132,7 @@ AstFunDef* ParserExt::mkFunDef(const string name, vector<AstDataDef*>* astArgs,
   return new AstFunDef(name, astArgs, retAstObjType, astBody);
 }
 
-AstFunDef* ParserExt::mkFunDef(const string name, ObjTypeFunda::EType ret,
+AstFunDef* ParserExt::mkFunDef(const string name, ObjType::EType ret,
   AstObject* body) {
   return mkFunDef(name, AstFunDef::createArgs(), new AstObjTypeSymbol(ret),
     body);
@@ -144,5 +144,5 @@ AstFunDef* ParserExt::mkFunDef(const string name, AstObjType* ret,
 }
 
 AstFunDef* ParserExt::mkMainFunDef(AstObject* body) {
-  return mkFunDef("main", new AstObjTypeSymbol(ObjTypeFunda::eInt), body);
+  return mkFunDef("main", new AstObjTypeSymbol(ObjType::eInt), body);
 }

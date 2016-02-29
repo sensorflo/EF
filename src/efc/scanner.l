@@ -83,20 +83,20 @@ noinit              return yy::Parser::make_NOINIT(loc);
 
 
   /* type keywords */
-void                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eVoid, loc);
-char                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eChar, loc);
-int                 return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eInt, loc);
-bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool, loc);
-double              return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eDouble, loc);
+void                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjType::eVoid, loc);
+char                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjType::eChar, loc);
+int                 return yy::Parser::make_FUNDAMENTAL_TYPE(ObjType::eInt, loc);
+bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjType::eBool, loc);
+double              return yy::Parser::make_FUNDAMENTAL_TYPE(ObjType::eDouble, loc);
 
 
   /* literal bool */
-false               return yy::Parser::make_NUMBER(NumberToken(0, ObjTypeFunda::eBool), loc);
-true                return yy::Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBool), loc);
+false               return yy::Parser::make_NUMBER(NumberToken(0, ObjType::eBool), loc);
+true                return yy::Parser::make_NUMBER(NumberToken(1, ObjType::eBool), loc);
 
 
   /* literal char */
-'.'                 return yy::Parser::make_NUMBER(NumberToken(yytext[1], ObjTypeFunda::eChar), loc);
+'.'                 return yy::Parser::make_NUMBER(NumberToken(yytext[1], ObjType::eChar), loc);
 
 
   /* literal integral / floatingpoint number  */
@@ -105,7 +105,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::
   char* suffix = NULL;
   bool containsDot = (nullptr != strchr(yytext, '.'));
   long double number = strtold(yytext, &suffix);
-  ObjTypeFunda::EType objType = ObjTypeFunda::eVoid;
+  ObjType::EType objType = ObjType::eVoid;
 
   if (errno) {
     driver.exitInternError(loc, string("Scanner's rule"
@@ -123,7 +123,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::
       number = number<DBL_MIN ? DBL_MIN : DBL_MAX;
       driver.error(loc, "Numeric literal to big");
     }
-    objType = ObjTypeFunda::eDouble;
+    objType = ObjType::eDouble;
   }
 
   // it's an integral literal
@@ -132,7 +132,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::
       number = number<INT_MIN ? INT_MIN : INT_MAX;
       driver.error(loc, "Numeric literal to big");
     }
-    objType = ObjTypeFunda::eInt;
+    objType = ObjType::eInt;
   }
   return yy::Parser::make_NUMBER(
     NumberToken(static_cast<GeneralValue>(number), objType), loc);

@@ -10,11 +10,11 @@ public:
 };
 
 TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(toName)) {
-  EXPECT_EQ("int", TestingAstObjTypeSymbol::toName(ObjTypeFunda::eInt));
+  EXPECT_EQ("int", TestingAstObjTypeSymbol::toName(ObjType::eInt));
 }
 
 TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(toType)) {
-  EXPECT_EQ(ObjTypeFunda::eInt, TestingAstObjTypeSymbol::toType("int"));
+  EXPECT_EQ(ObjType::eInt, TestingAstObjTypeSymbol::toType("int"));
 }
 
 TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(
@@ -22,9 +22,9 @@ TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(
 
   // examples: fundamental types
   {
-    vector<ObjTypeFunda::EType> inputTypes = {
-      ObjTypeFunda::eBool, ObjTypeFunda::eChar, ObjTypeFunda::eInt,
-      ObjTypeFunda::eDouble};
+    vector<ObjType::EType> inputTypes = {
+      ObjType::eBool, ObjType::eChar, ObjType::eInt,
+      ObjType::eDouble};
 
     for (const auto type : inputTypes ) {
       // setup
@@ -47,7 +47,7 @@ TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(
   {
     // setup
     const auto UUT = make_unique<AstObjTypeQuali>(ObjType::eMutable,
-      new AstObjTypeSymbol(ObjTypeFunda::eInt));
+      new AstObjTypeSymbol(ObjType::eInt));
 
     // exercise
     const auto defaultValue = unique_ptr<AstNumber>(
@@ -58,14 +58,14 @@ TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(
     EXPECT_TRUE( defaultValue != nullptr );
     EXPECT_EQ( 0.0, defaultValue->value());
     EXPECT_TRUE( defaultValue->declaredAstObjType().objType().
-      matchesFully(ObjTypeFunda(ObjTypeFunda::eInt)));
+      matchesFully(ObjTypeFunda(ObjType::eInt)));
   }
 
   // example: pointer
   {
     // setup
     const auto UUT = make_unique<AstObjTypePtr>(
-      new AstObjTypeSymbol(ObjTypeFunda::eInt));
+      new AstObjTypeSymbol(ObjType::eInt));
 
     // exercise
     const auto defaultValue = unique_ptr<AstNumber>(
@@ -76,6 +76,6 @@ TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(
     EXPECT_TRUE( defaultValue != nullptr );
     EXPECT_EQ( 0.0, defaultValue->value());
     EXPECT_TRUE( defaultValue->declaredAstObjType().objType().
-      matchesFully(ObjTypeFunda(ObjTypeFunda::eNullptr)));
+      matchesFully(ObjTypeFunda(ObjType::eNullptr)));
   }
 }

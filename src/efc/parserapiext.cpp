@@ -41,7 +41,7 @@ Parser::symbol_type ParserApiExt::makeToken(Parser::token_type tt) {
   switch(m_TokenAttrs.at(tt).m_semanticValueType) {
   case SVTInvalid: assert(false); // fall through
   case SVTVoid: return Parser::symbol_type(tt, Parser::location_type());
-  case SVTFundamentalType: return makeTokenT<ObjTypeFunda::EType>(tt);
+  case SVTFundamentalType: return makeTokenT<ObjType::EType>(tt);
   case SVTString: return makeTokenT<string>(tt);
   case SVTNumberToken: return makeTokenT<NumberToken>(tt);
   }

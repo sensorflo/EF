@@ -122,7 +122,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   Parser::symbol_type st = UUT.pop();
   EXPECT_TOK_EQ(TOK_NUMBER, st);
   EXPECT_EQ('x', st.value.as<NumberToken>().m_value );
-  EXPECT_EQ(ObjTypeFunda::eChar, st.value.as<NumberToken>().m_objType);
+  EXPECT_EQ(ObjType::eChar, st.value.as<NumberToken>().m_objType);
 
   EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop());
 
@@ -142,7 +142,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     Parser::symbol_type st = UUT.pop();
     EXPECT_TOK_EQ(TOK_NUMBER, st);
     EXPECT_EQ(42, st.value.as<NumberToken>().m_value );
-    EXPECT_EQ(ObjTypeFunda::eInt, st.value.as<NumberToken>().m_objType);
+    EXPECT_EQ(ObjType::eInt, st.value.as<NumberToken>().m_objType);
 
     EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 
@@ -157,7 +157,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     Parser::symbol_type st = UUT.pop();
     EXPECT_TOK_EQ(TOK_NUMBER, st);
     EXPECT_EQ(42.77, st.value.as<NumberToken>().m_value );
-    EXPECT_EQ(ObjTypeFunda::eDouble, st.value.as<NumberToken>().m_objType);
+    EXPECT_EQ(ObjType::eDouble, st.value.as<NumberToken>().m_objType);
 
     EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 
@@ -175,7 +175,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   Parser::symbol_type st = UUT.pop();
   EXPECT_TOK_EQ(TOK_NUMBER, st);
   EXPECT_EQ(0, st.value.as<NumberToken>().m_value );
-  EXPECT_EQ(ObjTypeFunda::eBool, st.value.as<NumberToken>().m_objType);
+  EXPECT_EQ(ObjType::eBool, st.value.as<NumberToken>().m_objType);
 
   EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 
@@ -192,7 +192,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   Parser::symbol_type st = UUT.pop();
   EXPECT_TOK_EQ(TOK_NUMBER, st);
   EXPECT_EQ(1, st.value.as<NumberToken>().m_value );
-  EXPECT_EQ(ObjTypeFunda::eBool, st.value.as<NumberToken>().m_objType);
+  EXPECT_EQ(ObjType::eBool, st.value.as<NumberToken>().m_objType);
 
   EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop() );
 

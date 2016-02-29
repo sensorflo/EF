@@ -112,7 +112,7 @@ void IrGen::visit(AstCast& cast) {
 
   // eStoredAsIntegral -> double
   else if (oldtype.is(ObjType::eStoredAsIntegral)
-    && newtype.type() == ObjTypeFunda::eDouble) {
+    && newtype.type() == ObjType::eDouble) {
     // unsigned types: bool, char
     if ( oldsize==1 || oldsize==8 ) {
       irResult = m_builder.CreateUIToFP( childIr, newtype.llvmType(), irValueName);
@@ -125,7 +125,7 @@ void IrGen::visit(AstCast& cast) {
   }
 
   // double -> eStoredAsIntegral
- else if (oldtype.type() == ObjTypeFunda::eDouble
+ else if (oldtype.type() == ObjType::eDouble
     && newtype.is(ObjType::eStoredAsIntegral)) {
     // bool
     if ( newsize==1 ) {

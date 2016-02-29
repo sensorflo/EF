@@ -20,10 +20,10 @@ tokens produced by scanner. */
   enum class StorageDuration: int;
 
   struct NumberToken {
-    NumberToken() : m_value(0), m_objType(ObjTypeFunda::eVoid) {}
-    NumberToken(GeneralValue value, ObjTypeFunda::EType objType) : m_value(value), m_objType(objType) {}
+    NumberToken() : m_value(0), m_objType(ObjType::eVoid) {}
+    NumberToken(GeneralValue value, ObjType::EType objType) : m_value(value), m_objType(objType) {}
     GeneralValue m_value;
-    ObjTypeFunda::EType m_objType;
+    ObjType::EType m_objType;
   };
 }
 
@@ -138,7 +138,7 @@ and by declaration of free function yylex */
   NOINIT "noinit"
 ;
 
-%token <ObjTypeFunda::EType> FUNDAMENTAL_TYPE
+%token <ObjType::EType> FUNDAMENTAL_TYPE
 %token <std::string> OP_NAME 
 %token <std::string> ID "identifier"
 %token <NumberToken> NUMBER "number"
@@ -257,7 +257,7 @@ type
   ;
 
 opt_type
-  : %empty                                          { $$ = new AstObjTypeSymbol(ObjTypeFunda::eInt); }
+  : %empty                                          { $$ = new AstObjTypeSymbol(ObjType::eInt); }
   | type                                            { swap($$,$1); }
   ;
 
@@ -266,7 +266,7 @@ type_arg
   ;
 
 opt_type_arg
-  : %empty                                          { $$ = new AstObjTypeSymbol(ObjTypeFunda::eInt); }
+  : %empty                                          { $$ = new AstObjTypeSymbol(ObjType::eInt); }
   | type_arg                                        { swap($$,$1); }
   ;
 
@@ -338,7 +338,7 @@ operator_expr
   /* binary operators */
   | sub_expr EQUAL       sub_expr                   { $$ = new AstOperator('=', $1, $3); }
   | sub_expr EQUAL_LESS  sub_expr                   { $$ = new AstOperator("=<", $1, $3); }
-  | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eLocal, new AstCtList($3)); }
+  | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, new AstObjTypeSymbol(ObjType::eInt), StorageDuration::eLocal, new AstCtList($3)); }
   | sub_expr OR          sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr PIPE_PIPE   sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
   | sub_expr AND         sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }

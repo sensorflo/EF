@@ -85,8 +85,8 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
 }
 
 /** Creates a new'ed AST tree which imposes the given access on obj. It is
-assumed that the ObjType of obj is ObjTypeFunda::eInt. The ObjType of the
-returned AstObject is ObjTypeFunda::eInt */
+assumed that the ObjType of obj is ObjType::eInt. The ObjType of the
+returned AstObject is ObjType::eInt */
 AstObject* createAccessTo(AstObject* obj, Access access);
 
 /** as the above, whereas obj is 'new AstSymbol(symbolName)' */

@@ -22,6 +22,21 @@ namespace llvm {
 Multiple AstObjType nodes may refer to one ObjType. */
 class ObjType : public EnvNode, public std::enable_shared_from_this<ObjType> {
 public:
+  enum EType {
+    // abstract objects
+    eVoid,
+    eNoreturn,
+    // concrete objects
+    eChar,
+    eInt,
+    eBool,
+    eDouble,
+    eNullptr, // not itself a pointer
+    // implemented in derived classes
+    ePointer,
+
+    eTypeCnt
+  };
   // works as bit flags
   enum Qualifiers {
     eNoQualifier = 0,
@@ -134,22 +149,6 @@ scalar' (note that it also includes abstract objects) might be a better
 name. */
 class ObjTypeFunda : public ObjType {
 public:
-  enum EType {
-    // abstract objects
-    eVoid,
-    eNoreturn,
-    // concrete objects
-    eChar,
-    eInt,
-    eBool,
-    eDouble,
-    eNullptr, // not itself a pointer
-      // implemented in derived classes
-      ePointer,
-
-    eTypeCnt
-  };
-
   ObjTypeFunda(EType type);
 
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
