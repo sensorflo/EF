@@ -27,21 +27,21 @@ class AstNode {
 public:
   virtual ~AstNode() = default;
 
+  // -- new virtual methods
   virtual void accept(AstVisitor& visitor) =0;
   virtual void accept(AstConstVisitor& visitor) const =0;
-
   /** See AstObject::m_accessFromAstParent. For non-AstObject types, access
   can only be eIgnore. It's a kludge that this method is a member of AstNode,
   the author hasn't found another way to implement
   SemanticAnalizer::visit(AstSeq& seq).*/
   virtual void setAccessFromAstParent(Access access) = 0;
-
   /** For AstObject's, identical to object().objType().isNoreturn(); for all
   others it always returns false, i.e. also for
   AstObjTypeSymbol(ObjTypeFunda::eNoReturn). It's a kludge that this method is
   a member of AstNode, see also setAccessFromAstParent. */
   virtual bool isObjTypeNoReturn() const { return false; }
 
+  // -- misc
   std::string toStr() const;
 
 protected:
@@ -73,8 +73,6 @@ public:
 
   // -- overrides for AstObject
   Access accessFromAstParent() const override;
-
-  // -- new virtual methods
   Object& object() override { return *this; }
   const Object& object() const override { return *this; }
 
@@ -195,7 +193,7 @@ public:
   void createAndSetObjType();
 
 private:
-  // -- associated object
+  // -- to implement overrides for Object
   /** Redundant to m_args and m_ret */
   mutable std::shared_ptr<const ObjTypeFun> m_objType;
 
@@ -328,8 +326,10 @@ public:
 private:
   friend class TestingAstSymbol;
 
-  // -- associated object
+  // -- to implement overrides for Object
   AstObjDef* m_referencedAstObj;
+
+  // -- to implement overrides for AstNode
   /** See AstObjInstance::m_accessFromAstParent */
   Access m_accessFromAstParent;
 
@@ -436,12 +436,10 @@ private:
   friend std::basic_ostream<char>& operator<<(std::basic_ostream<char>&,
     AstOperator::EOperation);
 
-  // -- associated object
+  // -- to implement overrides for Object
   /** For operands which return by reference: Currently only
   AstOperator::eAssign */
   Object* m_referencedObj;
-  /** See AstObjInstance::m_accessFromAstParent */
-  Access m_accessFromAstParent;
   /** For the case we must be the owner of m_referencedObj's pointee */
   std::unique_ptr<Object> m_dummy;
   /** In case m_referencedObj is non-nullptr, redundant to
@@ -450,6 +448,10 @@ private:
   /** In case m_referencedObj is non-nullptr, redundant to
   m_referencedObj->m_storageDuration */
   StorageDuration m_storageDuration;
+
+  // -- to implement overrides for AstNode
+  /** See AstObjInstance::m_accessFromAstParent */
+  Access m_accessFromAstParent;
 
   // -- childs of this node
   const EOperation m_op;
@@ -492,7 +494,7 @@ public:
 private:
   AstObject& lastOperand() const;
 
-  // -- associated object
+  // -- to implement overrides for AstNode
   /** See AstObjInstance::m_accessFromAstParent */
   Access m_accessFromAstParent;
 
@@ -525,7 +527,7 @@ public:
   void setObjectType(std::shared_ptr<const ObjType>);
 
 private:
-  // -- associated object
+  // -- to implement overrides for Object
   std::shared_ptr<const ObjType> m_objType;
 
   // -- childs of this node
@@ -588,9 +590,11 @@ private:
 class AstObjType : public AstNode {
 public:
 
+  // -- overrides for AstNode
   virtual void setAccessFromAstParent(Access access) override {
     assert(access==Access::eIgnoreValueAndAddr); }
 
+  // -- new virtual methods
   virtual void printValueTo(std::ostream& os, GeneralValue value) const =0;
   virtual bool isValueInRange(GeneralValue value) const =0;
   /** The objType of the created AstObject is immutable, since the AstObject

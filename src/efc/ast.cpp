@@ -361,8 +361,8 @@ AstOperator::AstOperator(const string& op, AstCtList* args) :
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_referencedObj{},
-  m_accessFromAstParent{Access::eYetUndefined},
   m_storageDuration{StorageDuration::eYetUndefined},
+  m_accessFromAstParent{Access::eYetUndefined},
   m_op(op),
   m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
   if ( '-' == m_op || '+' == m_op ) {

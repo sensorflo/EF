@@ -15,7 +15,7 @@ public:
   Object();
   virtual ~Object() = default;
 
-  // -- new (pure) virtual methods
+  // -- new virtual methods
   virtual const ObjType& objType() const =0;
   virtual std::shared_ptr<const ObjType> objTypeAsSp() const =0;
   virtual StorageDuration storageDuration() const =0;
