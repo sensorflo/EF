@@ -332,9 +332,9 @@ void IrGen::visit(AstFunDef& funDef) {
 }
 
 void IrGen::visit(AstFunCall& funCall) {
-  funCall.address().accept(*this);
+  funCall.fun().accept(*this);
   Function* callee = static_cast<Function*>(
-    funCall.address().object().irAddrOfIrObject());
+    funCall.fun().object().irAddrOfIrObject());
   assert(callee);
     
   const auto& astArgs = funCall.args().childs();
@@ -347,7 +347,7 @@ void IrGen::visit(AstFunCall& funCall) {
   }
 
   const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(
-    funCall.address().object().objType());
+    funCall.fun().object().objType());
   Value* llvmResult{};
   if ( objTypeFun.ret().isVoid() ) {
     m_builder.CreateCall(callee, llvmArgs);

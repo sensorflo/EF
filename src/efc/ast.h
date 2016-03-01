@@ -339,7 +339,7 @@ private:
 
 class AstFunCall : public AstObjInstance {
 public:
-  AstFunCall(AstObject* address, AstCtList* args = NULL);
+  AstFunCall(AstObject* fun, AstCtList* args = NULL);
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -351,13 +351,13 @@ public:
   virtual StorageDuration storageDuration() const;
 
   // -- childs of this node
-  virtual AstObject& address () const { return *m_address; }
-  AstCtList& args () const { return *m_args; }
+  virtual AstObject& fun() const { return *m_fun; }
+  AstCtList& args() const { return *m_args; }
 
 private:
   // -- childs of this node
   /** Is garanteed to be non-null */
-  const std::unique_ptr<AstObject> m_address;
+  const std::unique_ptr<AstObject> m_fun;
   /** Is garanteed to be non-null */
   const std::unique_ptr<AstCtList> m_args;
 };
