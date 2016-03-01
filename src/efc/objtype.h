@@ -92,6 +92,9 @@ public:
   eSeq, since that operator is never a member. */
   virtual bool hasMember(int op) const = 0;
   virtual bool hasConstructor(const ObjType& other) const = 0;
+  /** Should not be an own function, should be implemented as part of
+  hasMember, but currently its much simpler the way it currently is. */
+  virtual bool hasFunCallOperator() const { return false; }
 
   static bool matchesFully_(const ObjType& src, const ObjType& dst);
   static bool matchesSaufQualifiers_(const ObjType& src, const ObjType& dst);
@@ -207,6 +210,7 @@ public:
   virtual llvm::Type* llvmType() const;
   virtual bool hasMember(int) const { return false; }
   virtual bool hasConstructor(const ObjType& other) const { return false; }
+  virtual bool hasFunCallOperator() const { return true; }
 
   virtual bool is(EClass class_) const;
   virtual int size() const { return -1;}

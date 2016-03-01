@@ -645,6 +645,9 @@ const ObjType& AstFunCall::objType() const {
 }
 
 std::shared_ptr<const ObjType> AstFunCall::objTypeAsSp() const {
+  // Semantic analyzer's job is to ensured that m_fun->object().objType()
+  // hasFunCallOperator before anybody calls objTypeAsSp. Thus its safe to
+  // cast to ObjTypeFun.
   const auto objTypeFun = std::dynamic_pointer_cast<const ObjTypeFun>(
     m_fun->object().objTypeAsSp());
   assert(objTypeFun);

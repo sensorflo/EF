@@ -290,8 +290,11 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
   }
 
   // -- responsibility 2: semantic analysis
-  const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(
-    funCall.fun().object().objType());
+  const auto& objType = funCall.fun().object().objType();
+  if ( !objType.hasFunCallOperator() ) {
+    Error::throwError(m_errorHandler, Error::eHasNoFunCallOperator);
+  }
+  const auto& objTypeFun = dynamic_cast<const ObjTypeFun&>(objType);
   const auto& argsCall = funCall.args().childs();
   const auto& argsCallee = objTypeFun.args();
   if ( argsCall.size() != argsCallee.size() ) {

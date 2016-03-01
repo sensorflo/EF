@@ -18,6 +18,7 @@ public:
     eNoImplicitConversion,
     eInvalidArguments,
     eNoSuchMember,
+    eHasNoFunCallOperator, // specialization of eNoSuchMember
     eNotInFunBodyContext,
     eUnreachableCode,
     eCTConstRequired,
