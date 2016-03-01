@@ -318,8 +318,9 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   // -- responsibility 2 / part 1 of 2: semantic analysis
   // verify signature before descending into AST subtree, so the subtree can
   // see a valid signature
-  if ( funDef.ret().objType().qualifiers() & ObjType::eMutable ) {
-    Error::throwError(m_errorHandler, Error::eRetTypeCantHaveMutQualifier);
+  const auto defaultQualifiersForRetType = ObjType::eNoQualifier;
+  if ( funDef.ret().objType().qualifiers() != defaultQualifiersForRetType ) {
+    Error::throwError(m_errorHandler, Error::eRetTypeCantHaveExplicitQualifier);
   }
   for (const auto& arg : funDef.declaredArgs()) {
     if (arg->declaredStorageDuration() != StorageDuration::eLocal) {

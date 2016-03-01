@@ -1854,13 +1854,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
-    GIVEN_a_return_type_with_mutable_qualifier,
-    THEN_eRetTypeCantHaveMutQualifier_is_reported,
-    BECAUSE_currently_temporary_objects_are_always_immutable)) {
+    GIVEN_a_return_type_with_explicit_qualifier,
+    THEN_eRetTypeCantHaveExplicitQualifier_is_reported,
+    BECAUSE_the_return_object_belongs_to_the_caller_and_thus_she_gets_to_choose_the_qualifiers)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     pe.mkFunDef("foo",
       new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjType::eInt)),
       new AstNumber(42)),
-    Error::eRetTypeCantHaveMutQualifier, "");
+    Error::eRetTypeCantHaveExplicitQualifier, "");
 
 }
