@@ -1690,6 +1690,18 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
+// Note that eHasNoFunCallOperator is a specialization of eNoSuchMember
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_function_call_to_a_non_function_object,
+    transform,
+    reports_eHasNoFunCallOperator)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstSeq(
+      new AstDataDef("foo", ObjType::eInt),
+      new AstFunCall(new AstSymbol("foo"))),
+    Error::eHasNoFunCallOperator, "");
+}
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_operator_WITH_an_argument_whose_obj_type_does_not_have_that_operator_as_member,
     transform,

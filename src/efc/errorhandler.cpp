@@ -28,6 +28,7 @@ const char* toStr(Error::No no) {
   case Error::eNoImplicitConversion: return "eNoImplicitConversion";
   case Error::eInvalidArguments: return "eInvalidArguments";
   case Error::eNoSuchMember: return "eNoSuchMember";
+  case Error::eHasNoFunCallOperator: return "eHasNoFunCallOperator";
   case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
   case Error::eUnreachableCode: return "eUnreachableCode";
   case Error::eCTConstRequired: return "eCTConstRequired";
