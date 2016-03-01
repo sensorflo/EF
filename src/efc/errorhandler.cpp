@@ -31,7 +31,7 @@ const char* toStr(Error::No no) {
   case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
   case Error::eUnreachableCode: return "eUnreachableCode";
   case Error::eCTConstRequired: return "eCTConstRequired";
-  case Error::eRetTypeCantHaveMutQualifier: return "eRetTypeCantHaveMutQualifier";
+  case Error::eRetTypeCantHaveExplicitQualifier: return "eRetTypeCantHaveExplicitQualifier";
   case Error::eSameArgWasDefinedMultipleTimes: return "eSameArgWasDefinedMultipleTimes";
   case Error::eObjectExpected: return "eObjectExpected";
   case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";

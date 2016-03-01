@@ -21,7 +21,7 @@ public:
     eNotInFunBodyContext,
     eUnreachableCode,
     eCTConstRequired,
-    eRetTypeCantHaveMutQualifier,
+    eRetTypeCantHaveExplicitQualifier,
     eSameArgWasDefinedMultipleTimes,
     eObjectExpected,
     eOnlyLocalStorageDurationApplicable,
