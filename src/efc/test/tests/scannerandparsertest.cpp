@@ -420,7 +420,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "foo(42)", ":;call(foo 42)", spec);
   TEST_PARSE( "foo(42,77)", ":;call(foo 42 77)", spec);
 
-  spec = "Function address can be given by an expression";
+  spec = "Function can be given by an expression";
   TEST_PARSE( "(foo+bar)(42,77)", ":;call(;+(foo bar) 42 77)", spec);
 }
 

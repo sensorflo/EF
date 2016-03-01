@@ -66,7 +66,7 @@ void AstDefaultIterator::visit(AstFunCall& funCall) {
   if ( m_visitor ) {
     funCall.accept(*m_visitor);
   }
-  funCall.address().accept(*this);
+  funCall.fun().accept(*this);
   funCall.args().accept(*this);
 }
 

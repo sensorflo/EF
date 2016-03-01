@@ -633,10 +633,10 @@ AstObject& AstReturn::retVal() const {
   return *m_retVal.get();
 }
 
-AstFunCall::AstFunCall(AstObject* address, AstCtList* args) :
-  m_address(address ? unique_ptr<AstObject>(address) : make_unique<AstSymbol>("")),
+AstFunCall::AstFunCall(AstObject* fun, AstCtList* args) :
+  m_fun(fun ? unique_ptr<AstObject>(fun) : make_unique<AstSymbol>("")),
   m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
-  assert(m_address);
+  assert(m_fun);
   assert(m_args);
 }
 
@@ -646,7 +646,7 @@ const ObjType& AstFunCall::objType() const {
 
 std::shared_ptr<const ObjType> AstFunCall::objTypeAsSp() const {
   const auto objTypeFun = std::dynamic_pointer_cast<const ObjTypeFun>(
-    m_address->object().objTypeAsSp());
+    m_fun->object().objTypeAsSp());
   assert(objTypeFun);
   return objTypeFun->ret().shared_from_this();
 }

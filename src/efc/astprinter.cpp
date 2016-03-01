@@ -85,7 +85,7 @@ void AstPrinter::visit(const AstSymbol& symbol) {
 
 void AstPrinter::visit(const AstFunCall& funCall) {
   m_os << "call(";
-  funCall.address().accept(*this);
+  funCall.fun().accept(*this);
   if (!funCall.args().childs().empty()) {
     m_os << " ";
     funCall.args().accept(*this);

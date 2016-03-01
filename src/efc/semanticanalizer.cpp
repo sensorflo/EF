@@ -283,14 +283,14 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
   preConditionCheck(funCall);
 
   // -- responsibility 1: set access to direct childs and descent AST subtree
-  setAccessAndCallAcceptOn(funCall.address(), Access::eRead);
+  setAccessAndCallAcceptOn(funCall.fun(), Access::eRead);
   for (const auto arg: funCall.args().childs()) {
     setAccessAndCallAcceptOn(*arg, Access::eRead);
   }
 
   // -- responsibility 2: semantic analysis
   const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(
-    funCall.address().object().objType());
+    funCall.fun().object().objType());
   const auto& argsCall = funCall.args().childs();
   const auto& argsCallee = objTypeFun.args();
   if ( argsCall.size() != argsCallee.size() ) {
