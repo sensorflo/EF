@@ -1069,6 +1069,10 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjType::eBool), funCall->objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
+
+  // Note the return type of a function cannot be explicitely qualified. Thus
+  // we cannot test whether the obj type of a a function returning 'mutable T'
+  // is also 'mutable T'
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(

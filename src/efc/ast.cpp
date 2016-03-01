@@ -648,7 +648,7 @@ std::shared_ptr<const ObjType> AstFunCall::objTypeAsSp() const {
   const auto objTypeFun = std::dynamic_pointer_cast<const ObjTypeFun>(
     m_fun->object().objTypeAsSp());
   assert(objTypeFun);
-  return objTypeFun->ret().unqualifiedObjType();
+  return objTypeFun->ret().shared_from_this();
 }
 
 StorageDuration AstFunCall::storageDuration() const {
