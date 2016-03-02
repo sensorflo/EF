@@ -126,8 +126,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
     auto& rhs = argschilds.back()->object().objType();
     if ( op.class_() == AstOperator::eLogical ) {
       if ( !lhs.matchesSaufQualifiers(rhs)
-        && (!op.isBinaryLogicalShortCircuit() ||
-            !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjType::eNoreturn)))) {
+        && (!op.isBinaryLogicalShortCircuit() || !rhs.isNoreturn())) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
       }
     } else if ( class_ != AstOperator::eOther ) {
