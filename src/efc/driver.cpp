@@ -60,6 +60,7 @@ Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream) :
 
 Driver::~Driver() {
   fclose(yyin);
+  fooo;
 }
 
 Scanner& Driver::scanner() {
