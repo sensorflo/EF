@@ -56,8 +56,7 @@ gensrc/scanner.cpp: scanner.l | gensrc
 
 # The author sadly doesn't know how to automatically make the dependencies,
 # that's why they are written explicitely and redundantely.
-efc.h.pch: efc.h objtype.h access.h ast.h generalvalue.h storageduration.h \
-					 envnode.h astforwards.h declutils.h object.h
+efc.h.pch: dummy.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
 out/%.o: gensrc/%.cpp efc.h.pch | out
@@ -98,7 +97,7 @@ runtest runefctest: out/efctest
 
 # The author sadly doesn't know how to automatically make the dependencies,
 # that's why they are written explicitely and redundantely.
-test/efctest.h.pch: test/efctest.h efc.h.pch test/test.h
+test/efctest.h.pch: dummy.h
 	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) -I${GTEST_DIR}/include $< -o $@
 
 # regarding the dependency to out/parser.o, see comment of bison's rule

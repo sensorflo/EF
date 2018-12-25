@@ -1,5 +1,6 @@
 #include "literaltokenstream.h"
 #include "tokentesthelper.h"
+#include "test.h"
 using namespace std;
 using namespace yy;
 
