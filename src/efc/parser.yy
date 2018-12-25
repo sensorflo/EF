@@ -10,10 +10,10 @@
 %define api.value.type variant
 %define parse.assert
 
-/* Declarations and definitions needed to declare semantic value types used in
-tokens produced by scanner. */
 %code requires
 {
+  /* Declarations and definitions needed to declare semantic value types used in
+  tokens produced by scanner. */
   #include "../generalvalue.h"
   #include "../objtype.h"
 
@@ -25,13 +25,11 @@ tokens produced by scanner. */
     GeneralValue m_value;
     ObjTypeFunda::EType m_objType;
   };
-}
 
-/* Further declarations and definitions needed to declare semantic value
-types, which however are only used for non-terminal symbols, i.e. which the
-scanner doesn't need to know */
-%code requires
-{
+
+  /* Further declarations and definitions needed to declare semantic value
+  types, which however are only used for non-terminal symbols, i.e. which the
+  scanner doesn't need to know */
   #include "../astforwards.h"
 
   class RawAstDataDef;
@@ -40,12 +38,9 @@ scanner doesn't need to know */
     AstObject* m_condition;
     AstObject* m_action;
   };
-}
 
-/* Further declarations and definitions needed to declare the generated parser
-*/
-%code requires
-{
+
+  /* Further declarations and definitions needed to declare the generated parser */
   class Driver;
   class ParserExt;
   class AstNode;
