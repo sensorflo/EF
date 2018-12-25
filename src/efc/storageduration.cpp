@@ -8,6 +8,7 @@ std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
   case StorageDuration::eLocal: return os;
   case StorageDuration::eStatic: return os << "static";
   case StorageDuration::eMember: return os << "member";
+  default: return os;
   }
 }
 

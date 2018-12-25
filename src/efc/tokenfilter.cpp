@@ -41,6 +41,7 @@ Parser::symbol_type TokenFilter::pop() {
       }
       return ret;
     }
+    default: assert(false); return newlineToken;
     }
   }
 

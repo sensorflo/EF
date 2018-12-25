@@ -60,10 +60,10 @@ public:
   this, likewise for eMatchButAnyQualifierIsStronger. */
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const = 0;
   virtual MatchType match2(const ObjTypeQuali& src, bool isLevel0) const;
-  virtual MatchType match2(const ObjTypeFunda& src, bool isLevel0) const { return eNoMatch; }
-  virtual MatchType match2(const ObjTypePtr& src, bool isLevel0) const { return eNoMatch; }
-  virtual MatchType match2(const ObjTypeFun& src, bool isLevel0) const { return eNoMatch; }
-  virtual MatchType match2(const ObjTypeClass& src, bool isLevel0) const { return eNoMatch; }
+  virtual MatchType match2(const ObjTypeFunda& /*src*/, bool /*isLevel0*/) const { return eNoMatch; }
+  virtual MatchType match2(const ObjTypePtr& /*src*/, bool /*isLevel0*/) const { return eNoMatch; }
+  virtual MatchType match2(const ObjTypeFun& /*src*/, bool /*isLevel0*/) const { return eNoMatch; }
+  virtual MatchType match2(const ObjTypeClass& /*src*/, bool /*isLevel0*/) const { return eNoMatch; }
 
   virtual bool is(EClass class_) const =0;
   /** Size in bits */
@@ -209,7 +209,7 @@ public:
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
   virtual llvm::Type* llvmType() const;
   virtual bool hasMember(int) const { return false; }
-  virtual bool hasConstructor(const ObjType& other) const { return false; }
+  virtual bool hasConstructor(const ObjType& /*other*/) const { return false; }
 
   virtual bool is(EClass class_) const;
   virtual int size() const { return -1;}
