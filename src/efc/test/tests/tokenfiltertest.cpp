@@ -63,9 +63,22 @@ TEST(TokenFilterTest, MAKE_TEST_NAME2(
 }
 
 TEST(TokenFilterTest, MAKE_TEST_NAME2(
-    GIVEN_an_token_of_class_starter_or_start_of_stream,
-    THEN_then_any_trailing_NEWLINE_tokens_are_droped) ) {
+    GIVEN_the_beginning_of_a_stream_of_tokens,
+    THEN_then_any_leading_NEWLINE_tokens_are_droped) ) {
+  // the A_STARTER_TOK is to prevent the implicitely added TOK_END_OF_FILE to
+  // eat the newlines, so the newlines have to be eaten by the start-of-stream
+  // rule
+  TEST_TOKENFILTER(
+    TOKIL2(TOK_NEWLINE, A_STARTER_TOK),
+    TOKIL1(A_STARTER_TOK), "");
+  TEST_TOKENFILTER(
+    TOKIL3(TOK_NEWLINE, TOK_NEWLINE, A_STARTER_TOK),
+    TOKIL1(A_STARTER_TOK), "");
+}
 
+TEST(TokenFilterTest, MAKE_TEST_NAME2(
+    GIVEN_an_token_of_class_starter,
+    THEN_then_any_trailing_NEWLINE_tokens_are_droped) ) {
   string spec = "Example: token of class starter with trailing newlines";
   TEST_TOKENFILTER(
     BOUNDED_TOKIL2(A_STARTER_TOK, TOK_NEWLINE),
@@ -73,17 +86,6 @@ TEST(TokenFilterTest, MAKE_TEST_NAME2(
   TEST_TOKENFILTER(
     BOUNDED_TOKIL3(A_STARTER_TOK, TOK_NEWLINE, TOK_NEWLINE),
     BOUNDED_TOKIL1(A_STARTER_TOK), spec);
-
-  // the A_STARTER_TOK is to prevent the implicitely added TOK_END_OF_FILE to
-  // eat the newlines, so the newlines have to be eaten by the start-of-stream
-  // rule
-  spec = "Example: start of stream has newlines";
-  TEST_TOKENFILTER(
-    TOKIL2(TOK_NEWLINE, A_STARTER_TOK),
-    TOKIL1(A_STARTER_TOK), spec);
-  TEST_TOKENFILTER(
-    TOKIL3(TOK_NEWLINE, TOK_NEWLINE, A_STARTER_TOK),
-    TOKIL1(A_STARTER_TOK), spec);
 
   spec = "border case: starter token with no trailing NEWLINEs";
   TEST_TOKENFILTER(
