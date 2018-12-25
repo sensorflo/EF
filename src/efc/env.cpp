@@ -3,6 +3,7 @@
 #include <thread>
 #include <deque>
 #include <sstream>
+#include <cassert>
 using namespace std;
 
 static bool dummyBool;

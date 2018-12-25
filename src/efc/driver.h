@@ -3,11 +3,11 @@
 #include <string>
 #include <memory>
 
+#include "astforwards.h"
 namespace yy {
   class Parser; 
   class location; 
 }
-class AstNode;
 class ErrorHandler;
 class Env;
 class ParserExt;

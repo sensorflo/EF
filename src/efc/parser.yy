@@ -15,8 +15,8 @@ tokens produced by scanner. */
 %code requires
 {
   #include "../generalvalue.h"
+  #include "../objtype.h"
 
-  class ObjTypeFunda;
   enum class StorageDuration: int;
 
   struct NumberToken {
@@ -32,7 +32,10 @@ types, which however are only used for non-terminal symbols, i.e. which the
 scanner doesn't need to know */
 %code requires
 {
+  #include "../astforwards.h"
+
   class RawAstDataDef;
+
   struct ConditionActionPair {
     AstObject* m_condition;
     AstObject* m_action;
@@ -74,6 +77,7 @@ and by declaration of free function yylex */
   #include "../parserext.h"
   #include "../objtype.h"
   #include "../storageduration.h"
+  #include "../ast.h"
   using namespace std;
   using namespace yy;
 

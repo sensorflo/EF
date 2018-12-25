@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 
 enum class StorageDuration {
   /** For StorageDuration variables which's proper value is not yet defined. */

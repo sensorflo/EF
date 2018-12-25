@@ -1,5 +1,7 @@
 #include "envnode.h"
 #include <sstream>
+#include <cassert>
+#include <algorithm>
 
 using namespace std;
 

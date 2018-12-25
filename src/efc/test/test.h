@@ -1,5 +1,6 @@
 #pragma once
 #include "gtest/gtest.h"
+#include "../access.h"
 #include <string>
 #include <memory>
 class AstNode;
