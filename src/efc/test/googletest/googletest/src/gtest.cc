@@ -2404,11 +2404,12 @@ static std::string FormatCxxExceptionMessage(const char* description,
 }
 
 static std::string PrintTestPartResultToString(
-    const TestPartResult& test_part_result);
+    const TestPartResult& test_part_result, const string& test_name);
 
 GoogleTestFailureException::GoogleTestFailureException(
     const TestPartResult& failure)
-    : ::std::runtime_error(PrintTestPartResultToString(failure).c_str()) {}
+    // TODO: Pass correct test name to PrintTestPartResultToString
+    : ::std::runtime_error(PrintTestPartResultToString(failure, "<unknown test name>").c_str()) {}
 
 #endif  // GTEST_HAS_EXCEPTIONS
 
@@ -2874,7 +2875,7 @@ static const char * TestPartResultTypeToString(TestPartResult::Type type) {
 #ifdef _MSC_VER
       return "error: ";
 #else
-      return "Failure\n";
+      return "Following specification was not met:\n";
 #endif
     default:
       return "Unknown result type";
@@ -2885,18 +2886,35 @@ namespace internal {
 
 // Prints a TestPartResult to an std::string.
 static std::string PrintTestPartResultToString(
-    const TestPartResult& test_part_result) {
-  return (Message()
+    const TestPartResult& test_part_result,
+    const string& test_name) {
+
+    FILE* stream = popen((string("testdox -t -n ") + test_name).c_str() , "r");
+    assert(stream);
+    string prettyTestName;
+    while (!feof(stream)) {
+        char buf[1024];
+        if (fgets(buf, sizeof(buf), stream) != NULL) {
+            prettyTestName += buf;
+        }
+    }  
+    pclose(stream);
+    return (Message()
+          << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
           << internal::FormatFileLocation(test_part_result.file_name(),
                                           test_part_result.line_number())
           << " " << TestPartResultTypeToString(test_part_result.type())
-          << test_part_result.message()).GetString();
+          << prettyTestName << "\n"
+          << test_part_result.message()
+          << "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          ).GetString();
 }
 
 // Prints a TestPartResult.
-static void PrintTestPartResult(const TestPartResult& test_part_result) {
+static void PrintTestPartResult(const TestPartResult& test_part_result,
+    const string& testName) {
   const std::string& result =
-      PrintTestPartResultToString(test_part_result);
+    PrintTestPartResultToString(test_part_result, testName);
   printf("%s\n", result.c_str());
   fflush(stdout);
   // If the test program runs in Visual Studio or a debugger, the
@@ -3119,6 +3137,7 @@ class PrettyUnitTestResultPrinter : public TestEventListener {
 
  private:
   static void PrintFailedTests(const UnitTest& unit_test);
+  std::string m_testName;
 };
 
   // Fired before each iteration of tests starts.
@@ -3181,6 +3200,7 @@ void PrettyUnitTestResultPrinter::OnTestStart(const TestInfo& test_info) {
   ColoredPrintf(COLOR_GREEN,  "[ RUN      ] ");
   PrintTestName(test_info.test_case_name(), test_info.name());
   printf("\n");
+  m_testName = test_info.name();
   fflush(stdout);
 }
 
@@ -3192,7 +3212,7 @@ void PrettyUnitTestResultPrinter::OnTestPartResult(
     return;
 
   // Print failure message from the assertion (e.g. expected this and got that).
-  PrintTestPartResult(result);
+  PrintTestPartResult(result, m_testName);
   fflush(stdout);
 }
 
