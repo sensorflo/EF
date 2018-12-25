@@ -1,9 +1,9 @@
-:encoding: UTF-8
 // The markup language of this document is AsciiDoc
-
-= The EF Programming Language
+:encoding: UTF-8
 :author: Florian Kaufmann and Elias Diem
 :revdate: January 2015
+
+= The EF Programming Language
 
 https://github.com/sensorflo/EF[The EF Programming Language] (C) by Florian
 Kaufmann <sensorflo@gmail.com> and Elias Diem <pub@webconect.ch> is licensed

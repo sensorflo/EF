@@ -60,7 +60,7 @@ void testParseReportsError(const string efProgram, Error::No expectedErrorNo,
 
   else {
     // ... only exactly one error is reported
-    EXPECT_EQ(1, errors.size()) <<
+    EXPECT_EQ(1U, errors.size()) <<
       "Expecting exactly one error\n" <<
       amendSpec(spec) << amend(driver.d().errorHandler()) << amendEfProgram(efProgram);
 

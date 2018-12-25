@@ -43,7 +43,7 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstObject* astRoot,
     amendSpec(spec) << amendAst(astRoot) << amend(*UUT.m_errorHandler) <<
     "\nexceptionwhat: " << excptionwhat;
   const ErrorHandler::Container& errors = UUT.m_errorHandler->errors();
-  EXPECT_EQ(1, errors.size()) <<
+  EXPECT_EQ(1U, errors.size()) <<
     "Expecting exactly one error\n" << 
     amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
   if ( !errors.empty() ) {
@@ -99,7 +99,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
   UUT.compile();
 
   // verify
-  EXPECT_EQ( 0, errorMsgFromDriver.str().length() ) <<
+  EXPECT_EQ( 0U, errorMsgFromDriver.str().length() ) <<
     "\n" <<
     "errorMsgFromDriver: \"" << errorMsgFromDriver.str() << "\"\n" <<
     "EF program: \"" << well_formed_ef_program << "\"\n" <<
@@ -121,7 +121,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
   UUT.compile();
 
   // verify
-  EXPECT_EQ( 0, errorMsgFromDriver.str().find("Build error(s):")) <<
+  EXPECT_EQ( 0U, errorMsgFromDriver.str().find("Build error(s):")) <<
     "\n" <<
     "errorMsgFromDriver: \"" << errorMsgFromDriver.str() << "\"\n" <<
     "EF program: \"" << ef_program_with_error << "\"\n";

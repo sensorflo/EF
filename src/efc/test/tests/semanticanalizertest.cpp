@@ -52,7 +52,7 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
 
   else {
     // verify that only exactly one error is reported
-    EXPECT_EQ(1, errors.size()) <<
+    EXPECT_EQ(1U, errors.size()) <<
       "Expecting error " << expectedErrorNo << "\n" <<
       amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast) <<
       amend(UUT.m_env);
@@ -180,7 +180,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     // verify
     const auto& objType = ast->objType();
     EXPECT_EQ("foo", objType.name());
-    EXPECT_EQ(2, objType.members().size());
+    EXPECT_EQ(2U, objType.members().size());
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), *objType.members().at(0));
     EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eDouble), *objType.members().at(1));
   }

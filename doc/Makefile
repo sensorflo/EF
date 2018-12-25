@@ -1,5 +1,6 @@
 all: out doc
 
+# BUG: does not work, i.e. it doesn't create the out dir when needed
 out:
 	mkdir -p out
 

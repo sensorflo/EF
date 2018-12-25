@@ -1,10 +1,11 @@
-CXXFLAGS += `llvm-config --cxxflags | sed 's/-fno-exceptions\|-DNDEBUG//g'` -O0 -Wall -Werror -std=c++14 -Wno-deprecated-register #-pedantic
+# Set LLVM_ENABLE_RTTI to ON in llvm's CMakeCache.txt, because bison uses rtti
+CXXFLAGS += `llvm-config --cxxflags | sed 's/-fno-exceptions\|-Wno-maybe-uninitialized\|-DNDEBUG//g'` -O0 -Wall -Werror -std=c++14 -Wno-deprecated-register #-pedantic
 LDFLAGS += `llvm-config --ldflags`
 LIBS += `llvm-config --libs core mcjit native interpreter --system-libs | sed 's/-ledit//g'`
 CXX = clang++
 LEX = flex
 YACC = bison
-GTEST_DIR = /home/sensorflo/src/gtest
+GTEST_DIR = /home/sensorflo/src/googletest/googletest
 BISON_DATA_DIR := $(shell bison --print-datadir)
 
 all: out/efc
@@ -44,11 +45,10 @@ efc: out/efc
 # finished being built, altough actually the auto generated dependencies
 # (out/*.P) should prevent that. The current workaround is to make these rules
 # depend on out/parser.o.
-gensrc/%.cpp gensrc/%.hpp: %.yy parser.hpp.patch | gensrc
+gensrc/%.cpp gensrc/%.hpp: %.yy | gensrc
 	$(YACC) $(YFLAGS) --verbose -x -Werror --warnings=all -d -o gensrc/parser.cpp $<;\
     yaccexitstatus=$$?;\
     xsltproc $(BISON_DATA_DIR)/xslt/xml2xhtml.xsl gensrc/parser.xml > gensrc/parser.xhtml;\
-    patch gensrc/parser.hpp < parser.hpp.patch;\
     exit $$yaccexitstatus
 
 gensrc/scanner.cpp: scanner.l | gensrc
@@ -94,28 +94,27 @@ EFCTEST_OBJS = $(patsubst %.cpp, out/%.o, \
 test efctest: out/efctest
 
 runtest runefctest: out/efctest
-	$<
+	PATH="${PWD}/out:${PATH}" $<
 
 # The author sadly doesn't know how to automatically make the dependencies,
 # that's why they are written explicitely and redundantely.
 test/efctest.h.pch: test/efctest.h efc.h.pch test/test.h
-	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) $< -o $@
+	$(CXX) -x c++-header $(CXXFLAGS) $(CPPFLAGS) -I${GTEST_DIR}/include $< -o $@
 
 # regarding the dependency to out/parser.o, see comment of bison's rule
 out/%.o: test/%.cpp test/efctest.h.pch out/parser.o | out
-	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers)
+	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers -I ${GTEST_DIR}/include)
 
 out/%.o: test/tests/%.cpp test/efctest.h.pch out/parser.o | out
-	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers)
+	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers -I ${GTEST_DIR}/include)
 
 out/%.o: test/testhelpers/%.cpp test/efctest.h.pch out/parser.o | out
-	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers)
+	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers -I ${GTEST_DIR}/include)
 
 out/%.o: test/tests/testhelpers/%.cpp test/efctest.h.pch out/parser.o | out
-	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers)
+	$(call build_cpp, test/efctest.h, -I test -I test/testhelpers -I ${GTEST_DIR}/include)
 
-
-out/libgtest.a: ${GTEST_DIR}/src/gtest-all.cc
+out/libgtest.a: ${GTEST_DIR}/src/gtest-all.cc ${GTEST_DIR}/src/gtest.cc ${GTEST_DIR}/src/gtest-death-test.cc ${GTEST_DIR}/src/gtest-filepath.cc ${GTEST_DIR}/src/gtest-port.cc ${GTEST_DIR}/src/gtest-printers.cc ${GTEST_DIR}/src/gtest-test-part.cc ${GTEST_DIR}/src/gtest-typed-test.cc
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c -o out/gtest-all.o $<
 	$(AR) $(ARFLAGS) $@ out/gtest-all.o
 

@@ -19,6 +19,8 @@ using namespace llvm;
 
 Value* const IrGen::m_abstractObject = reinterpret_cast<Value*>(0xFFFFFFFF);
 
+llvm::LLVMContext llvmContext{};
+
 void IrGen::staticOneTimeInit() {
   InitializeNativeTarget();
   InitializeNativeTargetAsmPrinter();
@@ -26,7 +28,7 @@ void IrGen::staticOneTimeInit() {
 }
 
 IrGen::IrGen(ErrorHandler& errorHandler) :
-  m_builder(getGlobalContext()),
+  m_builder(llvmContext),
   m_errorHandler(errorHandler) {
 }
 
@@ -35,7 +37,7 @@ implict LLVM module associated with this IrGen object.  At the top level of
 the AST, only declarations or definitions are allowed.
 \pre SemanticAnalizer must have massaged the AST and the Env */
 unique_ptr<Module> IrGen::genIr(AstNode& root) {
-  m_module = std::make_unique<Module>("Main", getGlobalContext());
+  m_module = std::make_unique<Module>("Main", llvmContext);
 
   IrGenForwardDeclarator{m_errorHandler, *m_module}(root);
 
@@ -94,7 +96,7 @@ void IrGen::visit(AstCast& cast) {
     else if (newsize == 1) {
       assert(oldsize==32);
       irResult = m_builder.CreateICmpNE(childIr,
-          ConstantInt::get(getGlobalContext(), APInt(oldsize, 0)), irValueName);
+          ConstantInt::get(llvmContext, APInt(oldsize, 0)), irValueName);
     }
     // between non-bool integrals, smaller -> larger
     else if (oldsize < newsize) {
@@ -130,7 +132,7 @@ void IrGen::visit(AstCast& cast) {
     // bool
     if ( newsize==1 ) {
       irResult = m_builder.CreateFCmpONE( childIr,
-          ConstantFP::get(getGlobalContext(), APFloat(0.0)), irValueName);
+          ConstantFP::get(llvmContext, APFloat(0.0)), irValueName);
     }
     // unsigned types: char
     else if ( newsize==8 ) {
@@ -173,9 +175,9 @@ void IrGen::visit(AstOperator& op) {
   else if (op.isBinaryLogicalShortCircuit()) {
     const string opname = op.op()==AstOperator::eAnd ? "and" : "or";
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
-    BasicBlock* rhsBB = BasicBlock::Create(getGlobalContext(),
+    BasicBlock* rhsBB = BasicBlock::Create(llvmContext,
       opname + "_rhs");
-    BasicBlock* mergeBB = BasicBlock::Create(getGlobalContext(),
+    BasicBlock* mergeBB = BasicBlock::Create(llvmContext,
       opname + "_merge");
 
     // current/lhs BB:
@@ -200,7 +202,7 @@ void IrGen::visit(AstOperator& op) {
     // mergeBB:
     functionIr->getBasicBlockList().push_back(mergeBB);
     m_builder.SetInsertPoint(mergeBB);
-    PHINode* phi = m_builder.CreatePHI( Type::getInt1Ty(getGlobalContext()),
+    PHINode* phi = m_builder.CreatePHI( Type::getInt1Ty(llvmContext),
       2, opname);
     assert(phi);
     phi->addIncoming(llvmLhs, lhsLastBB);
@@ -255,14 +257,14 @@ void IrGen::visit(AstOperator& op) {
     auto llvmOperand = callAcceptOn(*operand);
 
     if (objType.is(ObjType::eStoredAsIntegral)) {
-      auto llvmZero = ConstantInt::get(getGlobalContext(), APInt(objType.size(), 0));
+      auto llvmZero = ConstantInt::get(llvmContext, APInt(objType.size(), 0));
       switch (op.op()) {
       case '-': llvmResult = m_builder.CreateSub   (llvmZero, llvmOperand, "neg"); break;
       case '+': llvmResult = llvmOperand; break;
       default: assert(false);
       }
     } else {
-      auto llvmZero = ConstantFP::get(getGlobalContext(), APFloat(0.0));
+      auto llvmZero = ConstantFP::get(llvmContext, APFloat(0.0));
       switch (op.op()) {
       case '-': llvmResult = m_builder.CreateFSub  (llvmZero, llvmOperand, "fneg"); break;
       case '+': llvmResult = llvmOperand; break;
@@ -297,7 +299,7 @@ void IrGen::visit(AstSymbol& symbol) {
 }
 
 void IrGen::visit(AstFunDef& funDef) {
-  const auto functionIr = dynamic_cast<llvm::Function*>(
+  const auto functionIr = static_cast<llvm::Function*>(
     funDef.irAddrOfIrObject());
   assert(functionIr);
 
@@ -305,7 +307,7 @@ void IrGen::visit(AstFunDef& funDef) {
     m_BasicBlockStack.push(m_builder.GetInsertBlock());
   }
   m_builder.SetInsertPoint(
-    BasicBlock::Create(getGlobalContext(), "entry", functionIr));
+    BasicBlock::Create(llvmContext, "entry", functionIr));
 
   // Add all arguments to the symbol table and create their allocas. Also tell
   // llvm the name of each arg.
@@ -387,9 +389,9 @@ void IrGen::visit(AstDataDef& dataDef) {
 void IrGen::visit(AstIf& if_) {
   // setup needed basic blocks
   Function* functionIr = m_builder.GetInsertBlock()->getParent();
-  BasicBlock* ThenFirstBB = BasicBlock::Create(getGlobalContext(), "if_then", functionIr);
-  BasicBlock* ElseFirstBB = BasicBlock::Create(getGlobalContext(), "if_else");
-  BasicBlock* MergeBB = BasicBlock::Create(getGlobalContext(), "if_merge");
+  BasicBlock* ThenFirstBB = BasicBlock::Create(llvmContext, "if_then", functionIr);
+  BasicBlock* ElseFirstBB = BasicBlock::Create(llvmContext, "if_else");
+  BasicBlock* MergeBB = BasicBlock::Create(llvmContext, "if_merge");
 
   // current BB:
   Value* condIr = callAcceptOn(if_.condition());
@@ -439,9 +441,9 @@ void IrGen::visit(AstIf& if_) {
 void IrGen::visit(AstLoop& loop) {
   // setup needed basic blocks
   Function* functionIr = m_builder.GetInsertBlock()->getParent();
-  BasicBlock* condBB = BasicBlock::Create(getGlobalContext(), "loop_cond");
-  BasicBlock* bodyBB = BasicBlock::Create(getGlobalContext(), "loop_body");
-  BasicBlock* afterBB = BasicBlock::Create(getGlobalContext(), "after_loop");
+  BasicBlock* condBB = BasicBlock::Create(llvmContext, "loop_cond");
+  BasicBlock* bodyBB = BasicBlock::Create(llvmContext, "loop_body");
+  BasicBlock* afterBB = BasicBlock::Create(llvmContext, "after_loop");
 
   // current BB:
   m_builder.CreateBr(condBB);

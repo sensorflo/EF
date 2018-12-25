@@ -3,6 +3,7 @@
 #include "astvisitor.h"
 #include "astprinter.h"
 #include "errorhandler.h"
+#include "irgen.h"
 #include <cassert>
 #include <stdexcept>
 using namespace std;
@@ -751,11 +752,11 @@ llvm::Value* AstObjTypeSymbol::createLlvmValueFrom(GeneralValue value) const {
   case ObjTypeFunda::eChar: // fall through
   case ObjTypeFunda::eInt:  // fall through
   case ObjTypeFunda::eBool:
-    return llvm::ConstantInt::get( llvm::getGlobalContext(),
+    return llvm::ConstantInt::get(llvmContext,
       llvm::APInt(objType().size(), value));
     break;
   case ObjTypeFunda::eDouble:
-    return llvm::ConstantFP::get( llvm::getGlobalContext(), llvm::APFloat(value));
+    return llvm::ConstantFP::get(llvmContext, llvm::APFloat(value));
     break;
   default:
     assert(false);

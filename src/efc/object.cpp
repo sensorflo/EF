@@ -52,9 +52,9 @@ void Object::initializeIrObject(Value* irValue, IRBuilder<>& builder) {
   if ( isStoredInMemory() ) {
     assert(m_irAddrOfIrObject);
     if ( storageDuration()==StorageDuration::eStatic ) {
-      const auto globalVariable = dynamic_cast<GlobalVariable*>(
+      const auto globalVariable = static_cast<GlobalVariable*>(
         m_irAddrOfIrObject);
-      const auto constantInitializer = dynamic_cast<Constant*>(irValue);
+      const auto constantInitializer = static_cast<Constant*>(irValue);
       globalVariable->setInitializer(constantInitializer);
     } else if ( storageDuration()==StorageDuration::eLocal )  {
       builder.CreateStore(irValue, m_irAddrOfIrObject);

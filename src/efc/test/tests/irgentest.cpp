@@ -652,9 +652,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     Function* functionIr = module->getFunction(".foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
+    EXPECT_EQ(Type::getInt32Ty(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(functionIr->arg_size(), 0)
+    EXPECT_EQ(functionIr->arg_size(), 0U)
       << amendAst(ast) << amendSpec(spec);
   }
 
@@ -682,9 +682,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     Function* functionIr = module->getFunction(".foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
+    EXPECT_EQ(Type::getInt32Ty(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(functionIr->arg_size(), 2)
+    EXPECT_EQ(functionIr->arg_size(), 2U)
       << amendAst(ast) << amendSpec(spec);
   }
 }
@@ -713,9 +713,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     Function* functionIr = module->getFunction(".foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(Type::getInt32Ty(getGlobalContext()), functionIr->getReturnType())
+    EXPECT_EQ(Type::getInt32Ty(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(functionIr->arg_size(), 0)
+    EXPECT_EQ(functionIr->arg_size(), 0U)
       << amendAst(ast) << amendSpec(spec);
   }
 
@@ -742,9 +742,9 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     Function* functionIr = module->getFunction(".foo");
     EXPECT_TRUE(functionIr!=NULL)
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(Type::getVoidTy(getGlobalContext()), functionIr->getReturnType())
+    EXPECT_EQ(Type::getVoidTy(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(2, functionIr->arg_size())
+    EXPECT_EQ(2U, functionIr->arg_size())
       << amendAst(ast) << amendSpec(spec);
   }
 }

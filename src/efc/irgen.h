@@ -3,6 +3,7 @@
 #include "access.h"
 #include "astvisitor.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
 #include <stack>
 #include <string>
 #include <memory>
@@ -64,3 +65,5 @@ private:
   which means '(accidentaly) not (yet) set)'. */
   static llvm::Value* const m_abstractObject;
 };
+
+extern llvm::LLVMContext llvmContext;

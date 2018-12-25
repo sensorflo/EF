@@ -1,6 +1,6 @@
 #include "objtype.h"
 #include "ast.h"
-#include "llvm/IR/LLVMContext.h"
+#include "irgen.h"
 #include <cassert>
 #include <sstream>
 using namespace std;
@@ -236,12 +236,12 @@ int ObjTypeFunda::size() const {
 
 llvm::Type* ObjTypeFunda::llvmType() const {
   switch (m_type) {
-  case eVoid: return Type::getVoidTy(getGlobalContext());
+  case eVoid: return Type::getVoidTy(llvmContext);
   case eNoreturn: return nullptr;
-  case eChar: return Type::getInt8Ty(getGlobalContext());
-  case eInt: return Type::getInt32Ty(getGlobalContext());
-  case eDouble: return Type::getDoubleTy(getGlobalContext());
-  case eBool: return Type::getInt1Ty(getGlobalContext());
+  case eChar: return Type::getInt8Ty(llvmContext);
+  case eInt: return Type::getInt32Ty(llvmContext);
+  case eDouble: return Type::getDoubleTy(llvmContext);
+  case eBool: return Type::getInt1Ty(llvmContext);
   case ePointer: assert(false); // actually implemented by derived class
   case eNullptr: assert(false);
   case eTypeCnt: assert(false);

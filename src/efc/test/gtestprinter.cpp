@@ -43,6 +43,7 @@ namespace testing {
   // Text printed in Google Test's text output and --gunit_list_tests
   // output to label the type parameter and value parameter for a test.
   static const char kTypeParamLabel[] = "TypeParam";
+  static const char kValueParamLabel[] = "GetParam()";
 
   // Converts a TestPartResult::Type enum to human-friendly string
   // representation.  Both kNonFatalFailure and kFatalFailure are translated
@@ -172,8 +173,23 @@ namespace testing {
       ::OutputDebugStringA("\n");
       #endif
     }
+  }
 
-    void PrintFullTestCommentIfPresent(const TestInfo& test_info);
+  void PrintFullTestCommentIfPresent(const TestInfo& test_info) {
+    const char* const type_param = test_info.type_param();
+    const char* const value_param = test_info.value_param();
+
+    if (type_param != NULL || value_param != NULL) {
+      printf(", where ");
+      if (type_param != NULL) {
+        printf("%s = %s", kTypeParamLabel, type_param);
+        if (value_param != NULL)
+          printf(" and ");
+      }
+      if (value_param != NULL) {
+        printf("%s = %s", kValueParamLabel, value_param);
+      }
+    }
   }
 }
 
