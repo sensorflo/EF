@@ -461,6 +461,7 @@ equal_as_sep
   : opt_newline EQUAL opt_newline
   ;
 
+/* tokenfilter already removes newlines after LPAREN */
 lparen_as_sep
   : opt_newline LPAREN
   ;

@@ -331,6 +331,40 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+  a_newline_sequence_operator_in_a_non_trivial_place,
+  scanAndParse,
+  succeeds_AND_returns_correct_AST) ) {
+
+  string spec = "before list start";
+  TEST_PARSE( "a \n val foo :int$",   ":;(a data(foo int ()))", spec);
+
+  spec = "after list end";
+  TEST_PARSE( "val foo :int$ \n a",   ":;(data(foo int ()) a)", spec);
+
+  spec = "before and after = as list argument separator";
+  TEST_PARSE( "val foo \n = \n a :int$", ":;data(foo int (a))", spec);
+
+  spec = "before and after = as list argument separator";
+  TEST_PARSE( "val foo \n = \n a :int$", ":;data(foo int (a))", spec);
+
+  spec = "before and after ( as separator (e.g. when it's an initializer)";
+  TEST_PARSE( "val foo \n ( \n a ) :int$", ":;data(foo int (a))", spec);
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME4(
+  a_newline_sequence_operator_before_a_binary_operator_or_an_unary_postfix_operator,
+  scanAndParse,
+  reports_eScanOrParseFailed,
+  BECAUSE_no_binary_operator_can_appear_before_another_binary_operator_or_unary_postfix_operator) ) {
+
+  string spec = "Example: binary operetor which is not also an unary prefix operator";
+  TEST_PARSE_REPORTS_ERROR(
+    "a \n / b", Error::eScanOrParseFailed, spec);
+
+  // no unary postfix operators yet
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_math_expression_containin_brace_grouping,
     scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
