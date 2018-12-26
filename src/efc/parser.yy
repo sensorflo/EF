@@ -239,15 +239,6 @@ pure_ct_list
   | pure_ct_list COMMA standalone_expr              { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
-pure_naked_param_ct_list
-  : param_decl                                      { $$ = new std::vector<AstDataDef*>(); ($$)->push_back($1); }
-  | pure_naked_param_ct_list COMMA param_decl       { ($1)->push_back($3); std::swap($$,$1); }
-  ;
-
-param_decl
-  : ID COLON type                                   { $$ = new AstDataDef($1, $3); }
-  ;
-
 type
   : FUNDAMENTAL_TYPE                                { $$ = new AstObjTypeSymbol($1); }
   | STAR           opt_newline type                 { $$ = new AstObjTypePtr($3); }
@@ -297,6 +288,20 @@ condition_action_do_sep
   : DO
   | NEWLINE
   | COLON
+  ;
+
+else_sep
+  : ELSE
+  | COLON
+  ;
+
+equal_as_sep
+  : opt_newline EQUAL opt_newline
+  ;
+
+/* tokenfilter already removes newlines after LPAREN */
+lparen_as_sep
+  : opt_newline LPAREN
   ;
 
 opt_comma
@@ -384,6 +389,11 @@ id_or_keyword
   : ID | IF | ELIF | ELSE | FUN | VAL | VAR | END | NOT | AND | OR | FUNDAMENTAL_TYPE
   ;
 
+/* TODO: merge with naked_data_def */
+param_decl
+  : ID type_arg                                                      { $$ = new AstDataDef($1, $2); }
+  ;
+
 naked_data_def
   : ID initializer_special_arg opt_type_arg opt_storage_duration_arg { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $3, $4); }
   | ID data_def_args                                                 { $2->setName($1); swap($$,$2); }
@@ -400,6 +410,11 @@ naked_fun_def
   : ID COLON                                                  opt_ret_type COMMA_EQUAL block_expr { $$ = parserExt.mkFunDef($1, $3, $5); }
   | ID COLON LPAREN                                    RPAREN opt_ret_type COMMA_EQUAL block_expr { $$ = parserExt.mkFunDef($1, $5, $7); }
   | ID COLON LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type COMMA_EQUAL block_expr { $$ = parserExt.mkFunDef($1, $4, $7, $9); }
+  ;
+
+pure_naked_param_ct_list
+  : param_decl                                                       { $$ = new std::vector<AstDataDef*>(); ($$)->push_back($1); }
+  | pure_naked_param_ct_list COMMA param_decl                        { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 opt_ret_type
@@ -439,11 +454,6 @@ opt_else
   | else_sep block_expr                                              { $$ = $2; }
   ;
 
-else_sep
-  : ELSE
-  | COLON
-  ;
-
 naked_while
   : standalone_expr condition_action_do_sep block_expr               { $$ = new AstBlock(new AstLoop($1, $3)); }
   ;
@@ -455,15 +465,6 @@ condition_action_pair_then
 naked_return
   : %empty                                                           { $$ = new AstReturn(); }
   | standalone_expr                                                  { $$ = new AstReturn($1); }
-  ;
-
-equal_as_sep
-  : opt_newline EQUAL opt_newline
-  ;
-
-/* tokenfilter already removes newlines after LPAREN */
-lparen_as_sep
-  : opt_newline LPAREN
   ;
 
 opt_newline
