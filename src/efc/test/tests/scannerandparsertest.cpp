@@ -50,7 +50,7 @@ void testParseReportsError(const string efProgram, Error::No expectedErrorNo,
     "\nexceptionwhat: " << excptionwhat;
 
 
-  // ... as expected no error was reported
+  // ... no error occured in case no error was expected
   const ErrorHandler::Container& errors = driver.d().errorHandler().errors();
   if ( expectedErrorNo == Error::eNone ) {
     EXPECT_TRUE(errors.empty()) <<
@@ -58,13 +58,12 @@ void testParseReportsError(const string efProgram, Error::No expectedErrorNo,
       amendSpec(spec) << amend(driver.d().errorHandler()) << amendEfProgram(efProgram);
   }
 
+  // ... or if an error occured, it is the one we expected
   else {
-    // ... only exactly one error is reported
     EXPECT_EQ(1U, errors.size()) <<
       "Expecting exactly one error\n" <<
       amendSpec(spec) << amend(driver.d().errorHandler()) << amendEfProgram(efProgram);
 
-    // ... and that that one error has the expected ErrorNo
     if ( ! errors.empty() ) {
       EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
         amendSpec(spec) << amend(driver.d().errorHandler()) << amendEfProgram(efProgram);;
