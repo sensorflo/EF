@@ -515,7 +515,7 @@ from b to d inclusive is within the outer comment.  The closing delimiter
 needs as many stars as the opening delimiter.  That way sequences like */ can
 be included in the comment: `/** in EF the */ ends an comment **/`.
 
-Allowing "#!" as single line comment allows for the ``shebang'' mechanism.
+Allowing "#!" as single line comment allows for the ``shebang'' mechanis.
 Control with style guidelines that it is only used as first two characters in
 the file.  Note that the hash has another meaning when not followed by an
 exclamation mark, see <<sharp_prefix>>.
@@ -559,8 +559,7 @@ one of these two syntax forms:
 ----------------------------------------------------------------------
 program = block_expr;
 block_expr = standalone_expr_seq;
-standalone_expr_seq = (standalone_expr seq_op{l?})+;
-seq_op = \; | \n ;
+standalone_expr_seq = (standalone_expr seq_operator{l?})+;
 standalone_expr = sub_expr;
 sub_expr = operator_rt_expr | primary_expr;
 primary_expr = list_expr | literal | ID | group_expr | mi_end_expr |
@@ -741,20 +740,18 @@ yet whether type expressions are composed of `operator type expressions'.
 
 [[sa_expr_seq]]
 [[seq_operator]]
-==== Standalone expression sequence / sequence operator ";"
+==== Standalone expression sequence / sequence operator
 The previously introduced operators have sub expressions as operands.  The
-_sequence operator_ ";", being a binary left-associative operator, has
+_sequence operator_, being a binary left-associative operator, has
 <<standalone_expression>>s as operands.  The value of the lhs operand (being a
-standalone expression) is thrown away.  That standalone expression is thus
-used for side-effects only.  The value of the sequence operator expression is
-the value of the rhs operand.  The sequence operator is thus comparable to
+standalone expression) is thrown away.  That standalone expression is thus used
+for side-effects only.  The value of the sequence operator expression is the
+value of the rhs operand.  The sequence operator is thus comparable to
 C&plus;&plus;'s comma operator.  _standalone expression sequence_ is the term
 used for the expression resulting from using the sequence operator.
 
 ----------------------------------------------------------------------
-standalone_expr_seq = ...;
-## See chapter <<expressions>>. Later it should redundantly be repeated here
-## for the reader's convenience.
+seq_operator = `; | \n ;
 ----------------------------------------------------------------------
 
 Note that the evaluation of the sequence operator's operands is special, see
@@ -762,8 +759,45 @@ Note that the evaluation of the sequence operator's operands is special, see
 
 Style guidelines:
 
-- Of a given standalone expression sequence, either all sequence operator
-  tokens are either semicolons, or all are newlines.
+- Only use the ";" syntax variant when you put multiple standalone expressions
+  on the same line.
+
+Syntax Discussion:
+
+- Mind that sequence operator is seldom used, only to put multiple expressions
+  on the same line. Thus what syntax is used, and how nice it is, is less
+  important.
+
+- using ";": Where EF's sequence operator is used resembles where
+  C&plus;&plus;'s / Java's statement delimiter ";" is used. Thus ";" would be
+  nice. But then I don't know that to use for EF's list delimiter. I can think
+  of "$"; but especially when it is used on the same line such as in "val foo$"
+  I find it `heavy' on the eye.
+
+- Using other one char punctuation: I want to reserve them for more common uses.
+
+- using ";;": Allowing two list delimiter in a row really makes sense.
+
+- using ",," or "::": Then passing no argument would not be possible, and I'd
+  like to keep that door open. Or at least I find it more intuitive if ",," and
+  "::" respectively mean "two argument separatars", even if that is not
+  allowed.
+
+- using ",;": Actually the same rational as the above. With "," being argument
+  separator and ";" being "end of list", ",;" would mean the last argument of
+  the list is empty.
+
+- using ";,": This is a delimited list followed by a list argument delimiter,
+  which really makes sense.
+
+- "//" "||" are already used for single line comment and logical or
+  respectively. Since they are also used in C&plus;&plus; for the same, I think
+  it's good to keep it that way.
+
+- using ",": EF's sequence operator closely matches C&plus;&plus;'s / Java's
+  sequence operator ",". But since "," is already used as list argument
+  separator, and "(...,... ...)" is also already used, I think it would get a
+  mess.
 
 
 [[block]]
