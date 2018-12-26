@@ -281,6 +281,7 @@ opt_storage_duration_arg
 /* generic list separator */
 sep
   : COLON
+  | COMMA
   ;
 
 /* generic list separator, inclusive newline */
