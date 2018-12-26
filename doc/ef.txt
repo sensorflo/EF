@@ -438,6 +438,99 @@ name_alias_decl =
 ----------------------------------------------------------------------
 
 
+[[comments]]
+=== Comments / Documentation / EFDoc
+
+----------------------------------------------------------------------
+comment =
+  \/(\*+) ... \1\/ | ## multi-line
+  ("//"|"#!") ... \n ;  ## single-line
+----------------------------------------------------------------------
+
+The multiline variant can be nested.  E.g given ++a /* b /* c */ d */ e++,
+from b to d inclusive is within the outer comment.  The closing delimiter
+needs as many stars as the opening delimiter.  That way sequences like */ can
+be included in the comment: `/** in EF the */ ends an comment **/`.
+
+Allowing "#!" as single line comment allows for the ``shebang'' mechanis.
+Control with style guidelines that it is only used as first two characters in
+the file.  Note that the hash has another meaning when not followed by an
+exclamation mark, see <<sharp_prefix>>.
+
+.To-do
+- Institutionalize using Doxygen or Doxygen like markup language.
+- See EFDoc why it makes sense to integrate the doc language into the
+  compiler.
+- Inherited classes, overloaded methods, overwritten methods,
+  member-getter-setter, delegate methods: Find a way that only a minimalistic
+  comment (one keyword) or none at all has to be written and still have 1)
+  good doc output 2) even in code the maintainer sees quickly that the
+  identifier is not documented here but at another place.
+
+
+==== EFDoc
+
+Everything up to the first occurrence of the sequence ``++@.++'' belongs to
+the _brief part_.  The rest is in the _details part_.  Considerations: Make it
+feasible to use dot for abbreviations in the brief part.  Make it feasible to
+auto fill EFDoc text.
+
+Default to which <construct> a doc comment belongs: ++fun <fun name> fun
+<param_1> param_1 ... <param_n> param_n <ret_type> fun <fun body>++.
+Overwrite with a leading ++<++ or ++>++ to set the construct to which the doc
+comment belongs.  There can be multiple doc comments before / after a
+construct.  Each construct
+
+
+== Grammar
+
+Since in EF, everything is an expression, the grammar is mostly discussed in
+<<expression>>.
+
+
+[[expressions]]
+== Expressions
+
+In EF everything is an expression.  There is no such thing as an `statement'
+as it is the case in e.g. C, C&plus;&plus; or Java .  Every expression is in
+one of these two syntax forms:
+
+* _operator expression_: An unary/binary/n-ary operator as in ++a * b++.  See
+  <<operator_expr>>.
+* _list expression_: See <<list_expr>>.
+
+----------------------------------------------------------------------
+program = block_expr;
+block_expr = standalone_expr_seq;
+standalone_expr_seq = (standalone_expr seq_operator{l?})+;
+standalone_expr = sub_expr;
+sub_expr = operator_rt_expr | primary_expr;
+primary_expr = list_expr | literal | ID | group_expr | mi_end_expr |
+  'this | 'super;
+list_expr =
+  obj_def_list_expr |
+  type_def_list_expr |
+  flow_control_list_expr |
+  memory_mgmt_list_expr |
+  explicit_rt_expr |
+  explicit_type_expr;
+----------------------------------------------------------------------
+
+- _standalone expression_ (aka mini block expression): See <<standalone_expr>>.
+- _standalone expression sequence_: See <<sa_expr_seq>>.
+- _sub expression_: Part of an enclosing expression, can be operand to an
+  operator.
+- _primary expression_: Leaf of an operator expression tree.
+
+.To-do
+- Read http://en.wikipedia.org/wiki/Monad_(functional_programming)
+- I want a mostly context free grammar.  That is easier for human brain and
+  for compilers.  100% is probably is not possible.  E.g at global scope, an
+  arithmetic operator is meaningless.  Then again, maybe we can allow that.
+  Such expressions, as initialization of static variables, are executed in
+  undefined order at program start-up.  EF doesn't patronize the user.
+
+
 === Parentheses: Function call, grouping, builtin definitions
 
 Parentheses are used for multiple things, leading to conflicts
@@ -498,94 +591,6 @@ Ideas of resolving conflicts:
 - (...) is always an argument list. In case it has only one element, it's semantically identical with grouping. Note that an expression is either an argument to an operator, in which case () with multiple args doesn't make sense and this it's always grouping (but note it can also be the rhs, as in "if (a+b)*c:...$"), or it is an argument to an enclosing list expression, as in "if a+b:...", where () is always meant (but see distinction between "if(...:...)" and "if ():...$") as argument list to initialize the parameter.
 
 - Regarding initializing function parameters: "foo(.(a,b,c),...)" initializes the argument, "foo((...),...)" is something else (e.g. grouping).
-
-
-
-[[comments]]
-=== Comments / Documentation / EFDoc
-
-----------------------------------------------------------------------
-comment =
-  \/(\*+) ... \1\/ | ## multi-line
-  ("//"|"#!") ... \n ;  ## single-line
-----------------------------------------------------------------------
-
-The multiline variant can be nested.  E.g given ++a /* b /* c */ d */ e++,
-from b to d inclusive is within the outer comment.  The closing delimiter
-needs as many stars as the opening delimiter.  That way sequences like */ can
-be included in the comment: `/** in EF the */ ends an comment **/`.
-
-Allowing "#!" as single line comment allows for the ``shebang'' mechanis.
-Control with style guidelines that it is only used as first two characters in
-the file.  Note that the hash has another meaning when not followed by an
-exclamation mark, see <<sharp_prefix>>.
-
-.To-do
-- Institutionalize using Doxygen or Doxygen like markup language.
-- See EFDoc why it makes sense to integrate the doc language into the
-  compiler.
-- Inherited classes, overloaded methods, overwritten methods,
-  member-getter-setter, delegate methods: Find a way that only a minimalistic
-  comment (one keyword) or none at all has to be written and still have 1)
-  good doc output 2) even in code the maintainer sees quickly that the
-  identifier is not documented here but at another place.
-
-
-==== EFDoc
-
-Everything up to the first occurrence of the sequence ``++@.++'' belongs to
-the _brief part_.  The rest is in the _details part_.  Considerations: Make it
-feasible to use dot for abbreviations in the brief part.  Make it feasible to
-auto fill EFDoc text.
-
-Default to which <construct> a doc comment belongs: ++fun <fun name> fun
-<param_1> param_1 ... <param_n> param_n <ret_type> fun <fun body>++.
-Overwrite with a leading ++<++ or ++>++ to set the construct to which the doc
-comment belongs.  There can be multiple doc comments before / after a
-construct.  Each construct
-
-
-[[expressions]]
-== Expressions
-
-In EF everything is an expression.  There is no such thing as an `statement'
-as it is the case in e.g. C, C&plus;&plus; or Java .  Every expression is in
-one of these two syntax forms:
-
-* _operator expression_: An unary/binary/n-ary operator as in ++a * b++.  See
-  <<operator_expr>>.
-* _list expression_: See <<list_expr>>.
-
-----------------------------------------------------------------------
-program = block_expr;
-block_expr = standalone_expr_seq;
-standalone_expr_seq = (standalone_expr seq_operator{l?})+;
-standalone_expr = sub_expr;
-sub_expr = operator_rt_expr | primary_expr;
-primary_expr = list_expr | literal | ID | group_expr | mi_end_expr |
-  'this | 'super;
-list_expr =
-  obj_def_list_expr |
-  type_def_list_expr |
-  flow_control_list_expr |
-  memory_mgmt_list_expr |
-  explicit_rt_expr |
-  explicit_type_expr;
-----------------------------------------------------------------------
-
-- _standalone expression_ (aka mini block expression): See <<standalone_expr>>.
-- _standalone expression sequence_: See <<sa_expr_seq>>.
-- _sub expression_: Part of an enclosing expression, can be operand to an
-  operator.
-- _primary expression_: Leaf of an operator expression tree.
-
-.To-do
-- Read http://en.wikipedia.org/wiki/Monad_(functional_programming)
-- I want a mostly context free grammar.  That is easier for human brain and
-  for compilers.  100% is probably is not possible.  E.g at global scope, an
-  arithmetic operator is meaningless.  Then again, maybe we can allow that.
-  Such expressions, as initialization of static variables, are executed in
-  undefined order at program start-up.  EF doesn't patronize the user.
 
 
 [[list_expr]]
