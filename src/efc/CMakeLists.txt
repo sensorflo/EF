@@ -27,6 +27,12 @@ flex_target(scanner scanner.l ${EFC_GEN_SRC_DIR}/scanner.cpp)
 add_flex_bison_dependency(scanner parser)
 
 # if possible, generate parser.xhtml from parser.xml via xsltproc
+
+# TODO: parser.xhtml is NOT build if building parser.cpp fails (but parser.xml
+#       _is_ built). Maybe due to ${BISON_parser_OUTPUTS} containing also
+#       parser.cpp.  But if I replace that by ${EFC_GEN_SRC_DIR}/parser.xml,
+#       xsltproc throws many funny errors at me, maybe because it is called
+#       before the xml is fully generated.
 find_program(XSLTPROC xsltproc)
 if (NOT XSLTPROC)
   message(WARNING "xsltproc not found. With apt, you can install it with 'apt-get install xsltproc'.")
