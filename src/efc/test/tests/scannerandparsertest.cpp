@@ -364,6 +364,38 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME4(
   // no unary postfix operators yet
 }
 
+// That newlines after list start, around list separator, and before list end
+// are dropped is tested by tokenfiltertest.
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    a_binary_or_unary_prefix_operator_followed_by_newline,
+    scanAndParse,
+    ignores_newline_AND_succeeds_AND_returns_correct_AST) ) {
+
+  string spec = "Example: binary operand";
+  TEST_PARSE("a=\nb", ":;=(a b)", spec);
+  TEST_PARSE("a or\nb", ":;or(a b)", spec);
+  TEST_PARSE("a||\nb", ":;or(a b)", spec);
+  TEST_PARSE("a and\nb", ":;and(a b)", spec);
+  TEST_PARSE("a&&\nb", ":;and(a b)", spec);
+  TEST_PARSE("a==\nb", ":;==(a b)", spec);
+  TEST_PARSE("a+\nb", ":;+(a b)", spec);
+  TEST_PARSE("a-\nb", ":;-(a b)", spec);
+  TEST_PARSE("a*\nb", ":;*(a b)", spec);
+  TEST_PARSE("a/\nb", ":;/(a b)", spec);
+
+  spec = "Example: unary prefix operand";
+  TEST_PARSE("not \na", ":;!(a)", spec);
+  TEST_PARSE("!\na", ":;!(a)", spec);
+  TEST_PARSE("*\na", ":;*(a)", spec);
+  TEST_PARSE("&\na", ":;&(a)", spec);
+  TEST_PARSE("-\na", ":;-(a)", spec);
+  TEST_PARSE("+\na", ":;+(a)", spec);
+
+  spec = "Example: unary prefix operand of type expression";
+  TEST_PARSE("val foo :*\nint$", ":;data(foo raw*int ())", spec);
+  TEST_PARSE("val foo :mut\nint$", ":;data(foo mut-int ())", spec);
+}
+
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_math_expression_containin_brace_grouping,
     scanAndParse,

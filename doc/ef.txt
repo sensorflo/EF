@@ -488,6 +488,28 @@ Since in EF, everything is an expression, the grammar is mostly discussed in
 <<expression>>.
 
 
+[[mostly_free_form]]
+=== Mostly free form
+
+EF is mostly a free form language. However newline is used as
+<<seq_operator,sequence operator>>, and can in same built-in lists be used as a
+list argument separator.
+
+In many places, a newline is ignored. A binary operator such as the sequence
+operator cannot appear in the following places. Thus newlines appearing at these
+places are ignored: after list start, before or after list argument seprator,
+before list end delimiter, after another binary operator, after another unary
+prefix operator.
+
+Caveats:
+
+- If the user puts a newline before a binary operator which can also be an unary
+  prefix operator, e.g. "a = b \n - c", that is exactly the same as "a = b ; -b"
+  (i.e. not "a = b - c"), which may or may not be be what the user intended. Can
+  maybe be catched by a static analyzer nothing that the rhs of the sequence
+  operator evaluates to something which is nowehere stored.
+
+
 [[expressions]]
 == Expressions
 
@@ -497,7 +519,10 @@ one of these two syntax forms:
 
 * _operator expression_: An unary/binary/n-ary operator as in ++a * b++.  See
   <<operator_expr>>.
+
 * _list expression_: See <<list_expr>>.
+
+* _type expression_:  See <<type_expr>>.
 
 ----------------------------------------------------------------------
 program = block_expr;
@@ -970,7 +995,13 @@ Each <<object>> has a (run-time) type.  Run-time types are divided into
 <<fundamental_types>> and <<compound_types>>.  Each type has a set of
 <<type_qualifiers>>.
 
+
 [[type_expr]]
+=== Type expressions
+
+Is actually just syntactic sugar for templates. E.g. "*int" is the same as
+"unique_ptr{int}".
+
 --------------------------------------------------
 type_expr =
   type_qualifier* (fundamental_type_expr | compound_type_expr) |

@@ -250,8 +250,8 @@ param_decl
 
 type
   : FUNDAMENTAL_TYPE                                { $$ = new AstObjTypeSymbol($1); }
-  | STAR type                                       { $$ = new AstObjTypePtr($2); }
-  | type_qualifier type                             { $$ = new AstObjTypeQuali($1, $2); }
+  | STAR           opt_newline type                 { $$ = new AstObjTypePtr($3); }
+  | type_qualifier opt_newline type                 { $$ = new AstObjTypeQuali($1, $3); }
   | ID                                              { assert(false); /* user defined names not yet supported; but I wanted to have ID already in grammar*/ }
   ;
 
@@ -326,26 +326,26 @@ operator_expr
   | FUNDAMENTAL_TYPE LPAREN standalone_expr RPAREN  { $$ = new AstCast($1, $3); }
 
   /* unary prefix */
-  | NOT  sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
-  | EXCL sub_expr                                   { $$ = new AstOperator(AstOperator::eNot, $2); }
-  | STAR sub_expr                                   { $$ = new AstOperator(AstOperator::eDeref, $2); }
-  | AMPER sub_expr                                  { $$ = new AstOperator('&', $2); }
-  | MINUS sub_expr                                  { $$ = new AstOperator('-', $2); }
-  | PLUS sub_expr                                   { $$ = new AstOperator('+', $2); }
+  | NOT   opt_newline sub_expr                      { $$ = new AstOperator(AstOperator::eNot, $3); }
+  | EXCL  opt_newline sub_expr                      { $$ = new AstOperator(AstOperator::eNot, $3); }
+  | STAR  opt_newline sub_expr                      { $$ = new AstOperator(AstOperator::eDeref, $3); }
+  | AMPER opt_newline sub_expr                      { $$ = new AstOperator('&', $3); }
+  | MINUS opt_newline sub_expr                      { $$ = new AstOperator('-', $3); }
+  | PLUS  opt_newline sub_expr                      { $$ = new AstOperator('+', $3); }
 
   /* binary operators */
-  | sub_expr EQUAL       sub_expr                   { $$ = new AstOperator('=', $1, $3); }
-  | sub_expr EQUAL_LESS  sub_expr                   { $$ = new AstOperator("=<", $1, $3); }
-  | ID       COLON_EQUAL sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eLocal, new AstCtList($3)); }
-  | sub_expr OR          sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
-  | sub_expr PIPE_PIPE   sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $3); }
-  | sub_expr AND         sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
-  | sub_expr AMPER_AMPER sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $3); }
-  | sub_expr EQUAL_EQUAL sub_expr                   { $$ = new AstOperator(AstOperator::eEqualTo, $1, $3); }
-  | sub_expr PLUS        sub_expr                   { $$ = new AstOperator('+', $1, $3); }
-  | sub_expr MINUS       sub_expr                   { $$ = new AstOperator('-', $1, $3); }
-  | sub_expr STAR        sub_expr                   { $$ = new AstOperator('*', $1, $3); }
-  | sub_expr SLASH       sub_expr                   { $$ = new AstOperator('/', $1, $3); }
+  | sub_expr EQUAL       opt_newline sub_expr                   { $$ = new AstOperator('=', $1, $4); }
+  | sub_expr EQUAL_LESS  opt_newline sub_expr                   { $$ = new AstOperator("=<", $1, $4); }
+  | ID       COLON_EQUAL opt_newline sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eLocal, new AstCtList($4)); }
+  | sub_expr OR          opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $4); }
+  | sub_expr PIPE_PIPE   opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $4); }
+  | sub_expr AND         opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $4); }
+  | sub_expr AMPER_AMPER opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $4); }
+  | sub_expr EQUAL_EQUAL opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eEqualTo, $1, $4); }
+  | sub_expr PLUS        opt_newline sub_expr                   { $$ = new AstOperator('+', $1, $4); }
+  | sub_expr MINUS       opt_newline sub_expr                   { $$ = new AstOperator('-', $1, $4); }
+  | sub_expr STAR        opt_newline sub_expr                   { $$ = new AstOperator('*', $1, $4); }
+  | sub_expr SLASH       opt_newline sub_expr                   { $$ = new AstOperator('/', $1, $4); }
   ;
 
 primary_expr
@@ -377,7 +377,7 @@ kwac
   : DOLLAR
   | RPAREN
   | END
-  | ENDOF id_or_keyword DOLLAR
+  | ENDOF opt_newline id_or_keyword opt_newline DOLLAR /* or consider end(...) */
   ;
 
 id_or_keyword
