@@ -82,11 +82,11 @@ reference. The 'what' description is redundant to the associated Error
 instance and is only intended to be used if an instance of BuildError is
 catched at an wide outside safety net catch, i.e. at a place where controlled
 error handling with proper counter actions is no longer possible and the only
-option is to print as mutch info as we can and then probably die.
+option is to print as much info as we can and then probably die.
 
 Rational for not throwing Error directly but inventing a new class which is
 used to throw: Exceptions should be thrown by value, thus can't be owned by
-anybode. But ErrorHandler owns its exceptions. We could throw pointers to
+anybody. But ErrorHandler owns its exceptions. We could throw pointers to
 Error instances, but that does not work well together with gtest in the case
 of an test throwing unexpectetly. gtest writes the .what of an unexpected
 exception only if it is thrown by value. */
