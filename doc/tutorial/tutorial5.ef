@@ -1,11 +1,11 @@
 #!/usr/bin/env efc
-// 
+//
 // The EF programming language tutorial part 6
 // ===========================================
-// 
+//
 // Everything is an expressions -- no statements
 // ---------------------------------------------
-// 
+//
 // In EF everything is an expression. There are no statements. Also a control
 // flow construct like 'if cond_expr: then_expr else else_expr$' is actually an
 // expression having a value. If cond_expr is true, then the overall value
@@ -20,12 +20,12 @@ foo1 := if x==y: x else y$
 // being declared / defined.
 
 
-// Conceptually every construct is a call 
+// Conceptually every construct is a call
 // --------------------------------------
 // The following explains the syntax of list expressions (aka `function calls').
 // They resemble the syntax of a function call in C / Java etc.  However there is
 // not necessarily a function call at run-time.
-// 
+//
 // ------------------------------
 // func  arg      arg1   arg    arg2  arg     arg3  list
 // name  list            sepa-        sepa-         close
@@ -35,30 +35,29 @@ foo1 := if x==y: x else y$
 // if              a       :     b    else     c      $
 // if     ($       a       :     b    else     c      )
 // if              a       :     b    else     c      end
-// [               a       ,     b     ,       c      ]  
+// [               a       ,     b     ,       c      ]
 // ------------------------------
-// 
+//
 // The pattern is always: A leading `function name'. Followed by an optional
 // argument list open delimiter ("($").  Followed by an argument list
 // where the elements are separated by separators.  The valid separators are
 // specific to the specific `function name' (e.g. commas or colons or keywords
 // such as +elif+ or +else+).  The list expression is closed / delimited by an
 // delimiter (dollar or right parenthesis).
-// 
+//
 // ----------------------------------------------------------------------
 // call = fun_name args_open_del naked_arg_list args_close_del;
 // args_open_del  = ["($"];
-// naked_arg_list = (arg1 separator{-})* 
+// naked_arg_list = (arg1 separator{-})*
 // args_close_del = \) | \$ | "end" | "endof" ... \$;
 // ----------------------------------------------------------------------
-// 
+//
 // The following ifs are equivalent
-if   x==y:     x else y $      
-if($ x==y:     x:     y )      
+if   x==y:     x else y $
+if($ x==y:     x:     y )
 if   x==y then x else y end
 if   x==y then x else y endof if$
 
 // Also operators can be written in the call syntax.
 // operator syntax       call syntax
    tmp1 := x+y      ;    tmp2 := op+(x,y)
-

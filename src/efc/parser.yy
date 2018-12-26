@@ -138,7 +138,7 @@ and by declaration of free function yylex */
 ;
 
 %token <ObjTypeFunda::EType> FUNDAMENTAL_TYPE
-%token <std::string> OP_NAME 
+%token <std::string> OP_NAME
 %token <std::string> ID "identifier"
 %token <NumberToken> NUMBER "number"
 %precedence ASSIGNEMENT
@@ -160,7 +160,7 @@ and by declaration of free function yylex */
 %type <std::vector<AstNode*>*> pure_standalone_node_seq_expr
 %type <std::vector<AstDataDef*>*> pure_naked_param_ct_list
 %type <std::vector<AstObject*>*> pure_ct_list
-%type <AstNode*> standalone_node 
+%type <AstNode*> standalone_node
 %type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstDataDef*> param_decl
 %type <ObjType::Qualifiers> valvar type_qualifier
@@ -247,7 +247,7 @@ pure_naked_param_ct_list
 param_decl
   : ID COLON type                                   { $$ = new AstDataDef($1, $3); }
   ;
-  
+
 type
   : FUNDAMENTAL_TYPE                                { $$ = new AstObjTypeSymbol($1); }
   | STAR type                                       { $$ = new AstObjTypePtr($2); }
@@ -356,7 +356,7 @@ primary_expr
   | ID                                              { $$ = new AstSymbol($1); }
   | NOP                                             { $$ = new AstNop(); }
   ;
-  
+
 list_expr
   : valvar kwao naked_data_def kwac                 { $$ = parserExt.mkDataDef($1, $3); }
   | FUN kwao naked_fun_def kwac                     { $$ = $3; }
@@ -422,7 +422,7 @@ initializer_special_arg
 
 valvar
   : VAL                                                              { $$ = ObjType::eNoQualifier; }
-  | VAR	                                                             { $$ = ObjType::eMutable; }
+  | VAR                                                              { $$ = ObjType::eMutable; }
   ;
 
 naked_if
@@ -431,9 +431,9 @@ naked_if
   ;
 
 elif_chain
-  : ELIF condition_action_pair_then opt_else                         { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }  
+  : ELIF condition_action_pair_then opt_else                         { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }
   | ELIF condition_action_pair_then elif_chain                       { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }
-  ;  
+  ;
 
 opt_else
   : %empty                                                           { $$ = nullptr; }

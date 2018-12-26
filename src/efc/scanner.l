@@ -18,7 +18,7 @@
  // <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=333231>.
  #undef yywrap
  #define yywrap() 1
- 
+
  // an action which is always executed prior to the matched rule's action
  #define YY_USER_ACTION  loc.columns(yyleng);
 

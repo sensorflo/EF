@@ -7,7 +7,7 @@ include::../README[]
 
 
 [[motivation_details]]
-=== Motivation for EF revisited 
+=== Motivation for EF revisited
 
 See also <<motivation_abstract>>. Thoughts about what EF could provide overall
 what no other current language can provide overall.
@@ -15,7 +15,7 @@ what no other current language can provide overall.
 Hard real-time / deterministic;; This is important for many embedded systems.
 Any programming language with an obligatory garbage collector most probably
 won't be suitable for hard real-time.  I am unsure about exceptions: there are
-zero overhead implementations, 
+zero overhead implementations,
 
 Concurrency support;; ...
 
@@ -97,7 +97,7 @@ subjective first impression is that it feels a bit verbose.  Voices on the
 internet say it's OO feels attached rather than properly built-in.
 
 
-==== Real-Time Java 
+==== Real-Time Java
 
 I suspect the run-time to be too big for small embedded system.  Since it's
 still interpreted, I suspect the power consumption to be still higher compared
@@ -139,7 +139,7 @@ collection.  Is thus not suitable for a hard real-time embedded system.
  ** Clean code can be reads as English prose.  You read the code from left to
     right and directly get English prose describing what happens in the order
     you read it.
-  
+
 * No redundancy (``redundancy is the primary enemy of a well designed
   system'').  User shall not be forced to anything twice.  With identifiers of
   various (meta-) types the user can define various things exactly once.
@@ -275,10 +275,10 @@ solve problems:
 === Embedded system constraints
 
 * http://electronics.stackexchange.com/questions/3027/is-c-suitable-for-embedded-systems
-* http://www.inf.ed.ac.uk/teaching/courses/es/PDFs/lecture_5.pdf        
+* http://www.inf.ed.ac.uk/teaching/courses/es/PDFs/lecture_5.pdf
 * http://741mhz.com/exceptions-performance/
 * http://stackoverflow.com/questions/5257190/are-exceptions-still-undesirable-in-realtime-environment
-* http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.55.8024&rep=rep1&type=pdf  
+* http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.55.8024&rep=rep1&type=pdf
 * http://forum.dlang.org/thread/unreajijtwafywprqaag@forum.dlang.org?page=2#post-op.wmhetvpwsqugbd:40fbsdx64.lan
 * http://programmers.stackexchange.com/questions/84514/why-does-c-dominate-in-the-embedded-software-market
 * Book: Real-Time Systems.  Design Principles for Distributed Embedded
@@ -386,9 +386,9 @@ Each file is/contains (at least by default) one single class.  I.e. top level
 data objects are members of that class, top level code chunks are members of
 that class.  To declare something in global namespace, use a keyword,
 e.g. `global'.  That saves one level of indentation for the most often
-occurring case.  
+occurring case.
 
-A directory (at least by default) is a module aka package. 
+A directory (at least by default) is a module aka package.
 
 Or alternatively, file extension defines whether this file defines a class or
 a module.
@@ -420,7 +420,7 @@ new_identifier = [new_nonempty_identifier];
 === Comments / Documentation / EFDoc
 
 ----------------------------------------------------------------------
-comment = 
+comment =
   \/(\*+) ... \1\/ | ## multi-line
   ("//"|"#!") ... \n ;  ## single-line
 ----------------------------------------------------------------------
@@ -457,7 +457,7 @@ Default to which <construct> a doc comment belongs: ++fun <fun name> fun
 <param_1> param_1 ... <param_n> param_n <ret_type> fun <fun body>++.
 Overwrite with a leading ++<++ or ++>++ to set the construct to which the doc
 comment belongs.  There can be multiple doc comments before / after a
-construct.  Each construct 
+construct.  Each construct
 
 
 [[expressions]]
@@ -490,7 +490,7 @@ list_expr =
 ----------------------------------------------------------------------
 
 - _standalone expression_ (aka mini block expression): See <<standalone_expr>>.
-- _standalone expression sequence_: See <<sa_expr_seq>>. 
+- _standalone expression sequence_: See <<sa_expr_seq>>.
 - _sub expression_: Part of an enclosing expression, can be operand to an
   operator.
 - _primary expression_: Leaf of an operator expression tree.
@@ -519,8 +519,8 @@ name  list            sepa-        sepa-         close
 if              a       :     b    else     c      $
 if     (        a       :     b    else     c      )
 if              a       :     b    else     c      end
-[               a       ,     b     ,       c      ]  
-{               a       ,     b     ,       c      }  
+[               a       ,     b     ,       c      ]
+{               a       ,     b     ,       c      }
 ------------------------------
 
 The pattern is always the same: A leading `function name' which is either a
@@ -577,7 +577,7 @@ argument list.
     should comma be in the sense of a Python tuple and when in the sense of a
     C++ comma!!! Possible answer: its always in the sense of a tuple (aka
     compile time expression list), and the directly enclosing construct
-    defines what is done at compile-time and what at run-time. 
+    defines what is done at compile-time and what at run-time.
   * ...
 - Introduce a term like _form_ (from lisp) denoting the general concept
   which's specialization are a) regular functions (term?) b) `compile time
@@ -614,7 +614,7 @@ operator_rt_expr = boolean_expr | bit_expr | comparison_expr |
   data_obj_def_op_expr | other_operator_rt_expr;
 
 arithmetic_expr =
-  ('root2 | 'log2 | 'loge | 'log10 | \+ | \-) sub_expr | 
+  ('root2 | 'log2 | 'loge | 'log10 | \+ | \-) sub_expr |
   sub_expr (`+ | `- | `* | `/ | `% | 'pow | 'root | 'logb) sub_expr;
 
 bit_expr = 'bit_not sub_expr |
@@ -636,7 +636,7 @@ assignment_expr = sub_expr (`\= | `+= | `-= | `*= | `/= | `%= | ... ) sub_expr;
 regex_expr = sub_expr (`=~ | `!~ ) sub_expr;
 
 subscript_expr = sub_expr \[ (index_expr \,{l?})* \];
-index_expr = sub_expr | range_expr;  
+index_expr = sub_expr | range_expr;
 range_expr = sub_expr \: sub_expr;
 
 ct_list_expr = sub_expr#element ( 'x | `*, ) sub_expr#repeat_count;
@@ -759,7 +759,7 @@ It follows that:
   for all cases at run-time b) probably imposes to much run-time costs.  A
   proper function internally can, from a defensive point of view, read and
   write access any object, so it's probably not feasible to detect whether two
-  functions read and write access the same object. 
+  functions read and write access the same object.
 
 
 Motivation:
@@ -861,7 +861,7 @@ fundamental_type_expr =
       ['f['ast]|'l['east]]'int('8|'16|'32|'64|'128|'258) |
       ['bigint|'intx]) | ## probably needs to be moved into stdlib
     ## floating point types
-    'float | 'double | 'longdouble | 
+    'float | 'double | 'longdouble |
     ## character types. value is code point. maybe move some to lib. would
     ## have to be variable with anyway, no? How does C++ do it?
     'char | 'wchar | 'utf8char | 'utf16char | 'utf32char
@@ -886,9 +886,9 @@ fundamental_type_expr =
 compound_type_expr =
   generic_pointer_type_expr |
   array_type_expr |
-  enum_type_expr | 
-  function_type_expr | 
-  class_type_expr | 
+  enum_type_expr |
+  function_type_expr |
+  class_type_expr |
   union_type;
 ----------------------------------------------------------------------
 
@@ -929,7 +929,7 @@ var a : raw[5]int ,= {1,1,2,3,5}$
 var pa : raw*raw[5]int ,= new raw[5]int({1,1,2,3,5})$
 ----------------------------------------------------------------------
 
-*to-do*: 
+*to-do*:
 
 * Do array elements of zero size impose any problems?
 
@@ -968,7 +968,7 @@ even ++for var e$ in EMyEnumaration : ...$++
 If the elements in the enumeration type are comparable, then the enumeration
 is an ordered list.  Make it an compile warning if the source code lists them
 in the `wrong' order.
-   
+
 * User chooses whether enclosing namespace gets the names and/or if they are
   contained in the enumeration namespace
 * Each enum is, as everything, an object which name as a string can be
@@ -981,7 +981,7 @@ in the `wrong' order.
 [[builtin_types]]
 === Built-in compound types
 Built-in types can be seen as built-in classes; wrappers around primitive
-types.  Collections, iterators, 
+types.  Collections, iterators,
 
 
 ==== Smart pointers
@@ -1123,12 +1123,12 @@ type_def_list_expr = class_type_def_list_expr | enum_type_def | union_type_def |
 
 generic_pointer_type_expr =
   ## 'normal' (name??? to distinguish from member pointer) pointer
-  ['[sub]]#ptrsubtype (\*|'ptrto) type_expr | 
+  ['[sub]]#ptrsubtype (\*|'ptrto) type_expr |
   ## pointer (built-in) to member type
-  ['[sub]]#ptrsubtype (\*|'ptrto) type_expr 'in class_type; 
+  ['[sub]]#ptrsubtype (\*|'ptrto) type_expr 'in class_type;
 
-array_type_expr = 
-  [array_sub_type] (\[ctconst_expr#n\]|'arrayof ctconst_expr#n) type_expr; 
+array_type_expr =
+  [array_sub_type] (\[ctconst_expr#n\]|'arrayof ctconst_expr#n) type_expr;
 array_sub_type = 'raw | ...;
 ----------------------------------------------------------------------
 
@@ -1140,7 +1140,7 @@ correspond exactly to what it technically is.
   long long''.
 * Is it possible that nearly anything by default is signed? Less problems with
   conflicting types.  However some applications really want that MSB.  The std
-  library probably cannot have a size() which returns a signed number. 
+  library probably cannot have a size() which returns a signed number.
 
 .To-do
 * Add more floating point types, there apparently is also 16bit, 80bit, two
@@ -1181,7 +1181,7 @@ When everything is an object, than a type object would have these methods
 * +name+
  ** For template arguments choose whether template name is meant (e.g. T) or
     the passed type (e.g. myclass)
- ** Same analogous question for typedefs: 
+ ** Same analogous question for typedefs:
 * +sizeof+ is often ctconst, but sometimes (e.g. dynarrays as in C) also only
   known at run-time
 
@@ -1247,7 +1247,7 @@ A procedure does not return any value, while a function does.
 
 === Properties
 
-Some ideas: 
+Some ideas:
 
 - <<pure>>
 - `const' in the sense of a C&plus;&plus; const method
@@ -1314,7 +1314,7 @@ methods must have an entry in the vtable anyway.  Also it probably means that
 the virtual / non-virtual difference shall not affect name lookup.  A test
 double TDX for class X could inherit from X and overrides _all_ its
 methods. To facilitate overriding all methods, a modifier could be added to
-the inheritance so the compiler gives an error if a method is not overriden. 
+the inheritance so the compiler gives an error if a method is not overriden.
 
 
 
@@ -1468,11 +1468,11 @@ ways.  See also <<ways_to_define_cast>>.
 ----------------------------------------------------------------------
 fun_name_operator =
   'operator (
-    'this binary_operator | ## on call site, this is lhs 
+    'this binary_operator | ## on call site, this is lhs
     binary_operator 'this | ## on call site, this is rhs
     'this binary_operator 'this | ## commutative implementation
     unary_prefix_postfix_operator 'this | ## unary prefix operator
-    unary_prefix_operator 'this | 
+    unary_prefix_operator 'this |
     'this unary_prefix_postfix_operator | ## unary postfix operator
     'this unary_postfix_Operator
   );
@@ -1577,7 +1577,7 @@ An anonymous aka unnamed function.  An unnamed closure which makes no
 references to environment.
 
 Maybe since in EF everything is an expression, thus also function definitions,
-that already qualifies as lambda.  
+that already qualifies as lambda.
 
 --------------------------------------------------
 sort(my_collection, fun(a:int,b:int),=a<b$);
@@ -1587,7 +1587,7 @@ sort(my_collection, fun(a:int,b:int),=a<b$);
 sort(my_collection, fun(x,y),=x<y$);
 
 ## also the names of the parameters can be left away, then the names used
-## in the declaration of sort must be used. 
+## in the declaration of sort must be used.
 sort(my_collection, fun,=a<b$);
 --------------------------------------------------
 
@@ -1602,7 +1602,7 @@ sort(my_collection, fun,=a<b$);
 
 === Method Lambdas
 
-An unnamed method. 
+An unnamed method.
 
 
 === Closures
@@ -1644,7 +1644,7 @@ Mainly to be compatible to C, to be able to build wrappers around C.  But
 shouldn't the wrapper then use a more EF like construct?
 
 
-=== Properties of some standard methods/operators 
+=== Properties of some standard methods/operators
 
 Not only is the code more maintainable since these common operators really do
 what humans expect, but also the compiler / analyzer / optimizer ... can
@@ -1757,10 +1757,10 @@ An object, in EF, is a region of storage with the following compile time
 properties:
 
 * _type_
-* _value_:      
+* _value_:
 * [_name_]: A name is optional
 * _size_: Is implicitly defined by object's type
-* _scope_: 
+* _scope_:
 * _linkage_:
 * _alignment_:
 * _lock wrapper_ Just an first idea.  See also <<concurrency>>.
@@ -1788,9 +1788,9 @@ properties:
   freeing the underlying memory resource.  Knowing the owner(s) implicitly
   that defines exclusive / shared ownership: one owner -> exclusive ownership
   / two or more owners -> shared ownership, .
- ** System: 
+ ** System:
  ** Process: Implies `shared access by multiple execution threads' (if not,
-    why not making it thread local?) 
+    why not making it thread local?)
  ** Thread:
  ** Block/stack: Register is not an owner; its an transparent
     optimization when the optimizer puts an object into an register instead on
@@ -1863,7 +1863,7 @@ An object has additionally the following run time property:
 
 - Study http://bartoszmilewski.com/category/d-programming-language/page/2/
 - Is a literal an object?  If so, what are its properties according to the
-  above?  In C&plus;&plus; its an prvalue, see <<TCppStd>> 3.10.  
+  above?  In C&plus;&plus; its an prvalue, see <<TCppStd>> 3.10.
   * How about making it a const object in either process or thread
     global storage.  However for most cases, in particular fundamental types,
     the compiler and linker are expected to optimize away any real storage
@@ -1906,7 +1906,7 @@ scope = 'block_scope | 'full_expr_scope;
 
 - Don't have C&plus;&plus;'s restriction that each obj must have an unique
   address.  Or just allow for zero sized objects, in particular zero sized
-  arrays.  
+  arrays.
 - +alignof+
 - bit fields
 - pack as attribute to structs/classes
@@ -1958,13 +1958,13 @@ data_obj_def_list_expr =
     'is data_obj_modifier*
   )*
   [",=" sub_expr]
-  args_close_del; 
+  args_close_del;
 
-naked_data_obj_decl = 
+naked_data_obj_decl =
   new_identifier#name
   ( initializer |
     \: type_expr |
-    'is data_obj_modifier* 
+    'is data_obj_modifier*
   )*;
 
 data_obj_def_op_expr =
@@ -2024,7 +2024,7 @@ consequences: 1) the first assignment really is a constructor call with
 exactly one argument 2) the compiler must not call the destructor if the
 constructor has not been called 3) that leads to the want to be able to
 explicitly exclusively call the constructor, without the storage allocation
-part. 
+part.
 
 **To-do:**
 - Is +laterctor+ really needed if there was a rule that data objects need to
@@ -2197,7 +2197,7 @@ is that, in case you need that object at more places in your block than just
 one single place in the expression tree, you don't have to copy it to a local
 object.  However other concept already help to mitigate such costs: RVO, move
 semantics, the ability to create local objects virtually everywhere since
-everything is an expression. 
+everything is an expression.
 
 
 [[variable_sized_obj]]
@@ -2234,7 +2234,7 @@ arbitrary amount of interfaces.
   specializations of that generic concept.
 
 
-=== Referencing 
+=== Referencing
 
 --------------------------------------------------
 class_type_expr = identifier#*class' name*# [type_args];
@@ -2317,7 +2317,7 @@ non-public fields.
 - Decide on the constructor name.  Using something explicit like +constructor+
   most probably will result in less ambiguities as when using e.g. +this+.
   Mind also getting the address of a constructor or explicitly calling a
-  constructor.  
+  constructor.
 - What is D's init?  Why not just use default ctor?
 - Make cast constructors explicit by default, i.e. they only can be called
   explicitly, not implicitely.  If you want an implicitly call-able cast
@@ -2325,7 +2325,7 @@ non-public fields.
 
 
 ==== Destructor
- 
+
 ----------------------------------------------------------------------
 fun_name_dtor = `~this | 'dtor | 'destructor;
 ----------------------------------------------------------------------
@@ -2579,18 +2579,18 @@ if_expr =
 givenchain_expr =
   ## the optional 2nd expression is a predicate function object which defaults
   ## to test for equality.
-  'given sa_expr [\:] 
-  ('when \( expr_list#*at least one*# \) block_expr_opt_falltrough)* 
+  'given sa_expr [\:]
+  ('when \( expr_list#*at least one*# \) block_expr_opt_falltrough)*
   ['else block_expr]
 
 jumptable_expr =
   'jumptable sa_expr
-  ('when \( expr_list#*at least one*# \) block_expr_opt_falltrough)* 
-  ['else block_expr]  
+  ('when \( expr_list#*at least one*# \) block_expr_opt_falltrough)*
+  ['else block_expr]
   args_close_del;
 
 loop_expr =
-  ## to-do 
+  ## to-do
   ## - Provide something ala "foreach ( key,val in mymap )". Maybe that works
   ##   if mymap returns a built-in list of fixed size, so it can be assigned
   ##   to the ``list of fixed sized'' key,val.
@@ -2622,13 +2622,13 @@ loop_expr =
 ## noret. See also labelled_sa_expr.
 ## to-do: as in Perl, jump to specific loops. Also relative numbers to
 ## identify nested enclosing loop
-jump_expr = 
+jump_expr =
   'ret sub_expr | ## returns from enclosing code chunk
   ('goto | 'continue | 'redo | 'break) [label_expr] |
   ## defines the enclosing/referred loop expression's value
-  'breakwith sub_expr; 
+  'breakwith sub_expr;
 
-other_control_flow_expr = 
+other_control_flow_expr =
   ## to-do: what is the metatype and type of this expressions?
   'label identifier;
 ----------------------------------------------------------------------
@@ -2652,7 +2652,7 @@ streams.  Just an easy syntax to connect streams to each other.
 === Redirection / Pipes
 
 Make it easy to interact with other programs using pipes and redirection, like
-shell scripts do it.  See also chapter "chaining functions". 
+shell scripts do it.  See also chapter "chaining functions".
 
 
 == Ranges
@@ -2811,7 +2811,7 @@ Naturally there is also the `traditional' heap which is shared among threads.
 Modifying the shared heap requires mutual exclusion which naturally has some
 non-zero costs.  The intention is to use the shared heap only for objects
 which need shared ownership.  If you only need shared access to an object (but
-have an exclusive ownership), a thread private heap also works. 
+have an exclusive ownership), a thread private heap also works.
 
 There is _no placement new_ as in C&plus;&plus; ... *to-do*: describe EF's way
 of separating allocating / freeing storage and of constructing/destructing
@@ -2824,7 +2824,7 @@ of their members by themselves.
 *to-do*:
 
 * Provide allign argument to new?  In most cases alignment is a property of
-  the type, so it can be deduced from there. 
+  the type, so it can be deduced from there.
 * Find out more about batch malloc & free.  Would it help if EF would try to
   favor batch free over a loop with normal frees.
 * Read http://en.wikipedia.org/wiki/Manual_memory_management and follow the
@@ -2871,7 +2871,7 @@ Concrete Types:
 
 [[unique_ptr]]
 (pure_)unique_ptr:: Is the only owner, thus no reference counting needed.  Referred
-  obj is of dynamic (non-gc allocated) storage. 
+  obj is of dynamic (non-gc allocated) storage.
 
 [[shared_ptr]]
 (pure_)shared_ptr:: Shared ownership via reference counting.
@@ -2988,7 +2988,7 @@ and ++@foo()++ denote the pointer object, not the pointee.
 
 
 Since the address of operator in C / C&plus;&plus; is only used to let a
-pointer object point to a given object, that operator is not needed in EF. 
+pointer object point to a given object, that operator is not needed in EF.
 
 
 == Compilation
@@ -3068,7 +3068,7 @@ Classes/Modules are also namespaces.
 
 * When importing a namespace and a newly imported name shadows another one,
   shall this result in a warning?  Must the user explicitly state which names
-  he approves/allows to shadow others. 
+  he approves/allows to shadow others.
 
 * When calling a method, within the argument list the name space of the
   method's class is the top namespace.  That way one is not forced to qualify
@@ -3346,7 +3346,7 @@ Memory:: ...
 
 === Provided by library vs built-in
 - Optimizers & verifiers can take more advantages when things are built-in,
-  right? 
+  right?
 - In most cases there are multiple ways to implement a given function
   signature.  Which implementation is the best depends on the problem at
   hand.  Only the user knows the problem, so he might want to choose the
@@ -3447,7 +3447,7 @@ there is a high chance of consistency.
 Also enforce some naming style?  Uppercase for type names, class members end
 or start with underscore....
 
-By default the warning level is maximum, and warnings are treated as 
+By default the warning level is maximum, and warnings are treated as
 
 
 == Misc

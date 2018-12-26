@@ -1,28 +1,28 @@
 #!/usr/bin/env efc
-// 
+//
 // The EF programming language tutorial part 1
 // ===========================================
-// 
+//
 // Comments
 // --------
-// Single line comments start with '#' and end at the end of the line. 
+// Single line comments start with '#' and end at the end of the line.
 //
 // Multi-line comments start with '#*' and end with '*#. Currently they can't be
 // nested, but will be allowed to nest in a future version of the EF
 // programming language.
-// 
+//
 // Misc
 // ----
-// 
+//
 // EF is like most programming languages free-form, i.e. white space characters
 // are used only to delimit tokens, and have no other significance
 // (http://en.wikipedia.org/wiki/Free-form_language).
-// 
+//
 // Sadly the following examples are horribly contrived. Sorry.
-// 
+//
 // Similar to scripting languages everything in the top level is also
 // executed. In EF, everything at the top level is part of the body of the main
-// method. 
+// method.
 //
 // In this early version of the EF compiler (efc), it compiles the file passed
 // as command line argument, compiles it (without an generating an output

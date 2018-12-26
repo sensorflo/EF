@@ -1,5 +1,5 @@
 #!/usr/bin/env efc
-// 
+//
 // The EF programming language tutorial part 2
 // ===========================================
 //
@@ -8,7 +8,7 @@
 // A function definition: The function's name is 'square'. It expects one
 // parameter named 'x' of type 'int'. It's return type is 'int'. The functions
 // body aka implementation is 'x * x'. Thus the function square returns the
-// square of its argument. 
+// square of its argument.
 fun square:(x:int) int ,=
     x * x
 $
@@ -23,5 +23,3 @@ $
 // --------------
 // A function call has same syntax as in C languages: 'foo(arg1,arg2)'.
 square(2)
-
-

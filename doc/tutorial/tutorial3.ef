@@ -1,5 +1,5 @@
 #!/usr/bin/env efc
-// 
+//
 // The EF programming language tutorial part 3
 // ===========================================
 //
@@ -25,8 +25,8 @@ fun square_minus_four:(x:int) int ,=
    var tmp ,= square - 1 :int$
 
    tmp = tmp - 1
-   tmp = tmp - 1;
-   tmp - 1;
+   tmp = tmp - 1
+   tmp - 1
 $
 
 // The type in a val/var definition can be omitted if the type can be inferred
