@@ -278,21 +278,30 @@ opt_storage_duration_arg
   | storage_duration_arg                            { swap($$, $1); }
   ;
 
-condition_action_then_sep
-  : THEN
-  | NEWLINE
-  | COLON
+/* generic list separator */
+sep
+  : COLON
   ;
 
-condition_action_do_sep
-  : DO
+/* generic list separator, inclusive newline */
+sep_incl_newline
+  : sep
   | NEWLINE
-  | COLON
+  ;
+
+then_sep
+  : THEN
+  | sep_incl_newline
+  ;
+
+do_sep
+  : DO
+  | sep_incl_newline
   ;
 
 else_sep
   : ELSE
-  | COLON
+  | sep
   ;
 
 equal_as_sep
@@ -455,11 +464,11 @@ opt_else
   ;
 
 naked_while
-  : standalone_expr condition_action_do_sep block_expr               { $$ = new AstBlock(new AstLoop($1, $3)); }
+  : standalone_expr do_sep block_expr                                { $$ = new AstBlock(new AstLoop($1, $3)); }
   ;
 
 condition_action_pair_then
-  : standalone_expr condition_action_then_sep block_expr             { $$ = ConditionActionPair{ $1, $3}; }
+  : standalone_expr then_sep block_expr                              { $$ = ConditionActionPair{ $1, $3}; }
   ;
 
 naked_return
