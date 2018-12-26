@@ -311,8 +311,7 @@ seq_operator
 
 opt_seq_operator
   : %empty
-  | NEWLINE
-  | SEMICOLON
+  | seq_operator
   ;
 
 sub_expr
