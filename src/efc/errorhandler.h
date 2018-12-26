@@ -27,6 +27,7 @@ public:
     eObjectExpected,
     eOnlyLocalStorageDurationApplicable,
     eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization,
+    eScanOrParseFailed,
     eCnt
   };
 

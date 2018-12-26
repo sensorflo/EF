@@ -96,7 +96,7 @@ unique_ptr<AstNode> Driver::scanAndParse() {
   // the parser internally drives the scanner
   const auto errorCode = m_parser->parse(); // as a side-effect, sets m_astRootFromParser
   if (errorCode) {
-    throw runtime_error("parse failed");
+    Error::throwError(*m_errorHandler, Error::eScanOrParseFailed);
   }
   assert(m_astRootFromParser);
   return move(m_astRootFromParser);
