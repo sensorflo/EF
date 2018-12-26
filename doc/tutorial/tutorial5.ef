@@ -54,7 +54,7 @@ foo1 := if x==y: x else y$
 //
 // The following ifs are equivalent
 if   x==y:     x else y $
-if($ x==y:     x:     y )
+if(  x==y:     x:     y )
 if   x==y then x else y end
 if   x==y then x else y endof if$
 

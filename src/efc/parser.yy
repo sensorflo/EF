@@ -89,18 +89,27 @@ and by declaration of free function yylex */
   TOKENLISTSTART "<TOKENLISTSTART>"
   END "end"
   ENDOF "endof"
+  IF_LPAREN "if("
   IF "if"
   THEN "then"
   ELIF "elif"
   ELSE "else"
+  WHILE_LPAREN "while("
   WHILE "while"
+  DO_LPAREN "do("
   DO "do"
+  FUN_LPAREN "fun("
   FUN "fun"
+  VAL_LPAREN "val("
   VAL "val"
+  VAR_LPAREN "var("
   VAR "var"
+  RAW_NEW_LPAREN "raw_new("
   RAW_NEW "raw_new"
+  RAW_DELETE_LPAREN "raw_delete("
   RAW_DELETE "raw_delete"
   NOP "nop"
+  RETURN_LPAREN "return("
   RETURN "return"
   EQUAL "="
   EQUAL_LESS "=<"
@@ -123,7 +132,6 @@ and by declaration of free function yylex */
   EQUAL_EQUAL "=="
   COMMA_EQUAL ",="
   LPAREN_EQUAL "(="
-  LPAREN_DOLLAR "($"
   SLASH "/"
   LPAREN "("
   RPAREN ")"
@@ -163,7 +171,7 @@ and by declaration of free function yylex */
 %type <AstNode*> standalone_node
 %type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstDataDef*> param_decl
-%type <ObjType::Qualifiers> valvar type_qualifier
+%type <ObjType::Qualifiers> valvar valvar_lparen type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
 %type <RawAstDataDef*> naked_data_def data_def_args
 %type <AstFunDef*> naked_fun_def
@@ -372,25 +380,25 @@ primary_expr
   ;
 
 list_expr
-  : valvar kwao naked_data_def kwac                 { $$ = parserExt.mkDataDef($1, $3); }
-  | FUN kwao naked_fun_def kwac                     { $$ = $3; }
-  | IF kwao naked_if kwac                           { std::swap($$,$3); }
-  | WHILE kwao naked_while kwac                     { std::swap($$,$3); }
-  | RETURN kwao naked_return kwac                   { $$ = $3; }
-  | RAW_NEW kwao type initializer_arg kwac          { $$ = nullptr; }
-  | RAW_DELETE kwao sub_expr kwac                   { $$ = nullptr; }
-  ;
-
-/* keyword argument list open delimiter */
-kwao
-  : %empty
-  | LPAREN_DOLLAR
+  : valvar_lparen     naked_data_def       RPAREN   { $$ = parserExt.mkDataDef($1, $2); }
+  | valvar            naked_data_def       kwac     { $$ = parserExt.mkDataDef($1, $2); }
+  | FUN_LPAREN        naked_fun_def        RPAREN   { $$ = $2; }
+  | FUN               naked_fun_def        kwac     { $$ = $2; }
+  | IF_LPAREN         naked_if             RPAREN   { std::swap($$,$2); }
+  | IF                naked_if             kwac     { std::swap($$,$2); }
+  | WHILE_LPAREN      naked_while          RPAREN   { std::swap($$,$2); }
+  | WHILE             naked_while          kwac     { std::swap($$,$2); }
+  | RETURN_LPAREN     naked_return         RPAREN   { $$ = $2; }
+  | RETURN            naked_return         kwac     { $$ = $2; }
+  | RAW_NEW_LPAREN    type initializer_arg RPAREN   { $$ = nullptr; }
+  | RAW_NEW           type initializer_arg kwac     { $$ = nullptr; }
+  | RAW_DELETE_LPAREN sub_expr             RPAREN   { $$ = nullptr; }
+  | RAW_DELETE        sub_expr             kwac     { $$ = nullptr; }
   ;
 
 /* keyword argument list close delimiter */
 kwac
   : DOLLAR
-  | RPAREN
   | END
   | ENDOF opt_newline id_or_keyword opt_newline DOLLAR /* or consider end(...) */
   ;
@@ -447,6 +455,11 @@ initializer_special_arg
 valvar
   : VAL                                                              { $$ = ObjType::eNoQualifier; }
   | VAR                                                              { $$ = ObjType::eMutable; }
+  ;
+
+valvar_lparen
+  : VAL_LPAREN                                                       { $$ = ObjType::eNoQualifier; }
+  | VAR_LPAREN                                                       { $$ = ObjType::eMutable; }
   ;
 
 naked_if

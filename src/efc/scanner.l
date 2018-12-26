@@ -57,23 +57,31 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 \\[ \t]*((\/\/|#!)[^\n]*)?\n		loc.lines(1); loc.step();
 
   /* non-type keywords */
+if\(                return yy::Parser::make_IF_LPAREN(loc);
 if                  return yy::Parser::make_IF(loc);
 then                return yy::Parser::make_THEN(loc);
 elif                return yy::Parser::make_ELIF(loc);
 else                return yy::Parser::make_ELSE(loc);
+while\(             return yy::Parser::make_WHILE_LPAREN(loc);
 while               return yy::Parser::make_WHILE(loc);
 do                  return yy::Parser::make_DO(loc);
+fun\(               return yy::Parser::make_FUN_LPAREN(loc);
 fun                 return yy::Parser::make_FUN(loc);
+val\(               return yy::Parser::make_VAL_LPAREN(loc);
 val                 return yy::Parser::make_VAL(loc);
+var\(               return yy::Parser::make_VAR_LPAREN(loc);
 var                 return yy::Parser::make_VAR(loc);
 end                 return yy::Parser::make_END(loc);
 endof               return yy::Parser::make_ENDOF(loc);
 not                 return yy::Parser::make_NOT(loc);
 and                 return yy::Parser::make_AND(loc);
 or                  return yy::Parser::make_OR(loc);
+raw_new\(           return yy::Parser::make_RAW_NEW_LPAREN(loc);
 raw_new             return yy::Parser::make_RAW_NEW(loc);
+raw_delete\(        return yy::Parser::make_RAW_DELETE_LPAREN(loc);
 raw_delete          return yy::Parser::make_RAW_DELETE(loc);
 nop                 return yy::Parser::make_NOP(loc);
+return\(            return yy::Parser::make_RETURN_LPAREN(loc);
 return              return yy::Parser::make_RETURN(loc);
 mut                 return yy::Parser::make_MUT(loc);
 is                  return yy::Parser::make_IS(loc);
@@ -147,7 +155,6 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::
 "=<"                return yy::Parser::make_EQUAL_LESS(loc);
 ",="                return yy::Parser::make_COMMA_EQUAL(loc);
 "(="                return yy::Parser::make_LPAREN_EQUAL(loc);
-"($"                return yy::Parser::make_LPAREN_DOLLAR(loc);
 op([-+*/!]|&&|"||"|"=="|"_and"|"_or"|"_not"|"_new"|"_delete") {
   char* start = yytext + 2;     // skip "op"
   if (*start == '_') ++start;   // skip '_'
