@@ -415,6 +415,91 @@ new_nonempty_identifier = identifier | 'none;
 new_identifier = [new_nonempty_identifier];
 ----------------------------------------------------------------------
 
+==== Custom operators / lists & separators
+
+The lexxer and parser must know which tokens are operators (and within that type, distinguish unary prefix, unary postfix, binary), list start, list argument seperator, function. Append e.g. "@type" to a identifier. Each type has a long form and a short form, e.g. "unary_prefix" / "up".
+
+Thus @ would be an allowed character in an identifier. However it has special meaning and cannot be used when defining a new thing.
+
+However this is reather ugly / verbose. It would be nice if the parser could be dynamically told which identifiers are of which type, i.e. the grammar should be dynamically editable. E.g. after each top level construct, or after each import statement, part of the stages that follow the parser are run in order to know which identifiers are operators, list start, list separator. The parser then updates its grammar rules accordingly.
+
+
+[[name_alias]]
+=== Name alias / identifier alias
+
+Declare an id to be an alias, i.e. an additional name, for something. E.g. to
+abbreviate a type expression, or to abbreviate a name deeply nested in
+namespaces.
+
+----------------------------------------------------------------------
+name_alias_decl =
+  ('name) new_identifier `: type_expr |
+  ('name) new_identifier `: id_expr `$;
+----------------------------------------------------------------------
+
+
+=== Parentheses: Function call, grouping, builtin definitions
+
+Parentheses are used for multiple things, leading to conflicts
+
+- Function/macro/... call: "foo(a,b,c)", "makefun()(a,b,c)".
+
+- Initialization
+ * local: "val foo(a,b,c):mytype$".
+ * parameter: "foo((a+b,c*d),(e*f,g+h))", "foo(.bar(a,b,c), .fred(d,e,f))".
+ * return obj: "return(a,b,c)".
+ * member: ".mymember(a,b,c)".
+ * ... (newed, catched, ...).
+ * caveat: objects might also have the function call operator. Disambiguition with the leading dot. I.e. ".id(...)" always initialized the object named id, opposed to calling the function call operator. Or more generally, in the context where we want to apply this initialization, ".id" must refer to a yet un-initialized object. *to-do* move this more generally to a better place talking explicitely about this ".id" construct.
+
+- Special syntaxes for builtin constructs, e.g.
+ * function def "def foo(a:int,b:float) = ...$"
+ * coincides with some points of initialization
+
+- Grouping as in "if (a+b)/c: ...$", "val foo:*(...)$"
+
+- Literal tuple (aka literal list). *to-do* this concept doesn't have an own chapter yet.
+
+  * I think that view fall's short. It should be possible for e.g. that in "vals a,b,c,d:int$ tie(a,d) = make()", the function does RVO for all its return objects. I.e. the function really returns multiple objects, opposed to one which might be a tuple. However we could say that this collection of return objects can always be interpeted as tuple.
+
+  * Returning multiple values and at call site make use of them in a clean way should be much easier than the route of returning values via pass by non-const ref.
+
+  * Can this be thougt of anonymous structs with anonymous members, with a collection interace?
+    ** Maybe this is too complex and too far away from getting generic rules which also work with other collections: But I have that case anyway when initializing parameters in a function call. Special in that it's not evaluated right away. "(a,b) := (c+d,e+f)" is like "a := c+d; b := e+f" with direct initialization, opposed to copy initialization. It's _not_ that the anonymous struct member is initialized and then a is move constructed. A is directly constructed by the expression c+d.
+
+    ** Special in that it's `members' might be distributed and other, already existing objects. E.g. "val a=42$ val b=77$ (a,b) = getPair()". Or solve this case with an equivalent to std::tie?
+
+  * tuple, C like struct, std::array, builtin array, are all similar in that they are an ordered sequence / aggregation of members/objects, and at compile time, the type of all members is known and the number of members are known.
+
+  * Make it generic so it also works with std::array, std::vector, user types which do the appropriate stuff
+
+  * probably immutable as in python. Can't dynamicaly add a member to a struct, can I :-)?
+
+  * "vals a, b :int$ = (c,d)"
+
+  * "(a,b) := (c,d)". Even "(a,b) := (c,(d,e,f))"? I.e. nested tuples? Why not?
+
+  * "val a=42$ val b=77$ (a,b) = (c,d)"
+
+  * "(a,b) = getPair();"
+
+  * "var p :pair$ p = (a,b)". "var v:vector$ v = (1,2,3,4);"
+
+  * mind nesting: "(a,(b,c)) := make()"
+
+  * caveat? coinsides with parameter to function foo((a),(b,c,d+e+f)).
+
+- caveat: (Almost) anything should be able to be an expression in the sense that it's expressable also with a a macro call. E.g. also the new name in a definition "fun makename(...):(a:int,b:int)int=...$", in which case then "fun foo(...) = ...$" is ambigous: is it a function definition with a name given by macro call foo(...) and the rest of the signature is the default, or is a function named foo with the given parameter list? Possibe solutions: 1) Always require ":" to beginn arglist 2) here the name grammar rule for specifying the function's name could be `newname = ID | "(" expr ")"' instead `newname = expr'.
+
+Ideas of resolving conflicts:
+
+- Giving up on free form: The sequence "identifier blanks (" (parens are grouping) is different from "identifier (" (parens mean function call). That would also solve how one can define wether he wants e.g. the "if" construct in its list form "if cond: body$" or in its function call form "if(condition:body)". This is not elegant, but most programers won't seperate the function call parens from the identifier anyway, i.e. most dont write "foo (a,b,c)".
+
+- (...) is always an argument list. In case it has only one element, it's semantically identical with grouping. Note that an expression is either an argument to an operator, in which case () with multiple args doesn't make sense and this it's always grouping (but note it can also be the rhs, as in "if (a+b)*c:...$"), or it is an argument to an enclosing list expression, as in "if a+b:...", where () is always meant (but see distinction between "if(...:...)" and "if ():...$") as argument list to initialize the parameter.
+
+- Regarding initializing function parameters: "foo(.(a,b,c),...)" initializes the argument, "foo((...),...)" is something else (e.g. grouping).
+
+
 
 [[comments]]
 === Comments / Documentation / EFDoc
@@ -728,6 +813,8 @@ operators which really are function calls?
 [[order_of_evaluation]]
 === Order of evaluation / side effects
 
+See also <<parameter_initialization_order>> and <<member_initialization_order>>.
+
 In the following, operators / operands / evaluation are regarded as a
 specialized variant of `arguments' / `functions´ / `function call'.
 `Evaluating an argument' means recursively evaluating the call tree rooted at
@@ -761,6 +848,17 @@ It follows that:
   write access any object, so it's probably not feasible to detect whether two
   functions read and write access the same object.
 
+Random notes:
+
+- Note that C&plus;&plus; also is considering defining evaluation order of arguments: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0145r1.pdf. I don't have references, but from a guts feeling the as-if rule already gives plenty of opportunities to the optimizer.
+
+- C pushes arguments from right to left on the stack. Apparently that is in order to make variadic functions feasible.
+
+- Maybe EF can have explicitely specified blocks / functions, inside which order of evaluation is unspecified.
+
+  * Function parameter initialization order is in some sense fixed anyway, since it must / should be in the reverse order of destruction, and the code for destruction is part of the function's code (is it? Or maybe that's also just left to the implementation...). Also mind that a function can be called via a function pointer.
+
+  * The specification of such a construct would be quite complex. There are many corner cases to think about. So leaf that for a much later version of EF? If at all.
 
 Motivation:
 
@@ -1154,23 +1252,28 @@ correspond exactly to what it technically is.
   need to establish rules what the final alignment is.
 
 
-=== Type aliases
+[[type_deduction]]
+=== Type deduction
+
+For declaring an object: allow also to express "I redundantly explicitely state the type  for human readability, but I want to be an error if it doesn't match the type that type deduction would yield". Or more generally, so that there'es no unwanted conversion for the creation of any object (including param of functions, irrespective of list- or operatorcall syntax), provide some sort of wrapper or attribute for expressions stating "this expression is not allowed to be implicitely converted"
+
+Note that this is a concept / idea that might be partly redundant to the idea of having only few implicit conversions and trying to make the user make most of his conversion operators explicit.
+
+Make it possible in a declaration to redundantely specify the meta type (aka concept).
+
+
+[[type_alias]]
+=== Type alias
+
+A type alias is a _new_ distinct type (thus we maybe shouldn't call it `type alias'). See also <<name_alias>>.
 
 ----------------------------------------------------------------------
 ## At compile-time defines an alias for the given type_expr. At run-time does
 ## nothing.
 type_alias_decl =
-  ('newtype|'typealias) new_identifier | ## incomplete type
-  ('newtype|'typealias) new_identifier type_expr;
+  ('type) new_identifier `$ | ## incomplete type
+  ('type) new_identifier `: type_expr `$;
 ----------------------------------------------------------------------
-
-* ++typealias++: Declares an identifier which is an alias for type_expr, but
-  is not a distinct type.
-* ++newtype++: Declares an identifier which is a new distinct type.
-
-.To-do:
-* Provide ability to define aliases, macros for type_expr, e.g. ++defxx
-  ptr_to_array *[]++
 
 
 === Type information
@@ -1533,28 +1636,33 @@ is an operator expression.  Its rhs is an expression delivering an code object, 
 its lhs is an argument list.
 
 
-==== Argument passing with key => value pairs
+[[parameter_initialization_order]]
+==== Parameter initialization order
+
+Is in most parts covered by <<order_of_evaluation>>. *to-do* merge the two chapters.
+
+Do we need similar rules as in <<member_initialization_order>>? Since obviously parameter destruction order is the reverse of the initialization order.
+
+<<keyword_arguments>> should (by style guideline, i.e. violating the rule produces warning) occur in the order they are defined in the functions definition, i.e. in their <<order_of_evaluation>>, but they are not required to. Order of evaluation is still given by the order in which parameters are defined in the function definition.
+
+
+[[keyword_arguments]]
+==== Keyword arguments
+
 The caller can pass the arguments as ordered list as in most languages.
-Additionally each element in such a list can also be a key => value pair, the
-key being the name of a parameter which's value is to be set to the value of
-the pair.
+Additionally, as e.g. in Python, each element in such a list can also be a key
+pair ".foo = 42" or ".foo(a,b,c)", the key being the name of a parameter which's
+value is to be set to the value of the pair.
 
 Notes:
 
-- What is the type of such a key value pair?  How can we differentiate whether
-  the caller intends to pass a key value pair as discussed above, or whether
-  that pair as a whole is the value to be passed?
-- The benefit is that when reading code at caller side, it is more descriptive
-  / informative.  However shouldn't it be the task of the IDE to show the
-  reader information (type, name, doc) about each parameter of the function
-  at hand?
-- Parameter names would become half way part of the signature.  If the
-  implementation changes a parameter name, some client code might be broken.
-- The set of function declarations plus the function definition all had to use
-  the same names.  This can be seen as good and as bad.
-- What about function pointers?  Can the declaration / definition of a
-  function pointer use different parameter names?  After all, the parameter
-  names are not really part of the function's signature.
+- Parameter names would become part of the signature / public interface. If the
+  implementation changes a parameter name, some client code might be
+  broken. Thus we need to let the definition of the function decide wether
+  that's ok for it. Thus in the definition of the function, we need to be able
+  to specify wether the name is part of the public interface or not. E.g. by
+  giving paramters public / private attributes.
+
 - Also, at least with pedantic name comparison, each caller has to overtake
   the naming style (prefixes, camel case vs underlines, ...) of the method
   implementation.
@@ -1569,6 +1677,26 @@ Notes:
   * EF tries anyway to soft enforce a style which is used by everyone.  Here
     it would help again that the implementer side and the client side have the
     same naming styles anyway.
+
+- Maybe ".foo" could also refer to something outside the function call (.e.g if
+  we have a "with myobj: ...$" clause, in which body we can concisely refer to
+  myobj's member like ".mymember = 42"). Then there's a conflict. Or we handle
+  it as we handle shadowing: Within the function call parantheses, implicitely
+  the names of the function's come into scope. Then we could even read from them
+  in later parameter initializations.
+
+- See <<parameter_initialization_order>> for how to deal with conflicts between
+  order of parameter initialization and the order, in which arguments appear in
+  the function call.
+
+- What about function pointers?  Can the declaration / definition of a
+  function pointer use different parameter names?  After all, the parameter
+  names are not really part of the function's signature.
+
+- The benefit is that when reading code at caller side, it is more descriptive
+  / informative.  However shouldn't it be the task of the IDE to show the
+  reader information (type, name, doc) about each parameter of the function
+  at hand?
 
 
 === Lambdas
@@ -1898,6 +2026,9 @@ alignment = 'alignas \( (sub_expr#integral|type_expr) \);
 scope = 'block_scope | 'full_expr_scope;
 ----------------------------------------------------------------------
 
+One should also be able to specifify only a meta type (aka concept) as type,
+opposed to a concrete type. See also <<type_deduction>>
+
 .To-do
 * Is alignment part of object definition or of type_expr?
 
@@ -1962,6 +2093,7 @@ data_obj_def_list_expr =
 
 naked_data_obj_decl =
   new_identifier#name
+  [ initializer2 ]
   ( initializer |
     \: type_expr |
     'is data_obj_modifier*
@@ -1993,13 +2125,48 @@ enclosing expression list, and it introduces an argument being an initializer.
 initializer = ",=" (
   arg_list |
   sub_expr | ## short for "(sub_expr)"
-  'nop_init | 'laterctor);
+  'nop_init |
+  'laterctor);
+
+initializer2 =
+  arg_list |
+  literal_list; ## short for "(literal_list)"
 ----------------------------------------------------------------------
 
-Note that the opening parenthesis can not be an alternate argument separator,
-beside the equal sign, also introducing an initializer argument, due to
-ambiguities.  In EF macro calls can occur nearly everywhere, so opening
-parenthesis are in most cases for `calls' of any sort.
+Caveats:
+
+- Shall initializer2 syntax be allowed? Note that the opening parenthesis can
+  not be an alternate argument separator, beside the equal sign, also
+  introducing an initializer argument, due to ambiguities.  In EF macro calls
+  can occur nearly everywhere, so opening parenthesis are in most cases for
+  `calls' of any sort. However a solution would be to enclose the name
+  expression "(mynamegeneratingmacro(...))(a,b,c)".
+
+
+[[designated_initialization]]
+===== Designated initialization
+
+If a class has only public members, a client can initialize them as follows. The same syntax as in <<keyword_arguments>> function calls is used.
+
+--------------------------------------------------
+class Foo =
+public
+  var m1:int;
+  var m2:Bar;
+$
+val foo(.m2(42, 3.14), .m1 = 77) :Foo$
+val bar(._3 = 42, ._6 = 77) :array{int}$
+--------------------------------------------------
+
+Notes:
+
+- See C&plus;&plus;20 for how they do it to decide when that is allowed. Probably not when there are private members and other ctors defined.
+
+- Assuming there's an ctor which has at least one argument which has the same name as a public member, say bar. Then when the initialization argument list is "(bar<=42)", how to distinguish between that being designated initialization or calling that ctor? Maybe by prohibiting ctors from having a parameter whose name matches the name of any member? That would be anyway a bad thing to do, since in the ctor body the name of the parameter would hide the name of the member.
+
+- When caller uses designated initialization, how can he specify wether the members he did not explicitely mention are default initialized or not initialized at all. E.g. making default initialization the default, and if any argument is just "nop_init" or ". = nop_init", then the rest of the members are explicitely not initialized.
+
+- How to ensure <<member_initialization_order>> and <<parameter_initialization_order>> are both respected, and don't conflict each other?
 
 
 ===== Uninitialized / not-yet-constructed data objects
@@ -2253,52 +2420,15 @@ need in calling them.
 
 ----------------------------------------------------------------------
 fun_name_ctor = 'this | 'ctor | 'constructor;
-ctor_body = [member_init_part] [classic_ctor_part];
+ctor_body = [member_init_part] [ctor_body];
 member_init_part = block_expr | 'this initializer;
-classic_ctor_part = mi_end_expr block_expr;
+ctor_body = mi_end_expr block_expr;
 mi_end_expr = 'mi_end; ## of type void
 ----------------------------------------------------------------------
 
-The constructor body is composed of two parts: 1) the member initialization
-part, which's responsibility is to construct all members 2) the classic
-constructor part, which does additional things.
-
-At the beginning of the _member initialization part_ all members are
-+laterctor+ `initialized', see <<initialization>>.  A program that read
-accesses a member before it initializes that member is not well formed.  The
-implementation is not required to print a diagnostic message.  Probably that
-it is difficult for a compiler to do a correct verification for all possible
-cases, including any function call etc.  Define a set of cases which the
-compiler is required to detect (e.g. in case there no flow control constructs
-and no calls).  At the end of the member initialization part, any not yet
-constructed member is automatically constructed using the initializer of the
-declaration of that member; for the super class that's the default
-constructor.  A _delegating member initialization part_ does delegate the work
-of initializing the members to another constructor of the class.  That is done
-by initializing the `member' this with ++'this initializer++.  This expression
-may only appear in the member initialization part, and if it does, no other
-expressions might be in the member initialization part.
-
-When the _classic constructor part_ is entered, all members are initialized.
-The classic constructor part is preceded by the expression ++mi_end++, which
-initializes all members not yet initialized by the preceding member
-initialization part.  +mi_end+ is only allowed to appear in a constructor
-body, and at most one time.  Since normally the member initialization part is
-preferred over the classic construction part, it's the classic constructor
-part which has the burden of being a bit more cumbersome to define.
-
-If an exception occurs, all, and only those, constructed members are
-destructed.
-
-_Member alist constructor_: Provide a auto generated constructor, which
-optionally can be made member of a class, which allows to construct an object
-by giving an association list (member name -> (init value |
-constructor)). Member name can be also ++*++ (or ++rest++) to refer to all not
-explicitly stated members.  The member name ++super++ is used to construct the
-super object if any.  This is probably particularly useful for structs.  Style
-guideline prohibit to make use of that constructor when there are any
-non-public fields.
-
+The constructor body is composed of two parts: 1) member initialization, which's
+responsibility is to construct all members 2) the constructor body, which does
+additional things.
 
 *to-do:*
 
@@ -2322,6 +2452,57 @@ non-public fields.
 - Make cast constructors explicit by default, i.e. they only can be called
   explicitly, not implicitely.  If you want an implicitly call-able cast
   constructor, you have to explicitly declare it as such.
+
+
+===== Member initialization
+
+Members are either initialized explicitely or by delegating that work to another constructor.
+
+
+.Delegating member initialization
+
+Does delegate the work of initializing the members to another constructor of the
+class.  That is done by initializing the `member' this with ++'this
+initializer++.  This expression may only appear in the member initialization
+part, and if it does, no other expressions might be in the member initialization
+part.
+
+
+.Explicit member initialization
+
+As a function body, but <<member_initialization_order>> must be respected, and uninitialized members may not be referenced. In order to make life easier for the semantic analizer, we start out with the following rules:
+
+- Constructs which initialize members are restricted. Say to ".myMember = 42" and ".myMember(a, b, c)". And the first time a member is initialized / assigned a value, that construct must be on the top level of the function body. Now that the semantic analyzer quite easily knows which constructs initialize members, and thanks to <<order_of_evaluation>>, it can ensure that members are initialized in the correct order and no uninitialized member is referenced.
+
+- When a member is explicitely initialized, implicitely right befor that, any yet uninitialized member is default initialized.
+
+Caveats:
+
+- If the type of a member has the function call operator, "mymember(a,b,c)" could either mean to initialize mymember, or to use call the function call operator on mymember. A possible solution is to disambuguite with ".mymember(a,b,c)", which always means member initialization. That would also be in line with <<keyword_arguments>> and <<designated_initialization>>
+
+
+[[member_initialization_order]]
+.Member initialization order
+
+Each constructor (mind also <<designated_initialization>>) must initialize members in the same order, in order that there can be one single destructor which destructs the member in reverse order.
+
+The order is given by the order of member definitions in the class' definition.
+
+
+===== Constructor body
+
+Why not just drop the notion of a constructor body? The explicit member initialization is already generic and powerful enough to be both what member initialization list and constructor body is in C&plus;&plus;
+
+When the classic constructor part is entered, all members are initialized.  The
+classic constructor part is preceded by the expression ++mi_end++, which
+initializes all members not yet initialized by the preceding member
+initialization part.  +mi_end+ is only allowed to appear in a constructor body,
+and at most one time.  Since normally the member initialization part is
+preferred over the classic construction part, it's the classic constructor part
+which has the burden of being a bit more cumbersome to define.
+
+If an exception occurs, all, and only those, constructed members are
+destructed.
 
 
 ==== Destructor
@@ -3240,6 +3421,18 @@ type_bounds = ... ;
 <1> The argument for this parameter must be a +type_expr+ within the given
     bounds.
 <2> The argument for this parameter is an +expr+ of the given type.
+
+
+=== Template metatype / concept
+
+*to-do*
+
+
+=== Fix set of possible template instantiations
+
+For each template parameter it's possible to state the set of allowed types.
+
+Also only one. That is usefull to define a non-template function where the interface semantically only defines the meta type (aka concept), but not the concrete type. I.e. clients must rely on the properties of the concept, not the only type (currently) allowed. Thus it's easier to change the concret type used in the signature without breaking any client.
 
 
 === Referring to a parameterized type / function
