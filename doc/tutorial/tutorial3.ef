@@ -21,8 +21,8 @@
 // variable and value. The initializer can be after the identifier or after the
 // type.
 fun square_minus_four:(x:int) int ,=
-   val square: int ,= x * x$
-   var tmp ,= square - 1 :int$
+   val square: int = x * x$
+   var tmp = square - 1 :int$
 
    tmp = tmp - 1
    tmp = tmp - 1
@@ -39,7 +39,7 @@ $
 // always int.
 fun square_minus_four_v2:(x:int) int ,=
    square := x * x
-   var tmp: ,= square - 1$
+   var tmp: = square - 1$
    tmp - 3
 $
 

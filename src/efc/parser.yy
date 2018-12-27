@@ -168,12 +168,12 @@ and by declaration of free function yylex */
 %token TOKENLISTEND "<TOKENLISTEND>"
 
 
-%type <AstCtList*> ct_list initializer_arg opt_initializer_arg initializer_special_arg opt_initializer_special_arg
+%type <AstCtList*> ct_list ct_list_2plus initializer_arg opt_initializer_arg initializer_special_arg opt_initializer_special_arg naked_initializer
 %type <std::vector<AstNode*>*> pure_standalone_node_seq_expr
 %type <std::vector<AstDataDef*>*> pure_naked_param_ct_list
 %type <std::vector<AstObject*>*> pure_ct_list
 %type <AstNode*> standalone_node
-%type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
+%type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr ct_list_arg operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstDataDef*> param_decl
 %type <ObjType::Qualifiers> valvar valvar_lparen type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg
@@ -247,9 +247,20 @@ ct_list
   | pure_ct_list opt_comma                          { $$ = new AstCtList($1); }
   ;
 
+ct_list_2plus
+  : ct_list_arg COMMA pure_ct_list opt_comma        { ($3)->insert(($3)->begin(),$1); $$ = new AstCtList($3); }
+  ;
+
 pure_ct_list
-  : standalone_expr                                 { $$ = new std::vector<AstObject*>(); ($$)->push_back($1); }
-  | pure_ct_list COMMA standalone_expr              { ($1)->push_back($3); std::swap($$,$1); }
+  : ct_list_arg                                     { $$ = new std::vector<AstObject*>(); ($$)->push_back($1); }
+  | pure_ct_list COMMA ct_list_arg                  { ($1)->push_back($3); std::swap($$,$1); }
+  ;
+
+/* will later be more complex than standalone_node_seq_expr, e.g. by allowing
+designated initializer. For now, I like the alias, since it's easier for me to
+think about this way. */
+ct_list_arg
+  : standalone_node_seq_expr                        { swap($$,$1); }
   ;
 
 type
@@ -350,6 +361,7 @@ operator_expr
   /* function call and cast */
   : sub_expr         LPAREN ct_list         RPAREN  { $$ = new AstFunCall($1, $3); }
   | OP_NAME          LPAREN ct_list         RPAREN  { $$ = parserExt.mkOperatorTree($1, $3); }
+  /* TODO: for consistency reasons, arg to cast should be ct_list */
   | FUNDAMENTAL_TYPE LPAREN standalone_expr RPAREN  { $$ = new AstCast($1, $3); }
 
   /* unary prefix */
@@ -442,12 +454,7 @@ opt_ret_type
   ;
 
 initializer_arg
-  : COMMA_EQUAL    standalone_expr                                   { $$ = new AstCtList($2); }
-  | equal_as_sep   standalone_expr                                   { $$ = new AstCtList($2); }
-  | COMMA_EQUAL    NOINIT                                            { $$ = new AstCtList(AstDataDef::noInit); }
-  | equal_as_sep   NOINIT                                            { $$ = new AstCtList(AstDataDef::noInit); }
-  /* TODO : add NOINIT */
-  | LPAREN_EQUAL   ct_list RPAREN                                    { swap($$,$2); }
+  : equal_as_sep        naked_initializer                            { swap($$,$2); }
   ;
 
 opt_initializer_arg
@@ -455,9 +462,27 @@ opt_initializer_arg
   | initializer_arg                                                  { swap($$,$1); }
   ;
 
+/*
+TODO: semantic analizer must report error when noinit is used for function
+parameters in a function call
+
+1) If that is an parenthesized expression, say "val a = (42)$", then the resulting
+   initializer in the AST is two nested AstSeq, i.e. (;;42) (the complete AST is
+   ":;data(a int (;;42))"). One is because ct_list_arg is ultimatively an
+   standalone_node_seq_expr, and one is because here "(...)" is a primary_expr,
+   whose content is again a standalone_node_seq_expr. */
+naked_initializer
+  : LPAREN               RPAREN                                      { $$ = new AstCtList(); }
+  | LPAREN ct_list_2plus RPAREN                                      { swap($$,$2); }
+  | LPAREN NOINIT        RPAREN                                      { $$ = new AstCtList(AstDataDef::noInit); }
+  | ct_list_arg /* 1) */                                             { auto objs = new std::vector<AstObject*>(); objs->push_back($1); $$ = new AstCtList(objs); }
+  | NOINIT                                                           { $$ = new AstCtList(AstDataDef::noInit); }
+  ;
+
 initializer_special_arg
   : initializer_arg                                                  { swap($$,$1); }
-  | lparen_as_sep  ct_list RPAREN                                    { swap($$,$2); }
+  | lparen_as_sep ct_list RPAREN                                     { swap($$,$2); }
+  | lparen_as_sep NOINIT  RPAREN                                     { $$ = new AstCtList(AstDataDef::noInit); }
   ;
 
 opt_initializer_special_arg
