@@ -45,6 +45,10 @@ StorageDuration ParserExt::mkDefaultStorageDuration() {
   return StorageDuration::eLocal;
 }
 
+ObjType::Qualifiers ParserExt::mkDefaultObjectTypeQualifier() {
+  return ObjType::eNoQualifier;
+}
+
 /** Turns the AstCtList in an AstOperator tree with at most two childs per
 node.  The AstCtList object is deleted, its ex-childs are now owned by their
 respective AstOperator parent. */

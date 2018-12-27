@@ -173,8 +173,8 @@ and by declaration of free function yylex */
 %type <std::vector<AstObject*>*> pure_ct_list
 %type <AstNode*> standalone_node
 %type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr ct_list_arg operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
-%type <AstDataDef*> param_decl
-%type <ObjType::Qualifiers> valvar valvar_lparen type_qualifier
+%type <AstDataDef*> param_def
+%type <ObjType::Qualifiers> valvar opt_valvar valvar_lparen type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg
 %type <TypeAndStorageDuration> type_and_or_storage_duration_arg
 %type <RawAstDataDef*> naked_data_def
@@ -289,7 +289,7 @@ storage_duration
   ;
 
 storage_duration_arg
-  : is_sep storage_duration                         { swap($$, $2); }
+  : IS storage_duration                             { swap($$, $2); }
   ;
 
 type_and_or_storage_duration_arg
@@ -330,11 +330,6 @@ do_sep
 
 else_sep
   : ELSE
-  | sep
-  ;
-
-is_sep
-  : IS
   | sep
   ;
 
@@ -432,18 +427,19 @@ id_or_keyword
   : ID | IF | ELIF | ELSE | FUN | VAL | VAR | END | NOT | AND | OR | FUNDAMENTAL_TYPE
   ;
 
-/* TODO: merge with naked_data_def */
-param_decl
-  : ID type_arg                                                      { $$ = new AstDataDef($1, $2); }
-  ;
-
+/* TODO: semantic analyzer must report error if neither type nor initializer is
+specified */
 naked_data_def
-  /* A trailing opt_initializer_arg is only possyble if there's at least one
+  /* A trailing opt_initializer_arg is only possible if there's at least one
   type or storage duration arg, because else its equal_as_sep conflicts with any
   = in the opt_initializer_special_arg's standalone_expr */
   : opt_id opt_initializer_special_arg type_and_or_storage_duration_arg opt_initializer_arg   { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $4, ($3).m_type, ($3).m_storageDuration); }
 
-  | opt_id opt_initializer_special_arg                                                        { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, nullptr, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration()); }
+  /* KLUDGE: We want to disallow an empty naked_data_def. The above already
+  ensures that at type or storage duration is specified. Now we ensure that
+  either id or initializer is specified. */
+  | opt_id initializer_special_arg                                                            { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2     , nullptr, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration()); }
+  | ID                                                                                        { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, nullptr, nullptr, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration()); }
   ;
 
 naked_fun_def
@@ -453,8 +449,12 @@ naked_fun_def
   ;
 
 pure_naked_param_ct_list
-  : param_decl                                                       { $$ = new std::vector<AstDataDef*>(); ($$)->push_back($1); }
-  | pure_naked_param_ct_list COMMA param_decl                        { ($1)->push_back($3); std::swap($$,$1); }
+  : param_def                                                        { $$ = new std::vector<AstDataDef*>(); ($$)->push_back($1); }
+  | pure_naked_param_ct_list COMMA param_def                         { ($1)->push_back($3); std::swap($$,$1); }
+  ;
+
+param_def
+  : opt_valvar naked_data_def                                        { $$ = parserExt.mkDataDef($1, $2); }
   ;
 
 opt_ret_type
@@ -473,7 +473,10 @@ opt_initializer_arg
 
 /*
 TODO: semantic analizer must report error when noinit is used for function
-parameters in a function call
+parameters in a function definition
+
+TODO: semantic analizer must report error when invalid storage duration is used
+for function parameters in in a function definition.
 
 1) If that is an parenthesized expression, say "val a = (42)$", then the resulting
    initializer in the AST is two nested AstSeq, i.e. (;;42) (the complete AST is
@@ -503,6 +506,11 @@ valvar
   : VAL                                                              { $$ = ObjType::eNoQualifier; }
   | VAR                                                              { $$ = ObjType::eMutable; }
   ;
+
+opt_valvar
+  : %empty                                                           { $$ = parserExt.mkDefaultObjectTypeQualifier(); }
+  | valvar                                                           { swap($$,$1); }
+  ; 
 
 valvar_lparen
   : VAL_LPAREN                                                       { $$ = ObjType::eNoQualifier; }

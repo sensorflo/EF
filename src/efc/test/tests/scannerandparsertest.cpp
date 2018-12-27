@@ -474,6 +474,23 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   spec = "example with no function name";
   TEST_PARSE( "fun : () int = 42$", ":;fun(<none> () int :;42)", spec);
+
+  spec = "example with no paramater name";
+  TEST_PARSE( "fun foo: (:int) int = 42$", ":;fun(foo ((<none> int)) int :;42)", spec);
+
+  spec = "example with various ways of specifying parameter";
+  TEST_PARSE( "fun foo: (foo        :int       ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo (42)   :int       ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo = 42   :int       ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo = (42) :int       ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo        :int = 42  ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo        :int = (42)) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo                   ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo (42)              ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo = 42              ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo = (42)            ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo             = 42  ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (foo             = (42)) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

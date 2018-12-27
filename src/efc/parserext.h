@@ -49,6 +49,7 @@ public:
 
   AstObjType* mkDefaultType();
   StorageDuration mkDefaultStorageDuration();
+  ObjType::Qualifiers mkDefaultObjectTypeQualifier();
 
   AstOperator* mkOperatorTree(const std::string& op, AstCtList* args);
   AstOperator* mkOperatorTree(const std::string& op, AstObject* child1,
