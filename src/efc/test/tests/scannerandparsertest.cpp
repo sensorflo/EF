@@ -471,6 +471,9 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   spec = "example with two arguments and trivial body";
   TEST_PARSE( "fun foo: (arg1:int, arg2:int) int ,= 42$", ":;fun(foo ((arg1 int) (arg2 int)) int :;42)", spec);
+
+  spec = "example with no function name";
+  TEST_PARSE( "fun : () int ,= 42$", ":;fun(<none> () int :;42)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
