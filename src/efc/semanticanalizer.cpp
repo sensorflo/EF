@@ -38,14 +38,23 @@ void SemanticAnalizer::visit(AstCast& cast) {
   preConditionCheck(cast);
 
   // -- responsibility 1: set access to direct childs and descent AST subtree
-  setAccessAndCallAcceptOn(cast.child(), Access::eRead);
+  for (const auto arg: cast.args().childs()) {
+    setAccessAndCallAcceptOn(*arg, Access::eRead);
+  }
   cast.specifiedNewAstObjType().accept(*this);
 
   // -- responsibility 2: semantic analysis
+
+  // TODO: write test
+  // test that only one arg is provided
+  if ( cast.args().childs().size() != 1U ) {
+    Error::throwError(m_errorHandler, Error::eInvalidArguments);
+  }
+
   // test if conversion is eligible
   const auto& specifiedNewObjType = cast.specifiedNewAstObjType().objType();
-  if ( !specifiedNewObjType.matchesSaufQualifiers(cast.child().object().objType())
-    && !specifiedNewObjType.hasConstructor(cast.child().object().objType()) ) {
+  if ( !specifiedNewObjType.matchesSaufQualifiers(cast.args().childs().front()->object().objType())
+    && !specifiedNewObjType.hasConstructor(cast.args().childs().front()->object().objType()) ) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 

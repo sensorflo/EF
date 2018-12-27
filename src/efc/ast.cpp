@@ -109,13 +109,16 @@ StorageDuration AstBlock::storageDuration() const {
 }
 
 AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child) :
+  AstCast(specifiedNewAstObjType,
+    new AstCtList(child ? child : new AstNumber(0))) {
+}
+
+AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstCtList* args) :
   m_specifiedNewAstObjType(
     specifiedNewAstObjType ?
     unique_ptr<AstObjType>(specifiedNewAstObjType) :
     make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt)),
-  m_child(child ? unique_ptr<AstObject>(child) : make_unique<AstNumber>(0)) {
-  assert(m_child);
-  assert(m_specifiedNewAstObjType);
+  m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
 }
 
 AstCast::AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child) :

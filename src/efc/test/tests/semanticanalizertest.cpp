@@ -1855,6 +1855,26 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     a_return_expression_outside_a_function_body,
     transform,
+    reports_eInvalidArguments)) {
+
+  string spec = "Zero instead exactly one argument";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstCast(
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
+      new AstCtList()),
+    Error::eInvalidArguments, spec);
+
+  spec = "More than one argumeny";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstCast(
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
+      new AstCtList(new AstNumber(42), new AstNumber(77))),
+    Error::eInvalidArguments, spec);
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+    a_return_expression_outside_a_function_body,
+    transform,
     reports_an_eNotInFunBodyContext)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstReturn(),

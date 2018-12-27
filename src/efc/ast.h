@@ -142,7 +142,8 @@ private:
 
 class AstCast : public AstObjInstance {
 public:
-  AstCast(AstObjType* specifiedNewAstObjType, AstObject* child);
+  AstCast(AstObjType* specifiedNewAstObjType, AstObject* arg);
+  AstCast(AstObjType* specifiedNewAstObjType, AstCtList* args);
   AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child);
 
   // -- overrides for AstNode
@@ -156,14 +157,14 @@ public:
 
   // -- childs of this node
   AstObjType& specifiedNewAstObjType() const;
-  AstObject& child() const { return *m_child; }
+  AstCtList& args () const { return *m_args; }
 
 private:
   // -- childs of this node
   /** Is guaranteed to be non-null */
   const std::unique_ptr<AstObjType> m_specifiedNewAstObjType;
   /** Is guaranteed to be non-null */
-  const std::unique_ptr<AstObject> m_child;
+  const std::unique_ptr<AstCtList> m_args;
 };
 
 class AstFunDef : public AstObjDef {

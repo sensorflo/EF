@@ -70,12 +70,12 @@ void IrGen::visit(AstBlock& block) {
 }
 
 void IrGen::visit(AstCast& cast) {
-  auto childIr = callAcceptOn(cast.child());
+  auto childIr = callAcceptOn(*cast.args().childs().front());
   assert(childIr);
   llvm::Value* irResult = nullptr;
 
   // At this point, AstCast is always between fundamental types
-  const auto& oldtype = dynamic_cast<const ObjTypeFunda&>(cast.child().object().objType());
+  const auto& oldtype = dynamic_cast<const ObjTypeFunda&>(cast.args().childs().front()->object().objType());
   const auto& newtype = dynamic_cast<const ObjTypeFunda&>(cast.objType());
   auto oldsize = oldtype.size();
   auto newsize = newtype.size();

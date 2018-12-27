@@ -19,7 +19,7 @@ void AstDefaultIterator::visit(AstCast& cast) {
   if ( m_visitor ) {
     cast.accept(*m_visitor);
   }
-  cast.child().accept(*this);
+  cast.args().accept(*this);
   cast.specifiedNewAstObjType().accept(*this);
 }
 
