@@ -330,6 +330,7 @@ else_sep
 
 is_sep
   : IS
+  | sep
   ;
 
 equal_as_sep
