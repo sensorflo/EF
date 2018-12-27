@@ -200,8 +200,8 @@ public:
   ObjTypeFun(std::vector<std::shared_ptr<const ObjType> >* args,
     std::shared_ptr<const ObjType> ret = std::shared_ptr<const ObjType>());
 
-  static std::vector<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = NULL,
-    const ObjType* arg2 = NULL, const ObjType* arg3 = NULL);
+  static std::vector<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = nullptr,
+    const ObjType* arg2 = nullptr, const ObjType* arg3 = nullptr);
 
   virtual MatchType match(const ObjType& dst, bool isLevel0) const;
   using ObjType::match2;

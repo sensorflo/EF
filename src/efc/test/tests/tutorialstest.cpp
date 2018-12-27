@@ -13,13 +13,13 @@ void testTutorial(const string& expectedOutput, const string& executable) {
   // run the tutorial which really is an executable EF program thanks to
   // shebang (#!). The program really run (and thus noted in the shebang line)
   // is efc (the EF compiler).
-  const string executableDir = "../../doc/tutorial/";
+  const string executableDir = "../../../doc/tutorial/";
   FILE* stream = popen((executableDir + executable).c_str(), "r");
   assert(stream);
   string actualOutput;
   while (!feof(stream)) {
     char buf[1024];
-    if (fgets(buf, sizeof(buf), stream) != NULL) {
+    if (fgets(buf, sizeof(buf), stream) != nullptr) {
       actualOutput += buf;
     }
   }  

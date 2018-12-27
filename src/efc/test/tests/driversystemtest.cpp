@@ -11,7 +11,7 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstObject* astRoot,
   Error::No expectedErrorNo, const string& spec = "") {
 
   // setup
-  ENV_ASSERT_TRUE( astRoot!=NULL );
+  ENV_ASSERT_TRUE( astRoot!=nullptr );
   unique_ptr<AstObject> dummy(astRoot);
   bool foreignExceptionThrown = false;
   string excptionwhat;

@@ -247,7 +247,7 @@ llvm::Type* ObjTypeFunda::llvmType() const {
   case eTypeCnt: assert(false);
   };
   assert(false);
-  return NULL;
+  return nullptr;
 }
 
 bool ObjTypeFunda::hasMember(int op) const {
@@ -356,7 +356,7 @@ std::basic_ostream<char>& ObjTypePtr::printTo(
   ObjTypeFunda::printTo(os);
   m_pointee->printTo(os);
   return os;
-};
+}
 
 llvm::Type* ObjTypePtr::llvmType() const {
   return PointerType::get(m_pointee->llvmType(), 0);
@@ -364,7 +364,7 @@ llvm::Type* ObjTypePtr::llvmType() const {
 
 std::shared_ptr<const ObjType> ObjTypePtr::pointee() const {
   return m_pointee;
-};
+}
 
 ObjTypeFun::ObjTypeFun(vector<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret) :
   ObjType(""),

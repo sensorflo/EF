@@ -1,3 +1,2 @@
-out/
 gensrc/
-*.pch
+/src/efc/test/generated_spec.html

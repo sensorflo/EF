@@ -278,15 +278,15 @@ AstObjType& AstNumber::declaredAstObjType() const {
 
 const ObjType& AstNumber::objType() const {
   return m_declaredAstObjType->objType();
-};
+}
 
 std::shared_ptr<const ObjType> AstNumber::objTypeAsSp() const {
   return m_declaredAstObjType->objTypeAsSp();
-};
+}
 
 StorageDuration AstNumber::storageDuration() const {
   return StorageDuration::eLocal;
-};
+}
 
 void AstSymbol::setAccessFromAstParent(Access access) {
   assert(Access::eYetUndefined!=access);
@@ -357,10 +357,10 @@ const map<const AstOperator::EOperation, const std::string> AstOperator::m_opRev
   {eDeref, "*"}};
 
 AstOperator::AstOperator(char op, AstCtList* args) :
-  AstOperator(static_cast<EOperation>(op), args) {};
+  AstOperator(static_cast<EOperation>(op), args) {}
 
 AstOperator::AstOperator(const string& op, AstCtList* args) :
-  AstOperator(toEOperation(op), args) {};
+  AstOperator(toEOperation(op), args) {}
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_referencedObj{},
@@ -369,23 +369,23 @@ AstOperator::AstOperator(AstOperator::EOperation op, AstCtList* args) :
   m_op(op),
   m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
   if ( '-' == m_op || '+' == m_op ) {
-    const auto argCnt = args->childs().size();
+    const auto argCnt = m_args->childs().size();
     assert( argCnt==1 || argCnt==2 );
   } else {
     const size_t required_arity =
       (op==eNot || op==eAddrOf || op==eDeref ) ? 1 : 2;
-    assert( args->childs().size() == required_arity );
+    assert( m_args->childs().size() == required_arity );
   }
 }
 
 AstOperator::AstOperator(char op, AstObject* operand1, AstObject* operand2) :
-  AstOperator(static_cast<EOperation>(op), operand1, operand2) {};
+  AstOperator(static_cast<EOperation>(op), operand1, operand2) {}
 
 AstOperator::AstOperator(const string& op, AstObject* operand1, AstObject* operand2) :
-  AstOperator(toEOperation(op), operand1, operand2) {};
+  AstOperator(toEOperation(op), operand1, operand2) {}
 
 AstOperator::AstOperator(AstOperator::EOperation op, AstObject* operand1, AstObject* operand2) :
-  AstOperator(op, new AstCtList(operand1, operand2)) {};
+  AstOperator(op, new AstCtList(operand1, operand2)) {}
 
 void AstOperator::setAccessFromAstParent(Access access) {
   assert(Access::eYetUndefined!=access);
@@ -926,14 +926,14 @@ AstCtList::AstCtList(vector<AstObject*>* childs) :
   }
 }
 
-/** When child is NULL it is ignored */
+/** When child is nullptr it is ignored */
 AstCtList::AstCtList(AstObject* child) :
   m_childs(new vector<AstObject*>()) {
   assert(m_childs);
   if (child) { m_childs->push_back(child); }
 }
 
-/** NULL childs are ignored.*/
+/** nullptr childs are ignored.*/
 AstCtList::AstCtList(AstObject* child1, AstObject* child2, AstObject* child3,
   AstObject* child4, AstObject* child5, AstObject* child6) :
   m_childs(new vector<AstObject*>()) {
@@ -959,13 +959,13 @@ void AstCtList::releaseOwnership() {
   m_owner = false;
 }
 
-/** When child is NULL it is ignored */
+/** When child is nullptr it is ignored */
 AstCtList* AstCtList::Add(AstObject* child) {
   if (child) m_childs->push_back(child);
   return this;
 }
 
-/** NULL childs are ignored. */
+/** nullptr childs are ignored. */
 AstCtList* AstCtList::Add(AstObject* child1, AstObject* child2, AstObject* child3) {
   Add(child1);
   Add(child2);

@@ -102,7 +102,7 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::
   /* literal integral / floatingpoint number  */
 [0-9]+(\.[0-9]+)?{ID}?  {
   errno = 0;
-  char* suffix = NULL;
+  char* suffix = nullptr;
   bool containsDot = (nullptr != strchr(yytext, '.'));
   long double number = strtold(yytext, &suffix);
   ObjTypeFunda::EType objType = ObjTypeFunda::eVoid;
@@ -180,7 +180,7 @@ op([-+*/!]|&&|"||"|"=="|"_and"|"_or"|"_not"|"_new"|"_delete") {
 ----------------------------------------------------------------------*/
 Scanner::Scanner(Driver& driver) :
   m_driver(driver) {
-};
+}
 
 Parser::symbol_type Scanner::pop() {
   return yylex_raw(m_driver);

@@ -10,7 +10,7 @@ LiteralTokenStream::LiteralTokenStream(const vector<Parser::token_type>& tokens)
     auto tmp = ParserApiExt::makeToken(tokens[i]);
     m_stream[i].move(tmp);
   }
-};
+}
 
 Parser::symbol_type LiteralTokenStream::pop() {
   assert(m_frontPos<m_size);

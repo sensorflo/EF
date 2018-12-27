@@ -34,7 +34,7 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot,
   const string& spec, TRet expectedResult, const string fqFunctionName,
   TArgs...args) {
 
-  ENV_ASSERT_TRUE( astRoot!=NULL );
+  ENV_ASSERT_TRUE( astRoot!=nullptr );
   unique_ptr<AstObject> astRootAp(astRoot);
   bool unexpctedExceptionThrown = false;
   string exceptionDescription;
@@ -650,7 +650,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = module->getFunction(".foo");
-    EXPECT_TRUE(functionIr!=NULL)
+    ASSERT_TRUE(functionIr!=nullptr)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
@@ -680,7 +680,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = module->getFunction(".foo");
-    EXPECT_TRUE(functionIr!=NULL)
+    EXPECT_TRUE(functionIr!=nullptr)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
@@ -711,7 +711,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = module->getFunction(".foo");
-    EXPECT_TRUE(functionIr!=NULL)
+    ASSERT_TRUE(functionIr!=nullptr)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
@@ -740,7 +740,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = module->getFunction(".foo");
-    EXPECT_TRUE(functionIr!=NULL)
+    EXPECT_TRUE(functionIr!=nullptr)
       << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getVoidTy(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);

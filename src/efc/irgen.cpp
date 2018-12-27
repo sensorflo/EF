@@ -72,7 +72,7 @@ void IrGen::visit(AstBlock& block) {
 void IrGen::visit(AstCast& cast) {
   auto childIr = callAcceptOn(cast.child());
   assert(childIr);
-  llvm::Value* irResult = NULL;
+  llvm::Value* irResult = nullptr;
 
   // At this point, AstCast is always between fundamental types
   const auto& oldtype = dynamic_cast<const ObjTypeFunda&>(cast.child().object().objType());
@@ -159,7 +159,7 @@ void IrGen::visit(AstCtList&) {
 
 void IrGen::visit(AstOperator& op) {
   const auto& astOperands = op.args().childs();
-  Value* llvmResult = NULL;
+  Value* llvmResult = nullptr;
 
   // unary non-arithmetic operators
   if (op.op()==AstOperator::eNot) {
@@ -410,7 +410,7 @@ void IrGen::visit(AstIf& if_) {
   // elseFirstBB:
   functionIr->getBasicBlockList().push_back(ElseFirstBB);
   m_builder.SetInsertPoint(ElseFirstBB);
-  Value* elseValue = NULL;
+  Value* elseValue = nullptr;
   if ( if_.elseAction() ) {
     elseValue = callAcceptOn(*if_.elseAction());
     assert(elseValue);

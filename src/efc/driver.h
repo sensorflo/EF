@@ -22,7 +22,7 @@ those. The scanner has no own class; it is driven by it's global function
 yylex.*/
 class Driver {
 public:
-  Driver(const std::string& fileName, std::basic_ostream<char>* ostream = NULL);
+  Driver(const std::string& fileName, std::basic_ostream<char>* ostream = nullptr);
   virtual ~Driver();
   
   Scanner& scanner();
@@ -64,18 +64,18 @@ private:
   bool m_gotError;
   bool m_gotWarning;
   std::basic_ostream<char>& m_ostream;
-  /** Guaranteed to be non-NULL */
+  /** Guaranteed to be non-nullptr */
   std::unique_ptr<Scanner> m_scanner;
-  /** Guaranteed to be non-NULL */
+  /** Guaranteed to be non-nullptr */
   std::unique_ptr<TokenFilter> m_tokenFilter;
   std::unique_ptr<AstNode> m_astRootFromParser;
-  /** Guaranteed to be non-NULL */
+  /** Guaranteed to be non-nullptr */
   std::unique_ptr<ParserExt> m_parserExt;
-  /** Guaranteed to be non-NULL */
+  /** Guaranteed to be non-nullptr */
   std::unique_ptr<yy::Parser> m_parser;
-  /** Guaranteed to be non-null */
+  /** Guaranteed to be non-nullptr */
   std::unique_ptr<IrGen> m_irGen;
-  /** Guaranteed to be non-null */
+  /** Guaranteed to be non-nullptr */
   std::unique_ptr<SemanticAnalizer> m_semanticAnalizer;
   std::unique_ptr<ExecutionEngineApater> m_executionEngine;
 };

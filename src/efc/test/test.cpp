@@ -39,7 +39,7 @@ string amend(llvm::Module* module) {
   stringstream ss;
   ss << "\n--- llvm module dump ------------\n";
   llvm::raw_os_ostream llvmss(ss);
-  module->print(llvmss, NULL);
+  module->print(llvmss, nullptr);
   ss << "-----------------------------------\n";
   return ss.str();
 }
@@ -76,6 +76,9 @@ AstObject* createAccessTo(AstObject* obj, Access access) {
   case Access::eIgnoreValueAndAddr:
     return new AstSeq(obj, new AstNumber(0));
   case Access::eYetUndefined:
+    assert(false);
+    return nullptr;
+  default:
     assert(false);
     return nullptr;
   }

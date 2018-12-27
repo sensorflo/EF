@@ -92,8 +92,8 @@ void testParse(const string& efProgram, const string& expectedAst,
     "Scanner or parser reported an error to Driver\n" <<
     amendSpec(spec) <<
     amendEfProgram(efProgram);
-  ASSERT_TRUE( NULL != actualAst ) <<
-    "scanAndParse did return NULL as actualAst\n" <<
+  ASSERT_TRUE( nullptr != actualAst ) <<
+    "scanAndParse did return nullptr as actualAst\n" <<
     amendSpec(spec) <<
     amendEfProgram(efProgram);
   EXPECT_EQ( expectedAst, actualAst->toStr() ) <<

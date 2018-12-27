@@ -363,8 +363,8 @@ list_expr
   | IF kwao naked_if kwac                           { std::swap($$,$3); }
   | WHILE kwao naked_while kwac                     { std::swap($$,$3); }
   | RETURN kwao naked_return kwac                   { $$ = $3; }
-  | RAW_NEW kwao type initializer_arg kwac          { $$ = NULL; }
-  | RAW_DELETE kwao sub_expr kwac                   { $$ = NULL; }
+  | RAW_NEW kwao type initializer_arg kwac          { $$ = nullptr; }
+  | RAW_DELETE kwao sub_expr kwac                   { $$ = nullptr; }
   ;
 
 /* keyword argument list open delimiter */
@@ -436,7 +436,7 @@ elif_chain
   ;  
 
 opt_else
-  : %empty                                                           { $$ = NULL; }
+  : %empty                                                           { $$ = nullptr; }
   | else_sep block_expr                                              { $$ = $2; }
   ;
 

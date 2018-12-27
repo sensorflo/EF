@@ -6,7 +6,7 @@
 class TokenStreamLookAhead : public TokenStream {
 public:
   TokenStreamLookAhead(TokenStream& input);
-  ~TokenStreamLookAhead();
+  ~TokenStreamLookAhead() override;
 
   virtual yy::Parser::symbol_type pop() override;
   /** Returns reference token at given pos without removing it; 0 is the
@@ -14,7 +14,7 @@ public:
   virtual yy::Parser::symbol_type& lookAhead(size_t pos);
   yy::Parser::symbol_type& front() {
     return lookAhead(0);
-  };
+  }
 
 private:
   /** Circular buffer of lookahead tokens, front token at index

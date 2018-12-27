@@ -47,7 +47,7 @@ public:
 in the constructor. */
 class DriverOnTmpFile {
 public:
-  DriverOnTmpFile(const std::string& content, std::basic_ostream<char>* ostream = NULL) :
+  DriverOnTmpFile(const std::string& content, std::basic_ostream<char>* ostream = nullptr) :
     m_tmpFile(content),
     m_driver(m_tmpFile.fileName(), ostream) {};
   operator TestingDriver&() { return m_driver; }

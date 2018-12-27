@@ -396,6 +396,6 @@ TEST(EnvTest, MAKE_TEST_NAME1(
           "}}"
         "}}"
       "}",
-      ss.str());
+      ss.str()) << amendSpec(spec);
   }
 }

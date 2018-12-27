@@ -190,8 +190,8 @@ public:
   virtual AstObject& body() const { assert(m_body); return *m_body; }
 
   // -- misc
-  static std::vector<AstDataDef*>* createArgs(AstDataDef* arg1 = NULL,
-    AstDataDef* arg2 = NULL, AstDataDef* arg3 = NULL);
+  static std::vector<AstDataDef*>* createArgs(AstDataDef* arg1 = nullptr,
+    AstDataDef* arg2 = nullptr, AstDataDef* arg3 = nullptr);
   void createAndSetObjType();
 
 private:
@@ -339,7 +339,7 @@ private:
 
 class AstFunCall : public AstObjInstance {
 public:
-  AstFunCall(AstObject* address, AstCtList* args = NULL);
+  AstFunCall(AstObject* address, AstCtList* args = nullptr);
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -393,9 +393,9 @@ public:
   AstOperator(char op, AstCtList* args);
   AstOperator(const std::string& op, AstCtList* args);
   AstOperator(EOperation op, AstCtList* args);
-  AstOperator(char op, AstObject* operand1 = NULL, AstObject* operand2 = NULL);
-  AstOperator(const std::string& op, AstObject* operand1 = NULL, AstObject* operand2 = NULL);
-  AstOperator(EOperation op, AstObject* operand1 = NULL, AstObject* operand2 = NULL);
+  AstOperator(char op, AstObject* operand1 = nullptr, AstObject* operand2 = nullptr);
+  AstOperator(const std::string& op, AstObject* operand1 = nullptr, AstObject* operand2 = nullptr);
+  AstOperator(EOperation op, AstObject* operand1 = nullptr, AstObject* operand2 = nullptr);
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -505,7 +505,7 @@ private:
 /* If flow control expression */
 class AstIf : public AstObjInstance {
 public:
-  AstIf(AstObject* cond, AstObject* action, AstObject* elseAction = NULL);
+  AstIf(AstObject* cond, AstObject* action, AstObject* elseAction = nullptr);
 
    // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -763,9 +763,9 @@ public:
 class AstCtList : public AstNode {
 public:
   AstCtList(std::vector<AstObject*>* childs);
-  AstCtList(AstObject* child1 = NULL);
-  AstCtList(AstObject* child1, AstObject* child2, AstObject* child3 = NULL,
-    AstObject* child4 = NULL, AstObject* child5 = NULL, AstObject* child6 = NULL);
+  AstCtList(AstObject* child1 = nullptr);
+  AstCtList(AstObject* child1, AstObject* child2, AstObject* child3 = nullptr,
+    AstObject* child4 = nullptr, AstObject* child5 = nullptr, AstObject* child6 = nullptr);
   virtual ~AstCtList();
 
   // -- overrides for AstNode
@@ -781,7 +781,7 @@ public:
   // -- misc
   void releaseOwnership();
   AstCtList* Add(AstObject* child);
-  AstCtList* Add(AstObject* child1, AstObject* child2, AstObject* child3 = NULL);
+  AstCtList* Add(AstObject* child1, AstObject* child2, AstObject* child3 = nullptr);
 
 private:
   // -- childs of this node

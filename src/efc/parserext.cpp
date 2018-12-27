@@ -65,7 +65,7 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
   assert(args);
   args->releaseOwnership();
   const auto op = AstOperator::toEOperationPreferingBinary(op_as_str);
-  AstOperator* tree = NULL;
+  AstOperator* tree = nullptr;
 
   // unary operator
   if (op == '!') {

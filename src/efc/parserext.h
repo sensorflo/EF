@@ -56,8 +56,8 @@ public:
 
   AstOperator* mkOperatorTree(const std::string& op, AstCtList* args);
   AstOperator* mkOperatorTree(const std::string& op, AstObject* child1,
-    AstObject* child2, AstObject* child3 = NULL, AstObject* child4 = NULL,
-    AstObject* child5 = NULL, AstObject* child6 = NULL);
+    AstObject* child2, AstObject* child3 = nullptr, AstObject* child4 = nullptr,
+    AstObject* child5 = nullptr, AstObject* child6 = nullptr);
 
   AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,
     RawAstDataDef*& rawAstDataDef);

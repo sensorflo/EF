@@ -56,7 +56,7 @@ void ParserApiExt::initTokenAttrs() {
     return;
   }
   m_TokenAttrs.resize(Parser::token::TOK_TOKENLISTEND);
-  for (int i=0; i<256; ++i) {
+  for (auto i=0U; i<256; ++i) {
     m_OneCharTokenNames.at(i*2  ) = char(i);
     m_OneCharTokenNames.at(i*2+1) = '\0';
     m_TokenAttrs.at(i).m_name = &m_OneCharTokenNames.at(i*2);
@@ -116,17 +116,17 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_LOCAL, {"LOCAL", SVTVoid, TKSeparator}},
     { Parser::token::TOK_NOINIT, {"NOINIT", SVTVoid, TKSeparator}},
     { Parser::token::TOK_NUMBER, {"NUMBER", SVTNumberToken, TKComponentOrAmbigous}}};
-  for (const auto kv: m) {
+  for (const auto& kv: m) {
     m_TokenAttrs.at(kv.first) = kv.second;
   }
-  for (int i=256; i<=Parser::token::TOK_TOKENLISTSTART; ++i) {
+  for (auto i=256U; i<=Parser::token::TOK_TOKENLISTSTART; ++i) {
     m_TokenAttrs.at(i) = TokenTypeAttr{"<UNUSED_BY_BISON>", SVTInvalid,
                                        TKComponentOrAmbigous};
   }
   // not a 'real' token, only used for %precedence
   m_TokenAttrs.at(Parser::token::TOK_ASSIGNEMENT) =
     TokenTypeAttr{"<UNUSED_BY_BISON>", SVTInvalid, TKComponentOrAmbigous};
-  for (int i=0; i<Parser::token::TOK_TOKENLISTEND; ++i) {
+  for (auto i=0U; i<Parser::token::TOK_TOKENLISTEND; ++i) {
     if ( !m_TokenAttrs.at(i).m_name ) {
       cerr << "token " << i << " has no been given a name. Update the "
            << "redundant above map with what yy::Parser::token::yytokentype "
