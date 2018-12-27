@@ -358,11 +358,10 @@ sub_expr
   ;
 
 operator_expr
-  /* function call and cast */
-  : sub_expr         LPAREN ct_list         RPAREN  { $$ = new AstFunCall($1, $3); }
-  | OP_NAME          LPAREN ct_list         RPAREN  { $$ = parserExt.mkOperatorTree($1, $3); }
-  /* TODO: for consistency reasons, arg to cast should be ct_list */
-  | FUNDAMENTAL_TYPE LPAREN standalone_expr RPAREN  { $$ = new AstCast($1, $3); }
+  /* function call and cast (aka construction of temporary) */
+  : sub_expr         LPAREN ct_list RPAREN          { $$ = new AstFunCall($1, $3); }
+  | OP_NAME          LPAREN ct_list RPAREN          { $$ = parserExt.mkOperatorTree($1, $3); }
+  | FUNDAMENTAL_TYPE LPAREN ct_list RPAREN          { $$ = new AstCast(new AstObjTypeSymbol($1), $3); }
 
   /* unary prefix */
   | NOT   opt_newline sub_expr                      { $$ = new AstOperator(AstOperator::eNot, $3); }

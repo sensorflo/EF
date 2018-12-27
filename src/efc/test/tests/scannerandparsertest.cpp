@@ -125,8 +125,17 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_cast_expression,
     scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "int(false)", ":;int(0bool)", "trivial example");
-  TEST_PARSE( "bool(0)", ":;bool(0)", "trivial example");
+  string spec = "trivial example: one argument";
+  TEST_PARSE( "int(false)", ":;int(;0bool)", spec);
+  TEST_PARSE( "bool(0)", ":;bool(;0)", spec);
+
+  spec = "no arguments (is valid from the parser point of view)";
+  TEST_PARSE( "int()", ":;int()", spec);
+  TEST_PARSE( "bool()", ":;bool()", spec);
+
+  spec = "more than one arguments (is valid from the parser point of view)";
+  TEST_PARSE( "int(42, 77)", ":;int(;42 ;77)", spec);
+  TEST_PARSE( "bool(42, 77)", ":;bool(;42 ;77)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
