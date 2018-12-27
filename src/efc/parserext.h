@@ -54,6 +54,9 @@ public:
   ParserExt(Env& env, ErrorHandler& errorHandler);
   ~ParserExt() = default;
 
+  AstObjType* mkDefaultType();
+  StorageDuration mkDefaultStorageDuration();
+
   AstOperator* mkOperatorTree(const std::string& op, AstCtList* args);
   AstOperator* mkOperatorTree(const std::string& op, AstObject* child1,
     AstObject* child2, AstObject* child3 = nullptr, AstObject* child4 = nullptr,

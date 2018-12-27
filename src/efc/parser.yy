@@ -255,7 +255,7 @@ type
   ;
 
 opt_type
-  : %empty                                          { $$ = new AstObjTypeSymbol(ObjTypeFunda::eInt); }
+  : %empty                                          { $$ = parserExt.mkDefaultType(); }
   | type                                            { swap($$,$1); }
   ;
 
@@ -264,7 +264,7 @@ type_arg
   ;
 
 opt_type_arg
-  : %empty                                          { $$ = new AstObjTypeSymbol(ObjTypeFunda::eInt); }
+  : %empty                                          { $$ = parserExt.mkDefaultType(); }
   | type_arg                                        { swap($$,$1); }
   ;
 
@@ -282,7 +282,7 @@ storage_duration_arg
   ;
 
 opt_storage_duration_arg
-  : %empty                                          { $$ = StorageDuration::eLocal; }
+  : %empty                                          { $$ = parserExt.mkDefaultStorageDuration(); }
   | storage_duration_arg                            { swap($$, $1); }
   ;
 
@@ -359,7 +359,7 @@ operator_expr
   /* binary operators */
   | sub_expr EQUAL       opt_newline sub_expr                   { $$ = new AstOperator('=', $1, $4); }
   | sub_expr EQUAL_LESS  opt_newline sub_expr                   { $$ = new AstOperator("=<", $1, $4); }
-  | ID       COLON_EQUAL opt_newline sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eLocal, new AstCtList($4)); }
+  | ID       COLON_EQUAL opt_newline sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration(), new AstCtList($4)); }
   | sub_expr OR          opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $4); }
   | sub_expr PIPE_PIPE   opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $4); }
   | sub_expr AND         opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $4); }

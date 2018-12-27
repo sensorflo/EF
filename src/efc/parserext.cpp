@@ -58,6 +58,14 @@ ParserExt::ParserExt(Env&, ErrorHandler& errorHandler) :
   m_errorHandler(errorHandler) {
 }
 
+AstObjType* ParserExt::mkDefaultType() {
+  return new AstObjTypeSymbol(ObjTypeFunda::eInt);
+}
+
+StorageDuration ParserExt::mkDefaultStorageDuration() {
+  return StorageDuration::eLocal;
+}
+
 /** Turns the AstCtList in an AstOperator tree with at most two childs per
 node.  The AstCtList object is deleted, its ex-childs are now owned by their
 respective AstOperator parent. */
