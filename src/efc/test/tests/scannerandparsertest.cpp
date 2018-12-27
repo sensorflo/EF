@@ -606,6 +606,18 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE( "val foo = noinit :int$", ":;data(foo int noinit)", spec);
   TEST_PARSE( "val foo =(noinit):int$", ":;data(foo int noinit)", spec);
   TEST_PARSE( "val foo  (noinit):int$", ":;data(foo int noinit)", spec);
+
+  spec = "no variable name";
+  TEST_PARSE( "val          :int =   42  $", ":;data(<none> int (;42))", spec);
+  TEST_PARSE( "val          :int = ( 42 )$", ":;data(<none> int (;;42))", spec);
+  TEST_PARSE( "val = 42     :int         $", ":;data(<none> int (;42))", spec);
+  TEST_PARSE( "val = ( 42 ) :int         $", ":;data(<none> int (;;42))", spec);
+  TEST_PARSE( "val   ( 42 ) :int         $", ":;data(<none> int (;42))", spec);
+  TEST_PARSE( "val               =   42  $", ":;data(<none> int (;42))", spec);
+  TEST_PARSE( "val               = ( 42 )$", ":;data(<none> int (;;42))", spec);
+  TEST_PARSE( "val = 42                  $", ":;data(<none> int (;42))", spec);
+  TEST_PARSE( "val = ( 42 )              $", ":;data(<none> int (;;42))", spec);
+  TEST_PARSE( "val   ( 42 )              $", ":;data(<none> int (;42))", spec);
 }
 
 // note that it is a semantic error, not a grammar error

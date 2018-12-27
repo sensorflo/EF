@@ -100,7 +100,6 @@ AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
   RawAstDataDef*& rawAstDataDef) {
 
   assert(rawAstDataDef);
-  assert(!rawAstDataDef->m_name.empty());
   const auto unqualifiedAstObjType = rawAstDataDef->m_astObjType ?
     rawAstDataDef->m_astObjType : new AstObjTypeSymbol(ObjTypeFunda::eInt);
   const auto qualifiedAstObjType =

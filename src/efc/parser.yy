@@ -182,6 +182,7 @@ and by declaration of free function yylex */
 %type <AstFunDef*> naked_fun_def
 %type <AstObjType*> type opt_type type_arg opt_ret_type
 %type <ConditionActionPair> condition_action_pair_then
+%type <std::string> opt_id
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -441,9 +442,9 @@ naked_data_def
   /* A trailing opt_initializer_arg is only possyble if there's at least one
   type or storage duration arg, because else its equal_as_sep conflicts with any
   = in the opt_initializer_special_arg's standalone_expr */
-  : ID opt_initializer_special_arg type_and_or_storage_duration_arg opt_initializer_arg   { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $4, ($3).m_type, ($3).m_storageDuration); }
+  : opt_id opt_initializer_special_arg type_and_or_storage_duration_arg opt_initializer_arg   { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $4, ($3).m_type, ($3).m_storageDuration); }
 
-  | ID opt_initializer_special_arg                                                        { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, nullptr, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration()); }
+  | opt_id opt_initializer_special_arg                                                        { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, nullptr, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration()); }
   ;
 
 naked_fun_def
@@ -543,6 +544,11 @@ naked_return
 opt_newline
   : %empty
   | NEWLINE
+  ;
+
+opt_id
+  : %empty                                                           { $$ = std::string(); }
+  | ID                                                               { swap($$,$1); }
   ;
 
 /* Epilogue section
