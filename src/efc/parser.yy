@@ -244,16 +244,16 @@ standalone_expr
 
 ct_list
   : %empty                                          { $$ = new AstCtList(); }
-  | pure_ct_list opt_comma                          { $$ = new AstCtList($1); }
+  | pure_ct_list opt_sep                            { $$ = new AstCtList($1); }
   ;
 
 ct_list_2plus
-  : ct_list_arg COMMA pure_ct_list opt_comma        { ($3)->insert(($3)->begin(),$1); $$ = new AstCtList($3); }
+  : ct_list_arg sep pure_ct_list opt_sep            { ($3)->insert(($3)->begin(),$1); $$ = new AstCtList($3); }
   ;
 
 pure_ct_list
   : ct_list_arg                                     { $$ = new std::vector<AstObject*>(); ($$)->push_back($1); }
-  | pure_ct_list COMMA ct_list_arg                  { ($1)->push_back($3); std::swap($$,$1); }
+  | pure_ct_list sep ct_list_arg                    { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 /* will later be more complex than standalone_node_seq_expr, e.g. by allowing
@@ -305,6 +305,11 @@ type_and_or_storage_duration_arg
 sep
   : COLON
   | COMMA
+  ;
+
+opt_sep
+  : %empty
+  | sep
   ;
 
 /* generic list separator, inclusive newline */
