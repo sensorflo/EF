@@ -26,29 +26,31 @@ string explainParseErrorCode(int errorCode) {
     return "parser failed for unknown reason\n";
 }
 
-void testParseReportsError(const string efProgram, Error::No expectedErrorNo,
-  const string& spec) {
+void testParse(const string efProgram, const string& expectedAst,
+  Error::No expectedErrorNo, const string& spec) {
+
   // setup
   DriverOnTmpFile driver(efProgram);
   bool foreignThrow = false;
   string excptionwhat;
+  std::unique_ptr<AstNode> actualAst{};
 
   // exercise
   try {
-    driver.d().scanAndParse();
+    actualAst = driver.d().scanAndParse();
   }
 
-  // verify that ...
-
-  // ... no foreign exception is thrown
   catch (BuildError& ) { /* nop */  }
   catch (exception& e) { foreignThrow = true; excptionwhat = e.what(); }
   catch (exception* e) { foreignThrow = true; if ( e ) { excptionwhat = e->what(); } }
   catch (...)          { foreignThrow = true; }
-  EXPECT_FALSE( foreignThrow ) <<
+
+  // verify that ...
+
+  // ... no foreign exception is thrown
+  ASSERT_FALSE( foreignThrow ) <<
     amendSpec(spec) << amend(driver.d().errorHandler()) << amendEfProgram(efProgram) <<
     "\nexceptionwhat: " << excptionwhat;
-
 
   // ... no error occured in case no error was expected
   const ErrorHandler::Container& errors = driver.d().errorHandler().errors();
@@ -56,6 +58,15 @@ void testParseReportsError(const string efProgram, Error::No expectedErrorNo,
     EXPECT_TRUE(errors.empty()) <<
       "Expecting no error\n" <<
       amendSpec(spec) << amend(driver.d().errorHandler()) << amendEfProgram(efProgram);
+
+    // ... and ast is as expected
+    ASSERT_TRUE( nullptr != actualAst ) <<
+      "scanAndParse did return nullptr as actualAst\n" <<
+      amendSpec(spec) <<
+      amendEfProgram(efProgram);
+    EXPECT_EQ( expectedAst, actualAst->toStr() ) <<
+      amendSpec(spec) <<
+      amendEfProgram(efProgram);
   }
 
   // ... or if an error occured, it is the one we expected
@@ -75,35 +86,13 @@ void testParseReportsError(const string efProgram, Error::No expectedErrorNo,
   {                                                                     \
     SCOPED_TRACE("testParseReportsError called from here (via TEST_PARSE_REPORTS_ERROR)"); \
     static_assert(expectedErrorNo != Error::eNone, "");                 \
-    testParseReportsError(efProgram, expectedErrorNo, spec);                  \
+    testParse(efProgram, "", expectedErrorNo, spec);                     \
   }
-
-void testParse(const string& efProgram, const string& expectedAst,
-  const string& spec = "") {
-  // setup
-  DriverOnTmpFile driver(efProgram);
-
-  // exercise
-  const auto actualAst = driver.d().scanAndParse();
-
-  // verify
-  EXPECT_FALSE( driver.d().gotError() ) <<
-    "Scanner or parser reported an error to Driver\n" <<
-    amendSpec(spec) <<
-    amendEfProgram(efProgram);
-  ASSERT_TRUE( nullptr != actualAst ) <<
-    "scanAndParse did return nullptr as actualAst\n" <<
-    amendSpec(spec) <<
-    amendEfProgram(efProgram);
-  EXPECT_EQ( expectedAst, actualAst->toStr() ) <<
-    amendSpec(spec) <<
-    amendEfProgram(efProgram);
-}
 
 #define TEST_PARSE( efProgram, expectedAst, spec ) \
   { \
     SCOPED_TRACE("testParse called from here (via TEST_PARSE)"); \
-    testParse(efProgram, expectedAst, spec);    \
+    testParse(efProgram, expectedAst, Error::eNone, spec);        \
   }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
