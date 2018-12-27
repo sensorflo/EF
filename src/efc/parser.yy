@@ -516,10 +516,13 @@ opt_else
   ;
 
 naked_while
+  /* not ct_list_arg because do_sep allows newline as sep, which in ct_list_arg
+  are seq_operator */
   : standalone_expr do_sep block_expr                                { $$ = new AstBlock(new AstLoop($1, $3)); }
   ;
 
 condition_action_pair_then
+  /* see naked_while why it's standalone_expr and not  seq_operator */
   : standalone_expr then_sep block_expr                              { $$ = ConditionActionPair{ $1, $3}; }
   ;
 
