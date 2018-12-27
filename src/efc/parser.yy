@@ -44,6 +44,11 @@
     StorageDuration m_storageDuration;
   };
 
+  struct FunSignature {
+    std::vector<AstDataDef*>* m_paramDefs;
+    AstObjType* m_retType;
+  };
+
   /* Further declarations and definitions needed to declare the generated parser */
   class Driver;
   class ParserExt;
@@ -182,6 +187,7 @@ and by declaration of free function yylex */
 %type <AstObjType*> type opt_type type_arg opt_ret_type
 %type <ConditionActionPair> condition_action_pair_then
 %type <std::string> opt_id
+%type <FunSignature> fun_signature_arg opt_fun_signature_arg
 
 /* Grammar rules section
 ----------------------------------------------------------------------*/
@@ -310,6 +316,11 @@ sep
 opt_sep
   : %empty
   | sep
+  ;
+
+opt_colon
+  : %empty
+  | COLON
   ;
 
 /* generic list separator, inclusive newline */
@@ -443,9 +454,18 @@ naked_data_def
   ;
 
 naked_fun_def
-  : opt_id COLON                                                  opt_ret_type equal_as_sep block_expr { $$ = parserExt.mkFunDef($1, $3, $5); }
-  | opt_id COLON LPAREN                                    RPAREN opt_ret_type equal_as_sep block_expr { $$ = parserExt.mkFunDef($1, $5, $7); }
-  | opt_id COLON LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type equal_as_sep block_expr { $$ = parserExt.mkFunDef($1, $4, $7, $9); }
+  : opt_id opt_fun_signature_arg equal_as_sep block_expr                    { $$ = parserExt.mkFunDef($1, ($2).m_paramDefs, ($2).m_retType, $4); }
+  ;
+
+fun_signature_arg
+  : COLON                                                      opt_ret_type { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = $2; }
+  | opt_colon LPAREN                                    RPAREN opt_ret_type { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = $4; }
+  | opt_colon LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type { ($$).m_paramDefs = $3;                             ($$).m_retType = $6; }
+  ;
+
+opt_fun_signature_arg                           
+  : %empty                                                                  { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = parserExt.mkDefaultType(); }
+  | fun_signature_arg                                                       { swap($$,$1); }
   ;
 
 pure_naked_param_ct_list
