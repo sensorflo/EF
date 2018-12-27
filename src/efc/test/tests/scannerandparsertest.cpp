@@ -443,7 +443,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
   string spec = "example with one argument and a body just returning the arg";
-  TEST_PARSE( "fun foo: (x:int) int ,= x$", ":;fun(foo ((x int)) int :;x)", spec);
+  TEST_PARSE( "fun foo: (x:int) int = x$", ":;fun(foo ((x int)) int :;x)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -452,28 +452,28 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     succeeds_AND_returns_correct_AST) ) {
 
   string spec = "example with zero arguments and trivial body";
-  TEST_PARSE( "fun  foo: () int ,= 42$"          , ":;fun(foo () int :;42)", spec);
-  TEST_PARSE( "fun  foo: () bool,= true$"        , ":;fun(foo () bool :;1bool)", spec);
-  TEST_PARSE( "fun( foo: () int ,= 42)"          , ":;fun(foo () int :;42)", spec);
-  TEST_PARSE( "fun  foo: () int ,= 42 end"       , ":;fun(foo () int :;42)", spec);
-  TEST_PARSE( "fun  foo: () int ,= 42 endof foo$", ":;fun(foo () int :;42)", spec);
+  TEST_PARSE( "fun  foo: () int = 42$"          , ":;fun(foo () int :;42)", spec);
+  TEST_PARSE( "fun  foo: () bool= true$"        , ":;fun(foo () bool :;1bool)", spec);
+  TEST_PARSE( "fun( foo: () int = 42)"          , ":;fun(foo () int :;42)", spec);
+  TEST_PARSE( "fun  foo: () int = 42 end"       , ":;fun(foo () int :;42)", spec);
+  TEST_PARSE( "fun  foo: () int = 42 endof foo$", ":;fun(foo () int :;42)", spec);
 
   spec = "example with zero arguments and simple but not trivial body";
-  TEST_PARSE( "fun  foo: () int ,= 42; 1+2$", ":;fun(foo () int :;(42 +(1 2)))", spec);
-  TEST_PARSE( "fun( foo: () int ,= 42; 1+2)", ":;fun(foo () int :;(42 +(1 2)))", spec);
+  TEST_PARSE( "fun  foo: () int = 42; 1+2$", ":;fun(foo () int :;(42 +(1 2)))", spec);
+  TEST_PARSE( "fun( foo: () int = 42; 1+2)", ":;fun(foo () int :;(42 +(1 2)))", spec);
 
   spec = "example with one argument and trivial body";
-  TEST_PARSE( "fun  foo: (arg1:int) int ,= 42$", ":;fun(foo ((arg1 int)) int :;42)", spec);
-  TEST_PARSE( "fun( foo: (arg1:int) int ,= 42)", ":;fun(foo ((arg1 int)) int :;42)", spec);
+  TEST_PARSE( "fun  foo: (arg1:int) int = 42$", ":;fun(foo ((arg1 int)) int :;42)", spec);
+  TEST_PARSE( "fun( foo: (arg1:int) int = 42)", ":;fun(foo ((arg1 int)) int :;42)", spec);
 
   spec = "should allow trailing comma in argument list";
-  TEST_PARSE( "fun foo: (arg1:int,) int ,= 42$", ":;fun(foo ((arg1 int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (arg1:int,) int = 42$", ":;fun(foo ((arg1 int)) int :;42)", spec);
 
   spec = "example with two arguments and trivial body";
-  TEST_PARSE( "fun foo: (arg1:int, arg2:int) int ,= 42$", ":;fun(foo ((arg1 int) (arg2 int)) int :;42)", spec);
+  TEST_PARSE( "fun foo: (arg1:int, arg2:int) int = 42$", ":;fun(foo ((arg1 int) (arg2 int)) int :;42)", spec);
 
   spec = "example with no function name";
-  TEST_PARSE( "fun : () int ,= 42$", ":;fun(<none> () int :;42)", spec);
+  TEST_PARSE( "fun : () int = 42$", ":;fun(<none> () int :;42)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

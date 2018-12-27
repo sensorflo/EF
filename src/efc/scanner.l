@@ -153,7 +153,6 @@ true                return yy::Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::
 "||"                return yy::Parser::make_PIPE_PIPE(loc);
 "=="                return yy::Parser::make_EQUAL_EQUAL(loc);
 "=<"                return yy::Parser::make_EQUAL_LESS(loc);
-",="                return yy::Parser::make_COMMA_EQUAL(loc);
 "(="                return yy::Parser::make_LPAREN_EQUAL(loc);
 op([-+*/!]|&&|"||"|"=="|"_and"|"_or"|"_not"|"_new"|"_delete") {
   char* start = yytext + 2;     // skip "op"

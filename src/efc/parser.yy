@@ -134,7 +134,6 @@ and by declaration of free function yylex */
   OR "or"
   PIPE_PIPE "||"
   EQUAL_EQUAL "=="
-  COMMA_EQUAL ",="
   LPAREN_EQUAL "(="
   SLASH "/"
   LPAREN "("
@@ -448,9 +447,9 @@ naked_data_def
   ;
 
 naked_fun_def
-  : opt_id COLON                                                  opt_ret_type COMMA_EQUAL block_expr { $$ = parserExt.mkFunDef($1, $3, $5); }
-  | opt_id COLON LPAREN                                    RPAREN opt_ret_type COMMA_EQUAL block_expr { $$ = parserExt.mkFunDef($1, $5, $7); }
-  | opt_id COLON LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type COMMA_EQUAL block_expr { $$ = parserExt.mkFunDef($1, $4, $7, $9); }
+  : opt_id COLON                                                  opt_ret_type equal_as_sep block_expr { $$ = parserExt.mkFunDef($1, $3, $5); }
+  | opt_id COLON LPAREN                                    RPAREN opt_ret_type equal_as_sep block_expr { $$ = parserExt.mkFunDef($1, $5, $7); }
+  | opt_id COLON LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type equal_as_sep block_expr { $$ = parserExt.mkFunDef($1, $4, $7, $9); }
   ;
 
 pure_naked_param_ct_list
