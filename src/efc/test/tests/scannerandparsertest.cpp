@@ -591,13 +591,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     scanAndParse,
     reports_eSameArgWasDefinedMultipleTimes) ) {
   TEST_PARSE_REPORTS_ERROR(
-    "val foo ,=42 ,=42$", Error::eSameArgWasDefinedMultipleTimes, "");
-  TEST_PARSE_REPORTS_ERROR(
-    "val foo (=42,77) (=42,77)$", Error::eSameArgWasDefinedMultipleTimes, "");
-  TEST_PARSE_REPORTS_ERROR(
-    "val foo :int :int$", Error::eSameArgWasDefinedMultipleTimes, "");
-  TEST_PARSE_REPORTS_ERROR(
-    "val foo is static is static$", Error::eSameArgWasDefinedMultipleTimes, "");
+    "val foo ,=42 :int ,=42$", Error::eSameArgWasDefinedMultipleTimes, "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

@@ -6,52 +6,31 @@
 #include <stdexcept>
 using namespace std;
 
-RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler) :
-  m_errorHandler{errorHandler},
-  m_ctorArgs{},
-  m_astObjType{},
-  m_isStorageDurationDefined{false},
-  m_storageDuration{StorageDuration::eLocal} {
+namespace {
+  AstCtList* combine(ErrorHandler& errorHandler, AstCtList* ctorArgs1,
+    AstCtList* ctorArgs2) {
+    if ( ctorArgs1 && ctorArgs2 ) {
+      Error::throwError(errorHandler, Error::eSameArgWasDefinedMultipleTimes);
+    }
+    else if ( !ctorArgs1 && !ctorArgs2) {
+      return new AstCtList();
+    }
+    else {
+      return ctorArgs1 ? ctorArgs1 : ctorArgs2;
+    }
+    assert(false);
+    return nullptr;
+  }
 }
 
 RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler, const std::string& name,
-  AstCtList* ctorArgs, AstObjType* astObjType,
+  AstCtList* ctorArgs1, AstCtList* ctorArgs2, AstObjType* astObjType,
   StorageDuration storageDuration) :
   m_errorHandler{errorHandler},
   m_name(name),
-  m_ctorArgs(ctorArgs),
+  m_ctorArgs(combine(m_errorHandler, ctorArgs1, ctorArgs2)),
   m_astObjType(astObjType),
-  m_isStorageDurationDefined(false),
   m_storageDuration(storageDuration) {
-}
-
-void RawAstDataDef::setName(const std::string& name) {
-  if ( !m_name.empty() ) {
-    Error::throwError(m_errorHandler, Error::eSameArgWasDefinedMultipleTimes);
-  }
-  m_name = name;
-}
-
-void RawAstDataDef::setCtorArgs(AstCtList* ctorArgs) {
-  if ( m_ctorArgs ) {
-    Error::throwError(m_errorHandler, Error::eSameArgWasDefinedMultipleTimes);
-  }
-  m_ctorArgs = ctorArgs;
-}
-
-void RawAstDataDef::setAstObjType(AstObjType* astObjType) {
-  if ( m_astObjType ) {
-    Error::throwError(m_errorHandler, Error::eSameArgWasDefinedMultipleTimes);
-  }
-  m_astObjType = astObjType;
-}
-
-void RawAstDataDef::setStorageDuration(StorageDuration storageDuration) {
-  if ( m_isStorageDurationDefined ) {
-    Error::throwError(m_errorHandler, Error::eSameArgWasDefinedMultipleTimes);
-  }
-  m_isStorageDurationDefined = true;
-  m_storageDuration = storageDuration;
 }
 
 ParserExt::ParserExt(Env&, ErrorHandler& errorHandler) :

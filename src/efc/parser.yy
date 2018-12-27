@@ -39,6 +39,10 @@
     AstObject* m_action;
   };
 
+  struct TypeAndStorageDuration {
+    AstObjType* m_type;
+    StorageDuration m_storageDuration;
+  };
 
   /* Further declarations and definitions needed to declare the generated parser */
   class Driver;
@@ -164,7 +168,7 @@ and by declaration of free function yylex */
 %token TOKENLISTEND "<TOKENLISTEND>"
 
 
-%type <AstCtList*> ct_list initializer_arg initializer_special_arg
+%type <AstCtList*> ct_list initializer_arg opt_initializer_arg initializer_special_arg opt_initializer_special_arg
 %type <std::vector<AstNode*>*> pure_standalone_node_seq_expr
 %type <std::vector<AstDataDef*>*> pure_naked_param_ct_list
 %type <std::vector<AstObject*>*> pure_ct_list
@@ -172,10 +176,11 @@ and by declaration of free function yylex */
 %type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
 %type <AstDataDef*> param_decl
 %type <ObjType::Qualifiers> valvar valvar_lparen type_qualifier
-%type <StorageDuration> storage_duration storage_duration_arg opt_storage_duration_arg
-%type <RawAstDataDef*> naked_data_def data_def_args
+%type <StorageDuration> storage_duration storage_duration_arg
+%type <TypeAndStorageDuration> type_and_or_storage_duration_arg
+%type <RawAstDataDef*> naked_data_def
 %type <AstFunDef*> naked_fun_def
-%type <AstObjType*> type opt_type type_arg opt_type_arg opt_ret_type
+%type <AstObjType*> type opt_type type_arg opt_ret_type
 %type <ConditionActionPair> condition_action_pair_then
 
 /* Grammar rules section
@@ -263,11 +268,6 @@ type_arg
   : COLON opt_type                                  { swap($$,$2); }
   ;
 
-opt_type_arg
-  : %empty                                          { $$ = parserExt.mkDefaultType(); }
-  | type_arg                                        { swap($$,$1); }
-  ;
-
 type_qualifier
   : MUT                                             { $$ = ObjType::eMutable; }
   ;
@@ -281,9 +281,13 @@ storage_duration_arg
   : IS storage_duration                             { swap($$, $2); }
   ;
 
-opt_storage_duration_arg
-  : %empty                                          { $$ = parserExt.mkDefaultStorageDuration(); }
-  | storage_duration_arg                            { swap($$, $1); }
+type_and_or_storage_duration_arg
+  : type_arg                                        { ($$).m_type = $1;
+                                                      ($$).m_storageDuration = parserExt.mkDefaultStorageDuration(); }
+  | storage_duration_arg                            { ($$).m_type = parserExt.mkDefaultType();
+                                                      ($$).m_storageDuration = $1; }
+  | type_arg storage_duration_arg                   { ($$).m_type = $1;
+                                                      ($$).m_storageDuration = $2; }
   ;
 
 /* generic list separator */
@@ -413,15 +417,12 @@ param_decl
   ;
 
 naked_data_def
-  : ID initializer_special_arg opt_type_arg opt_storage_duration_arg { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $3, $4); }
-  | ID data_def_args                                                 { $2->setName($1); swap($$,$2); }
-  ;
+  /* A trailing opt_initializer_arg is only possyble if there's at least one
+  type or storage duration arg, because else its equal_as_sep conflicts with any
+  = in the opt_initializer_special_arg's standalone_expr */
+  : ID opt_initializer_special_arg type_and_or_storage_duration_arg opt_initializer_arg   { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $4, ($3).m_type, ($3).m_storageDuration); }
 
-data_def_args
-  : %empty                                                           { $$ = new RawAstDataDef(parserExt.errorHandler()); }
-  | data_def_args initializer_arg                                    { ($1)->setCtorArgs($2); swap($$,$1); }
-  | data_def_args type_arg                                           { ($1)->setAstObjType($2); swap($$,$1); }
-  | data_def_args storage_duration_arg                               { ($1)->setStorageDuration($2); swap($$,$1); }
+  | ID opt_initializer_special_arg                                                        { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, nullptr, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration()); }
   ;
 
 naked_fun_def
@@ -441,15 +442,27 @@ opt_ret_type
   ;
 
 initializer_arg
-  : COMMA_EQUAL standalone_expr                                      { $$ = new AstCtList($2); }
-  | COMMA_EQUAL NOINIT                                               { $$ = new AstCtList(AstDataDef::noInit); }
-  | LPAREN_EQUAL ct_list RPAREN                                      { swap($$,$2); }
+  : COMMA_EQUAL    standalone_expr                                   { $$ = new AstCtList($2); }
+  | equal_as_sep   standalone_expr                                   { $$ = new AstCtList($2); }
+  | COMMA_EQUAL    NOINIT                                            { $$ = new AstCtList(AstDataDef::noInit); }
+  | equal_as_sep   NOINIT                                            { $$ = new AstCtList(AstDataDef::noInit); }
+  /* TODO : add NOINIT */
+  | LPAREN_EQUAL   ct_list RPAREN                                    { swap($$,$2); }
+  ;
+
+opt_initializer_arg
+  : %empty                                                           { $$ = nullptr;  }
+  | initializer_arg                                                  { swap($$,$1); }
   ;
 
 initializer_special_arg
-  : equal_as_sep standalone_expr                                     { $$ = new AstCtList($2); }
-  | equal_as_sep NOINIT                                              { $$ = new AstCtList(AstDataDef::noInit); }
-  | lparen_as_sep ct_list RPAREN                                     { swap($$,$2); }
+  : initializer_arg                                                  { swap($$,$1); }
+  | lparen_as_sep  ct_list RPAREN                                    { swap($$,$2); }
+  ;
+
+opt_initializer_special_arg
+  : %empty                                                           { $$ = nullptr;  }
+  | initializer_special_arg                                          { swap($$,$1); }
   ;
 
 valvar
