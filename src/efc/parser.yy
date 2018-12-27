@@ -289,7 +289,7 @@ storage_duration
   ;
 
 storage_duration_arg
-  : IS storage_duration                             { swap($$, $2); }
+  : is_sep storage_duration                         { swap($$, $2); }
   ;
 
 type_and_or_storage_duration_arg
@@ -326,6 +326,10 @@ do_sep
 else_sep
   : ELSE
   | sep
+  ;
+
+is_sep
+  : IS
   ;
 
 equal_as_sep
