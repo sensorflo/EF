@@ -3,6 +3,16 @@
 #include <sstream>
 using namespace std;
 
+namespace {
+  string wrapName(const string& str) {
+    if (!str.empty()) {
+      return str;
+    } else {
+      return "<none>";
+    }
+  }
+}
+
 AstPrinter::AstPrinter(basic_ostream<char>& os) : m_os(os) {
 }
 
@@ -79,7 +89,7 @@ void AstPrinter::visit(const AstNumber& number) {
 }
 
 void AstPrinter::visit(const AstSymbol& symbol) {
-  m_os << symbol.name();
+  m_os << wrapName(symbol.name());
 }
 
 void AstPrinter::visit(const AstFunCall& funCall) {
@@ -93,11 +103,11 @@ void AstPrinter::visit(const AstFunCall& funCall) {
 }
 
 void AstPrinter::visit(const AstFunDef& funDef) {
-  m_os << "fun(" << funDef.name() << " (";
+  m_os << "fun(" << wrapName(funDef.name()) << " (";
   for (auto i=funDef.declaredArgs().cbegin(); i!=funDef.declaredArgs().cend(); ++i) {
     if (i!=funDef.declaredArgs().cbegin()) { m_os << " "; }
     // as an exception, handle parameters directly, opposed to accept *i
-    m_os << "(" << (*i)->name() << " ";
+    m_os << "(" << wrapName((*i)->name()) << " ";
     (*i)->declaredAstObjType().accept(*this);
     m_os << ")";
   }
@@ -111,7 +121,7 @@ void AstPrinter::visit(const AstFunDef& funDef) {
 void AstPrinter::visit(const AstDataDef& dataDef) {
   m_os << "data(";
 
-  m_os << dataDef.name() << " ";
+  m_os << wrapName(dataDef.name()) << " ";
   if ( dataDef.declaredStorageDuration()!=StorageDuration::eLocal ) {
     m_os << dataDef.declaredStorageDuration() << "/";
   }
@@ -154,7 +164,7 @@ void AstPrinter::visit(const AstReturn& return_) {
 }
 
 void AstPrinter::visit(const AstObjTypeSymbol& symbol) {
-  m_os << symbol.name();
+  m_os << wrapName(symbol.name());
 }
 
 void AstPrinter::visit(const AstObjTypeQuali& quali) {
@@ -173,7 +183,7 @@ void AstPrinter::visit(const AstObjTypePtr& ptr) {
 }
 
 void AstPrinter::visit(const AstClassDef& class_) {
-  m_os << "class(" << class_.name();
+  m_os << "class(" << wrapName(class_.name());
   for (const auto& dataMember: class_.dataMembers()) {
     m_os << " ";
     dataMember->accept(*this);
