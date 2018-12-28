@@ -184,7 +184,7 @@ and by declaration of free function yylex */
 %type <TypeAndStorageDuration> type_and_or_storage_duration_arg
 %type <RawAstDataDef*> naked_data_def
 %type <AstFunDef*> naked_fun_def
-%type <AstObjType*> type opt_type type_arg opt_ret_type
+%type <AstObjType*> type opt_type type_arg
 %type <ConditionActionPair> condition_action_pair_then
 %type <std::string> opt_id
 %type <FunSignature> fun_signature_arg opt_fun_signature_arg
@@ -458,8 +458,8 @@ naked_fun_def
   ;
 
 fun_signature_arg
-  : COLON                                 opt_ret_type               { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = $2; }
-  | opt_colon LPAREN param_ct_list RPAREN opt_ret_type               { ($$).m_paramDefs = $3;                             ($$).m_retType = $5; }
+  : COLON                                 opt_type                   { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = $2; }
+  | opt_colon LPAREN param_ct_list RPAREN opt_type                   { ($$).m_paramDefs = $3;                             ($$).m_retType = $5; }
   ;
 
 opt_fun_signature_arg                           
@@ -479,11 +479,6 @@ pure_param_ct_list
 
 param_def
   : opt_valvar naked_data_def                                        { $$ = parserExt.mkDataDef($1, $2); }
-  ;
-
-opt_ret_type
-  : %empty                                                           { assert(false); } // intended for a future auto type
-  | type                                                             { swap($$,$1); }
   ;
 
 initializer_arg
