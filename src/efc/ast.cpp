@@ -725,6 +725,7 @@ bool AstObjTypeSymbol::isValueInRange(GeneralValue value) const {
   switch (toType(m_name)) {
   case ObjTypeFunda::eVoid: return false;
   case ObjTypeFunda::eNoreturn: return false;
+  case ObjTypeFunda::eInfer: return false;
   case ObjTypeFunda::eChar: return (0<=value && value<=0xFF) && (value==static_cast<int>(value));
   case ObjTypeFunda::eInt: return (INT_MIN<=value && value<=INT_MAX) && (value==static_cast<int>(value));
   case ObjTypeFunda::eDouble: return true;

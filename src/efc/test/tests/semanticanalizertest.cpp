@@ -1830,6 +1830,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     case ObjTypeFunda::ePointer:
       assert(false);
       break;
+    case ObjTypeFunda::eInfer: // fall through
     case ObjTypeFunda::eTypeCnt: assert(false);
     }
 
@@ -1904,4 +1905,13 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
       new AstNumber(42)),
     Error::eRetTypeCantHaveMutQualifier, "");
 
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+    an_occurence_of_type_inference,
+    transform,
+    reports_an_eTypeInferenceIsNotYetSupported)) {
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstObjTypeSymbol(ObjTypeFunda::eInfer),
+    Error::eTypeInferenceIsNotYetSupported, "");
 }

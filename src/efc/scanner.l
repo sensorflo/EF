@@ -96,6 +96,7 @@ char                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eChar
 int                 return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eInt, loc);
 bool                return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eBool, loc);
 double              return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eDouble, loc);
+infer               return yy::Parser::make_FUNDAMENTAL_TYPE(ObjTypeFunda::eInfer, loc);
 
 
   /* literal bool */

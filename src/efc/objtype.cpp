@@ -174,6 +174,7 @@ basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
   switch (m_type) {
   case eVoid: os << "void"; break;
   case eNoreturn: os << "noreturn"; break;
+  case eInfer: os << "infer"; break;
   case eChar: os << "char"; break;
   case eInt: os << "int"; break;
   case eBool: os << "bool"; break;
@@ -189,6 +190,7 @@ bool ObjTypeFunda::is(ObjType::EClass class_) const {
   switch(m_type) {
   case eVoid:
   case eNoreturn:
+  case eInfer:
     return class_==eAbstract;
   case eChar:
   case eBool:
@@ -222,6 +224,7 @@ int ObjTypeFunda::size() const {
   switch(m_type) {
   case eVoid:
   case eNoreturn: return -1;
+  case eInfer: return -1;
   case eNullptr: return 0;
   case eBool: return 1;
   case eChar: return 8;
@@ -238,6 +241,7 @@ llvm::Type* ObjTypeFunda::llvmType() const {
   switch (m_type) {
   case eVoid: return Type::getVoidTy(llvmContext);
   case eNoreturn: return nullptr;
+  case eInfer: return nullptr;
   case eChar: return Type::getInt8Ty(llvmContext);
   case eInt: return Type::getInt32Ty(llvmContext);
   case eDouble: return Type::getDoubleTy(llvmContext);
@@ -295,14 +299,17 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
   const ObjTypeFunda& otherFunda = static_cast<const ObjTypeFunda&>(other);
   switch (m_type) {
   case eVoid: // fall through
-  case eNoreturn: return false;
+  case eNoreturn: // fall through
+  case eInfer: return false;
 
   case eBool: // fall through
   case eChar: // fall through
   case eDouble: // fall through
   case eInt: // fall through
   case ePointer:
-    if ( (otherFunda.m_type == eVoid) || (otherFunda.m_type == eNoreturn) ) {
+    if ( (otherFunda.m_type == eVoid) ||
+      (otherFunda.m_type == eNoreturn) ||
+      (otherFunda.m_type == eInfer)) {
       return false;
     } else if ( ePointer==m_type ) {
       return true;

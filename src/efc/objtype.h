@@ -140,6 +140,8 @@ public:
     // abstract objects
     eVoid,
     eNoreturn,
+    eInfer, // probably not really a fundamental type. hacked into here
+            // as a quick way to let the grammar know the infer type.
     // concrete objects
     eChar,
     eInt,

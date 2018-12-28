@@ -36,6 +36,7 @@ const char* toStr(Error::No no) {
   case Error::eObjectExpected: return "eObjectExpected";
   case Error::eScanOrParseFailed: return "eScanOrParseFailed";
   case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
+  case Error::eTypeInferenceIsNotYetSupported: return "eTypeInferenceIsNotYetSupported";
   case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization";
   case Error::eCnt: return "<unknown>";
   }

@@ -31,6 +31,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   // fundamental types
   EXPECT_EQ("void", ObjTypeFunda(ObjTypeFunda::eVoid).toStr());
   EXPECT_EQ("noreturn", ObjTypeFunda(ObjTypeFunda::eNoreturn).toStr());
+  EXPECT_EQ("infer", ObjTypeFunda(ObjTypeFunda::eInfer).toStr());
   EXPECT_EQ("char", ObjTypeFunda(ObjTypeFunda::eChar).toStr());
   EXPECT_EQ("int", ObjTypeFunda(ObjTypeFunda::eInt).toStr());
   EXPECT_EQ("bool", ObjTypeFunda(ObjTypeFunda::eBool).toStr());
@@ -375,6 +376,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     size)) {
   EXPECT_EQ( -1, ObjTypeFunda(ObjTypeFunda::eVoid).size());
   EXPECT_EQ( -1, ObjTypeFunda(ObjTypeFunda::eNoreturn).size());
+  EXPECT_EQ( -1, ObjTypeFunda(ObjTypeFunda::eInfer).size());
   EXPECT_EQ( 1, ObjTypeFunda(ObjTypeFunda::eBool).size());
   EXPECT_EQ( 8, ObjTypeFunda(ObjTypeFunda::eChar).size());
   EXPECT_EQ( 32, ObjTypeFunda(ObjTypeFunda::eInt).size());

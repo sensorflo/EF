@@ -495,6 +495,9 @@ void SemanticAnalizer::visit(AstReturn& return_) {
 void SemanticAnalizer::visit(AstObjTypeSymbol& symbol) {
   // nop, everything was already done in previous passes
   preConditionCheck(symbol);
+  if ( symbol.name() == "infer" ) {
+    Error::throwError(m_errorHandler, Error::eTypeInferenceIsNotYetSupported);
+  }
   postConditionCheck(symbol);
 }
 

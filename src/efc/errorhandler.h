@@ -26,6 +26,7 @@ public:
     eSameArgWasDefinedMultipleTimes,
     eObjectExpected,
     eOnlyLocalStorageDurationApplicable,
+    eTypeInferenceIsNotYetSupported,
     eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization,
     eScanOrParseFailed,
     eCnt
