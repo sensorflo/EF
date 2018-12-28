@@ -174,7 +174,7 @@ and by declaration of free function yylex */
 
 %type <AstCtList*> ct_list ct_list_2plus initializer_arg opt_initializer_arg initializer_special_arg opt_initializer_special_arg naked_initializer
 %type <std::vector<AstNode*>*> pure_standalone_node_seq_expr
-%type <std::vector<AstDataDef*>*> pure_naked_param_ct_list
+%type <std::vector<AstDataDef*>*> param_ct_list pure_param_ct_list
 %type <std::vector<AstObject*>*> pure_ct_list
 %type <AstNode*> standalone_node
 %type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr ct_list_arg operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
@@ -454,23 +454,27 @@ naked_data_def
   ;
 
 naked_fun_def
-  : opt_id opt_fun_signature_arg equal_as_sep block_expr                    { $$ = parserExt.mkFunDef($1, ($2).m_paramDefs, ($2).m_retType, $4); }
+  : opt_id opt_fun_signature_arg equal_as_sep block_expr             { $$ = parserExt.mkFunDef($1, ($2).m_paramDefs, ($2).m_retType, $4); }
   ;
 
 fun_signature_arg
-  : COLON                                                      opt_ret_type { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = $2; }
-  | opt_colon LPAREN                                    RPAREN opt_ret_type { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = $4; }
-  | opt_colon LPAREN pure_naked_param_ct_list opt_comma RPAREN opt_ret_type { ($$).m_paramDefs = $3;                             ($$).m_retType = $6; }
+  : COLON                                 opt_ret_type               { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = $2; }
+  | opt_colon LPAREN param_ct_list RPAREN opt_ret_type               { ($$).m_paramDefs = $3;                             ($$).m_retType = $5; }
   ;
 
 opt_fun_signature_arg                           
-  : %empty                                                                  { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = parserExt.mkDefaultType(); }
-  | fun_signature_arg                                                       { swap($$,$1); }
+  : %empty                                                           { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = parserExt.mkDefaultType(); }
+  | fun_signature_arg                                                { swap($$,$1); }
   ;
 
-pure_naked_param_ct_list
+param_ct_list
+  : %empty                                                           { $$ = new std::vector<AstDataDef*>(); }
+  | pure_param_ct_list opt_comma                                     { swap($$,$1); }
+  ;
+
+pure_param_ct_list
   : param_def                                                        { $$ = new std::vector<AstDataDef*>(); ($$)->push_back($1); }
-  | pure_naked_param_ct_list COMMA param_def                         { ($1)->push_back($3); std::swap($$,$1); }
+  | pure_param_ct_list COMMA param_def                               { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 param_def
