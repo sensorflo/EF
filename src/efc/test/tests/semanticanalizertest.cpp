@@ -1608,9 +1608,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    a_function_call_to_a_defined_function_WITH_incorrect_an_argument_count_or_incorrect_argument_type,
+    a_function_call_to_a_defined_function_WITH_incorrect_argument_count_or_incorrect_argument_type,
     transform,
-    reports_an_eInvalidArguments)) {
+    reports_a_eInvalidArguments)) {
 
   string spec = "Function foo expects one arg, but zero where passed on call";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
