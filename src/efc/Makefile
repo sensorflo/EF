@@ -5,7 +5,7 @@ LIBS += `llvm-config --libs core mcjit native interpreter --system-libs | sed 's
 CXX = clang++
 LEX = flex
 YACC = bison
-GTEST_DIR = /home/sensorflo/src/googletest/googletest
+GTEST_DIR = test/googletest/googletest
 BISON_DATA_DIR := $(shell bison --print-datadir)
 
 all: out/efc
@@ -75,7 +75,7 @@ out/efc: $(EFC_OBJS)
 # efctest
 # ----------------------------------------------------------------------
 
-EFCTEST_ROOT_SRCS = gtestprinter.cpp test.cpp efctest.cpp
+EFCTEST_ROOT_SRCS = test.cpp efctest.cpp
 
 EFCTEST_TESTS_SRCS = errorhandlertest.cpp objtypetest.cpp parserexttest.cpp	\
   scannertest.cpp scannerandparsertest.cpp astprintertest.cpp	\
