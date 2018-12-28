@@ -368,12 +368,14 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
   auto&& ctorArgs = dataDef.ctorArgs().childs();
 
   if ( !dataDef.doNotInit() ) {
-    // special responsibility: insert new auto created nodes into AST
-    // Currrently zero arguments are not supported. When none args are given,
-    // a default arg is used.
+    // special responsibility: insert new auto created nodes into AST.  Note
+    // that the AST nodes created here obviously are not visited by the passes
+    // prior to SemanticAnalizer.
+    //
+    // If there are zero ctor arguments, that means we should call the default
+    // ctor. However default ctors are not yet implemented. Thus the workaround
+    // is to insert a default arg into the AST.
     if (ctorArgs.empty()) {
-      // Note that the AST node created here obviously is not visited by the
-      // passes prior to SemanticAnalizer
       ctorArgs.push_back(dataDef.declaredAstObjType().
         createDefaultAstObjectForSemanticAnalizer());
     }

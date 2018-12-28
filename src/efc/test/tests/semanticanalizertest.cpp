@@ -359,6 +359,23 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+    a_data_obj_definition_WITH_zero_ctor_arguments,
+    transform,
+    inserts_an_AstNumber_with_value_zero_as_single_ctor_argument,
+    BECAUSE_this_is_the_current_hack_how_default_constructors_are_implemented)) {
+
+  const auto ast = new AstDataDef("x", new AstObjTypeSymbol(ObjTypeFunda::eInt));
+  TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(ast, "");
+
+  // further verifications
+  const auto& ctorArgs = ast->ctorArgs().childs();
+  ASSERT_EQ(1, ctorArgs.size()) << amendAst(ast);
+  const auto arg = dynamic_cast<AstNumber*>(ast->ctorArgs().childs().front());
+  EXPECT_TRUE(nullptr!=arg) << amendAst(ast);
+  EXPECT_EQ(0, arg->value()) << amendAst(ast);
+}
+
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_static_data_obj_definition_initialized_with_an_non_ctconst_expression,
     transform,
