@@ -166,7 +166,7 @@ and by declaration of free function yylex */
       MINUS
 %left STAR
       SLASH
-%precedence EXCL NOT AMPER
+%precedence EXCL NOT AMPER RETURN
 %precedence LPAREN
 
 %token TOKENLISTEND "<TOKENLISTEND>"
@@ -177,7 +177,7 @@ and by declaration of free function yylex */
 %type <std::vector<AstDataDef*>*> param_ct_list pure_param_ct_list
 %type <std::vector<AstObject*>*> pure_ct_list
 %type <AstNode*> standalone_node
-%type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr ct_list_arg operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_return naked_while
+%type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr ct_list_arg operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_while
 %type <AstDataDef*> param_def
 %type <ObjType::Qualifiers> valvar opt_valvar valvar_lparen type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg
@@ -380,12 +380,13 @@ operator_expr
   | FUNDAMENTAL_TYPE LPAREN ct_list RPAREN          { $$ = new AstCast(new AstObjTypeSymbol($1), $3); }
 
   /* unary prefix */
-  | NOT   opt_newline sub_expr                      { $$ = new AstOperator(AstOperator::eNot, $3); }
-  | EXCL  opt_newline sub_expr                      { $$ = new AstOperator(AstOperator::eNot, $3); }
-  | STAR  opt_newline sub_expr                      { $$ = new AstOperator(AstOperator::eDeref, $3); }
-  | AMPER opt_newline sub_expr                      { $$ = new AstOperator('&', $3); }
-  | MINUS opt_newline sub_expr                      { $$ = new AstOperator('-', $3); }
-  | PLUS  opt_newline sub_expr                      { $$ = new AstOperator('+', $3); }
+  | NOT    opt_newline sub_expr                     { $$ = new AstOperator(AstOperator::eNot, $3); }
+  | EXCL   opt_newline sub_expr                     { $$ = new AstOperator(AstOperator::eNot, $3); }
+  | STAR   opt_newline sub_expr                     { $$ = new AstOperator(AstOperator::eDeref, $3); }
+  | AMPER  opt_newline sub_expr                     { $$ = new AstOperator('&', $3); }
+  | MINUS  opt_newline sub_expr                     { $$ = new AstOperator('-', $3); }
+  | PLUS   opt_newline sub_expr                     { $$ = new AstOperator('+', $3); }
+  | RETURN             sub_expr                     { $$ = new AstReturn($2); }
 
   /* binary operators */
   | sub_expr EQUAL       opt_newline sub_expr                   { $$ = new AstOperator('=', $1, $4); }
@@ -419,12 +420,11 @@ list_expr
   | IF                naked_if             kwac     { std::swap($$,$2); }
   | WHILE_LPAREN      naked_while          RPAREN   { std::swap($$,$2); }
   | WHILE             naked_while          kwac     { std::swap($$,$2); }
-  | RETURN_LPAREN     naked_return         RPAREN   { $$ = $2; }
-  | RETURN            naked_return         kwac     { $$ = $2; }
   | RAW_NEW_LPAREN    type initializer_arg RPAREN   { $$ = nullptr; }
   | RAW_NEW           type initializer_arg kwac     { $$ = nullptr; }
   | RAW_DELETE_LPAREN sub_expr             RPAREN   { $$ = nullptr; }
   | RAW_DELETE        sub_expr             kwac     { $$ = nullptr; }
+  | RETURN_LPAREN     ct_list              RPAREN   { $$ = new AstReturn($2); }
   ;
 
 /* keyword argument list close delimiter */
@@ -497,6 +497,8 @@ parameters in a function definition
 TODO: semantic analizer must report error when invalid storage duration is used
 for function parameters in in a function definition.
 
+TODO: semantic analizer must report error/warning when noinit is used in return.
+
 1) If that is an parenthesized expression, say "val a = (42)$", then the resulting
    initializer in the AST is two nested AstSeq, i.e. (;;42) (the complete AST is
    ":;data(a int (;;42))"). One is because ct_list_arg is ultimatively an
@@ -560,11 +562,6 @@ naked_while
 condition_action_pair_then
   /* see naked_while why it's standalone_expr and not  seq_operator */
   : standalone_expr then_sep block_expr                              { $$ = ConditionActionPair{ $1, $3}; }
-  ;
-
-naked_return
-  : %empty                                                           { $$ = new AstReturn(); }
-  | standalone_expr                                                  { $$ = new AstReturn($1); }
   ;
 
 opt_newline

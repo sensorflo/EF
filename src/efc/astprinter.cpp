@@ -159,7 +159,7 @@ void AstPrinter::visit(const AstLoop& loop) {
 
 void AstPrinter::visit(const AstReturn& return_) {
   m_os << "return(";
-  return_.retVal().accept(*this);
+  return_.ctorArgs().accept(*this);
   m_os << ")";
 }
 

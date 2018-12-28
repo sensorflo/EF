@@ -112,7 +112,7 @@ void AstDefaultIterator::visit(AstReturn& return_) {
   if ( m_visitor ) {
     return_.accept(*m_visitor);
   }
-  return_.retVal().accept(*this);
+  return_.ctorArgs().accept(*this);
 }
 
 void AstDefaultIterator::visit(AstObjTypeSymbol& symbol) {

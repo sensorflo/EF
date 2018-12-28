@@ -87,7 +87,7 @@ void ParserApiExt::initTokenAttrs() {
     { Parser::token::TOK_RAW_DELETE, {"RAW_DELETE", SVTVoid, TKStarter}},
     { Parser::token::TOK_NOP, {"NOP", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_RETURN_LPAREN, {"RETURN_LPAREN", SVTVoid, TKStarter}},
-    { Parser::token::TOK_RETURN, {"RETURN", SVTVoid, TKStarter}},
+    { Parser::token::TOK_RETURN, {"RETURN", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_EQUAL, {"EQUAL", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_EQUAL_LESS, {"EQUAL_LESS", SVTVoid, TKComponentOrAmbigous}},
     { Parser::token::TOK_COLON_EQUAL, {"COLON_EQUAL", SVTVoid, TKComponentOrAmbigous}},

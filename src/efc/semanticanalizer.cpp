@@ -479,15 +479,22 @@ void SemanticAnalizer::visit(AstLoop& loop) {
 void SemanticAnalizer::visit(AstReturn& return_) {
   preConditionCheck(return_);
 
+  auto&& ctorArgs = return_.ctorArgs().childs();
+
   // -- responsibility 1: set access to direct childs and descent AST subtree
-  setAccessAndCallAcceptOn(return_.retVal(), Access::eRead);
+  for (const auto arg: ctorArgs) {
+    setAccessAndCallAcceptOn(*arg, Access::eRead);
+  }
 
   // -- responsibility 2: semantic analysis
   if ( m_funRetAstObjTypes.empty() ) {
     Error::throwError(m_errorHandler, Error::eNotInFunBodyContext);
   }
+  if ( ctorArgs.size() != 1U ) {
+    Error::throwError(m_errorHandler, Error::eInvalidArguments);
+  }
   const auto& currentFunReturnType = *m_funRetAstObjTypes.top();
-  if ( ! return_.retVal().object().objType().matchesSaufQualifiers(
+  if ( ! ctorArgs.front()->object().objType().matchesSaufQualifiers(
       currentFunReturnType.objType() ) ) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }

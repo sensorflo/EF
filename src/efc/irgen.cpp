@@ -472,9 +472,11 @@ void IrGen::visit(AstLoop& loop) {
 }
 
 void IrGen::visit(AstReturn& return_) {
-  Value* retVal = callAcceptOn( return_.retVal());
+  auto&& ctorArgs = return_.ctorArgs().childs();
+  assert(ctorArgs.size() == 1U);
+  Value* retVal = callAcceptOn( *ctorArgs.front() );
   assert( retVal);
-  if ( return_.retVal().object().objType().isVoid() ) {
+  if ( ctorArgs.front()->object().objType().isVoid() ) {
     m_builder.CreateRetVoid();
   } else {
     m_builder.CreateRet( retVal);

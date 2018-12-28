@@ -618,8 +618,14 @@ StorageDuration AstLoop::storageDuration() const {
 }
 
 AstReturn::AstReturn(AstObject* retVal) :
-  m_retVal(retVal ? retVal : new AstNop()) {
-  assert(m_retVal);
+  AstReturn(new AstCtList(retVal ? retVal : new AstNop())) {
+}
+
+AstReturn::AstReturn(AstCtList* args) :
+  m_ctorArgs(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
+  if (m_ctorArgs->childs().empty()) {
+    m_ctorArgs->Add(new AstNop());
+  }
 }
 
 const ObjType& AstReturn::objType() const {
@@ -632,11 +638,6 @@ std::shared_ptr<const ObjType> AstReturn::objTypeAsSp() const {
 
 StorageDuration AstReturn::storageDuration() const {
   return StorageDuration::eLocal;
-}
-
-AstObject& AstReturn::retVal() const {
-  assert(m_retVal);
-  return *m_retVal.get();
 }
 
 AstFunCall::AstFunCall(AstObject* address, AstCtList* args) :

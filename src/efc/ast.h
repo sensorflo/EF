@@ -566,6 +566,7 @@ private:
 class AstReturn : public AstObjInstance {
 public:
   AstReturn(AstObject* retVal = nullptr);
+  AstReturn(AstCtList* ctorArgs);
 
   // -- overrides for AstNode
   virtual void accept(AstVisitor& visitor);
@@ -577,12 +578,12 @@ public:
   virtual StorageDuration storageDuration() const;
 
   // -- childs of this node
-  AstObject& retVal() const;
+  AstCtList& ctorArgs () const { return *m_ctorArgs; }
 
 private:
   // -- childs of this node
-  /** Is garanteed to be non-null */
-  const std::unique_ptr<AstObject> m_retVal;
+  /** Is guaranteed to be non-null. Arguments to construct return value */
+  const std::unique_ptr<AstCtList> m_ctorArgs;
 };
 
 /** See also ObjType */

@@ -106,10 +106,23 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_return_expression,
     scanAndParse,
     succeeds_AND_returns_correct_AST) ) {
-  TEST_PARSE( "return  42$", ":;return(42)", "trivial example");
-  TEST_PARSE( "return(42)" , ":;return(42)", "trivial example");
-  TEST_PARSE( "return$"    , ":;return(nop)", "");
-  TEST_PARSE( "return()"   , ":;return(nop)", "");
+  string spec = "trivial example";
+  TEST_PARSE( "return 42"     , ":;return(42)", spec);
+  TEST_PARSE( "return (42)"   , ":;return(;42)", spec);
+  TEST_PARSE( "return(42)"    , ":;return(;42)", spec);
+  TEST_PARSE( "return(42,77)" , ":;return(;42 ;77)", spec);
+  TEST_PARSE( "return()"      , ":;return(nop)", spec);
+
+  spec = "'return ()' is invalid because '()' is not a sub_expr, "
+    "but 'return()' is valid because 'return(' is a token.";
+  TEST_PARSE_REPORTS_ERROR("return ()", Error::eScanOrParseFailed, spec);
+}
+
+TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+    a_return_separated_by_newline_from_the_argument,
+    scanAndParse,
+    reports_eScanOrParseFailed_altough_after_other_unary_prefix_operators_newline_is_allowed) ) {
+  TEST_PARSE_REPORTS_ERROR("return\n(42)", Error::eScanOrParseFailed, "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

@@ -377,16 +377,23 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
-    a_data_obj_definition_WITH_incorrect_argument_count_for_the_constructor,
+    a_data_obj_initialization_WITH_incorrect_argument_count_for_the_constructor,
     transform,
     reports_a_eInvalidArguments)) {
 
   // note that if the type doesn't match, the reported error is eNoImplicitConversion
 
+  string spec = "Example: data object definition";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstDataDef("x", new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eLocal,
       new AstCtList(new AstNumber(0), new AstNumber(0))),
-    Error::eInvalidArguments, "");
+    Error::eInvalidArguments, spec);
+
+  spec = "Example: return value";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef("foo", ObjTypeFunda::eInt,
+      new AstReturn(new AstCtList(new AstNumber(0), new AstNumber(0)))),
+    Error::eInvalidArguments, spec);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
