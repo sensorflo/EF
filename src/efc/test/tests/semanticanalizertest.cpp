@@ -377,6 +377,19 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_data_obj_definition_WITH_incorrect_argument_count_for_the_constructor,
+    transform,
+    reports_a_eInvalidArguments)) {
+
+  // note that if the type doesn't match, the reported error is eNoImplicitConversion
+
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstDataDef("x", new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eLocal,
+      new AstCtList(new AstNumber(0), new AstNumber(0))),
+    Error::eInvalidArguments, "");
+}
+
+TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_static_data_obj_definition_initialized_with_an_non_ctconst_expression,
     transform,
     reports_eCTConstRequired)) {

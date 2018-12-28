@@ -386,8 +386,12 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     }
 
     // -- responsibility 2: semantic analysis
-    // currently a data object must be initialized with exactly one initializer
-    assert(ctorArgs.size()==1);
+    // currently a data object must be initialized with exactly one
+    // initializer. Note that the case of passing zero argument was handled
+    // above.
+    if ( ctorArgs.size()!=1 ) {
+      Error::throwError(m_errorHandler, Error::eInvalidArguments);
+    }
     const auto initializer = ctorArgs.front();
     if ( dataDef.objType().match(initializer->object().objType()) == ObjType::eNoMatch ) {
       Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
