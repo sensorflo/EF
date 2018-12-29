@@ -1,18 +1,5 @@
 cmake_minimum_required(VERSION 2.8.8)
 
-# gobal
-# --------------------------------------------------
-enable_testing()
-
-# experiment
-# add_definitions(-Weverything -Wno-c++98-compat -Wno-covered-switch-default
-#   -Wno-undef -Wreserved-id-macro -Wno-padded -Wno-weak-vtables
-#   -Wno-global-constructors -Wno-exit-time-destructors
-#   -Wno-documentation-unknown-command)
-# Wno-unused-parameter is due to llvm headers
-add_definitions(-std=c++14 -Wall -Wextra -Wpedantic -Wno-unused-parameter -Werror)
-
-
 # efc - EF compiler
 # --------------------------------------------------
 find_package(LLVM REQUIRED)
@@ -128,8 +115,6 @@ find_program(TESTDOX testdox)
 if (NOT TESTDOX)
   message(FATAL_ERROR "testdox not found. Available at https://github.com/sensorflo/testdox.")
 endif()
-
-add_subdirectory(test/googletest/googletest)
 
 set(TEST_TEST_SRCS
   test/tests/tutorialstest.cpp

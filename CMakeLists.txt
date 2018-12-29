@@ -3,7 +3,17 @@ project(ef-distribution)
 
 enable_testing()
 
+# experiment
+# add_definitions(-Weverything -Wno-c++98-compat -Wno-covered-switch-default
+#   -Wno-undef -Wreserved-id-macro -Wno-padded -Wno-weak-vtables
+#   -Wno-global-constructors -Wno-exit-time-destructors
+#   -Wno-documentation-unknown-command)
+# Wno-unused-parameter is due to llvm headers
+add_definitions(-std=c++14 -Wall -Wextra -Wpedantic -Wno-unused-parameter -Werror)
+
+
 add_subdirectory(doc)
+add_subdirectory(googletest/googletest)
 add_subdirectory(src/efc)
 
 # clang format
