@@ -61,8 +61,6 @@ private:
   std::unique_ptr<llvm::Module> m_module;
   std::stack<llvm::BasicBlock*> m_BasicBlockStack;
   ErrorHandler& m_errorHandler;
-  /** We're not the owner, guaranteed to be non-null. */
-  AstVisitor* m_enclosingVisitor;
   /** For abstract obj types like void or noreturn. Contrast this with nullptr
   which means '(accidentaly) not (yet) set)'. */
   static llvm::Value* const m_abstractObject;
