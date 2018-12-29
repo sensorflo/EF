@@ -54,7 +54,7 @@ private:
 class AstObject : public AstNode {
 public:
   // -- overrides for AstNode
-  virtual bool isObjTypeNoReturn() const;
+  bool isObjTypeNoReturn() const override;
 
   // -- new virtual methods
   virtual Access accessFromAstParent() const = 0;
@@ -112,13 +112,13 @@ private:
 class AstNop : public AstObjInstance {
 public:
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
 
   // -- overrides for Object
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
+  StorageDuration storageDuration() const override;
 };
 
 class AstBlock : public AstObjInstance, public EnvNode {
@@ -126,13 +126,13 @@ public:
   AstBlock(AstObject* body);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
 
   // -- overrides for Object
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
+  StorageDuration storageDuration() const override;
 
   // -- childs of this node
   AstObject& body() const { return *m_body.get(); }
@@ -150,13 +150,13 @@ public:
   AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
 
   // -- overrides for Object
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
+  StorageDuration storageDuration() const override;
 
   // -- childs of this node
   AstObjType& specifiedNewAstObjType() const;
@@ -176,13 +176,13 @@ public:
     AstObjType* ret, AstObject* body);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
 
   // -- overrides for Object
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
+  StorageDuration storageDuration() const override;
 
   // -- childs of this node
   // name() is in EnvNode
@@ -234,19 +234,19 @@ public:
     AstObject* initObj = nullptr);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
 
   // -- overrides for Object
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
   // storageDuration is below within childs section
 
   // -- childs of this node
   // name() is in EnvNode
   AstObjType& declaredAstObjType() const;
   StorageDuration declaredStorageDuration() const;
-  virtual StorageDuration storageDuration() const {
+  StorageDuration storageDuration() const override {
     return m_declaredStorageDuration;
   }
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
@@ -285,14 +285,14 @@ public:
   AstNumber(GeneralValue value, ObjTypeFunda::EType eType);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
 
   // -- overrides for Object
-  virtual bool isCTConst() const { return true; }
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  bool isCTConst() const override { return true; }
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
+  StorageDuration storageDuration() const override;
 
   // -- childs of this node
   GeneralValue value() const { return m_value; }
@@ -314,14 +314,14 @@ public:
     , m_name(name) {}
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
-  virtual void setAccessFromAstParent(Access access);
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
+  void setAccessFromAstParent(Access access) override;
 
   // -- overrides for AstObject
-  virtual Access accessFromAstParent() const;
-  virtual Object& object();
-  virtual const Object& object() const;
+  Access accessFromAstParent() const override;
+  Object& object() override;
+  const Object& object() const override;
 
   // -- overrides for Object
   virtual const ObjType& objType() const;
@@ -352,13 +352,13 @@ public:
   AstFunCall(AstObject* address, AstCtList* args = nullptr);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
 
   // -- overrides for Object
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
+  StorageDuration storageDuration() const override;
 
   // -- childs of this node
   virtual AstObject& address() const { return *m_address; }
@@ -411,14 +411,14 @@ public:
     AstObject* operand2 = nullptr);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
-  virtual void setAccessFromAstParent(Access access);
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
+  void setAccessFromAstParent(Access access) override;
 
   // -- overrides for AstObject
-  virtual Access accessFromAstParent() const;
-  virtual Object& object();
-  virtual const Object& object() const;
+  Access accessFromAstParent() const override;
+  Object& object() override;
+  const Object& object() const override;
 
   // -- childs of this node
   EOperation op() const { return m_op; }
@@ -442,9 +442,9 @@ private:
   // -- overrides for Object
   // !see class comment! Private so they are not called accidentaly, callers
   // must go via object()
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
+  StorageDuration storageDuration() const override;
 
   friend std::basic_ostream<char>& operator<<(
     std::basic_ostream<char>&, AstOperator::EOperation);
@@ -487,14 +487,14 @@ public:
     AstNode* op4 = nullptr, AstNode* op5 = nullptr);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
-  virtual void setAccessFromAstParent(Access access);
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
+  void setAccessFromAstParent(Access access) override;
 
   // -- overrides for AstObject
-  virtual Access accessFromAstParent() const;
-  virtual Object& object();
-  virtual const Object& object() const;
+  Access accessFromAstParent() const override;
+  Object& object() override;
+  const Object& object() const override;
 
   // -- childs of this node
   const std::vector<std::unique_ptr<AstNode>>& operands() const {
@@ -523,13 +523,13 @@ public:
   AstIf(AstObject* cond, AstObject* action, AstObject* elseAction = nullptr);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
 
   // -- overrides for Object
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
+  StorageDuration storageDuration() const override;
 
   // -- childs of this node
   AstObject& condition() const { return *m_condition; }
@@ -557,13 +557,13 @@ public:
   AstLoop(AstObject* cond, AstObject* body);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
 
   // -- overrides for Object
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
+  StorageDuration storageDuration() const override;
 
   // -- childs of this node
   AstObject& condition() const { return *m_condition; }
@@ -583,13 +583,13 @@ public:
   AstReturn(AstCtList* ctorArgs);
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor);
-  virtual void accept(AstConstVisitor& visitor) const;
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
 
   // -- overrides for Object
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  const ObjType& objType() const override;
+  std::shared_ptr<const ObjType> objTypeAsSp() const override;
+  StorageDuration storageDuration() const override;
 
   // -- childs of this node
   AstCtList& ctorArgs() const { return *m_ctorArgs; }
@@ -603,7 +603,7 @@ private:
 /** See also ObjType */
 class AstObjType : public AstNode {
 public:
-  virtual void setAccessFromAstParent(Access access) override {
+  void setAccessFromAstParent(Access access) override {
     assert(access == Access::eIgnoreValueAndAddr);
   }
 
@@ -665,7 +665,7 @@ private:
 
   // decorations for IrGen
 public:
-  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
+  llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
 };
 
 class AstObjTypeQuali : public AstObjType {
@@ -700,7 +700,7 @@ private:
 
   // decorations for IrGen
 public:
-  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
+  llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
 };
 
 class AstObjTypePtr : public AstObjType {
@@ -733,7 +733,7 @@ private:
 
   // decorations for IrGen
 public:
-  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
+  llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
 };
 
 /** Definition of a class. See also ObjTypeClass */
@@ -773,7 +773,7 @@ private:
 
   // decorations for IrGen
 public:
-  virtual llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
+  llvm::Value* createLlvmValueFrom(GeneralValue value) const override;
 };
 
 /** Maybe it should be an independent type, that is not derive from AstNode */
@@ -784,12 +784,12 @@ public:
   AstCtList(AstObject* child1, AstObject* child2, AstObject* child3 = nullptr,
     AstObject* child4 = nullptr, AstObject* child5 = nullptr,
     AstObject* child6 = nullptr);
-  virtual ~AstCtList();
+  ~AstCtList() override;
 
   // -- overrides for AstNode
-  virtual void accept(AstVisitor& visitor) override;
-  virtual void accept(AstConstVisitor& visitor) const override;
-  virtual void setAccessFromAstParent(Access access) override {
+  void accept(AstVisitor& visitor) override;
+  void accept(AstConstVisitor& visitor) const override;
+  void setAccessFromAstParent(Access access) override {
     assert(access == Access::eIgnoreValueAndAddr);
   }
 

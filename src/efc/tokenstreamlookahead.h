@@ -8,7 +8,7 @@ public:
   TokenStreamLookAhead(TokenStream& input);
   ~TokenStreamLookAhead() override;
 
-  virtual yy::Parser::symbol_type pop() override;
+  yy::Parser::symbol_type pop() override;
   /** Returns reference token at given pos without removing it; 0 is the
   front */
   virtual yy::Parser::symbol_type& lookAhead(size_t pos);

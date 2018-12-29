@@ -22,8 +22,8 @@ public:
   void operator()(AstNode& root);
 
 private:
-  virtual void visit(AstDataDef& dataDef);
-  virtual void visit(AstFunDef& funDef);
+  void visit(AstDataDef& dataDef) override;
+  void visit(AstFunDef& funDef) override;
 
   llvm::Module& m_module;
 };

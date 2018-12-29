@@ -16,24 +16,24 @@ public:
     const AstNode& root, std::basic_ostream<char>& os);
 
 private:
-  virtual void visit(const AstNop& nop);
-  virtual void visit(const AstBlock& block);
-  virtual void visit(const AstCast& cast);
-  virtual void visit(const AstCtList& ctList);
-  virtual void visit(const AstOperator& op);
-  virtual void visit(const AstSeq& seq);
-  virtual void visit(const AstNumber& number);
-  virtual void visit(const AstSymbol& symbol);
-  virtual void visit(const AstFunCall& funCall);
-  virtual void visit(const AstFunDef& funDef);
-  virtual void visit(const AstDataDef& dataDef);
-  virtual void visit(const AstIf& if_);
-  virtual void visit(const AstLoop& loop);
-  virtual void visit(const AstReturn& return_);
-  virtual void visit(const AstObjTypeSymbol& symbol);
-  virtual void visit(const AstObjTypeQuali& quali);
-  virtual void visit(const AstObjTypePtr& ptr);
-  virtual void visit(const AstClassDef& class_);
+  void visit(const AstNop& nop) override;
+  void visit(const AstBlock& block) override;
+  void visit(const AstCast& cast) override;
+  void visit(const AstCtList& ctList) override;
+  void visit(const AstOperator& op) override;
+  void visit(const AstSeq& seq) override;
+  void visit(const AstNumber& number) override;
+  void visit(const AstSymbol& symbol) override;
+  void visit(const AstFunCall& funCall) override;
+  void visit(const AstFunDef& funDef) override;
+  void visit(const AstDataDef& dataDef) override;
+  void visit(const AstIf& if_) override;
+  void visit(const AstLoop& loop) override;
+  void visit(const AstReturn& return_) override;
+  void visit(const AstObjTypeSymbol& symbol) override;
+  void visit(const AstObjTypeQuali& quali) override;
+  void visit(const AstObjTypePtr& ptr) override;
+  void visit(const AstClassDef& class_) override;
 
   std::basic_ostream<char>& m_os;
 };

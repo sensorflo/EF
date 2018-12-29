@@ -19,7 +19,7 @@ public:
   TestingIrGen()
     : IrGen(*(m_errorHandler = new ErrorHandler()))
     , m_semanticAnalizer(m_env, *m_errorHandler){};
-  ~TestingIrGen() { delete m_errorHandler; };
+  ~TestingIrGen() override { delete m_errorHandler; };
   Env m_env;
   ErrorHandler* m_errorHandler;
   SemanticAnalizer m_semanticAnalizer;

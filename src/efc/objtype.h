@@ -170,19 +170,20 @@ public:
 
   ObjTypeFunda(EType type);
 
-  virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
+  MatchType match(const ObjType& dst, bool isLevel0 = true) const override;
   using ObjType::match2;
-  virtual MatchType match2(const ObjTypeFunda& src, bool isRoot) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
+  MatchType match2(const ObjTypeFunda& src, bool isRoot) const override;
+  std::basic_ostream<char>& printTo(
+    std::basic_ostream<char>& os) const override;
 
-  virtual bool is(EClass class_) const;
-  virtual int size() const;
+  bool is(EClass class_) const override;
+  int size() const override;
 
   EType type() const { return m_type; }
-  virtual llvm::Type* llvmType() const;
+  llvm::Type* llvmType() const override;
 
-  virtual bool hasMember(int op) const;
-  virtual bool hasConstructor(const ObjType& other) const;
+  bool hasMember(int op) const override;
+  bool hasConstructor(const ObjType& other) const override;
 
 private:
   const EType m_type;
@@ -193,14 +194,15 @@ class ObjTypePtr : public ObjTypeFunda {
 public:
   ObjTypePtr(std::shared_ptr<const ObjType> pointee);
 
-  virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const;
+  MatchType match(const ObjType& dst, bool isLevel0 = true) const override;
   using ObjType::match2;
   using ObjTypeFunda::match2;
-  virtual MatchType match2(const ObjTypePtr& src, bool isLevel0) const;
+  MatchType match2(const ObjTypePtr& src, bool isLevel0) const override;
 
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
+  std::basic_ostream<char>& printTo(
+    std::basic_ostream<char>& os) const override;
 
-  virtual llvm::Type* llvmType() const;
+  llvm::Type* llvmType() const override;
 
   std::shared_ptr<const ObjType> pointee() const;
 
@@ -219,16 +221,17 @@ public:
     const ObjType* arg1 = nullptr, const ObjType* arg2 = nullptr,
     const ObjType* arg3 = nullptr);
 
-  virtual MatchType match(const ObjType& dst, bool isLevel0) const;
+  MatchType match(const ObjType& dst, bool isLevel0) const override;
   using ObjType::match2;
-  virtual MatchType match2(const ObjTypeFun& src, bool isLevel0) const;
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
-  virtual llvm::Type* llvmType() const;
-  virtual bool hasMember(int) const { return false; }
-  virtual bool hasConstructor(const ObjType& /*other*/) const { return false; }
+  MatchType match2(const ObjTypeFun& src, bool isLevel0) const override;
+  std::basic_ostream<char>& printTo(
+    std::basic_ostream<char>& os) const override;
+  llvm::Type* llvmType() const override;
+  bool hasMember(int) const override { return false; }
+  bool hasConstructor(const ObjType& /*other*/) const override { return false; }
 
-  virtual bool is(EClass class_) const;
-  virtual int size() const { return -1; }
+  bool is(EClass class_) const override;
+  int size() const override { return -1; }
 
   const std::vector<std::shared_ptr<const ObjType>>& args() const {
     return *m_args;
