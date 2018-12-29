@@ -8,11 +8,11 @@ Error::Error(Error::No no) : m_no(no) {
 void Error::throwError(
   ErrorHandler& errorHandler, No no, string additionalMsg) {
   if (!errorHandler.isReportingDisabledFor(no)) {
-    auto error = new Error(no);
-    errorHandler.add(error);
+    auto error = std::unique_ptr<Error>(new Error(no));
     stringstream ss;
     ss << *error;
     if (!additionalMsg.empty()) { ss << ", " << additionalMsg; }
+    errorHandler.add(std::move(error));
     throw BuildError(ss.str());
   }
 }
@@ -54,6 +54,10 @@ ostream& operator<<(ostream& os, const Error& error) {
 ErrorHandler::ErrorHandler() : m_disabledErrors{} {
 }
 
+void ErrorHandler::add(std::unique_ptr<Error> error) {
+  m_errors.emplace_back(std::move(error));
+}
+
 void ErrorHandler::disableReportingOf(Error::No no) {
   m_disabledErrors[no] = true;
 }
@@ -62,19 +66,17 @@ bool ErrorHandler::isReportingDisabledFor(Error::No no) const {
   return m_disabledErrors[no];
 }
 
-ErrorHandler::~ErrorHandler() {
-  for (Container::iterator i = m_errors.begin(); i != m_errors.end(); ++i) {
-    delete *i;
-  }
-}
+ErrorHandler::~ErrorHandler() = default;
 
 ostream& operator<<(ostream& os, const ErrorHandler& errorHandler) {
   os << "{";
-  for (ErrorHandler::Container::const_iterator i =
-         errorHandler.errors().begin();
-       i != errorHandler.errors().end(); ++i) {
-    if (i != errorHandler.errors().begin()) { os << ", "; }
-    os << (*i)->no();
+  auto isFirstIter = true;
+  for (const auto& e : errorHandler.errors()) {
+    if (!isFirstIter) {
+      os << ", ";
+      isFirstIter = false;
+    }
+    os << e->no();
   }
   return os << "}";
 }

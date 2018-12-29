@@ -1,5 +1,6 @@
 #pragma once
 #include "declutils.h"
+#include <memory>
 #include <list>
 #include <ostream>
 #include <stdexcept>
@@ -56,13 +57,13 @@ std::ostream& operator<<(std::ostream& os, const Error& error);
 
 class ErrorHandler final {
 public:
-  typedef std::vector<Error*> Container;
+  typedef std::vector<std::unique_ptr<Error>> Container;
 
   ErrorHandler();
   ~ErrorHandler();
 
   /** Errorhandler overtakes ownership */
-  void add(Error* error) { m_errors.push_back(error); }
+  void add(std::unique_ptr<Error> error);
   const Container& errors() const { return m_errors; }
   bool hasNoErrors() const { return m_errors.empty(); }
   void disableReportingOf(Error::No no);
@@ -71,7 +72,7 @@ public:
 private:
   NEITHER_COPY_NOR_MOVEABLE(ErrorHandler);
 
-  /** We're the owner of the pointees */
+  /** The ptrs are guaranteed to be non-nullptr */
   Container m_errors;
   std::array<bool, Error::eCnt> m_disabledErrors;
 };
