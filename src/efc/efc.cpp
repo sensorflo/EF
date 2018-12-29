@@ -1,4 +1,5 @@
 #include "driver.h"
+#include "errorhandler.h"
 #include "irgen.h"
 
 #include <iostream>
@@ -15,10 +16,15 @@ int main(int argc, char** argv) {
     IrGen::staticOneTimeInit();
     Driver driver(argv[1]);
     driver.compile();
+    if (!driver.errorHandler().hasNoErrors()) { exit(1); }
     cout << driver.jitExecMain() << "\n";
   }
   catch (const exception& e) {
     cerr << e.what() << endl;
+    exit(1);
+  }
+  catch (...) {
+    cerr << "unknown exception" << endl;
     exit(1);
   }
   return 0;
