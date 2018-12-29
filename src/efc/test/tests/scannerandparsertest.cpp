@@ -119,13 +119,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   string spec = "trivial example";
   TEST_PARSE("return 42"     , ":;return(42)", spec);
   TEST_PARSE("return (42)"   , ":;return(;42)", spec);
+  TEST_PARSE("return ()"     , ":;return(nop)", spec);
   TEST_PARSE("return(42)"    , ":;return(;42)", spec);
   TEST_PARSE("return(42,77)" , ":;return(;42 ;77)", spec);
   TEST_PARSE("return()"      , ":;return(nop)", spec);
-
-  spec = "'return ()' is invalid because '()' is not a sub_expr, "
-    "but 'return()' is valid because 'return(' is a token.";
-  TEST_PARSE_REPORTS_ERROR("return ()", Error::eScanOrParseFailed, spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -592,10 +589,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   spec = "trivial example with explicit init value being ()";
   TEST_PARSE("var foo   () :int     $", ":;data(foo mut-int ())", spec);
-  TEST_PARSE("var foo = () :int     $", ":;data(foo mut-int ())", spec);
-  TEST_PARSE("var foo      :int = ()$", ":;data(foo mut-int ())", spec);
+  TEST_PARSE("var foo = () :int     $", ":;data(foo mut-int (;nop))", spec);
+  TEST_PARSE("var foo      :int = ()$", ":;data(foo mut-int (;nop))", spec);
   TEST_PARSE("var foo   ()          $", ":;data(foo mut-int ())", spec);
-  TEST_PARSE("var foo = ()          $", ":;data(foo mut-int ())", spec);
+  TEST_PARSE("var foo = ()          $", ":;data(foo mut-int (;nop))", spec);
 
   spec = "trivial example with implicit init value";
   //Toggling 1) 'keyword...;' vs 'keyword(...)' vs 'keyword...end' vs
@@ -622,7 +619,7 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
   spec = "initializer is the empty 'ctor call' argument list";
   TEST_PARSE("val foo(): int    $", ":;data(foo int ())", spec);
-  TEST_PARSE("val foo  : int =()$", ":;data(foo int ())", spec);
+  TEST_PARSE("val foo  : int =()$", ":;data(foo int (;nop))", spec);
 
   spec = "initializer is in 'ctor call' style with 2+ arguments. "
     "Here it's about parsing, the fact that the type 'int' does not expect "

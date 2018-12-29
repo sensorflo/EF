@@ -407,6 +407,7 @@ primary_expr
   : list_expr                                       { std::swap($$,$1); }
   | NUMBER                                          { $$ = new AstNumber($1.m_value, $1.m_objType); }
   | LPAREN standalone_node_seq_expr RPAREN          { $$ = $2; }
+  | LPAREN RPAREN                                   { $$ = new AstNop(); }
   | ID                                              { $$ = new AstSymbol($1); }
   | NOP                                             { $$ = new AstNop(); }
   ;
@@ -505,8 +506,8 @@ TODO: semantic analizer must report error/warning when noinit is used in return.
    standalone_node_seq_expr, and one is because here "(...)" is a primary_expr,
    whose content is again a standalone_node_seq_expr. */
 naked_initializer
-  : LPAREN               RPAREN                                      { $$ = new AstCtList(); }
-  | LPAREN ct_list_2plus RPAREN                                      { swap($$,$2); }
+  /* note that "LPAREN RPAREN" is already handled within ct_list_arg by "LPAREN RPAREN" being a primary_expr*/
+  : LPAREN ct_list_2plus RPAREN                                      { swap($$,$2); }
   | LPAREN NOINIT        RPAREN                                      { $$ = new AstCtList(AstDataDef::noInit); }
   | ct_list_arg /* 1) */                                             { auto objs = new std::vector<AstObject*>(); objs->push_back($1); $$ = new AstCtList(objs); }
   | NOINIT                                                           { $$ = new AstCtList(AstDataDef::noInit); }
