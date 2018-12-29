@@ -57,3 +57,18 @@ else()
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 endif()
+
+
+# doxygen
+# --------------------------------------------------
+find_program(DOXYGEN doxygen)
+if (NOT DOXYGEN)
+  message(WARNING "doxygen not found. With apt, you can install it with 'apt-get install doxygen'.")
+else()
+  # TODO: set INCLUDE_PATH in .doxygen in a generic way. No it contains absolut
+  # paths specific to my system.
+  add_custom_target(doxygen
+    COMMAND ${DOXYGEN} ${CMAKE_CURRENT_SOURCE_DIR}/.doxygen
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+endif()
