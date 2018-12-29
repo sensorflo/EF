@@ -12,12 +12,13 @@ yy::Parser implementation extension. Has two related responsibilities:
    AST. Currently the design is that it is intentionally left open who is
    responsible for what, so that responsibilities can easily be moved between
    the two.*/
+#include "astforwards.h"
 #include "declutils.h"
 #include "objtype.h"
 #include "storageduration.h"
+
 #include <list>
 
-#include "astforwards.h"
 class Env;
 class ErrorHandler;
 class ParserExt;

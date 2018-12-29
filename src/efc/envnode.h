@@ -1,8 +1,9 @@
 #pragma once
 #include "declutils.h"
-#include <string>
-#include <ostream>
+
 #include <deque>
+#include <ostream>
+#include <string>
 
 class EnvNode {
 public:

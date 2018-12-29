@@ -1,9 +1,13 @@
 #include "object.h"
+
 #include "errorhandler.h"
-#include "llvm/IR/Value.h"
+
 #include "llvm/IR/GlobalVariable.h"
+#include "llvm/IR/Value.h"
+
 #include <cassert>
 #include <sstream>
+
 using namespace std;
 using namespace llvm;
 

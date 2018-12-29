@@ -1,9 +1,11 @@
 #include "env.h"
+
 #include <algorithm>
-#include <thread>
+#include <cassert>
 #include <deque>
 #include <sstream>
-#include <cassert>
+#include <thread>
+
 using namespace std;
 
 static bool dummyBool;

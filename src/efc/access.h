@@ -1,6 +1,6 @@
 #pragma once
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 /** Access to an an Object. */
 enum class Access {

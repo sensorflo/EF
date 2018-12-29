@@ -1,10 +1,11 @@
 #pragma once
 #include "declutils.h"
-#include <memory>
+
+#include <array>
 #include <list>
+#include <memory>
 #include <ostream>
 #include <stdexcept>
-#include <array>
 #include <vector>
 
 class ErrorHandler;

@@ -1,6 +1,7 @@
 #pragma once
-#include "astvisitor.h"
 #include "access.h"
+#include "astvisitor.h"
+
 #include <cstddef>
 #include <stack>
 

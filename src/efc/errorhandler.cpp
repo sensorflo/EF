@@ -1,5 +1,7 @@
 #include "errorhandler.h"
+
 #include <sstream>
+
 using namespace std;
 
 Error::Error(Error::No no) : m_no(no) {

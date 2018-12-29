@@ -2,6 +2,7 @@
 #include "../tokenfilter.h"
 #include "literaltokenstream.h"
 #include "tokentesthelper.h"
+
 using namespace testing;
 using namespace std;
 using namespace yy;

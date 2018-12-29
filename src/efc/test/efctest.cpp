@@ -1,6 +1,7 @@
-#include "test.h"
 #include "../irgen.h"
 #include "../parserapiext.h"
+#include "test.h"
+
 using namespace testing;
 
 int main(int argc, char** argv) {

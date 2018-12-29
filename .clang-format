@@ -48,7 +48,14 @@ ContinuationIndentWidth: 2
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 FixNamespaceComments: false
-IncludeBlocks: Preserve
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:           '^"(llvm|gtest|gmock)/'
+    Priority:        2
+  - Regex:           '<[[:alnum:].]+>'
+    Priority:        3
+  - Regex:           '.*'
+    Priority:        1
 IndentCaseLabels: false
 IndentPPDirectives: AfterHash
 IndentWrappedFunctionNames: true
@@ -56,7 +63,7 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 ReflowComments: false
-SortIncludes: false
+SortIncludes: true
 SortUsingDeclarations: false
 PointerAlignment: Left  
 SpaceAfterCStyleCast: false

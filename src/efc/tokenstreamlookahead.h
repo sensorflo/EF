@@ -1,5 +1,6 @@
 #pragma once
 #include "tokenstream.h"
+
 #include <array>
 
 /** Adds lookahead to a given input token stream */

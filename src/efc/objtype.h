@@ -1,12 +1,11 @@
 #pragma once
-// If you change this list of header files, you must also modify the
-// analogous, redundant list in the Makefile
 #include "envnode.h"
-#include <string>
+
+#include <cassert>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <vector>
-#include <cassert>
 
 class ObjTypeQuali;
 class ObjTypeFunda;

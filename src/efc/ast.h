@@ -1,25 +1,25 @@
 #pragma once
-// If you change this list of header files, you must also modify the
-// analogous, redundant list in the Makefile
-#include "objtype.h"
-#include "object.h"
+
 #include "access.h"
-#include "generalvalue.h"
-#include "storageduration.h"
+#include "astforwards.h"
 #include "declutils.h"
 #include "envnode.h"
+#include "generalvalue.h"
+#include "object.h"
+#include "objtype.h"
+#include "storageduration.h"
 
+#include "llvm/IR/Function.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Value.h"
-#include "llvm/IR/Function.h"
-#include <string>
-#include <utility>
-#include <vector>
+
 #include <iostream>
 #include <map>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include "astforwards.h"
 class AstConstVisitor;
 class AstVisitor;
 class ErrorHandler;

@@ -1,8 +1,9 @@
 #pragma once
 #include "declutils.h"
 #include "envnode.h"
-#include <string>
+
 #include <ostream>
+#include <string>
 
 /** The environment is a tree. Each node has a name which is unqiue among its
 siblings. Internal nodes, i.e. nodes with one or more children, are also

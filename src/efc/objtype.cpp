@@ -1,6 +1,8 @@
 #include "objtype.h"
+
 #include "ast.h"
 #include "irgen.h"
+
 #include <cassert>
 #include <sstream>
 using namespace std;

@@ -1,22 +1,25 @@
 #include "driver.h"
-#include "gensrc/parser.hpp"
-#include "parserext.h"
-#include "scanner.h"
-#include "tokenfilter.h"
+
 #include "ast.h"
-#include "errorhandler.h"
 #include "env.h"
-#include "semanticanalizer.h"
-#include "irgen.h"
+#include "errorhandler.h"
 #include "executionengineadapter.h"
 #include "gensrc/parser.hpp"
-#include "llvm/IR/Module.h"
+#include "irgen.h"
+#include "parserext.h"
+#include "scanner.h"
+#include "semanticanalizer.h"
+#include "tokenfilter.h"
+
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include <stdio.h>
+#include "llvm/IR/Module.h"
+
 #include <errno.h>
-#include <string.h>
 #include <stdexcept>
+#include <stdio.h>
+#include <string.h>
 #include <utility>
+
 using namespace std;
 using namespace yy;
 

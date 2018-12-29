@@ -1,7 +1,8 @@
 #pragma once
 #include "../tokenstream.h"
-#include <vector>
+
 #include <memory>
+#include <vector>
 
 class LiteralTokenStream : public TokenStream {
 public:

@@ -1,9 +1,11 @@
 #pragma once
-#include "declutils.h"
-#include <string>
-#include <memory>
 
 #include "astforwards.h"
+#include "declutils.h"
+
+#include <memory>
+#include <string>
+
 namespace yy {
 class Parser;
 class location;

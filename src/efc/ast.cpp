@@ -1,12 +1,15 @@
 #include "ast.h"
-#include "env.h"
-#include "astvisitor.h"
+
 #include "astprinter.h"
+#include "astvisitor.h"
+#include "env.h"
 #include "errorhandler.h"
 #include "irgen.h"
+
 #include <cassert>
 #include <stdexcept>
 #include <utility>
+
 using namespace std;
 
 namespace {

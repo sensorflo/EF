@@ -2,8 +2,10 @@
 #include "../scanner.h"
 #include "driverontmpfile.h"
 #include "tokentesthelper.h"
+
 #include <string>
 #include <vector>
+
 using namespace testing;
 using namespace std;
 using namespace yy;

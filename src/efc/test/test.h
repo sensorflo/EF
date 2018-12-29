@@ -1,8 +1,12 @@
 #pragma once
-#include "gtest/gtest.h"
+
 #include "../access.h"
-#include <string>
+
+#include "gtest/gtest.h"
+
 #include <memory>
+#include <string>
+
 class AstNode;
 class AstObject;
 class ErrorHandler;

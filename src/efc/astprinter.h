@@ -1,5 +1,7 @@
 #pragma once
+
 #include "astvisitor.h"
+
 #include <iostream>
 
 /** Prints the AST in its canonical form. Note purpose is to have an exact

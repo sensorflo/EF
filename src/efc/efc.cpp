@@ -1,7 +1,9 @@
-#include "irgen.h"
 #include "driver.h"
+#include "irgen.h"
+
 #include <iostream>
 #include <stdexcept>
+
 using namespace std;
 
 int main(int argc, char** argv) {

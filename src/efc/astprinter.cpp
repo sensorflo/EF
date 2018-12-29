@@ -1,6 +1,9 @@
 #include "astprinter.h"
+
 #include "ast.h"
+
 #include <sstream>
+
 using namespace std;
 
 namespace {

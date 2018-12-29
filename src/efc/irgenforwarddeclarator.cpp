@@ -1,7 +1,11 @@
 #include "irgenforwarddeclarator.h"
+
 #include "ast.h"
+
 #include "llvm/IR/Module.h"
+
 #include <vector>
+
 using namespace std;
 using namespace llvm;
 

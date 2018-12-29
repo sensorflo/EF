@@ -1,7 +1,9 @@
 #include "test.h"
 #include "../objtype.h"
+
 #include <string>
 #include <memory>
+
 using namespace testing;
 using namespace std;
 

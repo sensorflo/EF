@@ -1,8 +1,9 @@
 #pragma once
 #include "declutils.h"
 #include "gensrc/parser.hpp"
-#include <vector>
+
 #include <iostream>
+#include <vector>
 
 /** Extends the public API of the class yy::Parser.
 

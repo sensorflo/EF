@@ -1,5 +1,7 @@
 #pragma once
+
 #include "tokenstream.h"
+
 #include <memory>
 
 class Driver;

@@ -1,10 +1,14 @@
 #include "test.h"
+
 #include "../ast.h"
-#include "../errorhandler.h"
 #include "../env.h"
+#include "../errorhandler.h"
+
 #include "llvm/IR/Module.h"
 #include "llvm/Support/raw_os_ostream.h"
+
 #include <sstream>
+
 using namespace std;
 using namespace testing;
 

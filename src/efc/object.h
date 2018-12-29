@@ -1,9 +1,11 @@
 #pragma once
-#include "storageduration.h"
 #include "access.h"
+#include "storageduration.h"
+
 #include "llvm/IR/IRBuilder.h"
-#include <string>
+
 #include <memory>
+#include <string>
 
 class ObjType;
 class ErrorHandler;

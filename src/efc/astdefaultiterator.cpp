@@ -1,5 +1,7 @@
 #include "astdefaultiterator.h"
+
 #include "ast.h"
+
 using namespace std;
 
 void AstDefaultIterator::visit(AstNop& nop) {

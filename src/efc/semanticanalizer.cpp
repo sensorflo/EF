@@ -1,11 +1,13 @@
 #include "semanticanalizer.h"
+
 #include "ast.h"
 #include "env.h"
-#include "errorhandler.h"
-#include "objtype.h"
-#include "freefromastobject.h"
 #include "envinserter.h"
+#include "errorhandler.h"
+#include "freefromastobject.h"
+#include "objtype.h"
 #include "signatureaugmentor.h"
+
 using namespace std;
 
 SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler)

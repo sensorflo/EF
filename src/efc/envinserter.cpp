@@ -1,8 +1,10 @@
 #include "envinserter.h"
+
 #include "ast.h"
+#include "astdefaultiterator.h"
 #include "env.h"
 #include "errorhandler.h"
-#include "astdefaultiterator.h"
+
 using namespace std;
 
 EnvInserter::EnvInserter(Env& env, ErrorHandler& errorHandler)

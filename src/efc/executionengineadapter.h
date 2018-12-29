@@ -1,9 +1,11 @@
 #pragma once
 #include "declutils.h"
-#include "llvm/IR/Module.h"
+
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include <string>
+#include "llvm/IR/Module.h"
+
 #include <memory>
+#include <string>
 
 namespace llvm {
 class Function;

@@ -1,19 +1,22 @@
 #include "irgen.h"
+
 #include "ast.h"
 #include "errorhandler.h"
 #include "irgenforwarddeclarator.h"
-#include "llvm/Support/TargetSelect.h"
-#include "llvm/IR/Value.h"
+
+#include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
-#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Value.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_os_ostream.h"
+
 #include <algorithm>
 #include <cstdlib>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
+
 using namespace std;
 using namespace llvm;
 

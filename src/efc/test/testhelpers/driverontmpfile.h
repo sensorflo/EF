@@ -1,10 +1,11 @@
 #pragma once
 #include "../driver.h"
 #include "../env.h"
-#include <string>
-#include <fstream>
+
 #include <errno.h>
+#include <fstream>
 #include <stdlib.h>
+#include <string>
 
 /** Creates a temporary file with the given content. The file is removed in
 the destructor. */

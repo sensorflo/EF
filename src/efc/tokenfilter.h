@@ -1,6 +1,7 @@
 #pragma once
 #include "tokenstream.h"
 #include "tokenstreamlookahead.h"
+
 #include <array>
 
 class TokenFilter : public TokenStream {

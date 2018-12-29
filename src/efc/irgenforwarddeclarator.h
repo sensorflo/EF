@@ -1,7 +1,7 @@
 #pragma once
 #include "astdefaultiterator.h"
-
 #include "astforwards.h"
+
 namespace llvm {
 class Module;
 }
