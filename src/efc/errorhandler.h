@@ -57,7 +57,7 @@ std::ostream& operator<<(std::ostream& os, const Error& error);
 
 class ErrorHandler final {
 public:
-  typedef std::vector<std::unique_ptr<Error>> Container;
+  using Container = std::vector<std::unique_ptr<Error>>;
 
   ErrorHandler();
   ~ErrorHandler();
