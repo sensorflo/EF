@@ -12,8 +12,8 @@ public:
   AstPrinter(std::basic_ostream<char>& os);
 
   static std::string toStr(const AstNode& root);
-  static std::basic_ostream<char>& printTo(const AstNode& root,
-    std::basic_ostream<char>& os);
+  static std::basic_ostream<char>& printTo(
+    const AstNode& root, std::basic_ostream<char>& os);
 
 private:
   virtual void visit(const AstNop& nop);
@@ -34,6 +34,6 @@ private:
   virtual void visit(const AstObjTypeQuali& quali);
   virtual void visit(const AstObjTypePtr& ptr);
   virtual void visit(const AstClassDef& class_);
-  
+
   std::basic_ostream<char>& m_os;
 };

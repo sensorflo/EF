@@ -8,7 +8,7 @@
 class ObjType;
 class ErrorHandler;
 namespace llvm {
-  class Value;
+class Value;
 }
 
 class Object {
@@ -17,9 +17,9 @@ public:
   virtual ~Object() = default;
 
   // -- new (pure) virtual methods
-  virtual const ObjType& objType() const =0;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const =0;
-  virtual StorageDuration storageDuration() const =0;
+  virtual const ObjType& objType() const = 0;
+  virtual std::shared_ptr<const ObjType> objTypeAsSp() const = 0;
+  virtual StorageDuration storageDuration() const = 0;
 
   // -- misc
   /** See also AstNode::setAccessFromAstParent /
@@ -52,8 +52,8 @@ public:
   void referToIrObject(llvm::Value* irAddrOfIrObject);
 
   // ---- use (initialized) IR object
-  llvm::Value* irValueOfIrObject(llvm::IRBuilder<>& builder,
-    const std::string& name = "") const;
+  llvm::Value* irValueOfIrObject(
+    llvm::IRBuilder<>& builder, const std::string& name = "") const;
   void setIrValueOfIrObject(llvm::Value* irValue, llvm::IRBuilder<>& builder);
   llvm::Value* irAddrOfIrObject() const;
 

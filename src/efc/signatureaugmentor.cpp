@@ -5,8 +5,8 @@
 #include "astdefaultiterator.h"
 using namespace std;
 
-SignatureAugmentor::SignatureAugmentor(Env& env, ErrorHandler& errorHandler) :
-  m_env(env) {
+SignatureAugmentor::SignatureAugmentor(Env& env, ErrorHandler& errorHandler)
+  : m_env(env) {
 }
 
 void SignatureAugmentor::augmentEntities(AstNode& root) {

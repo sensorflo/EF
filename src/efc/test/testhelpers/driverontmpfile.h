@@ -13,20 +13,23 @@ public:
   TmpFile(const std::string& content) {
     // todo: make use of YY_INPUT so that the scanner also can read directly
     // from memory instead from files via yyin
-    memset(m_fileName, 'X', sizeof(m_fileName)-1);
-    m_fileName[sizeof(m_fileName)-1] = '\0';
+    memset(m_fileName, 'X', sizeof(m_fileName) - 1);
+    m_fileName[sizeof(m_fileName) - 1] = '\0';
     errno = 0;
     int fd = mkstemp(m_fileName);
     if (!errno) { write(fd, content.c_str(), content.length()); }
     if (!errno) { close(fd); }
     if (errno) {
-      std::cerr << __FUNCTION__ << ": Either of creating / writing-to / closing "
-        "a temporary file failed" << strerror(errno);
+      std::cerr << __FUNCTION__
+                << ": Either of creating / writing-to / closing "
+                   "a temporary file failed"
+                << strerror(errno);
       exit(1);
     }
   }
-  ~TmpFile() { remove( m_fileName ); }
-  char const*  fileName() { return m_fileName; }
+  ~TmpFile() { remove(m_fileName); }
+  char const* fileName() { return m_fileName; }
+
 private:
   char m_fileName[10]; // at least 7 (6 needed by mkstemp + 1 for '\0')
 };
@@ -34,8 +37,8 @@ private:
 class TestingDriver : public Driver {
 public:
   TestingDriver(const std::string& fileName = "",
-    std::basic_ostream<char>* ostream = nullptr) :
-    Driver(fileName, ostream) {};
+    std::basic_ostream<char>* ostream = nullptr)
+    : Driver(fileName, ostream){};
 
   using Driver::m_errorHandler;
   using Driver::m_parserExt;
@@ -47,9 +50,9 @@ public:
 in the constructor. */
 class DriverOnTmpFile {
 public:
-  DriverOnTmpFile(const std::string& content, std::basic_ostream<char>* ostream = nullptr) :
-    m_tmpFile(content),
-    m_driver(m_tmpFile.fileName(), ostream) {};
+  DriverOnTmpFile(
+    const std::string& content, std::basic_ostream<char>* ostream = nullptr)
+    : m_tmpFile(content), m_driver(m_tmpFile.fileName(), ostream){};
   operator TestingDriver&() { return m_driver; }
   TestingDriver& d() { return m_driver; }
   Scanner& scanner() { return m_driver.scanner(); }

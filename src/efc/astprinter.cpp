@@ -4,13 +4,12 @@
 using namespace std;
 
 namespace {
-  string wrapName(const string& str) {
-    if (!str.empty()) {
-      return str;
-    } else {
-      return "<none>";
-    }
+string wrapName(const string& str) {
+  if (!str.empty()) { return str; }
+  else {
+    return "<none>";
   }
+}
 }
 
 AstPrinter::AstPrinter(basic_ostream<char>& os) : m_os(os) {
@@ -23,8 +22,8 @@ string AstPrinter::toStr(const AstNode& root) {
   return oss.str();
 }
 
-basic_ostream<char>& AstPrinter::printTo(const AstNode& root,
-  basic_ostream<char>& os) {
+basic_ostream<char>& AstPrinter::printTo(
+  const AstNode& root, basic_ostream<char>& os) {
   AstPrinter printer(os);
   root.accept(printer);
   return os;
@@ -51,8 +50,8 @@ void AstPrinter::visit(const AstCast& cast) {
 
 void AstPrinter::visit(const AstCtList& ctList) {
   auto& childs = ctList.childs();
-  for (auto i=childs.begin(); i!=childs.end(); ++i) {
-    if (i!=childs.begin()) { m_os << " "; }
+  for (auto i = childs.begin(); i != childs.end(); ++i) {
+    if (i != childs.begin()) { m_os << " "; }
     (*i)->accept(*this);
   }
 }
@@ -68,15 +67,12 @@ void AstPrinter::visit(const AstSeq& seq) {
   // specially: only prefix it with ';', opposed to enclose it in
   // ';(...)'. See also class comment.
   m_os << ';';
-  if (seq.operands().size()==1) {
-    seq.operands().front()->accept(*this);
-  } else {
+  if (seq.operands().size() == 1) { seq.operands().front()->accept(*this); }
+  else {
     m_os << "(";
     bool isFirstIter = true;
-    for (const auto& op: seq.operands()) {
-      if ( !isFirstIter ) {
-        m_os << " ";
-      }
+    for (const auto& op : seq.operands()) {
+      if (!isFirstIter) { m_os << " "; }
       isFirstIter = false;
       op->accept(*this);
     }
@@ -104,8 +100,9 @@ void AstPrinter::visit(const AstFunCall& funCall) {
 
 void AstPrinter::visit(const AstFunDef& funDef) {
   m_os << "fun(" << wrapName(funDef.name()) << " (";
-  for (auto i=funDef.declaredArgs().cbegin(); i!=funDef.declaredArgs().cend(); ++i) {
-    if (i!=funDef.declaredArgs().cbegin()) { m_os << " "; }
+  for (auto i = funDef.declaredArgs().cbegin();
+       i != funDef.declaredArgs().cend(); ++i) {
+    if (i != funDef.declaredArgs().cbegin()) { m_os << " "; }
     // as an exception, handle parameters directly, opposed to accept *i
     m_os << "(" << wrapName((*i)->name()) << " ";
     (*i)->declaredAstObjType().accept(*this);
@@ -122,14 +119,13 @@ void AstPrinter::visit(const AstDataDef& dataDef) {
   m_os << "data(";
 
   m_os << wrapName(dataDef.name()) << " ";
-  if ( dataDef.declaredStorageDuration()!=StorageDuration::eLocal ) {
+  if (dataDef.declaredStorageDuration() != StorageDuration::eLocal) {
     m_os << dataDef.declaredStorageDuration() << "/";
   }
   dataDef.declaredAstObjType().accept(*this);
 
-  if ( dataDef.doNotInit() ) {
-    m_os << " noinit";
-  } else {
+  if (dataDef.doNotInit()) { m_os << " noinit"; }
+  else {
     m_os << " (";
     dataDef.ctorArgs().accept(*this);
     m_os << ")";
@@ -142,7 +138,7 @@ void AstPrinter::visit(const AstIf& if_) {
   if_.condition().accept(*this);
   m_os << " ";
   if_.action().accept(*this);
-  if ( if_.elseAction() ) {
+  if (if_.elseAction()) {
     m_os << " ";
     if_.elseAction()->accept(*this);
   }
@@ -169,11 +165,11 @@ void AstPrinter::visit(const AstObjTypeSymbol& symbol) {
 
 void AstPrinter::visit(const AstObjTypeQuali& quali) {
   int qualifiers = static_cast<int>(quali.qualifiers());
-  if ( qualifiers & ObjType::eMutable ) {
+  if (qualifiers & ObjType::eMutable) {
     m_os << "mut-";
     qualifiers &= ~ObjType::eMutable;
   }
-  assert(0==qualifiers);
+  assert(0 == qualifiers);
   quali.targetType().accept(*this);
 }
 
@@ -184,10 +180,9 @@ void AstPrinter::visit(const AstObjTypePtr& ptr) {
 
 void AstPrinter::visit(const AstClassDef& class_) {
   m_os << "class(" << wrapName(class_.name());
-  for (const auto& dataMember: class_.dataMembers()) {
+  for (const auto& dataMember : class_.dataMembers()) {
     m_os << " ";
     dataMember->accept(*this);
   }
   m_os << ")";
 }
-

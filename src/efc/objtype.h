@@ -15,7 +15,7 @@ class ObjTypeFun;
 class ObjTypeClass;
 class AstObject;
 namespace llvm {
-  class Type;
+class Type;
 }
 
 /** Abstract base class for all object types.
@@ -26,7 +26,7 @@ public:
   // works as bit flags
   enum Qualifiers {
     eNoQualifier = 0,
-    eMutable = 1 
+    eMutable = 1
     // later: eVolatile = 1<<1
   };
   enum MatchType {
@@ -40,16 +40,17 @@ public:
     eAbstract,
 
     eScalar,
-      eArithmetic,
-        eIntegral,
-        eFloatingPoint,
+    eArithmetic,
+    eIntegral,
+    eFloatingPoint,
 
     eStoredAsIntegral, // applies also to unity types
 
     eFunction
   };
 
-  virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const =0;
+  virtual std::basic_ostream<char>& printTo(
+    std::basic_ostream<char>& os) const = 0;
   std::string toStr() const;
 
   bool isVoid() const;
@@ -60,14 +61,24 @@ public:
   this, likewise for eMatchButAnyQualifierIsStronger. */
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const = 0;
   virtual MatchType match2(const ObjTypeQuali& src, bool isLevel0) const;
-  virtual MatchType match2(const ObjTypeFunda& /*src*/, bool /*isLevel0*/) const { return eNoMatch; }
-  virtual MatchType match2(const ObjTypePtr& /*src*/, bool /*isLevel0*/) const { return eNoMatch; }
-  virtual MatchType match2(const ObjTypeFun& /*src*/, bool /*isLevel0*/) const { return eNoMatch; }
-  virtual MatchType match2(const ObjTypeClass& /*src*/, bool /*isLevel0*/) const { return eNoMatch; }
+  virtual MatchType match2(
+    const ObjTypeFunda& /*src*/, bool /*isLevel0*/) const {
+    return eNoMatch;
+  }
+  virtual MatchType match2(const ObjTypePtr& /*src*/, bool /*isLevel0*/) const {
+    return eNoMatch;
+  }
+  virtual MatchType match2(const ObjTypeFun& /*src*/, bool /*isLevel0*/) const {
+    return eNoMatch;
+  }
+  virtual MatchType match2(
+    const ObjTypeClass& /*src*/, bool /*isLevel0*/) const {
+    return eNoMatch;
+  }
 
-  virtual bool is(EClass class_) const =0;
+  virtual bool is(EClass class_) const = 0;
   /** Size in bits */
-  virtual int size() const =0;
+  virtual int size() const = 0;
 
   virtual Qualifiers qualifiers() const { return eNoQualifier; }
 
@@ -89,25 +100,26 @@ protected:
   ObjType(std::string name);
 };
 
-std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  const ObjType& objType);
+std::basic_ostream<char>& operator<<(
+  std::basic_ostream<char>& os, const ObjType& objType);
 
-std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  ObjType::Qualifiers qualifiers);
+std::basic_ostream<char>& operator<<(
+  std::basic_ostream<char>& os, ObjType::Qualifiers qualifiers);
 
-std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  ObjType::MatchType mt);
-
+std::basic_ostream<char>& operator<<(
+  std::basic_ostream<char>& os, ObjType::MatchType mt);
 
 class ObjTypeQuali : public ObjType {
 public:
   /** If type is of dynamic type ObjTypeQuali, this newly created type points
   to the type pointed by type, and the qualifiers are combined. */
-  ObjTypeQuali(const Qualifiers qualifiers, std::shared_ptr<const ObjType> type);
+  ObjTypeQuali(
+    const Qualifiers qualifiers, std::shared_ptr<const ObjType> type);
 
   Qualifiers qualifiers() const override { return m_qualifiers; }
 
-  std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
+  std::basic_ostream<char>& printTo(
+    std::basic_ostream<char>& os) const override;
 
   MatchType match(const ObjType& dst, bool isLevel0 = true) const override;
   using ObjType::match2;
@@ -140,16 +152,18 @@ public:
     // abstract objects
     eVoid,
     eNoreturn,
-    eInfer, // probably not really a fundamental type. hacked into here
-            // as a quick way to let the grammar know the infer type.
+    eInfer, /* probably not really a fundamental type. hacked into here as a
+            quick way to let the grammar know the infer type. */
+
     // concrete objects
     eChar,
     eInt,
     eBool,
     eDouble,
     eNullptr, // not itself a pointer
-      // implemented in derived classes
-      ePointer,
+
+    // implemented in derived classes
+    ePointer,
 
     eTypeCnt
   };
@@ -173,7 +187,6 @@ public:
 private:
   const EType m_type;
 };
-
 
 /** Compond-type/pointer */
 class ObjTypePtr : public ObjTypeFunda {
@@ -199,11 +212,12 @@ private:
 /** Compound-type/function */
 class ObjTypeFun : public ObjType {
 public:
-  ObjTypeFun(std::vector<std::shared_ptr<const ObjType> >* args,
+  ObjTypeFun(std::vector<std::shared_ptr<const ObjType>>* args,
     std::shared_ptr<const ObjType> ret = std::shared_ptr<const ObjType>());
 
-  static std::vector<std::shared_ptr<const ObjType> >* createArgs(const ObjType* arg1 = nullptr,
-    const ObjType* arg2 = nullptr, const ObjType* arg3 = nullptr);
+  static std::vector<std::shared_ptr<const ObjType>>* createArgs(
+    const ObjType* arg1 = nullptr, const ObjType* arg2 = nullptr,
+    const ObjType* arg3 = nullptr);
 
   virtual MatchType match(const ObjType& dst, bool isLevel0) const;
   using ObjType::match2;
@@ -214,9 +228,11 @@ public:
   virtual bool hasConstructor(const ObjType& /*other*/) const { return false; }
 
   virtual bool is(EClass class_) const;
-  virtual int size() const { return -1;}
+  virtual int size() const { return -1; }
 
-  const std::vector<std::shared_ptr<const ObjType> >& args() const { return *m_args; }
+  const std::vector<std::shared_ptr<const ObjType>>& args() const {
+    return *m_args;
+  }
   const ObjType& ret() const { return *m_ret; }
 
 private:
@@ -241,7 +257,8 @@ public:
     std::shared_ptr<const ObjType> member2 = nullptr,
     std::shared_ptr<const ObjType> member3 = nullptr);
 
-  std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const override;
+  std::basic_ostream<char>& printTo(
+    std::basic_ostream<char>& os) const override;
 
   MatchType match(const ObjType& dst, bool isLevel0) const override;
   using ObjType::match2;
@@ -252,7 +269,9 @@ public:
   bool is(EClass class_) const override;
   int size() const override;
 
-  const std::vector<std::shared_ptr<const ObjType>>& members() const { return m_members; }
+  const std::vector<std::shared_ptr<const ObjType>>& members() const {
+    return m_members;
+  }
 
 private:
   const std::vector<std::shared_ptr<const ObjType>> m_members;

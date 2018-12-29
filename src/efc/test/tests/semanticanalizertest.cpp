@@ -25,8 +25,8 @@ public:
 
 class TestingSemanticAnalizer : public SemanticAnalizer {
 public:
-  TestingSemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
-    SemanticAnalizer(env, errorHandler) {};
+  TestingSemanticAnalizer(Env& env, ErrorHandler& errorHandler)
+    : SemanticAnalizer(env, errorHandler){};
   using SemanticAnalizer::m_errorHandler;
   using SemanticAnalizer::m_env;
 };
@@ -34,34 +34,31 @@ public:
 void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
   Error::No expectedErrorNo, const string& spec, bool foreignThrow,
   string excptionwhat) {
-
   // verify no foreign exception where thrown
-  EXPECT_FALSE( foreignThrow ) <<
-    amendSpec(spec) << amendAst(ast) << amend(UUT.m_errorHandler) <<
-    "\nexceptionwhat: " << excptionwhat << amend(UUT.m_env);
-
+  EXPECT_FALSE(foreignThrow)
+    << amendSpec(spec) << amendAst(ast) << amend(UUT.m_errorHandler)
+    << "\nexceptionwhat: " << excptionwhat << amend(UUT.m_env);
 
   // verify that as expected no error was reported
   const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();
-  if ( expectedErrorNo == Error::eNone ) {
-    EXPECT_TRUE(errors.empty()) <<
-      "Expecting no error\n" <<
-      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast) <<
-      amend(UUT.m_env);
+  if (expectedErrorNo == Error::eNone) {
+    EXPECT_TRUE(errors.empty()) << "Expecting no error\n"
+                                << amendSpec(spec) << amend(UUT.m_errorHandler)
+                                << amendAst(ast) << amend(UUT.m_env);
   }
 
   else {
     // verify that only exactly one error is reported
-    EXPECT_EQ(1U, errors.size()) <<
-      "Expecting error " << expectedErrorNo << "\n" <<
-      amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast) <<
-      amend(UUT.m_env);
+    EXPECT_EQ(1U, errors.size())
+      << "Expecting error " << expectedErrorNo << "\n"
+      << amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast)
+      << amend(UUT.m_env);
 
     // ... and that that one error has the expected ErrorNo
-    if ( ! errors.empty() ) {
-      EXPECT_EQ(expectedErrorNo, errors.front()->no()) <<
-        amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast) <<
-        amend(UUT.m_env);
+    if (!errors.empty()) {
+      EXPECT_EQ(expectedErrorNo, errors.front()->no())
+        << amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast)
+        << amend(UUT.m_env);
     }
   }
 }
@@ -78,9 +75,9 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
     ast_ = (ast);                                                       \
     UUT.analyze(*ast_);                                                 \
   }                                                                     \
-  catch (BuildError& ) { /* nop */  }                                   \
+  catch (BuildError&)  { /* nop */  }                                   \
   catch (exception& e) { foreignThrow = true; excptionwhat = e.what(); } \
-  catch (exception* e) { foreignThrow = true; if ( e ) { excptionwhat = e->what(); } } \
+  catch (exception* e) { foreignThrow = true; if (e) { excptionwhat = e->what(); } } \
   catch (...)          { foreignThrow = true; }                         \
   verifyAstTraversal(UUT, ast_, expectedErrorNo, spec, foreignThrow, excptionwhat);
 
@@ -532,7 +529,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   const auto symbol = new TestingAstSymbol("x");
   unique_ptr<AstObject> ast{
     new AstBlock(
-      new AstSeq( dataDef, symbol))};
+      new AstSeq(dataDef, symbol))};
   Env::AutoLetLooseNodes dummy(env);
   TestingSemanticAnalizer UUT(env, errorHandler);
 
@@ -540,7 +537,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( dataDef, symbol->m_referencedAstObj) << amendAst(ast);
+  EXPECT_EQ(dataDef, symbol->m_referencedAstObj) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -623,7 +620,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   spec = "Example: a parameter and a local variable in the function's body";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    pe.mkFunDef( "foo",
+    pe.mkFunDef("foo",
       AstFunDef::createArgs(
         new AstDataDef("x", ObjTypeFunda::eInt)),
       new AstObjTypeSymbol(ObjTypeFunda::eInt),
@@ -664,15 +661,15 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*outerAstFunDef);
 
   // verify
-  EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(outerAstFunDef.get());
+  EXPECT_TRUE(errorHandler.hasNoErrors()) << amendAst(outerAstFunDef.get());
 
   const auto outerFoundNode = env.find("outer");
-  EXPECT_EQ(outerAstFunDef.get(), outerFoundNode ) << amendAst(outerAstFunDef.get());
+  EXPECT_EQ(outerAstFunDef.get(), outerFoundNode) << amendAst(outerAstFunDef.get());
 
   {
     Env::AutoScope scope(env, *outerAstFunDef, Env::AutoScope::descentScope);
     const auto innerFoundNode = env.find("inner");
-    EXPECT_EQ(innerAstFunDef, innerFoundNode ) << amendAst(outerAstFunDef.get());
+    EXPECT_EQ(innerAstFunDef, innerFoundNode) << amendAst(outerAstFunDef.get());
   }
 }
 
@@ -696,7 +693,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 
@@ -716,7 +713,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 }
@@ -737,7 +734,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( Access::eTakeAddress, operand->accessFromAstParent()) << amendAst(ast);
+  EXPECT_EQ(Access::eTakeAddress, operand->accessFromAstParent()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
@@ -757,7 +754,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_FALSE( ast->object().isModifiedOrRevealsAddr())
+    EXPECT_FALSE(ast->object().isModifiedOrRevealsAddr())
       << amendSpec(spec) << amendAst(ast);
   }
 }
@@ -780,7 +777,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_TRUE( operand->object().isModifiedOrRevealsAddr())
+    EXPECT_TRUE(operand->object().isModifiedOrRevealsAddr())
       << amendSpec(spec) << amendAst(ast);
   }
 
@@ -804,7 +801,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_TRUE( symbol->object().isModifiedOrRevealsAddr())
+    EXPECT_TRUE(symbol->object().isModifiedOrRevealsAddr())
       << amendSpec(spec) << amendAst(ast);
   }
 }
@@ -818,7 +815,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   Env env;
   AstObject* body = new AstNumber(42);
   unique_ptr<AstObject> ast{
-    new AstSeq( // imposes eIgnoreValueAndAddr access onto the block
+    new AstSeq(// imposes eIgnoreValueAndAddr access onto the block
       new AstBlock(body),
       new AstNumber(42))};
   Env::AutoLetLooseNodes dummy(env);
@@ -828,7 +825,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( Access::eRead, body->accessFromAstParent()) << amendAst(ast);
+  EXPECT_EQ(Access::eRead, body->accessFromAstParent()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
@@ -845,7 +842,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
       new AstDataDef("x",
         new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInt))),
       new AstOperator('=', // imposes write access onto the sequence
-        new AstSeq( leadingOpAst, lastOpAst), // the sequence under test
+        new AstSeq(leadingOpAst, lastOpAst), // the sequence under test
         new AstNumber(77)))};
   Env::AutoLetLooseNodes dummy(env);
   TestingSemanticAnalizer UUT(env, errorHandler);
@@ -854,9 +851,9 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( Access::eIgnoreValueAndAddr,
+  EXPECT_EQ(Access::eIgnoreValueAndAddr,
     leadingOpAst->accessFromAstParent()) << amendAst(ast);
-  EXPECT_EQ( Access::eWrite,
+  EXPECT_EQ(Access::eWrite,
     lastOpAst->accessFromAstParent()) << amendAst(ast);
 }
 
@@ -904,7 +901,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 
@@ -924,7 +921,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 
@@ -949,7 +946,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), opAst->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), opAst->object().objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 }
@@ -974,7 +971,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
+  EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
     amendAst(ast);
 }
 
@@ -995,7 +992,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 
   // verify
   ObjTypePtr expectedObjType{make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
-  EXPECT_MATCHES_FULLY( expectedObjType, ast->object().objType()) << amendAst(ast);
+  EXPECT_MATCHES_FULLY(expectedObjType, ast->object().objType()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -1019,7 +1016,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*ast);
 
   // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
+  EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
     amendAst(ast);
 }
 
@@ -1046,7 +1043,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), assignmentAst->object().objType()) <<
+  EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eVoid), assignmentAst->object().objType()) <<
     amendAst(ast);
 }
 
@@ -1099,7 +1096,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
+  EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
     amendAst(ast);
 }
 
@@ -1128,7 +1125,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), funCall->objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eBool), funCall->objType()) <<
       amendAst(ast) << amendSpec(spec);
   }
 }
@@ -1154,7 +1151,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eInt), ast->object().objType()) <<
       amendAst(ast);
   }
 }
@@ -1178,7 +1175,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eNoreturn), retAst->object().objType()) <<
+  EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eNoreturn), retAst->object().objType()) <<
     amendAst(ast);
 }
 
@@ -1202,7 +1199,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast);
 
     // verify
-    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast) << amendSpec(spec);
+    EXPECT_TRUE(errorHandler.hasNoErrors()) << amendAst(ast) << amendSpec(spec);
   }
 
   spec = "Example: Early return, return expression in an if clause";
@@ -1225,7 +1222,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast);
 
     // verify
-    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
+    EXPECT_TRUE(errorHandler.hasNoErrors()) << amendAst(ast);
   }
 
   spec = "Example: Nested functions with different return types.";
@@ -1249,7 +1246,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast);
 
     // verify
-    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendAst(ast);
+    EXPECT_TRUE(errorHandler.hasNoErrors()) << amendAst(ast);
   }
 }
 
@@ -1314,7 +1311,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eBool), ast->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1335,7 +1332,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eVoid), ast->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1395,7 +1392,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), astIf->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eBool), astIf->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1423,7 +1420,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eBool), astIf->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eBool), astIf->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1448,7 +1445,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eNoreturn), astIf->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eNoreturn), astIf->object().objType()) <<
       amendAst(ast);
   }
 }
@@ -1474,7 +1471,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eVoid), ast->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1500,7 +1497,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), astIf->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eVoid), astIf->object().objType()) <<
       amendAst(ast);
   }
 }
@@ -1531,8 +1528,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_EQ( Access::eRead, thenClauseAst->accessFromAstParent()) << amendAst(ast);
-    EXPECT_EQ( Access::eRead, thenClauseAst->accessFromAstParent()) << amendAst(ast);
+    EXPECT_EQ(Access::eRead, thenClauseAst->accessFromAstParent()) << amendAst(ast);
+    EXPECT_EQ(Access::eRead, thenClauseAst->accessFromAstParent()) << amendAst(ast);
   }
 }
 
@@ -1558,7 +1555,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), ast->object().objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eVoid), ast->object().objType()) <<
       amendAst(ast);
   }
 
@@ -1574,7 +1571,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
         new AstReturn(new AstNumber(42)));
     unique_ptr<AstObject> ast{
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
-        new AstSeq( loop, new AstNumber(42)))};
+        new AstSeq(loop, new AstNumber(42)))};
     Env::AutoLetLooseNodes dummy(env);
     TestingSemanticAnalizer UUT(env, errorHandler);
 
@@ -1582,7 +1579,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_MATCHES_FULLY( ObjTypeFunda(ObjTypeFunda::eVoid), loop->objType()) <<
+    EXPECT_MATCHES_FULLY(ObjTypeFunda(ObjTypeFunda::eVoid), loop->objType()) <<
       amendAst(ast);
   }
 }
@@ -1596,7 +1593,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   Env env;
   AstObject* condition = new AstNumber(0, ObjTypeFunda::eBool);
   AstObject* body = new AstNumber(42);
-  unique_ptr<AstObject> ast{ new AstLoop( condition, body)};
+  unique_ptr<AstObject> ast{new AstLoop(condition, body)};
   Env::AutoLetLooseNodes dummy(env);
   TestingSemanticAnalizer UUT(env, errorHandler);
 
@@ -1604,8 +1601,8 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   UUT.analyze(*ast.get());
 
   // verify
-  EXPECT_EQ( Access::eRead, condition->accessFromAstParent()) << amendAst(ast);
-  EXPECT_EQ( Access::eIgnoreValueAndAddr, body->accessFromAstParent()) << amendAst(ast);
+  EXPECT_EQ(Access::eRead, condition->accessFromAstParent()) << amendAst(ast);
+  EXPECT_EQ(Access::eIgnoreValueAndAddr, body->accessFromAstParent()) << amendAst(ast);
 }
 
 TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -1719,7 +1716,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendSpec(spec) << amendAst(ast);
+    EXPECT_TRUE(errorHandler.hasNoErrors()) << amendSpec(spec) << amendAst(ast);
   }
 
   spec = "Parameter is mutable, argument is immutable";
@@ -1744,7 +1741,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_TRUE( errorHandler.hasNoErrors() ) << amendSpec(spec) << amendAst(ast);
+    EXPECT_TRUE(errorHandler.hasNoErrors()) << amendSpec(spec) << amendAst(ast);
   }
 }
 
@@ -1846,7 +1843,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     {ObjTypeFunda::eNullptr, ObjTypeFunda::eInt, false},
     {ObjTypeFunda::eNullptr, ObjTypeFunda::eNullptr, true}};
 
-  for ( const auto& inputSpec : inputSpecs ) {
+  for (const auto& inputSpec : inputSpecs) {
 
     // create child of AstCast
     AstObject* castChild = nullptr;
@@ -1873,12 +1870,12 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 
     // AstCast needs to be wrapped into an AstFunDef since in some iterations
     // the child of AstCast is the return expression.
-    AstObject* UUT = new AstCast( new AstObjTypeSymbol(inputSpec.newType), castChild);
+    AstObject* UUT = new AstCast(new AstObjTypeSymbol(inputSpec.newType), castChild);
     AstObject* funbody =
       inputSpec.newType == ObjTypeFunda::eNoreturn ?
       UUT :
-      new AstSeq( UUT, new AstNumber(0));
-    if ( inputSpec.isValid ) {
+      new AstSeq(UUT, new AstNumber(0));
+    if (inputSpec.isValid) {
       TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
         pe.mkFunDef("foo", ObjTypeFunda::eInt, funbody),
         "");

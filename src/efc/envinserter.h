@@ -14,10 +14,7 @@ public:
   void insertIntoEnv(AstNode& root);
 
 private:
-  enum EScope {
-    eGlobalScope,
-    eCurrentScope
-  };
+  enum EScope { eGlobalScope, eCurrentScope };
   void visit(AstBlock& block) override;
   void visit(AstDataDef& dataDef) override;
   void visit(AstFunDef& funDef) override;

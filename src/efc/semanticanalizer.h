@@ -22,6 +22,7 @@ private:
     FunBodyHelper(std::stack<const AstObjType*>& funRetAstObjTypes,
       const AstObjType* objType);
     ~FunBodyHelper();
+
   private:
     std::stack<const AstObjType*>& m_funRetAstObjTypes;
   };

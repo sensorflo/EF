@@ -1,14 +1,11 @@
 #pragma once
 #include "astvisitor.h"
 
-
 /** Traverses AST: at each node, call its accept method and pass the vistor
 given in the ctor. Currently it's only pre order traversal. */
 class AstDefaultIterator : public AstVisitor {
-
 public:
-  AstDefaultIterator(AstVisitor* visitor = nullptr) :
-    m_visitor(visitor) {}
+  AstDefaultIterator(AstVisitor* visitor = nullptr) : m_visitor(visitor) {}
 
   virtual void visit(AstNop& nop);
   virtual void visit(AstBlock& block);

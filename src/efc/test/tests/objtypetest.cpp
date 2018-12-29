@@ -5,26 +5,27 @@
 using namespace testing;
 using namespace std;
 
-#define AMEND_2_OBJ_TYPES(objType1, objType2)   \
+#define AMEND_2_OBJ_TYPES(objType1, objType2) \
   amend2ObjTypes(#objType1, objType1, #objType2, objType2)
 
 string amend2ObjTypes(const string& objType1name, const ObjType& objType1,
   const string& objType2name, const ObjType& objType2) {
   ostringstream oss;
-  oss << objType1name << " = " << objType1 << "\n" <<
-    objType2name << " = " << objType2;
+  oss << objType1name << " = " << objType1 << "\n"
+      << objType2name << " = " << objType2;
   return oss.str();
 }
 
-#define TEST_MATCH(spec, expectedMatchType, objType1, objType2)         \
-  { SCOPED_TRACE("testMatch called from here (via TEST_MATCH)");       \
-    testMatch(spec, expectedMatchType, objType1, objType2);             \
+#define TEST_MATCH(spec, expectedMatchType, objType1, objType2)  \
+  {                                                              \
+    SCOPED_TRACE("testMatch called from here (via TEST_MATCH)"); \
+    testMatch(spec, expectedMatchType, objType1, objType2);      \
   }
 
 void testMatch(const string& spec, ObjType::MatchType expectedMatchType,
-  const ObjType& objType1, const ObjType& objType2 ) {
-   EXPECT_EQ( expectedMatchType, objType1.match(objType2) ) <<
-    amendSpec(spec) << AMEND_2_OBJ_TYPES(objType1, objType2);
+  const ObjType& objType1, const ObjType& objType2) {
+  EXPECT_EQ(expectedMatchType, objType1.match(objType2))
+    << amendSpec(spec) << AMEND_2_OBJ_TYPES(objType1, objType2);
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
@@ -38,15 +39,20 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   EXPECT_EQ("double", ObjTypeFunda(ObjTypeFunda::eDouble).toStr());
 
   // qualifiers
-  EXPECT_EQ("mut-int", ObjTypeQuali(ObjType::eMutable,
-    make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
+  EXPECT_EQ("mut-int",
+    ObjTypeQuali(
+      ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))
+      .toStr());
 
   // pointer type
-  EXPECT_EQ("raw*int", ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
+  EXPECT_EQ("raw*int",
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
 
   // function type
   EXPECT_EQ("fun(() int)",
-    ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
+    ObjTypeFun(
+      ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))
+      .toStr());
   EXPECT_EQ("fun((int, int) int)",
     ObjTypeFun(
       ObjTypeFun::createArgs(
@@ -63,88 +69,84 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
       ).toStr());
 
   // class
-  EXPECT_EQ("class(foo)",
-    ObjTypeClass("foo").toStr());
+  EXPECT_EQ("class(foo)", ObjTypeClass("foo").toStr());
   EXPECT_EQ("class(foo int)",
-    ObjTypeClass("foo",
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
+    ObjTypeClass("foo", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
   EXPECT_EQ("class(foo int bool)",
-    ObjTypeClass("foo",
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)).toStr());
+    ObjTypeClass("foo", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+      make_shared<ObjTypeFunda>(ObjTypeFunda::eBool))
+      .toStr());
 }
 
-TEST(ObjTypeTest, MAKE_TEST_NAME1(
-    match)) {
-
+TEST(ObjTypeTest, MAKE_TEST_NAME1(match)) {
   // fundamental type <-> fundamental type
   // -------------------------------------
-  TEST_MATCH( "type and qualifier fully match", ObjType::eFullMatch,
-    ObjTypeFunda(ObjTypeFunda::eInt), ObjTypeFunda(ObjTypeFunda::eInt) );
+  TEST_MATCH("type and qualifier fully match", ObjType::eFullMatch,
+    ObjTypeFunda(ObjTypeFunda::eInt), ObjTypeFunda(ObjTypeFunda::eInt));
 
-  TEST_MATCH( "type and qualifier fully match", ObjType::eFullMatch,
-    ObjTypeFunda(ObjTypeFunda::eBool), ObjTypeFunda(ObjTypeFunda::eBool) );
+  TEST_MATCH("type and qualifier fully match", ObjType::eFullMatch,
+    ObjTypeFunda(ObjTypeFunda::eBool), ObjTypeFunda(ObjTypeFunda::eBool));
 
-  TEST_MATCH( "type mismatch", ObjType::eNoMatch,
-    ObjTypeFunda(ObjTypeFunda::eBool), ObjTypeFunda(ObjTypeFunda::eInt) );
+  TEST_MATCH("type mismatch", ObjType::eNoMatch,
+    ObjTypeFunda(ObjTypeFunda::eBool), ObjTypeFunda(ObjTypeFunda::eInt));
 
-  TEST_MATCH( "type matches, but dst has weaker qualifiers", ObjType::eMatchButAllQualifiersAreWeaker,
+  TEST_MATCH("type matches, but dst has weaker qualifiers", ObjType::eMatchButAllQualifiersAreWeaker,
     ObjTypeFunda(ObjTypeFunda::eInt),
     ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
-  TEST_MATCH( "type matches, but dst has stronger qualifiers", ObjType::eMatchButAnyQualifierIsStronger,
+  TEST_MATCH("type matches, but dst has stronger qualifiers", ObjType::eMatchButAnyQualifierIsStronger,
     ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     ObjTypeFunda(ObjTypeFunda::eInt));
 
   // pointer <-> pointer
   // -------------------
-  TEST_MATCH( "full match", ObjType::eFullMatch,
+  TEST_MATCH("full match", ObjType::eFullMatch,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
-  TEST_MATCH( "pointee type differs", ObjType::eNoMatch,
+  TEST_MATCH("pointee type differs", ObjType::eNoMatch,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)));
 
-  TEST_MATCH( "qualifier of level0 differs", ObjType::eMatchButAnyQualifierIsStronger,
+  TEST_MATCH("qualifier of level0 differs", ObjType::eMatchButAnyQualifierIsStronger,
     ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
-  TEST_MATCH( "qualifier of level0 differs", ObjType::eMatchButAllQualifiersAreWeaker,
+  TEST_MATCH("qualifier of level0 differs", ObjType::eMatchButAllQualifiersAreWeaker,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     ObjTypeQuali(ObjType::eMutable, make_shared<ObjTypePtr>(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))));
 
-  TEST_MATCH( "qualifier of level1+ differs", ObjType::eNoMatch,
+  TEST_MATCH("qualifier of level1+ differs", ObjType::eNoMatch,
     ObjTypePtr(make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))),
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
-  TEST_MATCH( "qualifier of level1+ differs", ObjType::eNoMatch,
+  TEST_MATCH("qualifier of level1+ differs", ObjType::eNoMatch,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     ObjTypePtr(make_shared<ObjTypeQuali>(ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))));
 
 
   // fundamental type <-> pointer <-> function
   // -----------------------------------------
-  TEST_MATCH( "any fundamental type mismatches any pointer type", ObjType::eNoMatch,
+  TEST_MATCH("any fundamental type mismatches any pointer type", ObjType::eNoMatch,
     ObjTypeFunda(ObjTypeFunda::eInt),
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
-  TEST_MATCH( "any fundamental type mismatches any pointer type", ObjType::eNoMatch,
+  TEST_MATCH("any fundamental type mismatches any pointer type", ObjType::eNoMatch,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     ObjTypeFunda(ObjTypeFunda::eInt));
 
-  TEST_MATCH( "any fundamental type mismatches any function type", ObjType::eNoMatch,
+  TEST_MATCH("any fundamental type mismatches any function type", ObjType::eNoMatch,
     ObjTypeFunda(ObjTypeFunda::eInt),
     ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
 
   // function <-> function
   // ---------------------
-  TEST_MATCH( "", ObjType::eFullMatch,
+  TEST_MATCH("", ObjType::eFullMatch,
     ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     ObjTypeFun(ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
-  TEST_MATCH( "", ObjType::eNoMatch,
+  TEST_MATCH("", ObjType::eNoMatch,
     ObjTypeFun(
       ObjTypeFun::createArgs(new ObjTypeFunda(ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
@@ -152,7 +154,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
       ObjTypeFun::createArgs(),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
-  TEST_MATCH( "Only one argument differs in type", ObjType::eNoMatch,
+  TEST_MATCH("Only one argument differs in type", ObjType::eNoMatch,
     ObjTypeFun(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eBool)),
@@ -162,7 +164,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
-  TEST_MATCH( "Only return type differs", ObjType::eNoMatch,
+  TEST_MATCH("Only return type differs", ObjType::eNoMatch,
     ObjTypeFun(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt)),
@@ -176,34 +178,32 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   // ---------------
   const auto& class1 = ObjTypeClass("samename");
   const auto& class2 = ObjTypeClass("samename");
-  TEST_MATCH( "", ObjType::eFullMatch, class1, class1);
-  TEST_MATCH( "", ObjType::eNoMatch, class1, class2);
+  TEST_MATCH("", ObjType::eFullMatch, class1, class1);
+  TEST_MATCH("", ObjType::eNoMatch, class1, class2);
 
   // class <-> other / other <-> class
   // ---------------------------------
-  TEST_MATCH( "", ObjType::eNoMatch,
+  TEST_MATCH("", ObjType::eNoMatch,
     class1,
     ObjTypeFunda(ObjTypeFunda::eInt));
-  TEST_MATCH( "", ObjType::eNoMatch,
+  TEST_MATCH("", ObjType::eNoMatch,
     ObjTypeFunda(ObjTypeFunda::eInt),
     class1);
-  TEST_MATCH( "", ObjType::eNoMatch,
+  TEST_MATCH("", ObjType::eNoMatch,
     class1,
     ObjTypeFun(ObjTypeFun::createArgs()));
-  TEST_MATCH( "", ObjType::eNoMatch,
+  TEST_MATCH("", ObjType::eNoMatch,
     ObjTypeFun(ObjTypeFun::createArgs()),
     class1);
-  TEST_MATCH( "", ObjType::eNoMatch,
+  TEST_MATCH("", ObjType::eNoMatch,
     class1,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
-  TEST_MATCH( "", ObjType::eNoMatch,
+  TEST_MATCH("", ObjType::eNoMatch,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
     class1);
 }
 
-TEST(ObjTypeTest, MAKE_TEST_NAME1(
-    hasConstructor)) {
-
+TEST(ObjTypeTest, MAKE_TEST_NAME1(hasConstructor)) {
   // between fundamental types
   // =========================
   struct T {
@@ -267,10 +267,10 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {ObjTypeFunda::ePointer, ObjTypeFunda::eDouble, true},
     {ObjTypeFunda::ePointer, ObjTypeFunda::ePointer, true}};
 
-  for ( const auto& inputSpec : inputSpecs ) {
-    ObjTypeFunda UUT{ inputSpec.UUT };
-    ObjTypeFunda arg{ inputSpec.arg };
-    EXPECT_EQ( inputSpec.hasConstructor, UUT.hasConstructor(arg))
+  for (const auto& inputSpec : inputSpecs) {
+    ObjTypeFunda UUT{inputSpec.UUT};
+    ObjTypeFunda arg{inputSpec.arg};
+    EXPECT_EQ(inputSpec.hasConstructor, UUT.hasConstructor(arg))
       << "UUT: " << UUT << "\n"
       << "arg: " << arg << "\n";
   }
@@ -280,25 +280,21 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
   {
     ObjTypeFunda fundamentaltype{ObjTypeFunda::eInt};
     ObjTypeFun functiontype{
-      ObjTypeFun::createArgs(),
-      make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
-    EXPECT_FALSE( fundamentaltype.hasConstructor(functiontype) );
-    EXPECT_FALSE( functiontype.hasConstructor(fundamentaltype) );
-    EXPECT_FALSE( functiontype.hasConstructor(functiontype) );
+      ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)};
+    EXPECT_FALSE(fundamentaltype.hasConstructor(functiontype));
+    EXPECT_FALSE(functiontype.hasConstructor(fundamentaltype));
+    EXPECT_FALSE(functiontype.hasConstructor(functiontype));
   }
 }
 
-TEST(ObjTypeTest, MAKE_TEST_NAME1(
-    class_)) {
-
-  struct T{
+TEST(ObjTypeTest, MAKE_TEST_NAME1(class_)) {
+  struct T {
     bool m_isMemberOfClass;
     ObjTypeFunda::EType m_fundaType;
     ObjType::EClass m_typeClass;
   };
 
-  vector<T> inputs{
-    {true,  ObjTypeFunda::eVoid, ObjType::eAbstract},
+  vector<T> inputs{{true, ObjTypeFunda::eVoid, ObjType::eAbstract},
     {false, ObjTypeFunda::eVoid, ObjType::eScalar},
     {false, ObjTypeFunda::eVoid, ObjType::eArithmetic},
     {false, ObjTypeFunda::eVoid, ObjType::eIntegral},
@@ -306,7 +302,7 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {false, ObjTypeFunda::eVoid, ObjType::eStoredAsIntegral},
     {false, ObjTypeFunda::eVoid, ObjType::eFunction},
 
-    {true,  ObjTypeFunda::eNoreturn, ObjType::eAbstract},
+    {true, ObjTypeFunda::eNoreturn, ObjType::eAbstract},
     {false, ObjTypeFunda::eNoreturn, ObjType::eScalar},
     {false, ObjTypeFunda::eNoreturn, ObjType::eArithmetic},
     {false, ObjTypeFunda::eNoreturn, ObjType::eIntegral},
@@ -315,82 +311,79 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(
     {false, ObjTypeFunda::eNoreturn, ObjType::eFunction},
 
     {false, ObjTypeFunda::eBool, ObjType::eAbstract},
-    {true,  ObjTypeFunda::eBool, ObjType::eScalar},
+    {true, ObjTypeFunda::eBool, ObjType::eScalar},
     {false, ObjTypeFunda::eBool, ObjType::eArithmetic},
     {false, ObjTypeFunda::eBool, ObjType::eIntegral},
     {false, ObjTypeFunda::eBool, ObjType::eFloatingPoint},
-    {true,  ObjTypeFunda::eBool, ObjType::eStoredAsIntegral},
+    {true, ObjTypeFunda::eBool, ObjType::eStoredAsIntegral},
     {false, ObjTypeFunda::eBool, ObjType::eFunction},
 
     {false, ObjTypeFunda::eChar, ObjType::eAbstract},
-    {true,  ObjTypeFunda::eChar, ObjType::eScalar},
+    {true, ObjTypeFunda::eChar, ObjType::eScalar},
     {false, ObjTypeFunda::eChar, ObjType::eArithmetic},
     {false, ObjTypeFunda::eChar, ObjType::eIntegral},
     {false, ObjTypeFunda::eChar, ObjType::eFloatingPoint},
-    {true,  ObjTypeFunda::eChar, ObjType::eStoredAsIntegral},
+    {true, ObjTypeFunda::eChar, ObjType::eStoredAsIntegral},
     {false, ObjTypeFunda::eChar, ObjType::eFunction},
 
     {false, ObjTypeFunda::eInt, ObjType::eAbstract},
-    {true,  ObjTypeFunda::eInt, ObjType::eScalar},
-    {true,  ObjTypeFunda::eInt, ObjType::eArithmetic},
-    {true,  ObjTypeFunda::eInt, ObjType::eIntegral},
+    {true, ObjTypeFunda::eInt, ObjType::eScalar},
+    {true, ObjTypeFunda::eInt, ObjType::eArithmetic},
+    {true, ObjTypeFunda::eInt, ObjType::eIntegral},
     {false, ObjTypeFunda::eInt, ObjType::eFloatingPoint},
-    {true,  ObjTypeFunda::eInt, ObjType::eStoredAsIntegral},
+    {true, ObjTypeFunda::eInt, ObjType::eStoredAsIntegral},
     {false, ObjTypeFunda::eInt, ObjType::eFunction},
 
     {false, ObjTypeFunda::eDouble, ObjType::eAbstract},
-    {true,  ObjTypeFunda::eDouble, ObjType::eScalar},
-    {true,  ObjTypeFunda::eDouble, ObjType::eArithmetic},
+    {true, ObjTypeFunda::eDouble, ObjType::eScalar},
+    {true, ObjTypeFunda::eDouble, ObjType::eArithmetic},
     {false, ObjTypeFunda::eDouble, ObjType::eIntegral},
-    {true,  ObjTypeFunda::eDouble, ObjType::eFloatingPoint},
+    {true, ObjTypeFunda::eDouble, ObjType::eFloatingPoint},
     {false, ObjTypeFunda::eDouble, ObjType::eStoredAsIntegral},
     {false, ObjTypeFunda::eDouble, ObjType::eFunction},
 
     {false, ObjTypeFunda::ePointer, ObjType::eAbstract},
-    {true,  ObjTypeFunda::ePointer, ObjType::eScalar},
+    {true, ObjTypeFunda::ePointer, ObjType::eScalar},
     {false, ObjTypeFunda::ePointer, ObjType::eArithmetic},
     {false, ObjTypeFunda::ePointer, ObjType::eIntegral},
     {false, ObjTypeFunda::ePointer, ObjType::eFloatingPoint},
-    {true,  ObjTypeFunda::ePointer, ObjType::eStoredAsIntegral},
+    {true, ObjTypeFunda::ePointer, ObjType::eStoredAsIntegral},
     {false, ObjTypeFunda::ePointer, ObjType::eFunction}};
 
   for (const auto& i : inputs) {
-    EXPECT_EQ( i.m_isMemberOfClass, ObjTypeFunda(i.m_fundaType).is(i.m_typeClass))
+    EXPECT_EQ(
+      i.m_isMemberOfClass, ObjTypeFunda(i.m_fundaType).is(i.m_typeClass))
       << "fundamental type: " << i.m_fundaType << "\n"
       << "type class: " << i.m_typeClass;
   }
 
-  ObjTypePtr objTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)); 
+  ObjTypePtr objTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt));
   EXPECT_FALSE(objTypePtr.is(ObjType::eAbstract));
-  EXPECT_TRUE (objTypePtr.is(ObjType::eScalar));
+  EXPECT_TRUE(objTypePtr.is(ObjType::eScalar));
   EXPECT_FALSE(objTypePtr.is(ObjType::eArithmetic));
   EXPECT_FALSE(objTypePtr.is(ObjType::eIntegral));
   EXPECT_FALSE(objTypePtr.is(ObjType::eFloatingPoint));
-  EXPECT_TRUE (objTypePtr.is(ObjType::eStoredAsIntegral));
+  EXPECT_TRUE(objTypePtr.is(ObjType::eStoredAsIntegral));
   EXPECT_FALSE(objTypePtr.is(ObjType::eFunction));
 
-  EXPECT_TRUE( ObjTypeFun(ObjTypeFun::createArgs()).is(ObjType::eFunction));
+  EXPECT_TRUE(ObjTypeFun(ObjTypeFun::createArgs()).is(ObjType::eFunction));
 }
 
-TEST(ObjTypeTest, MAKE_TEST_NAME1(
-    size)) {
-  EXPECT_EQ( -1, ObjTypeFunda(ObjTypeFunda::eVoid).size());
-  EXPECT_EQ( -1, ObjTypeFunda(ObjTypeFunda::eNoreturn).size());
-  EXPECT_EQ( -1, ObjTypeFunda(ObjTypeFunda::eInfer).size());
-  EXPECT_EQ( 1, ObjTypeFunda(ObjTypeFunda::eBool).size());
-  EXPECT_EQ( 8, ObjTypeFunda(ObjTypeFunda::eChar).size());
-  EXPECT_EQ( 32, ObjTypeFunda(ObjTypeFunda::eInt).size());
-  EXPECT_EQ( 64, ObjTypeFunda(ObjTypeFunda::eDouble).size());
+TEST(ObjTypeTest, MAKE_TEST_NAME1(size)) {
+  EXPECT_EQ(-1, ObjTypeFunda(ObjTypeFunda::eVoid).size());
+  EXPECT_EQ(-1, ObjTypeFunda(ObjTypeFunda::eNoreturn).size());
+  EXPECT_EQ(-1, ObjTypeFunda(ObjTypeFunda::eInfer).size());
+  EXPECT_EQ(1, ObjTypeFunda(ObjTypeFunda::eBool).size());
+  EXPECT_EQ(8, ObjTypeFunda(ObjTypeFunda::eChar).size());
+  EXPECT_EQ(32, ObjTypeFunda(ObjTypeFunda::eInt).size());
+  EXPECT_EQ(64, ObjTypeFunda(ObjTypeFunda::eDouble).size());
 
-  EXPECT_EQ( -1, ObjTypeFun(ObjTypeFun::createArgs()).size());
+  EXPECT_EQ(-1, ObjTypeFun(ObjTypeFun::createArgs()).size());
 
   const auto& charType = make_shared<ObjTypeFunda>(ObjTypeFunda::eChar);
   const auto& intType = make_shared<ObjTypeFunda>(ObjTypeFunda::eInt);
-  EXPECT_EQ( 0, ObjTypeClass("").size());
-  EXPECT_EQ(
-    charType->size(),
-    ObjTypeClass("", charType).size());
-  EXPECT_EQ(
-    charType->size() + intType->size(),
+  EXPECT_EQ(0, ObjTypeClass("").size());
+  EXPECT_EQ(charType->size(), ObjTypeClass("", charType).size());
+  EXPECT_EQ(charType->size() + intType->size(),
     ObjTypeClass("", charType, intType).size());
 }

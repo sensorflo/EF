@@ -10,14 +10,14 @@ using namespace testing;
 
 string amendSpec(const string& spec) {
   string amendedSpec;
-  if (spec.empty()) {
-    /*nop*/
-  } else {
-    amendedSpec += "\nAdditional sub specification or additional description of the example:\n";
+  if (spec.empty()) { /*nop*/
+  }
+  else {
+    amendedSpec +=
+      "\nAdditional sub specification or additional description of the "
+      "example:\n";
     amendedSpec += spec;
-    if ( spec[spec.length()-1]!='\n' ) {
-      amendedSpec += '\n';
-    }
+    if (spec[spec.length() - 1] != '\n') { amendedSpec += '\n'; }
   }
   return amendedSpec;
 }
@@ -51,9 +51,8 @@ string amend(const std::unique_ptr<llvm::Module>& module) {
 string amend(const ErrorHandler& errorHandler) {
   stringstream ss;
   ss << string("\nErrorHandler's errors:");
-  if (errorHandler.errors().empty()) {
-    ss << " none\n";
-  } else {
+  if (errorHandler.errors().empty()) { ss << " none\n"; }
+  else {
     ss << "\n" << errorHandler << '\n';
   }
   return ss.str();
@@ -68,19 +67,13 @@ string amend(const Env& env) {
 AstObject* createAccessTo(AstObject* obj, Access access) {
   switch (access) {
   case Access::eRead:
-    return new AstDataDef(Env::makeUniqueInternalName(), ObjTypeFunda::eInt, obj);
-  case Access::eWrite:
-    return new AstOperator('=', obj, new AstNumber(0));
-  case Access::eTakeAddress:
-    return new AstOperator('&', obj);
-  case Access::eIgnoreValueAndAddr:
-    return new AstSeq(obj, new AstNumber(0));
-  case Access::eYetUndefined:
-    assert(false);
-    return nullptr;
-  default:
-    assert(false);
-    return nullptr;
+    return new AstDataDef(
+      Env::makeUniqueInternalName(), ObjTypeFunda::eInt, obj);
+  case Access::eWrite: return new AstOperator('=', obj, new AstNumber(0));
+  case Access::eTakeAddress: return new AstOperator('&', obj);
+  case Access::eIgnoreValueAndAddr: return new AstSeq(obj, new AstNumber(0));
+  case Access::eYetUndefined: assert(false); return nullptr;
+  default: assert(false); return nullptr;
   }
 }
 

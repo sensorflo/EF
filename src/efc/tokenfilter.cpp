@@ -1,20 +1,18 @@
 #include "tokenfilter.h"
 using namespace yy;
 
-TokenFilter::TokenFilter(TokenStream& input) :
-  m_input(input),
-  m_bIsStartOfStream(true) {
+TokenFilter::TokenFilter(TokenStream& input)
+  : m_input(input), m_bIsStartOfStream(true) {
 }
 
 Parser::symbol_type TokenFilter::pop() {
-  if ( m_bIsStartOfStream ) {
+  if (m_bIsStartOfStream) {
     while (m_input.front().token() == Parser::token::TOK_NEWLINE) {
       m_input.pop();
     }
     m_bIsStartOfStream = false;
   }
   switch (ParserApiExt::tokenClass(m_input.front().token())) {
-
   case ParserApiExt::TKSeparator: // fall trough
   case ParserApiExt::TKStarter: {
     auto ret = m_input.pop();
@@ -46,8 +44,7 @@ Parser::symbol_type TokenFilter::pop() {
   }
 
   case ParserApiExt::TKDelimiter:
-  case ParserApiExt::TKComponentOrAmbigous:
-    return m_input.pop();
+  case ParserApiExt::TKComponentOrAmbigous: return m_input.pop();
   }
   assert(false);
   return {};

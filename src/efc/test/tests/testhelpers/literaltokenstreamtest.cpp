@@ -11,4 +11,3 @@ TEST(LiteralTokenStreamTest, MAKE_TEST_NAME2(
   EXPECT_TOK_EQ(TOK_ID, UUT.pop());
   EXPECT_TOK_EQ(TOK_NUMBER, UUT.pop());
 }
-

@@ -31,10 +31,7 @@ public:
   descent succeeded. */
   class AutoScope final {
   public:
-    enum Action {
-      insertScopeAndDescent,
-      descentScope
-    };
+    enum Action { insertScopeAndDescent, descentScope };
 
     AutoScope(Env& env, EnvNode& node, Action action = descentScope);
     AutoScope(Env& env, EnvNode& node, Action action, bool& success);
@@ -52,6 +49,7 @@ public:
   public:
     AutoLetLooseNodes(Env& env);
     ~AutoLetLooseNodes();
+
   private:
     Env& m_env;
   };

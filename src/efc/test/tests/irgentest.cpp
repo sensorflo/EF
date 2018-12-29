@@ -16,10 +16,9 @@ using namespace llvm;
 
 class TestingIrGen : public IrGen {
 public:
-  TestingIrGen() :
-    IrGen(
-      *(m_errorHandler = new ErrorHandler()) ),
-    m_semanticAnalizer(m_env, *m_errorHandler) {};
+  TestingIrGen()
+    : IrGen(*(m_errorHandler = new ErrorHandler()))
+    , m_semanticAnalizer(m_env, *m_errorHandler){};
   ~TestingIrGen() { delete m_errorHandler; };
   Env m_env;
   ErrorHandler* m_errorHandler;
@@ -29,12 +28,10 @@ public:
 /** Tests the method genIr by first executing it on the given AST and then
 JIT executing the given function, passing the given args, and verifying that
 it returns the expected result. */
-template<typename TRet, typename...TArgs>
-void testgenIr(TestingIrGen& UUT, AstObject* astRoot,
-  const string& spec, TRet expectedResult, const string fqFunctionName,
-  TArgs...args) {
-
-  ENV_ASSERT_TRUE( astRoot!=nullptr );
+template<typename TRet, typename... TArgs>
+void testgenIr(TestingIrGen& UUT, AstObject* astRoot, const string& spec,
+  TRet expectedResult, const string fqFunctionName, TArgs... args) {
+  ENV_ASSERT_TRUE(astRoot != nullptr);
   unique_ptr<AstObject> astRootAp(astRoot);
   bool unexpctedExceptionThrown = false;
   string exceptionDescription;
@@ -49,9 +46,9 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot,
 
     // verify
     ExecutionEngineApater ee(move(module));
-    TRet result = ee.jitExecFunction<TRet,TArgs...>(fqFunctionName, args...);
-    EXPECT_EQ(expectedResult, result) << amendSpec(spec) << amendAst(astRoot) <<
-      amend(&ee.module());
+    TRet result = ee.jitExecFunction<TRet, TArgs...>(fqFunctionName, args...);
+    EXPECT_EQ(expectedResult, result)
+      << amendSpec(spec) << amendAst(astRoot) << amend(&ee.module());
   }
 
   // For better diagnostic messages in case unexpectedly an error
@@ -64,10 +61,11 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot,
   catch (...) {
     unexpctedExceptionThrown = true;
   }
-  if ( unexpctedExceptionThrown ) {
-    FAIL() << "Unexpectedly an exception was thrown. " <<
-      "It's description is: '" << exceptionDescription << "'\n" <<
-      amendSpec(spec) << amend(*UUT.m_errorHandler) << amendAst(astRoot);
+  if (unexpctedExceptionThrown) {
+    FAIL() << "Unexpectedly an exception was thrown. "
+           << "It's description is: '" << exceptionDescription << "'\n"
+           << amendSpec(spec) << amend(*UUT.m_errorHandler)
+           << amendAst(astRoot);
   }
 }
 
@@ -75,98 +73,82 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot,
   TEST_GEN_IR_0ARG(pe.mkMainFunDef(astRoot), spec, int, ".main", expectedResult)
 
 #define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(astRoot, expectedResult, spec) \
-  TEST_GEN_IR_0ARG(                                                     \
-    pe.mkFunDef("foo", ObjTypeFunda::eBool,                             \
-      astRoot),                                                         \
-    spec, bool, ".foo", expectedResult)
+  TEST_GEN_IR_0ARG(pe.mkFunDef("foo", ObjTypeFunda::eBool, astRoot), spec,  \
+    bool, ".foo", expectedResult)
 
 #define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(astRoot, expectedResult, spec) \
-  TEST_GEN_IR_0ARG(                                                     \
-    pe.mkFunDef("foo", ObjTypeFunda::eChar,                             \
-      astRoot),                                                         \
-    spec, unsigned char, ".foo", expectedResult)
+  TEST_GEN_IR_0ARG(pe.mkFunDef("foo", ObjTypeFunda::eChar, astRoot), spec,  \
+    unsigned char, ".foo", expectedResult)
 
 #define TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(astRoot, expectedResult, spec) \
-  TEST_GEN_IR_0ARG(                                                     \
-    pe.mkFunDef("foo", ObjTypeFunda::eDouble,                           \
-      astRoot),                                                         \
-    spec, double, ".foo", expectedResult)
+  TEST_GEN_IR_0ARG(pe.mkFunDef("foo", ObjTypeFunda::eDouble, astRoot), spec,  \
+    double, ".foo", expectedResult)
 
-#define TEST_GEN_IR_0ARG(astRoot, spec, rettype, fqFunctionName,        \
-  expectedResult)                                                       \
-  {                                                                     \
-    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_0ARG)");  \
-    TestingIrGen UUT;                                                   \
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
-    testgenIr<rettype>(UUT, astRoot, spec, expectedResult,              \
-      fqFunctionName);                                                  \
+#define TEST_GEN_IR_0ARG(                                                   \
+  astRoot, spec, rettype, fqFunctionName, expectedResult)                   \
+  {                                                                         \
+    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_0ARG)");      \
+    TestingIrGen UUT;                                                       \
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                           \
+    testgenIr<rettype>(UUT, astRoot, spec, expectedResult, fqFunctionName); \
   }
 
-#define TEST_GEN_IR_1ARG(astRoot, spec, rettype, fqFunctionName, arg1type, \
-  expectedResult, arg1)                                                 \
-  {                                                                     \
-    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_1ARG)");  \
-    TestingIrGen UUT;                                                   \
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
-    testgenIr<rettype, arg1type>(UUT, astRoot, spec, expectedResult,    \
-      fqFunctionName, arg1);                                            \
+#define TEST_GEN_IR_1ARG(                                                 \
+  astRoot, spec, rettype, fqFunctionName, arg1type, expectedResult, arg1) \
+  {                                                                       \
+    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_1ARG)");    \
+    TestingIrGen UUT;                                                     \
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                         \
+    testgenIr<rettype, arg1type>(                                         \
+      UUT, astRoot, spec, expectedResult, fqFunctionName, arg1);          \
   }
 
-#define TEST_GEN_IR_2ARG(astRoot, spec, rettype, fqFunctionName, arg1type,\
-  arg2type, expectedResult, arg1, arg2)                                 \
-  {                                                                     \
-    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_2ARG)");  \
-    TestingIrGen UUT;                                                   \
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
-    testgenIr<rettype, arg1type, arg2type>(UUT, astRoot, spec,          \
-      expectedResult, fqFunctionName, arg1, arg2);                      \
+#define TEST_GEN_IR_2ARG(astRoot, spec, rettype, fqFunctionName, arg1type, \
+  arg2type, expectedResult, arg1, arg2)                                    \
+  {                                                                        \
+    SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_2ARG)");     \
+    TestingIrGen UUT;                                                      \
+    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                          \
+    testgenIr<rettype, arg1type, arg2type>(                                \
+      UUT, astRoot, spec, expectedResult, fqFunctionName, arg1, arg2);     \
   }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_single_literal,
     genIrInImplicitMain,
     returns_the_literal_s_value)) {
-
   string spec = "Example: char literal";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_CHAR(
-    new AstNumber('x', ObjTypeFunda::eChar),
-    'x', spec);
+    new AstNumber('x', ObjTypeFunda::eChar), 'x', spec);
 
   spec = "Example: int literal";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstNumber(42),
-    42, spec);
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(new AstNumber(42), 42, spec);
 
   spec = "Example: double literal";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
-    new AstNumber(42.77, ObjTypeFunda::eDouble),
-    42.77, spec);
+    new AstNumber(42.77, ObjTypeFunda::eDouble), 42.77, spec);
 
   spec = "Example: bool literal";
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
-    new AstNumber(1, ObjTypeFunda::eBool),
-    true, spec);
+    new AstNumber(1, ObjTypeFunda::eBool), true, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     a_block,
     genIrInImplicitMain,
     returns_the_blocks_bodies_value)) {
-
   string spec = "Example: body contains a literal";
-  TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstBlock(new AstNumber(42)), 42, spec);
+  TEST_GEN_IR_IN_IMPLICIT_MAIN(new AstBlock(new AstNumber(42)), 42, spec);
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
     an_operator,
     genIrInImplicitMain,
     returns_the_result_of_that_operator)) {
-
   // ; aka sequence
   string spec = "The sequence operator evaluates all arguments and returns the last";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstSeq( new AstNumber(11), new AstNumber(22)), 22, "");
+    new AstSeq(new AstNumber(11), new AstNumber(22)), 22, "");
 
   // not
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
@@ -225,22 +207,22 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // == with int operands
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstOperator(AstOperator::eEqualTo, new AstNumber(2), new AstNumber(2)),
-    2==2, "");
+    2 == 2, "");
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstOperator(AstOperator::eEqualTo, new AstNumber(1), new AstNumber(2)),
-    1==2, "");
+    1 == 2, "");
 
   // == with double operands
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstOperator(AstOperator::eEqualTo,
       new AstNumber(42.5, ObjTypeFunda::eDouble),
       new AstNumber(42.5, ObjTypeFunda::eDouble)),
-    42.5==42.5, "");
+    42.5 == 42.5, "");
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_BOOL(
     new AstOperator(AstOperator::eEqualTo,
       new AstNumber(42.5, ObjTypeFunda::eDouble),
       new AstNumber(77.0, ObjTypeFunda::eDouble)),
-    42.5==77.0, "");
+    42.5 == 77.0, "");
 
   // unary - with int operands
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -261,44 +243,43 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // binary + - * / with int operands
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator('+', new AstNumber(1), new AstNumber(2)),
-    1+2, "");
+    1 + 2, "");
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator('-', new AstNumber(1), new AstNumber(2)),
-    1-2, "");
+    1 - 2, "");
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator('*', new AstNumber(1), new AstNumber(2)),
-    1*2, "");
+    1 * 2, "");
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator('/', new AstNumber(6), new AstNumber(3)),
-    6/3, "");
+    6 / 3, "");
 
   // binary + - * / with double operands
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
     new AstOperator('+',
       new AstNumber(1.1, ObjTypeFunda::eDouble),
       new AstNumber(2.2, ObjTypeFunda::eDouble)),
-    1.1+2.2, "");
+    1.1 + 2.2, "");
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
     new AstOperator('-',
       new AstNumber(1.1, ObjTypeFunda::eDouble),
       new AstNumber(2.2, ObjTypeFunda::eDouble)),
-    1.1-2.2, "");
+    1.1 - 2.2, "");
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
     new AstOperator('*',
       new AstNumber(1.1, ObjTypeFunda::eDouble),
       new AstNumber(2.2, ObjTypeFunda::eDouble)),
-    1.1*2.2, "");
+    1.1 * 2.2, "");
   TEST_GEN_IR_IN_IMPLICIT_FOO_RET_DOUBLE(
     new AstOperator('/',
       new AstNumber(2.5, ObjTypeFunda::eDouble),
       new AstNumber(2.0, ObjTypeFunda::eDouble)),
-    2.5/2.0, "");
+    2.5 / 2.0, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_an_addrOf_or_dereference_operator,
     THEN_addrOf_returns_the_objects_address_as_pointer_AND_dereference_returns_the_object_pointed_to_by_an_pointer)) {
-
   string spec = "Example: addrOf followed by dereferencing is a nop";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstOperator(AstOperator::eDeref,
@@ -363,7 +344,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
         new AstOperator('&',
           new AstOperator('+', new AstNumber(1), new AstNumber(2)))),
       new AstOperator(AstOperator::eDeref, new AstSymbol("p"))),
-    1+2, "");
+    1 + 2, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -592,7 +573,6 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_seq_expression,
     THEN_its_lhs_is_evaluated_AND_then_its_rhs_is_evaluated_and_its_value_is_returned)) {
-
   string spec = "Reading from the seq expression gives the value of the rhs";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
@@ -633,7 +613,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     a_function_definition,
     genIr,
     adds_the_function_definition_to_the_module_with_the_correct_signature)) {
-
   string spec = "Example: zero arguments";
   {
     // setup
@@ -650,12 +629,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = module->getFunction(".foo");
-    ASSERT_TRUE(functionIr!=nullptr)
-      << amendAst(ast) << amendSpec(spec);
+    ASSERT_TRUE(functionIr != nullptr) << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(functionIr->arg_size(), 0U)
-      << amendAst(ast) << amendSpec(spec);
+    EXPECT_EQ(functionIr->arg_size(), 0U) << amendAst(ast) << amendSpec(spec);
   }
 
   spec = "Example: two arguments";
@@ -680,12 +657,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = module->getFunction(".foo");
-    EXPECT_TRUE(functionIr!=nullptr)
-      << amendAst(ast) << amendSpec(spec);
+    EXPECT_TRUE(functionIr != nullptr) << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(functionIr->arg_size(), 2U)
-      << amendAst(ast) << amendSpec(spec);
+    EXPECT_EQ(functionIr->arg_size(), 2U) << amendAst(ast) << amendSpec(spec);
   }
 }
 
@@ -693,7 +668,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     a_function_definition,
     genIr,
     adds_the_definition_to_the_module_with_the_correct_signature)) {
-
   string spec = "Example: zero args, ret type int";
   {
     // setup
@@ -702,8 +676,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     TestingIrGen UUT;
     ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstObject> ast(
-      pe.mkFunDef("foo", ObjTypeFunda::eInt,
-        new AstNumber(77)));
+      pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(77)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
 
     // execute
@@ -711,12 +684,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = module->getFunction(".foo");
-    ASSERT_TRUE(functionIr!=nullptr)
-      << amendAst(ast) << amendSpec(spec);
+    ASSERT_TRUE(functionIr != nullptr) << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getInt32Ty(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(functionIr->arg_size(), 0U)
-      << amendAst(ast) << amendSpec(spec);
+    EXPECT_EQ(functionIr->arg_size(), 0U) << amendAst(ast) << amendSpec(spec);
   }
 
   spec = "Example: 1 int arg, 1 bool arg, ret type void";
@@ -740,12 +711,10 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 
     // verify
     Function* functionIr = module->getFunction(".foo");
-    EXPECT_TRUE(functionIr!=nullptr)
-      << amendAst(ast) << amendSpec(spec);
+    EXPECT_TRUE(functionIr != nullptr) << amendAst(ast) << amendSpec(spec);
     EXPECT_EQ(Type::getVoidTy(llvmContext), functionIr->getReturnType())
       << amendAst(ast) << amendSpec(spec);
-    EXPECT_EQ(2U, functionIr->arg_size())
-      << amendAst(ast) << amendSpec(spec);
+    EXPECT_EQ(2U, functionIr->arg_size()) << amendAst(ast) << amendSpec(spec);
   }
 }
 
@@ -753,13 +722,11 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     a_function_definition_foo_with_return_type_void,
     genIr,
     JIT_executing_foo_succeeds))   {
-
   // setup
   TestingIrGen UUT;
   ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
   unique_ptr<AstObject> ast(
-    pe.mkFunDef("foo", ObjTypeFunda::eVoid,
-      new AstNop()));
+    pe.mkFunDef("foo", ObjTypeFunda::eVoid, new AstNop()));
   UUT.m_semanticAnalizer.analyze(*ast.get());
 
   // execute
@@ -768,18 +735,15 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   // verify
   // todo: via e.g. global variable verify that function really was called
   ExecutionEngineApater ee(move(module));
-  EXPECT_NO_THROW( ee.jitExecFunction(".foo"))
+  EXPECT_NO_THROW(ee.jitExecFunction(".foo"))
     << amendAst(ast) << amend(&ee.module());
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_function_defintion_returning_a_value,
     THEN_JIT_executing_it_returns_that_value)) {
-
   string spec = "Example: zero arguments, returning a literal";
-  TEST_GEN_IR_0ARG(
-    pe.mkFunDef("foo", ObjTypeFunda::eInt,
-      new AstNumber(42)),
+  TEST_GEN_IR_0ARG(pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(42)),
     spec, int, ".foo", 42)
 
   spec = "Example: one argument which is returned";
@@ -852,13 +816,12 @@ TEST(IrGenTest, MAKE_TEST_NAME(
               new AstSymbol("fact"),
               new AstCtList(new AstOperator("-", new AstSymbol("x"), new AstNumber(1))))))),
       new AstFunCall(new AstSymbol("fact"), new AstCtList(new AstNumber(2)))),
-    2*1, "");
+    2 * 1, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_function_call_before_that_functions_defintion,
     THEN_that_changes_nothing)) {
-
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("x", ObjTypeFunda::eInt,
@@ -873,7 +836,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     a_nested_function_definition_AND_calls_to_both,
     genIrInImplicitMain,
     succeeds)) {
-
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
@@ -890,9 +852,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     genIrInImplicitMain,
     returns_x_rvalue)) {
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstDataDef("foo", ObjTypeFunda::eInt,
-      new AstNumber(42)),
-    42, "");
+    new AstDataDef("foo", ObjTypeFunda::eInt, new AstNumber(42)), 42, "");
 }
 
 TEST(IrGenTest, MAKE_TEST_NAME(
@@ -970,7 +930,6 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
     GIVEN_a_static_data_object_definition,
     THEN_the_initialization_is_ignored_at_runtime_when_control_flow_reaches_it,
     BECAUSE_initialization_of_an_static_data_object_is_done_at_program_startup)) {
-
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("spy_sum",
@@ -1005,7 +964,6 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
 TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_reference_to_an_static_data_object_before_its_defintion,
     THEN_that_changes_nothing)) {
-
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
       new AstDataDef("x", ObjTypeFunda::eInt,
@@ -1021,7 +979,6 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_data_object_defintion_with_an_explict_or_implicit_initialization,
     THEN_a_later_read_of_that_data_object_delivers_its_current_value)) {
-
   string spec = "Example: local immutable data object";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
@@ -1063,7 +1020,6 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_an_assignmnt_to_a_mutable_data_object,
     THEN_a_later_read_of_of_that_data_object_delivers_the_new_value)) {
-
   string spec = "Example: local data object and using operator '='";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(
@@ -1115,7 +1071,6 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_pseudo_global_variable_named_x_AND_a_function_definition_also_defining_a_variable_x,
     THEN_the_inner_defintion_of_variable_x_shadows_the_outer_variable_x)) {
-
   // 'global' in quotes because there not really global variables
   // yet. Variables defined in 'global' scope really are local variables in
   // the implicit main method. 
@@ -1176,7 +1131,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 
   string spec = "Trivial example: return expression, returning an int, at end of function body";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
-    new AstReturn( new AstNumber(42)),
+    new AstReturn(new AstNumber(42)),
     42, spec);
 
   spec = "Example: return expression, returning an void, at end of function body";
@@ -1211,7 +1166,6 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
 TEST(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_an_loop_expression,
     THEN_it_loops_as_long_as_condition_evaluates_to_true)) {
-
   string spec = "Example: Count x down from 1 to 0";
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(

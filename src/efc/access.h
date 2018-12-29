@@ -14,8 +14,8 @@ enum class Access {
   eIgnoreValueAndAddr
 };
 
-inline std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  Access access) {
+inline std::basic_ostream<char>& operator<<(
+  std::basic_ostream<char>& os, Access access) {
   switch (access) {
   case Access::eYetUndefined: return os << "eYetUndefined";
   case Access::eRead: return os << "eRead";

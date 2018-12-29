@@ -14,6 +14,5 @@ enum class StorageDuration {
   eMember
 };
 
-std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
-  StorageDuration sd);
-
+std::basic_ostream<char>& operator<<(
+  std::basic_ostream<char>& os, StorageDuration sd);

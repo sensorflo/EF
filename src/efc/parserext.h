@@ -56,15 +56,14 @@ public:
     AstObject* child2, AstObject* child3 = nullptr, AstObject* child4 = nullptr,
     AstObject* child5 = nullptr, AstObject* child6 = nullptr);
 
-  AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,
-    RawAstDataDef*& rawAstDataDef);
+  AstDataDef* mkDataDef(
+    ObjType::Qualifiers qualifiers, RawAstDataDef*& rawAstDataDef);
 
   AstFunDef* mkFunDef(const std::string name, std::vector<AstDataDef*>* astArgs,
     AstObjType* retAstObjType, AstObject* astBody);
-  AstFunDef* mkFunDef(const std::string name, ObjTypeFunda::EType ret,
-    AstObject* body);
-  AstFunDef* mkFunDef(const std::string name, AstObjType* ret,
-    AstObject* body);
+  AstFunDef* mkFunDef(
+    const std::string name, ObjTypeFunda::EType ret, AstObject* body);
+  AstFunDef* mkFunDef(const std::string name, AstObjType* ret, AstObject* body);
 
   AstFunDef* mkMainFunDef(AstObject* body);
 

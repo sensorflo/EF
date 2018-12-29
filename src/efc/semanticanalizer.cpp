@@ -8,9 +8,8 @@
 #include "signatureaugmentor.h"
 using namespace std;
 
-SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler) :
-  m_env(env),
-  m_errorHandler(errorHandler) {
+SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler)
+  : m_env(env), m_errorHandler(errorHandler) {
 }
 
 void SemanticAnalizer::analyze(AstNode& root) {
@@ -25,8 +24,8 @@ void SemanticAnalizer::analyze(AstNode& root) {
 }
 
 SemanticAnalizer::FunBodyHelper::FunBodyHelper(
-  stack<const AstObjType*>& funRetAstObjTypes, const AstObjType* objType) :
-  m_funRetAstObjTypes(funRetAstObjTypes) {
+  stack<const AstObjType*>& funRetAstObjTypes, const AstObjType* objType)
+  : m_funRetAstObjTypes(funRetAstObjTypes) {
   m_funRetAstObjTypes.push(objType);
 }
 
@@ -38,7 +37,7 @@ void SemanticAnalizer::visit(AstCast& cast) {
   preConditionCheck(cast);
 
   // -- responsibility 1: set access to direct childs and descent AST subtree
-  for (const auto arg: cast.args().childs()) {
+  for (const auto arg : cast.args().childs()) {
     setAccessAndCallAcceptOn(*arg, Access::eRead);
   }
   cast.specifiedNewAstObjType().accept(*this);
@@ -47,14 +46,16 @@ void SemanticAnalizer::visit(AstCast& cast) {
 
   // TODO: write test
   // test that only one arg is provided
-  if ( cast.args().childs().size() != 1U ) {
+  if (cast.args().childs().size() != 1U) {
     Error::throwError(m_errorHandler, Error::eInvalidArguments);
   }
 
   // test if conversion is eligible
   const auto& specifiedNewObjType = cast.specifiedNewAstObjType().objType();
-  if ( !specifiedNewObjType.matchesSaufQualifiers(cast.args().childs().front()->object().objType())
-    && !specifiedNewObjType.hasConstructor(cast.args().childs().front()->object().objType()) ) {
+  if (!specifiedNewObjType.matchesSaufQualifiers(
+        cast.args().childs().front()->object().objType()) &&
+    !specifiedNewObjType.hasConstructor(
+      cast.args().childs().front()->object().objType())) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 
@@ -115,12 +116,11 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // -- responsibility 1: set access to direct childs and descent AST subtree
   {
     Access access = Access::eRead;
-    if ( AstOperator::eAssignment == class_) {
-      access = Access::eWrite;
-    } else if ( opop==AstOperator::eAddrOf ) {
+    if (AstOperator::eAssignment == class_) { access = Access::eWrite; }
+    else if (opop == AstOperator::eAddrOf) {
       access = Access::eTakeAddress;
     }
-    for (const auto arg: op.args().childs()) {
+    for (const auto arg : op.args().childs()) {
       setAccessAndCallAcceptOn(*arg, access);
     }
   }
@@ -130,25 +130,27 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // Check that all operands are of the same obj type, sauf
   // qualifiers. Currently there are no implicit conversions. However the rhs
   // of logical and/or is allowed to be eNoreturn.
-  if ( argschilds.size()==2 ) {
+  if (argschilds.size() == 2) {
     auto& lhs = argschilds.front()->object().objType();
     auto& rhs = argschilds.back()->object().objType();
-    if ( op.class_() == AstOperator::eLogical ) {
-      if ( !lhs.matchesSaufQualifiers(rhs)
-        && (!op.isBinaryLogicalShortCircuit() ||
-            !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eNoreturn)))) {
-        Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
-      }
-    } else if ( class_ != AstOperator::eOther ) {
-      if ( !lhs.matchesSaufQualifiers(rhs) ) {
+    if (op.class_() == AstOperator::eLogical) {
+      if (!lhs.matchesSaufQualifiers(rhs) &&
+        (!op.isBinaryLogicalShortCircuit() ||
+          !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eNoreturn)))) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
       }
     }
-  } else {
+    else if (class_ != AstOperator::eOther) {
+      if (!lhs.matchesSaufQualifiers(rhs)) {
+        Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+      }
+    }
+  }
+  else {
     // In case there is only one arg, that arg's type can't missmatch
     // anything, so it's implicitely ok. If there are more than two args, the
     // implementation is missing.
-    assert(argschilds.size()==1);
+    assert(argschilds.size() == 1);
   }
 
   // If an operand is modified ensure its writable. Note that reading is
@@ -156,47 +158,50 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // because lhs does not support the requested operator. That includes trying
   // to read or do an operation from / with void or noreturn. Both cases are
   // handled elsewhere.
-  if ( class_ == AstOperator::eAssignment ) {
-    if ( ! (argschilds.front()->object().objType().qualifiers() & ObjType::eMutable) ) {
+  if (class_ == AstOperator::eAssignment) {
+    if (!(argschilds.front()->object().objType().qualifiers() &
+          ObjType::eMutable)) {
       Error::throwError(m_errorHandler, Error::eWriteToImmutable);
     }
   }
 
   // Verify that the first argument has the operator as member function.
-  if ( !argschilds.front()->object().objType().hasMember(opop)) {
+  if (!argschilds.front()->object().objType().hasMember(opop)) {
     Error::throwError(m_errorHandler, Error::eNoSuchMember);
   }
 
   // -- responsibility 3: set properties of associated object: type, sd, access
 
-  if ( class_ == AstOperator::eComparison ) {
+  if (class_ == AstOperator::eComparison) {
     op.setObjType(std::make_unique<ObjTypeFunda>(ObjTypeFunda::eBool));
     op.setStorageDuration(StorageDuration::eLocal);
   }
   // The object denoted by the dot-assignment is exactly that of lhs
-  else if ( opop == AstOperator::eAssign ) {
+  else if (opop == AstOperator::eAssign) {
     op.setReferencedObjAndPropagateAccess(argschilds.front()->object());
   }
   // Assignment is always of object type void
-  else if ( opop == AstOperator::eVoidAssign ) {
+  else if (opop == AstOperator::eVoidAssign) {
     op.setObjType(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid));
     op.setStorageDuration(StorageDuration::eLocal);
   }
   // Addrof
-  else if ( opop == AstOperator::eAddrOf) {
+  else if (opop == AstOperator::eAddrOf) {
     op.object().addAccess(Access::eTakeAddress);
-    op.setObjType(make_shared<ObjTypePtr>(argschilds.back()->object().objTypeAsSp()));
+    op.setObjType(
+      make_shared<ObjTypePtr>(argschilds.back()->object().objTypeAsSp()));
     op.setStorageDuration(StorageDuration::eLocal);
   }
   // Deref: The memory region at the address given by the value of the
   // operand, is the Object denoted by this AstNode.
-  else if ( opop == AstOperator::eDeref) {
+  else if (opop == AstOperator::eDeref) {
     // It is known that static cast is safe because it was checked before
     // that the operand of the deref operator has the deref operator as
     // member function.
     const ObjTypePtr& opObjType =
       static_cast<const ObjTypePtr&>(argschilds.back()->object().objType());
-    op.setReferencedObjAndPropagateAccess(make_unique<FreeFromAstObject>(opObjType.pointee()));
+    op.setReferencedObjAndPropagateAccess(
+      make_unique<FreeFromAstObject>(opObjType.pointee()));
   }
   // For ther operands, the operator expression's objtype is, now that we
   // know the two operands have the same obj type, either operand's obj
@@ -215,20 +220,20 @@ void SemanticAnalizer::visit(AstSeq& seq) {
   assert(!seq.operands().empty());
 
   // -- responsibility 2, part 1 of 2: semantic analysis
-  if ( ! seq.lastOperandIsAnObject() ) {
+  if (!seq.lastOperandIsAnObject()) {
     Error::throwError(m_errorHandler, Error::eObjectExpected);
   }
 
   const auto& lastOp = seq.operands().back();
-  for (const auto& op: seq.operands()) {
+  for (const auto& op : seq.operands()) {
     // -- responsibility 1: set access to direct childs and descent AST subtree
-    const auto access = (op==lastOp) ? seq.accessFromAstParent() :
-      Access::eIgnoreValueAndAddr;
+    const auto access =
+      (op == lastOp) ? seq.accessFromAstParent() : Access::eIgnoreValueAndAddr;
     setAccessAndCallAcceptOn(*op, access);
 
     // -- responsibility 2, part 2 of 2: semantic analysis
     // see also beginning of method
-    if (op!=lastOp && op->isObjTypeNoReturn()) {
+    if (op != lastOp && op->isObjTypeNoReturn()) {
       Error::throwError(m_errorHandler, Error::eUnreachableCode);
     }
 
@@ -265,7 +270,7 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
 
   // -- responsibility 2, part 1 of 2: semantic analysis
   auto node = m_env.find(symbol.name());
-  if (nullptr==node) {
+  if (nullptr == node) {
     Error::throwError(m_errorHandler, Error::eUnknownName);
   }
   const auto object = dynamic_cast<AstObjDef*>(node);
@@ -278,7 +283,7 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
   // 1) note that the access to this AST node is querried, as opposed to the
   //    access to the object associated to the AST node. See also
   //    AstNode::setAccessFromAstParent and AstObject::addAccess.
-  if (symbol.storageDuration()==StorageDuration::eLocal &&
+  if (symbol.storageDuration() == StorageDuration::eLocal &&
     !symbol.isInitialized() &&
     symbol.accessFromAstParent() != Access::eIgnoreValueAndAddr /*1)*/) {
     Error::throwError(m_errorHandler,
@@ -293,23 +298,26 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
 
   // -- responsibility 1: set access to direct childs and descent AST subtree
   setAccessAndCallAcceptOn(funCall.address(), Access::eRead);
-  for (const auto arg: funCall.args().childs()) {
+  for (const auto arg : funCall.args().childs()) {
     setAccessAndCallAcceptOn(*arg, Access::eRead);
   }
 
   // -- responsibility 2: semantic analysis
-  const ObjTypeFun& objTypeFun = dynamic_cast<const ObjTypeFun&>(
-    funCall.address().object().objType());
+  const ObjTypeFun& objTypeFun =
+    dynamic_cast<const ObjTypeFun&>(funCall.address().object().objType());
   const auto& argsCall = funCall.args().childs();
   const auto& argsCallee = objTypeFun.args();
-  if ( argsCall.size() != argsCallee.size() ) {
+  if (argsCall.size() != argsCallee.size()) {
     Error::throwError(m_errorHandler, Error::eInvalidArguments);
   }
   auto argCallIter = argsCall.begin();
   auto argCallEnd = argsCall.end();
   auto argCalleeIter = argsCallee.begin();
-  for ( ; argCallIter!=argCallEnd; ++argCallIter, ++argCalleeIter) {
-    if ( ! (*argCallIter)->object().objType().matchesSaufQualifiers(**argCalleeIter) ) {
+  for (; argCallIter != argCallEnd; ++argCallIter, ++argCalleeIter) {
+    if (!(*argCallIter)
+           ->object()
+           .objType()
+           .matchesSaufQualifiers(**argCalleeIter)) {
       Error::throwError(m_errorHandler, Error::eInvalidArguments);
     }
   }
@@ -326,12 +334,13 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   // -- responsibility 2 / part 1 of 2: semantic analysis
   // verify signature before descending into AST subtree, so the subtree can
   // see a valid signature
-  if ( funDef.ret().objType().qualifiers() & ObjType::eMutable ) {
+  if (funDef.ret().objType().qualifiers() & ObjType::eMutable) {
     Error::throwError(m_errorHandler, Error::eRetTypeCantHaveMutQualifier);
   }
   for (const auto& arg : funDef.declaredArgs()) {
     if (arg->declaredStorageDuration() != StorageDuration::eLocal) {
-      Error::throwError(m_errorHandler, Error::eOnlyLocalStorageDurationApplicable);
+      Error::throwError(
+        m_errorHandler, Error::eOnlyLocalStorageDurationApplicable);
     }
   }
 
@@ -347,8 +356,8 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 
   // -- responsibility 2 / part 2 of 2: semantic analysis
   const auto& bodyObjType = funDef.body().object().objType();
-  if ( ! bodyObjType.matchesSaufQualifiers( funDef.ret().objType())
-    && ! bodyObjType.isNoreturn()) {
+  if (!bodyObjType.matchesSaufQualifiers(funDef.ret().objType()) &&
+    !bodyObjType.isNoreturn()) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
@@ -359,15 +368,13 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 }
 
 void SemanticAnalizer::visit(AstDataDef& dataDef) {
-  if (dataDef.declaredStorageDuration() == StorageDuration::eMember) {
-    return;
-  }
+  if (dataDef.declaredStorageDuration() == StorageDuration::eMember) { return; }
 
   preConditionCheck(dataDef);
 
   auto&& ctorArgs = dataDef.ctorArgs().childs();
 
-  if ( !dataDef.doNotInit() ) {
+  if (!dataDef.doNotInit()) {
     // special responsibility: insert new auto created nodes into AST.  Note
     // that the AST nodes created here obviously are not visited by the passes
     // prior to SemanticAnalizer.
@@ -376,12 +383,12 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     // ctor. However default ctors are not yet implemented. Thus the workaround
     // is to insert a default arg into the AST.
     if (ctorArgs.empty()) {
-      ctorArgs.push_back(dataDef.declaredAstObjType().
-        createDefaultAstObjectForSemanticAnalizer());
+      ctorArgs.push_back(dataDef.declaredAstObjType()
+                           .createDefaultAstObjectForSemanticAnalizer());
     }
 
     // -- responsibility 1: set access to direct childs and descent AST subtree
-    for (const auto arg: ctorArgs) {
+    for (const auto arg : ctorArgs) {
       setAccessAndCallAcceptOn(*arg, Access::eRead);
     }
 
@@ -389,15 +396,16 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     // currently a data object must be initialized with exactly one
     // initializer. Note that the case of passing zero argument was handled
     // above.
-    if ( ctorArgs.size()!=1 ) {
+    if (ctorArgs.size() != 1) {
       Error::throwError(m_errorHandler, Error::eInvalidArguments);
     }
     const auto initializer = ctorArgs.front();
-    if ( dataDef.objType().match(initializer->object().objType()) == ObjType::eNoMatch ) {
+    if (dataDef.objType().match(initializer->object().objType()) ==
+      ObjType::eNoMatch) {
       Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
     }
-    if ( dataDef.storageDuration() == StorageDuration::eStatic
-      && !initializer->isCTConst() ) {
+    if (dataDef.storageDuration() == StorageDuration::eStatic &&
+      !initializer->isCTConst()) {
       Error::throwError(m_errorHandler, Error::eCTConstRequired);
     }
   }
@@ -421,8 +429,8 @@ void SemanticAnalizer::visit(AstIf& if_) {
   }
 
   // -- responsibility 2: semantic analysis
-  if ( !if_.condition().object().objType().matchesSaufQualifiers(
-      ObjTypeFunda(ObjTypeFunda::eBool)) ) {
+  if (!if_.condition().object().objType().matchesSaufQualifiers(
+        ObjTypeFunda(ObjTypeFunda::eBool))) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
@@ -430,12 +438,13 @@ void SemanticAnalizer::visit(AstIf& if_) {
   // sauf qualifiers. Currently there are no implicit conversions.  As an
   // exception, if one of the two clauses is of type noreturn, then the if
   // expression's type is that of the other clause.
-  const bool actionIsOfTypeNoreturn = if_.action().object().objType().isNoreturn();
-  if ( if_.elseAction() ) {
+  const bool actionIsOfTypeNoreturn =
+    if_.action().object().objType().isNoreturn();
+  if (if_.elseAction()) {
     auto& lhs = if_.action().object().objType();
     auto& rhs = if_.elseAction()->object().objType();
-    if ( !lhs.matchesSaufQualifiers(rhs) ) {
-      if ( !actionIsOfTypeNoreturn && !rhs.isNoreturn()) {
+    if (!lhs.matchesSaufQualifiers(rhs)) {
+      if (!actionIsOfTypeNoreturn && !rhs.isNoreturn()) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
       }
     }
@@ -444,13 +453,16 @@ void SemanticAnalizer::visit(AstIf& if_) {
   // -- responsibility 3: set properties of associated object: type, sd, access
   // The AstIf's obj type is a temporary with the underlying type of either
   // clause; now that we now both clauses have the same type.
-  if ( if_.elseAction() ) {
-    if ( !actionIsOfTypeNoreturn ) {
+  if (if_.elseAction()) {
+    if (!actionIsOfTypeNoreturn) {
       if_.setObjectType(if_.action().object().objType().unqualifiedObjType());
-    } else {
-      if_.setObjectType(if_.elseAction()->object().objType().unqualifiedObjType());
     }
-  } else {
+    else {
+      if_.setObjectType(
+        if_.elseAction()->object().objType().unqualifiedObjType());
+    }
+  }
+  else {
     if_.setObjectType(make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid));
   }
 
@@ -465,8 +477,8 @@ void SemanticAnalizer::visit(AstLoop& loop) {
   setAccessAndCallAcceptOn(loop.body(), Access::eIgnoreValueAndAddr);
 
   // -- responsibility 2: semantic analysis
-  if ( !loop.condition().object().objType().matchesSaufQualifiers(
-      ObjTypeFunda(ObjTypeFunda::eBool)) ) {
+  if (!loop.condition().object().objType().matchesSaufQualifiers(
+        ObjTypeFunda(ObjTypeFunda::eBool))) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
@@ -482,20 +494,20 @@ void SemanticAnalizer::visit(AstReturn& return_) {
   auto&& ctorArgs = return_.ctorArgs().childs();
 
   // -- responsibility 1: set access to direct childs and descent AST subtree
-  for (const auto arg: ctorArgs) {
+  for (const auto arg : ctorArgs) {
     setAccessAndCallAcceptOn(*arg, Access::eRead);
   }
 
   // -- responsibility 2: semantic analysis
-  if ( m_funRetAstObjTypes.empty() ) {
+  if (m_funRetAstObjTypes.empty()) {
     Error::throwError(m_errorHandler, Error::eNotInFunBodyContext);
   }
-  if ( ctorArgs.size() != 1U ) {
+  if (ctorArgs.size() != 1U) {
     Error::throwError(m_errorHandler, Error::eInvalidArguments);
   }
   const auto& currentFunReturnType = *m_funRetAstObjTypes.top();
-  if ( ! ctorArgs.front()->object().objType().matchesSaufQualifiers(
-      currentFunReturnType.objType() ) ) {
+  if (!ctorArgs.front()->object().objType().matchesSaufQualifiers(
+        currentFunReturnType.objType())) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
   }
 
@@ -508,7 +520,7 @@ void SemanticAnalizer::visit(AstReturn& return_) {
 void SemanticAnalizer::visit(AstObjTypeSymbol& symbol) {
   // nop, everything was already done in previous passes
   preConditionCheck(symbol);
-  if ( symbol.name() == "infer" ) {
+  if (symbol.name() == "infer") {
     Error::throwError(m_errorHandler, Error::eTypeInferenceIsNotYetSupported);
   }
   postConditionCheck(symbol);
@@ -528,14 +540,14 @@ void SemanticAnalizer::visit(AstObjTypePtr& ptr) {
 
 void SemanticAnalizer::visit(AstClassDef& class_) {
   preConditionCheck(class_);
-  for (const auto& dataMember: class_.dataMembers()) {
+  for (const auto& dataMember : class_.dataMembers()) {
     setAccessAndCallAcceptOn(*dataMember, Access::eIgnoreValueAndAddr);
   }
   postConditionCheck(class_);
 }
 
 void SemanticAnalizer::preConditionCheck(const AstObject& node) {
-  assert(node.accessFromAstParent()!=Access::eYetUndefined);
+  assert(node.accessFromAstParent() != Access::eYetUndefined);
 }
 
 void SemanticAnalizer::preConditionCheck(const AstObjType& node) {
@@ -544,7 +556,7 @@ void SemanticAnalizer::preConditionCheck(const AstObjType& node) {
 
 void SemanticAnalizer::postConditionCheck(const AstObject& node) {
   assert(node.object().objTypeAsSp()); //todo:move to signature augmentor
-  assert(node.object().storageDuration()!=StorageDuration::eYetUndefined);
+  assert(node.object().storageDuration() != StorageDuration::eYetUndefined);
 }
 
 void SemanticAnalizer::postConditionCheck(const AstObjType& node) {
@@ -556,8 +568,7 @@ void SemanticAnalizer::postConditionCheck(const AstObjType& node) {
 
 // The purpose of this method is to help to remember that these two (almost)
 // always go together
-void SemanticAnalizer::setAccessAndCallAcceptOn(AstNode& node,
-  Access access) {
+void SemanticAnalizer::setAccessAndCallAcceptOn(AstNode& node, Access access) {
   node.setAccessFromAstParent(access);
   node.accept(*this);
 }

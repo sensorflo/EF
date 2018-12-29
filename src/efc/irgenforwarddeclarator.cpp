@@ -5,9 +5,9 @@
 using namespace std;
 using namespace llvm;
 
-IrGenForwardDeclarator::IrGenForwardDeclarator(ErrorHandler& errorHandler,
-  llvm::Module& module) :
-  m_module{module}  {
+IrGenForwardDeclarator::IrGenForwardDeclarator(
+  ErrorHandler& errorHandler, llvm::Module& module)
+  : m_module{module} {
 }
 
 void IrGenForwardDeclarator::operator()(AstNode& root) {
@@ -17,9 +17,8 @@ void IrGenForwardDeclarator::operator()(AstNode& root) {
 void IrGenForwardDeclarator::visit(AstDataDef& dataDef) {
   AstDefaultIterator::visit(dataDef);
 
-  if ( dataDef.storageDuration() == StorageDuration::eStatic ) {
-    const auto addr = new GlobalVariable(m_module,
-      dataDef.objType().llvmType(),
+  if (dataDef.storageDuration() == StorageDuration::eStatic) {
+    const auto addr = new GlobalVariable(m_module, dataDef.objType().llvmType(),
       !(dataDef.objType().qualifiers() & ObjType::eMutable),
       GlobalValue::InternalLinkage, nullptr, dataDef.fqName());
     dataDef.setAddrOfIrObject(addr);
@@ -31,13 +30,13 @@ void IrGenForwardDeclarator::visit(AstFunDef& funDef) {
 
   // create IR function with given name and signature
   vector<Type*> llvmArgs;
-  for ( const auto& astArg : funDef.declaredArgs() ) {
+  for (const auto& astArg : funDef.declaredArgs()) {
     llvmArgs.push_back(astArg->objType().llvmType());
   }
-  auto llvmFunctionType = FunctionType::get(
-    funDef.ret().objType().llvmType(), llvmArgs, false);
-  auto functionIr = Function::Create( llvmFunctionType,
-    Function::ExternalLinkage, funDef.fqName(), &m_module);
+  auto llvmFunctionType =
+    FunctionType::get(funDef.ret().objType().llvmType(), llvmArgs, false);
+  auto functionIr = Function::Create(
+    llvmFunctionType, Function::ExternalLinkage, funDef.fqName(), &m_module);
   assert(functionIr);
 
   // If the names differ that means a function with that name already existed,

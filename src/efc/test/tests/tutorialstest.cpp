@@ -3,10 +3,10 @@
 using namespace testing;
 using namespace std;
 
-#define TEST_TUTORIAL( expectedOutput, executable )            \
-  {                                                           \
-    SCOPED_TRACE("testTutorial called from here (via TEST_TUTORIAL)");  \
-    testTutorial(expectedOutput, executable);                  \
+#define TEST_TUTORIAL(expectedOutput, executable)                      \
+  {                                                                    \
+    SCOPED_TRACE("testTutorial called from here (via TEST_TUTORIAL)"); \
+    testTutorial(expectedOutput, executable);                          \
   }
 
 void testTutorial(const string& expectedOutput, const string& executable) {
@@ -19,15 +19,13 @@ void testTutorial(const string& expectedOutput, const string& executable) {
   string actualOutput;
   while (!feof(stream)) {
     char buf[1024];
-    if (fgets(buf, sizeof(buf), stream) != nullptr) {
-      actualOutput += buf;
-    }
-  }  
+    if (fgets(buf, sizeof(buf), stream) != nullptr) { actualOutput += buf; }
+  }
   pclose(stream);
 
   // remove trailing newline of output
-  if (!actualOutput.empty() && actualOutput[actualOutput.size()-1]=='\n') {
-    actualOutput.resize( actualOutput.size()-1 );
+  if (!actualOutput.empty() && actualOutput[actualOutput.size() - 1] == '\n') {
+    actualOutput.resize(actualOutput.size() - 1);
   }
 
   // verify
@@ -44,8 +42,8 @@ TEST(TutorialsTest, MAKE_TEST_NAME(
     it_is_executed_via_the_shebang_mechanism_which_ultimatively_runs_efc,
     it_has_the_expected_output)) {
   TEST_TUTORIAL("42", "tutorial1.ef");
-  TEST_TUTORIAL("4",  "tutorial2.ef");
-  TEST_TUTORIAL("5",  "tutorial3.ef");
-  TEST_TUTORIAL("6",  "tutorial4.ef");
-  TEST_TUTORIAL("3",  "tutorial5.ef");
+  TEST_TUTORIAL("4", "tutorial2.ef");
+  TEST_TUTORIAL("5", "tutorial3.ef");
+  TEST_TUTORIAL("6", "tutorial4.ef");
+  TEST_TUTORIAL("3", "tutorial5.ef");
 }

@@ -36,8 +36,8 @@ public:
 
   /** Unless given error is disabled, adds a new Error to ErrorHandler and
   throws an according BuildError. */
-  static void throwError(ErrorHandler& errorHandler, No no,
-    std::string additionalMsg = "");
+  static void throwError(
+    ErrorHandler& errorHandler, No no, std::string additionalMsg = "");
 
   No no() const { return m_no; }
 
@@ -73,7 +73,7 @@ private:
 
   /** We're the owner of the pointees */
   Container m_errors;
-  std::array<bool,Error::eCnt> m_disabledErrors;
+  std::array<bool, Error::eCnt> m_disabledErrors;
 };
 
 std::ostream& operator<<(std::ostream& os, const ErrorHandler& errorHandler);

@@ -8,16 +8,17 @@ using namespace std;
 
 static bool dummyBool;
 
-Env::AutoScope::AutoScope(Env& env, EnvNode& node, Action action) :
-  AutoScope(env, node, action, dummyBool) {
+Env::AutoScope::AutoScope(Env& env, EnvNode& node, Action action)
+  : AutoScope(env, node, action, dummyBool) {
 }
 
-Env::AutoScope::AutoScope(Env& env, EnvNode& node,
-  Env::AutoScope::Action action, bool& success) :
-  m_env(env) {
-  if (action==insertScopeAndDescent) {
+Env::AutoScope::AutoScope(
+  Env& env, EnvNode& node, Env::AutoScope::Action action, bool& success)
+  : m_env(env) {
+  if (action == insertScopeAndDescent) {
     success = m_env.insertScopeAndDescent(node);
-  } else {
+  }
+  else {
     m_env.descentScope(node);
     success = true;
   }
@@ -25,9 +26,7 @@ Env::AutoScope::AutoScope(Env& env, EnvNode& node,
 }
 
 Env::AutoScope::~AutoScope() {
-  if ( m_didDescent ) {
-    m_env.ascentScope();
-  }
+  if (m_didDescent) { m_env.ascentScope(); }
 }
 
 Env::AutoLetLooseNodes::AutoLetLooseNodes(Env& env) : m_env(env) {
@@ -37,9 +36,7 @@ Env::AutoLetLooseNodes::~AutoLetLooseNodes() {
   m_env.letLooseNodes();
 }
 
-Env::Env() :
-  m_rootScope{"$root"},
-  m_currentScope{&m_rootScope} {
+Env::Env() : m_rootScope{"$root"}, m_currentScope{&m_rootScope} {
 }
 
 bool Env::insertLeaf(EnvNode& node) {
@@ -48,9 +45,7 @@ bool Env::insertLeaf(EnvNode& node) {
 
 bool Env::insertScopeAndDescent(EnvNode& node) {
   const auto success = m_currentScope->insert(node);
-  if ( success ) {
-    m_currentScope = &node;
-  }
+  if (success) { m_currentScope = &node; }
   return success;
 }
 
@@ -62,9 +57,7 @@ void Env::descentScope(EnvNode& node) {
 EnvNode* Env::find(const string& name) {
   for (auto scope = m_currentScope; scope; scope = scope->m_envParent) {
     const auto node = scope->find(name);
-    if (node) {
-      return node;
-    }
+    if (node) { return node; }
   }
   return nullptr;
 }
@@ -73,9 +66,7 @@ string Env::makeUniqueInternalName(string baseName) {
   thread_local auto thread_local_cnt = 0U;
   ++thread_local_cnt;
   stringstream ss{baseName};
-  if ( baseName.empty() ) {
-    ss << "$tmp";
-  }
+  if (baseName.empty()) { ss << "$tmp"; }
   ss << this_thread::get_id() << "_" << thread_local_cnt;
   return ss.str();
 }
@@ -89,13 +80,11 @@ void Env::ascentScope() {
 void Env::printTo(ostream& os, const EnvNode& node) const {
   os << "{" << node.name();
 
-  if ( !node.m_envChildren.empty() ) {
+  if (!node.m_envChildren.empty()) {
     os << ", children={";
     auto isFirstIter = true;
-    for ( const auto& child : node.m_envChildren  ) {
-      if ( !isFirstIter ) {
-        os << ", ";
-      }
+    for (const auto& child : node.m_envChildren) {
+      if (!isFirstIter) { os << ", "; }
       isFirstIter = false;
       printTo(os, *child);
     }

@@ -7,34 +7,34 @@
 using namespace std;
 
 namespace {
-  AstCtList* combine(ErrorHandler& errorHandler, AstCtList* ctorArgs1,
-    AstCtList* ctorArgs2) {
-    if ( ctorArgs1 && ctorArgs2 ) {
-      Error::throwError(errorHandler, Error::eSameArgWasDefinedMultipleTimes);
-    }
-    else if ( !ctorArgs1 && !ctorArgs2) {
-      return new AstCtList();
-    }
-    else {
-      return ctorArgs1 ? ctorArgs1 : ctorArgs2;
-    }
-    assert(false);
-    return nullptr;
+AstCtList* combine(
+  ErrorHandler& errorHandler, AstCtList* ctorArgs1, AstCtList* ctorArgs2) {
+  if (ctorArgs1 && ctorArgs2) {
+    Error::throwError(errorHandler, Error::eSameArgWasDefinedMultipleTimes);
   }
+  else if (!ctorArgs1 && !ctorArgs2) {
+    return new AstCtList();
+  }
+  else {
+    return ctorArgs1 ? ctorArgs1 : ctorArgs2;
+  }
+  assert(false);
+  return nullptr;
+}
 }
 
-RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler, const std::string& name,
-  AstCtList* ctorArgs1, AstCtList* ctorArgs2, AstObjType* astObjType,
-  StorageDuration storageDuration) :
-  m_errorHandler{errorHandler},
-  m_name(name),
-  m_ctorArgs(combine(m_errorHandler, ctorArgs1, ctorArgs2)),
-  m_astObjType(astObjType),
-  m_storageDuration(storageDuration) {
+RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler,
+  const std::string& name, AstCtList* ctorArgs1, AstCtList* ctorArgs2,
+  AstObjType* astObjType, StorageDuration storageDuration)
+  : m_errorHandler{errorHandler}
+  , m_name(name)
+  , m_ctorArgs(combine(m_errorHandler, ctorArgs1, ctorArgs2))
+  , m_astObjType(astObjType)
+  , m_storageDuration(storageDuration) {
 }
 
-ParserExt::ParserExt(Env&, ErrorHandler& errorHandler) :
-  m_errorHandler(errorHandler) {
+ParserExt::ParserExt(Env&, ErrorHandler& errorHandler)
+  : m_errorHandler(errorHandler) {
 }
 
 AstObjType* ParserExt::mkDefaultType() {
@@ -52,7 +52,8 @@ ObjType::Qualifiers ParserExt::mkDefaultObjectTypeQualifier() {
 /** Turns the AstCtList in an AstOperator tree with at most two childs per
 node.  The AstCtList object is deleted, its ex-childs are now owned by their
 respective AstOperator parent. */
-AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args) {
+AstOperator* ParserExt::mkOperatorTree(
+  const string& op_as_str, AstCtList* args) {
   assert(args);
   args->releaseOwnership();
   const auto op = AstOperator::toEOperationPreferingBinary(op_as_str);
@@ -65,13 +66,13 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
   }
 
   // right associative binary operator
-  else if ( op == '=' ) {
+  else if (op == '=') {
     assert(args->childs().size() >= 2);
     auto ri = args->childs().rbegin();
     AstObject* last = *ri;
     AstObject* beforelast = *(++ri);
     tree = new AstOperator(op, beforelast, last);
-    for ( ++ri; ri!=args->childs().rend(); ++ri ) {
+    for (++ri; ri != args->childs().rend(); ++ri) {
       tree = new AstOperator(op, *ri, tree);
     }
   }
@@ -83,7 +84,7 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
     AstObject* first = *i;
     AstObject* second = *(++i);
     tree = new AstOperator(op, first, second);
-    for ( ++i; i!=args->childs().end(); ++i ) {
+    for (++i; i != args->childs().end(); ++i) {
       tree = new AstOperator(op, tree, *i);
     }
   }
@@ -96,24 +97,21 @@ AstOperator* ParserExt::mkOperatorTree(const string& op_as_str, AstCtList* args)
 AstOperator* ParserExt::mkOperatorTree(const string& op, AstObject* child1,
   AstObject* child2, AstObject* child3, AstObject* child4, AstObject* child5,
   AstObject* child6) {
-  return mkOperatorTree(op, new AstCtList(child1, child2, child3, child4, child5,
-      child6));
+  return mkOperatorTree(
+    op, new AstCtList(child1, child2, child3, child4, child5, child6));
 }
 
-AstDataDef* ParserExt::mkDataDef(ObjType::Qualifiers qualifiers,
-  RawAstDataDef*& rawAstDataDef) {
-
+AstDataDef* ParserExt::mkDataDef(
+  ObjType::Qualifiers qualifiers, RawAstDataDef*& rawAstDataDef) {
   assert(rawAstDataDef);
-  const auto unqualifiedAstObjType = rawAstDataDef->m_astObjType ?
-    rawAstDataDef->m_astObjType : new AstObjTypeSymbol(ObjTypeFunda::eInt);
+  const auto unqualifiedAstObjType = rawAstDataDef->m_astObjType
+    ? rawAstDataDef->m_astObjType
+    : new AstObjTypeSymbol(ObjTypeFunda::eInt);
   const auto qualifiedAstObjType =
     new AstObjTypeQuali(qualifiers, unqualifiedAstObjType);
 
-  return new AstDataDef(
-    rawAstDataDef->m_name,
-    qualifiedAstObjType,
-    rawAstDataDef->m_storageDuration,
-    rawAstDataDef->m_ctorArgs);
+  return new AstDataDef(rawAstDataDef->m_name, qualifiedAstObjType,
+    rawAstDataDef->m_storageDuration, rawAstDataDef->m_ctorArgs);
 }
 
 AstFunDef* ParserExt::mkFunDef(const string name, vector<AstDataDef*>* astArgs,
@@ -122,14 +120,14 @@ AstFunDef* ParserExt::mkFunDef(const string name, vector<AstDataDef*>* astArgs,
   return new AstFunDef(name, astArgs, retAstObjType, astBody);
 }
 
-AstFunDef* ParserExt::mkFunDef(const string name, ObjTypeFunda::EType ret,
-  AstObject* body) {
-  return mkFunDef(name, AstFunDef::createArgs(), new AstObjTypeSymbol(ret),
-    body);
+AstFunDef* ParserExt::mkFunDef(
+  const string name, ObjTypeFunda::EType ret, AstObject* body) {
+  return mkFunDef(
+    name, AstFunDef::createArgs(), new AstObjTypeSymbol(ret), body);
 }
 
-AstFunDef* ParserExt::mkFunDef(const string name, AstObjType* ret,
-  AstObject* body) {
+AstFunDef* ParserExt::mkFunDef(
+  const string name, AstObjType* ret, AstObject* body) {
   return mkFunDef(name, AstFunDef::createArgs(), ret, body);
 }
 

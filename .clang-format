@@ -1,0 +1,78 @@
+IndentWidth: 2
+ContinuationIndentWidth: 2
+
+AccessModifierOffset: -2
+AlignAfterOpenBracket: DontAlign # !! Behaves *sometimes* as if I used 'AlwaysBreak'
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: true
+AlignOperands: false # !! not respected
+AlignTrailingComments: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakTemplateDeclarations: true
+BinPackArguments: true  # !! see AlignAfterOpenBracket
+BinPackParameters: true # !! see AlignAfterOpenBracket
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: false
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+BreakBeforeBinaryOperators: None # !! not respected
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeComma
+#BreakInheritanceList: BeforeComma
+BreakStringLiterals: true
+CompactNamespaces: false
+ColumnLimit: 80
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+Cpp11BracedListStyle: true
+DerivePointerAlignment: false
+FixNamespaceComments: false
+IncludeBlocks: Preserve
+IndentCaseLabels: false
+IndentPPDirectives: AfterHash
+IndentWrappedFunctionNames: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: None
+ReflowComments: false
+SortIncludes: false
+SortUsingDeclarations: false
+PointerAlignment: Left  
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
+#SpaceBeforeCpp11BracedList: false
+#SpaceBeforeCtorInitializerColon: false
+#SpaceBeforeInheritanceColon: false
+SpaceBeforeParens: ControlStatements
+#SpaceBeforeRangeBasedForLoopColon: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+Standard: Cpp11
+TabWidth: 2
+UseTab: Never

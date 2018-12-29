@@ -3,7 +3,7 @@
 
 #include "astforwards.h"
 namespace llvm {
-  class Module;
+class Module;
 }
 class ErrorHandler;
 
@@ -15,7 +15,7 @@ associated to the AST node to the new entity.
   being an                 IrAddr
   definition
 */
-class IrGenForwardDeclarator : private AstDefaultIterator  {
+class IrGenForwardDeclarator : private AstDefaultIterator {
 public:
   IrGenForwardDeclarator(ErrorHandler& errorHandler, llvm::Module& module);
 

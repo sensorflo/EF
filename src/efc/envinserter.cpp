@@ -5,9 +5,8 @@
 #include "astdefaultiterator.h"
 using namespace std;
 
-EnvInserter::EnvInserter(Env& env, ErrorHandler& errorHandler) :
-  m_env(env),
-  m_errorHandler(errorHandler) {
+EnvInserter::EnvInserter(Env& env, ErrorHandler& errorHandler)
+  : m_env(env), m_errorHandler(errorHandler) {
 }
 
 void EnvInserter::insertIntoEnv(AstNode& root) {
@@ -33,8 +32,8 @@ void EnvInserter::visit(AstDataDef& dataDef) {
 
 void EnvInserter::visit(AstFunDef& funDef) {
   bool success{};
-  Env::AutoScope scope(m_env, funDef, Env::AutoScope::insertScopeAndDescent,
-    success);
+  Env::AutoScope scope(
+    m_env, funDef, Env::AutoScope::insertScopeAndDescent, success);
   if (!success) {
     Error::throwError(m_errorHandler, Error::eRedefinition, funDef.name());
   }

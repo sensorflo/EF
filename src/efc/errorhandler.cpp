@@ -2,25 +2,24 @@
 #include <sstream>
 using namespace std;
 
-Error::Error(Error::No no) :
-  m_no(no) {
+Error::Error(Error::No no) : m_no(no) {
 }
 
-void Error::throwError(ErrorHandler& errorHandler, No no, string additionalMsg) {
-  if ( !errorHandler.isReportingDisabledFor(no) ) {
+void Error::throwError(
+  ErrorHandler& errorHandler, No no, string additionalMsg) {
+  if (!errorHandler.isReportingDisabledFor(no)) {
     auto error = new Error(no);
     errorHandler.add(error);
     stringstream ss;
     ss << *error;
-    if ( !additionalMsg.empty() ) {
-      ss << ", " << additionalMsg;
-    }
+    if (!additionalMsg.empty()) { ss << ", " << additionalMsg; }
     throw BuildError(ss.str());
   }
 }
 
 const char* toStr(Error::No no) {
   switch (no) {
+    // clang-format off
   case Error::eNone: return "eNone";
   case Error::eUnknownName: return "eUnknownName";
   case Error::eRedefinition: return "eRedefinition";
@@ -39,6 +38,7 @@ const char* toStr(Error::No no) {
   case Error::eTypeInferenceIsNotYetSupported: return "eTypeInferenceIsNotYetSupported";
   case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization";
   case Error::eCnt: return "<unknown>";
+    // clang-format on
   }
   return "<unknown>";
 }
@@ -51,8 +51,7 @@ ostream& operator<<(ostream& os, const Error& error) {
   return os << error.no();
 }
 
-ErrorHandler::ErrorHandler() :
-  m_disabledErrors{} {
+ErrorHandler::ErrorHandler() : m_disabledErrors{} {
 }
 
 void ErrorHandler::disableReportingOf(Error::No no) {
@@ -64,21 +63,21 @@ bool ErrorHandler::isReportingDisabledFor(Error::No no) const {
 }
 
 ErrorHandler::~ErrorHandler() {
-  for ( Container::iterator i = m_errors.begin(); i!=m_errors.end(); ++i) {
+  for (Container::iterator i = m_errors.begin(); i != m_errors.end(); ++i) {
     delete *i;
   }
 }
 
 ostream& operator<<(ostream& os, const ErrorHandler& errorHandler) {
   os << "{";
-  for ( ErrorHandler::Container::const_iterator i = errorHandler.errors().begin();
-        i != errorHandler.errors().end(); ++i) {
-    if ( i!=errorHandler.errors().begin() ) { os << ", "; }
+  for (ErrorHandler::Container::const_iterator i =
+         errorHandler.errors().begin();
+       i != errorHandler.errors().end(); ++i) {
+    if (i != errorHandler.errors().begin()) { os << ", "; }
     os << (*i)->no();
   }
   return os << "}";
 }
 
-BuildError::BuildError(const string& what) :
-  logic_error(what){
+BuildError::BuildError(const string& what) : logic_error(what) {
 }
