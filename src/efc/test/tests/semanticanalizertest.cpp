@@ -1565,7 +1565,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     ErrorHandler errorHandler;
     Env env;
     ParserExt pe(env, errorHandler);
-    AstLoop* loop =
+    auto loop =
       new AstLoop(
         new AstNumber(0, ObjTypeFunda::eBool),
         new AstReturn(new AstNumber(42)));

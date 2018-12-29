@@ -164,7 +164,7 @@ void AstPrinter::visit(const AstObjTypeSymbol& symbol) {
 }
 
 void AstPrinter::visit(const AstObjTypeQuali& quali) {
-  int qualifiers = static_cast<int>(quali.qualifiers());
+  auto qualifiers = static_cast<int>(quali.qualifiers());
   if (qualifiers & ObjType::eMutable) {
     m_os << "mut-";
     qualifiers &= ~ObjType::eMutable;

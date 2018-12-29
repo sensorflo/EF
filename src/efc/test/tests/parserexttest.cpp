@@ -22,7 +22,7 @@ TEST(ParserExtTest, MAKE_TEST_NAME2(
 
   string spec = "Example with left associative operator and two childs in CtList";
   {
-    AstCtList* ctList = new AstCtList(
+    auto ctList = new AstCtList(
       new AstNumber(42),
       new AstNumber(77));
     unique_ptr<AstObject> opTree{ UUT.mkOperatorTree("/", ctList) };
@@ -32,7 +32,7 @@ TEST(ParserExtTest, MAKE_TEST_NAME2(
 
   spec = "Example with left associative operator and more than two childs in CtList";
   {
-    AstCtList* ctList = new AstCtList(
+    auto ctList = new AstCtList(
       new AstNumber(42),
       new AstNumber(77),
       new AstNumber(88));
@@ -43,7 +43,7 @@ TEST(ParserExtTest, MAKE_TEST_NAME2(
 
   spec = "Example with right associative operator and two childs in CtList";
   {
-    AstCtList* ctList = new AstCtList(
+    auto ctList = new AstCtList(
       new AstNumber(42),
       new AstNumber(77));
     unique_ptr<AstObject> opTree{ UUT.mkOperatorTree("=", ctList) };
@@ -53,7 +53,7 @@ TEST(ParserExtTest, MAKE_TEST_NAME2(
 
   spec = "Example with right associative operator and more than two childs in CtList";
   {
-    AstCtList* ctList = new AstCtList(
+    auto* ctList = new AstCtList(
       new AstNumber(42),
       new AstNumber(77),
       new AstNumber(88));

@@ -46,7 +46,7 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot, const string& spec,
 
     // verify
     ExecutionEngineApater ee(move(module));
-    TRet result = ee.jitExecFunction<TRet, TArgs...>(fqFunctionName, args...);
+    auto result = ee.jitExecFunction<TRet, TArgs...>(fqFunctionName, args...);
     EXPECT_EQ(expectedResult, result)
       << amendSpec(spec) << amendAst(astRoot) << amend(&ee.module());
   }

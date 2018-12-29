@@ -198,7 +198,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
     // It is known that static cast is safe because it was checked before
     // that the operand of the deref operator has the deref operator as
     // member function.
-    const ObjTypePtr& opObjType =
+    const auto& opObjType =
       static_cast<const ObjTypePtr&>(argschilds.back()->object().objType());
     op.setReferencedObjAndPropagateAccess(
       make_unique<FreeFromAstObject>(opObjType.pointee()));
@@ -303,7 +303,7 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
   }
 
   // -- responsibility 2: semantic analysis
-  const ObjTypeFun& objTypeFun =
+  const auto& objTypeFun =
     dynamic_cast<const ObjTypeFun&>(funCall.address().object().objType());
   const auto& argsCall = funCall.args().childs();
   const auto& argsCallee = objTypeFun.args();

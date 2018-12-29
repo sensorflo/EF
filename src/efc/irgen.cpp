@@ -354,7 +354,7 @@ void IrGen::visit(AstFunDef& funDef) {
 
 void IrGen::visit(AstFunCall& funCall) {
   funCall.address().accept(*this);
-  Function* callee =
+  auto callee =
     static_cast<Function*>(funCall.address().object().irAddrOfIrObject());
   assert(callee);
 
@@ -367,7 +367,7 @@ void IrGen::visit(AstFunCall& funCall) {
     llvmArgs.push_back(llvmArg);
   }
 
-  const ObjTypeFun& objTypeFun =
+  const auto& objTypeFun =
     dynamic_cast<const ObjTypeFun&>(funCall.address().object().objType());
   Value* llvmResult{};
   if (objTypeFun.ret().isVoid()) {

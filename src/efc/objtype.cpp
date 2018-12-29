@@ -296,7 +296,7 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
   // double dispatch is not yet required; currently it's more practical to
   // just use RTTI
   if (typeid(ObjTypeFunda) != typeid(other)) { return false; }
-  const ObjTypeFunda& otherFunda = static_cast<const ObjTypeFunda&>(other);
+  const auto& otherFunda = static_cast<const ObjTypeFunda&>(other);
   switch (m_type) {
   case eVoid: // fall through
   case eNoreturn: // fall through
