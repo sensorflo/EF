@@ -382,7 +382,7 @@ ObjTypeFun::ObjTypeFun(
       ret ? move(ret) : make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt)} {
   assert(m_args);
   assert(m_ret);
-  for (auto i = m_args->begin(); i != m_args->end(); ++i) { assert(*i); }
+  for (const auto& arg : *m_args) { assert(arg); }
 }
 
 ObjType::MatchType ObjTypeFun::match(const ObjType& dst, bool isLevel0) const {

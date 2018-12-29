@@ -22,7 +22,7 @@ void AstDefaultIterator::visit(AstCast& cast) {
 void AstDefaultIterator::visit(AstCtList& ctList) {
   if (m_visitor) { ctList.accept(*m_visitor); }
   auto& childs = ctList.childs();
-  for (auto i = childs.begin(); i != childs.end(); ++i) { (*i)->accept(*this); }
+  for (const auto& child : childs) { child->accept(*this); }
 }
 
 void AstDefaultIterator::visit(AstSeq& seq) {
@@ -52,10 +52,7 @@ void AstDefaultIterator::visit(AstFunCall& funCall) {
 
 void AstDefaultIterator::visit(AstFunDef& funDef) {
   if (m_visitor) { funDef.accept(*m_visitor); }
-  for (auto i = funDef.declaredArgs().begin(); i != funDef.declaredArgs().end();
-       ++i) {
-    (*i)->accept(*this);
-  }
+  for (const auto& arg : funDef.declaredArgs()) { arg->accept(*this); }
   funDef.ret().accept(*this);
   funDef.body().accept(*this);
 }

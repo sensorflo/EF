@@ -552,5 +552,5 @@ AllocaInst* IrGen::createAllocaInEntryBlock(
   Function* functionIr, const string& varName, llvm::Type* type) {
   IRBuilder<> irBuilder(
     &functionIr->getEntryBlock(), functionIr->getEntryBlock().begin());
-  return irBuilder.CreateAlloca(type, 0, varName.c_str());
+  return irBuilder.CreateAlloca(type, nullptr, varName.c_str());
 }

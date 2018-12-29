@@ -5,6 +5,7 @@ TokenStreamLookAhead::TokenStreamLookAhead(TokenStream& input)
 }
 
 TokenStreamLookAhead::~TokenStreamLookAhead() {
+  // pop() is final, so we can call it in dtor
   while (m_lookAheadCnt) { pop(); }
 }
 

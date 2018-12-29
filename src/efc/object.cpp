@@ -12,9 +12,9 @@ using namespace std;
 using namespace llvm;
 
 Object::Object()
-  : m_isModifiedOrRevealsAddr(false)
-  , m_irValueOfObject(nullptr)
-  , m_phase(eStart) {
+  : m_isModifiedOrRevealsAddr{false}
+  , m_irValueOfObject{nullptr}
+  , m_phase{eStart} {
 }
 
 void Object::addAccess(Access access) {

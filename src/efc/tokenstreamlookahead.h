@@ -9,7 +9,8 @@ public:
   TokenStreamLookAhead(TokenStream& input);
   ~TokenStreamLookAhead() override;
 
-  yy::Parser::symbol_type pop() override;
+  /** \interal is final in order that dtor can call it */
+  yy::Parser::symbol_type pop() final;
   /** Returns reference token at given pos without removing it; 0 is the
   front */
   virtual yy::Parser::symbol_type& lookAhead(size_t pos);

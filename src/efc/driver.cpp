@@ -14,10 +14,10 @@
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/IR/Module.h"
 
-#include <errno.h>
+#include <cerrno>
+#include <cstdio>
 #include <stdexcept>
-#include <stdio.h>
-#include <string.h>
+#include <string>
 #include <utility>
 
 using namespace std;

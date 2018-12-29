@@ -23,12 +23,11 @@ bool EnvNode::insert(EnvNode& node) {
   assert(node.m_envChildren.empty());
 
   const auto nameAlreadyExists = find(node.name());
-  if (nameAlreadyExists) { return false; }
-  else {
-    node.m_envParent = this;
-    m_envChildren.push_back(&node);
-    return true;
-  }
+  if (nameAlreadyExists != nullptr) { return false; }
+
+  node.m_envParent = this;
+  m_envChildren.push_back(&node);
+  return true;
 }
 
 EnvNode* EnvNode::find(const string& name) {
@@ -48,7 +47,8 @@ string EnvNode::createFqName() const {
   if (thisIsRoot) { return m_name; }
 
   deque<const EnvNode*> nodes{};
-  for (auto node = this; node && node->m_envParent; node = node->m_envParent) {
+  for (auto node = this; node != nullptr && node->m_envParent != nullptr;
+       node = node->m_envParent) {
     nodes.push_front(node);
   }
   assert(!nodes.empty()); // would mean this is root, but that was handled above

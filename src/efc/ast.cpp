@@ -900,9 +900,7 @@ void AstClassDef::createAndSetObjType() {
 AstCtList::AstCtList(vector<AstObject*>* childs)
   : m_childs(childs ? childs : new vector<AstObject*>()) {
   assert(m_childs);
-  for (auto it = m_childs->begin(); it != m_childs->end(); ++it) {
-    assert(*it);
-  }
+  for (const auto& child : *m_childs) { assert(child); }
 }
 
 /** When child is nullptr it is ignored */
@@ -926,7 +924,7 @@ AstCtList::AstCtList(AstObject* child1, AstObject* child2, AstObject* child3,
 
 AstCtList::~AstCtList() {
   if (m_owner) {
-    for (auto i = m_childs->begin(); i != m_childs->end(); ++i) { delete (*i); }
+    for (const auto& child : *m_childs) { delete (child); }
   }
   delete m_childs;
 }

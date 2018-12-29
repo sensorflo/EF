@@ -51,9 +51,11 @@ elsif(${CMAKE_EXPORT_COMPILE_COMMANDS} EQUAL ON)
   message(WARNING "CMAKE_EXPORT_COMPILE_COMMANDS must be set to ON in order for "
     "the clang-modernize target to become available")
 else()
+  # - I would like cppcoreguidelines-pro-bounds-array-to-pointer-decay, but the
+  #   implementation of assert seems to violate it.
   add_custom_target(clang-modernize
     COMMAND run-clang-tidy.py "'-header-filter=.*/efc/(test/(testhelpers/)?)?\\w*\\.h'"
-      -checks='-*,modernize-*' -fix -format
+      -checks='*,-google-build-using-namespace,-fuchsia-default-arguments,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-fuchsia-overloaded-operator'
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 endif()

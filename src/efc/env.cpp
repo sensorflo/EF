@@ -5,6 +5,7 @@
 #include <deque>
 #include <sstream>
 #include <thread>
+#include <utility>
 
 using namespace std;
 
@@ -57,9 +58,10 @@ void Env::descentScope(EnvNode& node) {
 }
 
 EnvNode* Env::find(const string& name) {
-  for (auto scope = m_currentScope; scope; scope = scope->m_envParent) {
+  for (auto scope = m_currentScope; scope != nullptr;
+       scope = scope->m_envParent) {
     const auto node = scope->find(name);
-    if (node) { return node; }
+    if (node != nullptr) { return node; }
   }
   return nullptr;
 }
@@ -67,7 +69,7 @@ EnvNode* Env::find(const string& name) {
 string Env::makeUniqueInternalName(string baseName) {
   thread_local auto thread_local_cnt = 0U;
   ++thread_local_cnt;
-  stringstream ss{baseName};
+  stringstream ss{std::move(baseName)};
   if (baseName.empty()) { ss << "$tmp"; }
   ss << this_thread::get_id() << "_" << thread_local_cnt;
   return ss.str();
