@@ -6,6 +6,7 @@
 #include "irgen.h"
 #include <cassert>
 #include <stdexcept>
+#include <utility>
 using namespace std;
 
 namespace {
@@ -842,14 +843,14 @@ void AstObjTypePtr::createAndSetObjType() {
 }
 
 AstClassDef::AstClassDef(
-  const std::string& name, std::vector<AstDataDef*>* dataMembers)
-  : m_name(name), m_dataMembers(toUniquePtrs(dataMembers)) {
+  std::string name, std::vector<AstDataDef*>* dataMembers)
+  : m_name(std::move(name)), m_dataMembers(toUniquePtrs(dataMembers)) {
   for (const auto& dataMember : m_dataMembers) { assert(dataMember); }
 }
 
 AstClassDef::AstClassDef(
-  const std::string& name, AstDataDef* m1, AstDataDef* m2, AstDataDef* m3)
-  : m_name(name), m_dataMembers(toUniquePtrs(m1, m2, m3)) {
+  std::string name, AstDataDef* m1, AstDataDef* m2, AstDataDef* m3)
+  : m_name(std::move(name)), m_dataMembers(toUniquePtrs(m1, m2, m3)) {
 }
 
 void AstClassDef::printValueTo(ostream& os, GeneralValue value) const {

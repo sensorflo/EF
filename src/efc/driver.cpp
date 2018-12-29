@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdexcept>
+#include <utility>
 using namespace std;
 using namespace yy;
 
@@ -24,8 +25,8 @@ extern void yyrestart(FILE*);
 extern void yyinitializeParserLoc(string* filename);
 
 /** \param osstream caller keeps ownership */
-Driver::Driver(const string& fileName, std::basic_ostream<char>* ostream)
-  : m_fileName(fileName)
+Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
+  : m_fileName(std::move(fileName))
   , m_errorHandler(make_unique<ErrorHandler>())
   , m_env(make_unique<Env>())
   , m_gotError(false)

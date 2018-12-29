@@ -4,6 +4,7 @@
 #include "errorhandler.h"
 #include <cassert>
 #include <stdexcept>
+#include <utility>
 using namespace std;
 
 namespace {
@@ -23,11 +24,11 @@ AstCtList* combine(
 }
 }
 
-RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler,
-  const std::string& name, AstCtList* ctorArgs1, AstCtList* ctorArgs2,
-  AstObjType* astObjType, StorageDuration storageDuration)
+RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler, std::string name,
+  AstCtList* ctorArgs1, AstCtList* ctorArgs2, AstObjType* astObjType,
+  StorageDuration storageDuration)
   : m_errorHandler{errorHandler}
-  , m_name(name)
+  , m_name(std::move(name))
   , m_ctorArgs(combine(m_errorHandler, ctorArgs1, ctorArgs2))
   , m_astObjType(astObjType)
   , m_storageDuration(storageDuration) {

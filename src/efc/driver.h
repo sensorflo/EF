@@ -22,8 +22,7 @@ those. The scanner has no own class; it is driven by it's global function
 yylex.*/
 class Driver {
 public:
-  Driver(
-    const std::string& fileName, std::basic_ostream<char>* ostream = nullptr);
+  Driver(std::string fileName, std::basic_ostream<char>* ostream = nullptr);
   virtual ~Driver();
 
   Scanner& scanner();

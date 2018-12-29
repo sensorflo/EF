@@ -24,7 +24,7 @@ class ParserExt;
 
 class RawAstDataDef final {
 public:
-  RawAstDataDef(ErrorHandler& errorHandler, const std::string& name,
+  RawAstDataDef(ErrorHandler& errorHandler, std::string name,
     AstCtList* ctorArgs1, AstCtList* ctorArgs2, AstObjType* astObjType,
     StorageDuration storageDuration);
   ~RawAstDataDef() = default;

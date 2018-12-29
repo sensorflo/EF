@@ -13,6 +13,7 @@
 #include "llvm/IR/Value.h"
 #include "llvm/IR/Function.h"
 #include <string>
+#include <utility>
 #include <vector>
 #include <iostream>
 #include <map>
@@ -308,10 +309,10 @@ private:
 /** Here symbol as an synonym to identifier */
 class AstSymbol : public AstObject {
 public:
-  AstSymbol(const std::string& name)
+  AstSymbol(std::string name)
     : m_referencedAstObj{}
     , m_accessFromAstParent{Access::eYetUndefined}
-    , m_name(name) {}
+    , m_name(std::move(name)) {}
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -739,8 +740,8 @@ public:
 /** Definition of a class. See also ObjTypeClass */
 class AstClassDef : public AstObjType {
 public:
-  AstClassDef(const std::string& name, std::vector<AstDataDef*>* dataMembers);
-  AstClassDef(const std::string& name, AstDataDef* m1 = nullptr,
+  AstClassDef(std::string name, std::vector<AstDataDef*>* dataMembers);
+  AstClassDef(std::string name, AstDataDef* m1 = nullptr,
     AstDataDef* m2 = nullptr, AstDataDef* m3 = nullptr);
 
   // -- overrides for AstNode
