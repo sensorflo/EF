@@ -379,17 +379,18 @@ we should derive from AstObject. */
 class AstOperator : public AstObject, private Object {
 public:
   enum EOperation {
-    eVoidAssign = '=',
+    eVoidAssign = '=', // type of expr is void
     eAdd = '+',
     eSub = '-',
     eMul = '*', // '*' is ambigous. can also mean eDeref
     eDiv = '/',
     eNot = '!',
     eAddrOf = '&',
+    // see m_opMap for the mapping to "and", "or" etc.
     eAnd = 128,
     eOr,
     eEqualTo,
-    eAssign,
+    eAssign, // type of expr is the lhs object
     eDeref
   };
   enum EClass {
@@ -471,6 +472,7 @@ private:
   const std::unique_ptr<AstCtList> m_args;
 
   // -- misc
+  /** key = operator as string according to EF grammar (e.g. "and", "or", ...) */
   static const std::map<const std::string, const EOperation> m_opMap;
   static const std::map<const EOperation, const std::string> m_opReverseMap;
 };
