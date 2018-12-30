@@ -173,11 +173,11 @@ and by declaration of free function yylex */
 
 
 %type <AstCtList*> ct_list ct_list_2plus initializer_arg opt_initializer_arg initializer_special_arg opt_initializer_special_arg naked_initializer
-%type <std::vector<AstNode*>*> pure_standalone_node_seq_expr
-%type <std::vector<AstDataDef*>*> param_ct_list pure_param_ct_list
+%type <std::vector<AstNode*>*> pure_node_seq
+%type <std::vector<AstDataDef*>*> param_list pure_param_list
 %type <std::vector<AstObject*>*> pure_ct_list
-%type <AstNode*> standalone_node
-%type <AstObject*> block_expr standalone_node_seq_expr standalone_expr sub_expr ct_list_arg operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_while
+%type <AstNode*> node
+%type <AstObject*> block node_seq standalone_expr expr ct_list_arg operator_expr primary_expr list_expr naked_if elif_chain opt_else naked_while
 %type <AstDataDef*> param_def
 %type <ObjType::Qualifiers> valvar opt_valvar valvar_lparen type_qualifier
 %type <StorageDuration> storage_duration storage_duration_arg
@@ -214,39 +214,38 @@ opt
 %start program;
 
 program
-  : block_expr END_OF_FILE                          { astRoot = std::unique_ptr<AstNode>($1); }
+  : block END_OF_FILE                               { astRoot = std::unique_ptr<AstNode>($1); }
   ;
 
-block_expr
-  : standalone_node_seq_expr                        { $$ = new AstBlock($1); }
+block
+  : node_seq                                        { $$ = new AstBlock($1); }
   ;
 
 /* Sequence of standalone nodes being itself an expr. The dynamic type of the
 last node must be expr, which is verified later by the semantic analizer. That
 is also the reason why it makes sense to create a 'sequence' even if there is
-only one element; there must be someone verifying that the dynamic type of
-that element is expr.
+only one element; there must be someone verifying that the dynamic type of that
+element is expr.
 
 Note that the seq_operator is _not_ the thing that builds / creates the
-sequence. It is the context where standalone_node_seq_expr is used that
-defines that an sequence must be created, also if it only contains one
-element. */
-standalone_node_seq_expr
-  : pure_standalone_node_seq_expr opt_seq_operator              { $$ = new AstSeq($1); }
+sequence. It is the context where node_seq is used that defines that an sequence
+must be created, also if it only contains one element. */
+node_seq
+  : pure_node_seq opt_seq_operator                  { $$ = new AstSeq($1); }
   ;
 
-pure_standalone_node_seq_expr
-  : standalone_node                                             { $$ = new std::vector<AstNode*>{$1}; }
-  | pure_standalone_node_seq_expr seq_operator standalone_node  { ($1)->push_back($3); std::swap($$,$1); }
+pure_node_seq
+  : node                                            { $$ = new std::vector<AstNode*>{$1}; }
+  | pure_node_seq seq_operator node                 { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 /* can later be also e.g. a type definition or import declarative etc. */
-standalone_node
+node
   : standalone_expr                                 { $$ = $1; }
   ;
 
 standalone_expr
-  : sub_expr                                        { std::swap($$,$1); }
+  : expr                                            { std::swap($$,$1); }
   ;
 
 ct_list
@@ -263,22 +262,25 @@ pure_ct_list
   | pure_ct_list sep ct_list_arg                    { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
-/* will later be more complex than standalone_node_seq_expr, e.g. by allowing
-designated initializer. For now, I like the alias, since it's easier for me to
-think about this way.
+/* will later be more complex than node_seq, e.g. by allowing designated
+initializer. For now, I like the alias, since it's easier for me to think about
+this way.
 
-TODO: Note that the standalone_expr within standalone_node_seq_expr have their
-own semantics, e.g. concerning temporaries. So now we have these rules nested,
-which is awfully complex to understand. It might work because the sequence
-typically only has one element */
+TODO: ct_list_arg can itself be "LPAREN ct_list RPAREN", to construct the arg
+with multiple (nested) arguments.
+
+TODO: Note that the standalone_expr within node_seq have their own semantics,
+e.g. concerning temporaries. So now we have these rules nested, which is awfully
+complex to understand. It might work because the sequence typically only has one
+element */
 ct_list_arg
-  : standalone_node_seq_expr                        { swap($$,$1); }
+  : node_seq                                        { swap($$,$1); }
   ;
 
 type
   : FUNDAMENTAL_TYPE                                { $$ = new AstObjTypeSymbol($1); }
-  | STAR           opt_newline type                 { $$ = new AstObjTypePtr($3); }
-  | type_qualifier opt_newline type                 { $$ = new AstObjTypeQuali($1, $3); }
+  | STAR           opt_nl type                      { $$ = new AstObjTypePtr($3); }
+  | type_qualifier opt_nl type                      { $$ = new AstObjTypeQuali($1, $3); }
   | ID                                              { assert(false); /* user defined names not yet supported; but I wanted to have ID already in grammar*/ }
   ;
 
@@ -351,12 +353,12 @@ else_sep
   ;
 
 equal_as_sep
-  : opt_newline EQUAL opt_newline
+  : opt_nl EQUAL opt_nl
   ;
 
 /* tokenfilter already removes newlines after LPAREN */
 lparen_as_sep
-  : opt_newline LPAREN
+  : opt_nl LPAREN
   ;
 
 opt_comma
@@ -374,45 +376,45 @@ opt_seq_operator
   | seq_operator
   ;
 
-sub_expr
+expr
   : primary_expr                                    { std::swap($$,$1); }
   | operator_expr                                   { std::swap($$,$1); }
   ;
 
 operator_expr
   /* function call and cast (aka construction of temporary) */
-  : sub_expr         LPAREN ct_list RPAREN          { $$ = new AstFunCall($1, $3); }
+  : expr             LPAREN ct_list RPAREN          { $$ = new AstFunCall($1, $3); }
   | OP_NAME          LPAREN ct_list RPAREN          { $$ = parserExt.mkOperatorTree($1, $3); }
   | FUNDAMENTAL_TYPE LPAREN ct_list RPAREN          { $$ = new AstCast(new AstObjTypeSymbol($1), $3); }
 
   /* unary prefix */
-  | NOT    opt_newline sub_expr                     { $$ = new AstOperator(AstOperator::eNot, $3); }
-  | EXCL   opt_newline sub_expr                     { $$ = new AstOperator(AstOperator::eNot, $3); }
-  | STAR   opt_newline sub_expr                     { $$ = new AstOperator(AstOperator::eDeref, $3); }
-  | AMPER  opt_newline sub_expr                     { $$ = new AstOperator('&', $3); }
-  | MINUS  opt_newline sub_expr                     { $$ = new AstOperator('-', $3); }
-  | PLUS   opt_newline sub_expr                     { $$ = new AstOperator('+', $3); }
-  | RETURN             sub_expr                     { $$ = new AstReturn($2); }
+  | NOT    opt_nl expr                              { $$ = new AstOperator(AstOperator::eNot, $3); }
+  | EXCL   opt_nl expr                              { $$ = new AstOperator(AstOperator::eNot, $3); }
+  | STAR   opt_nl expr                              { $$ = new AstOperator(AstOperator::eDeref, $3); }
+  | AMPER  opt_nl expr                              { $$ = new AstOperator('&', $3); }
+  | MINUS  opt_nl expr                              { $$ = new AstOperator('-', $3); }
+  | PLUS   opt_nl expr                              { $$ = new AstOperator('+', $3); }
+  | RETURN        expr                              { $$ = new AstReturn($2); }
 
   /* binary operators */
-  | sub_expr EQUAL       opt_newline sub_expr                   { $$ = new AstOperator('=', $1, $4); }
-  | sub_expr EQUAL_LESS  opt_newline sub_expr                   { $$ = new AstOperator("=<", $1, $4); }
-  | ID       COLON_EQUAL opt_newline sub_expr %prec ASSIGNEMENT { $$ = new AstDataDef($1, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration(), new AstCtList($4)); }
-  | sub_expr OR          opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $4); }
-  | sub_expr PIPE_PIPE   opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eOr, $1, $4); }
-  | sub_expr AND         opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $4); }
-  | sub_expr AMPER_AMPER opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eAnd, $1, $4); }
-  | sub_expr EQUAL_EQUAL opt_newline sub_expr                   { $$ = new AstOperator(AstOperator::eEqualTo, $1, $4); }
-  | sub_expr PLUS        opt_newline sub_expr                   { $$ = new AstOperator('+', $1, $4); }
-  | sub_expr MINUS       opt_newline sub_expr                   { $$ = new AstOperator('-', $1, $4); }
-  | sub_expr STAR        opt_newline sub_expr                   { $$ = new AstOperator('*', $1, $4); }
-  | sub_expr SLASH       opt_newline sub_expr                   { $$ = new AstOperator('/', $1, $4); }
+  | expr EQUAL       opt_nl expr                    { $$ = new AstOperator('=', $1, $4); }
+  | expr EQUAL_LESS  opt_nl expr                    { $$ = new AstOperator("=<", $1, $4); }
+  | ID   COLON_EQUAL opt_nl expr %prec ASSIGNEMENT  { $$ = new AstDataDef($1, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration(), new AstCtList($4)); }
+  | expr OR          opt_nl expr                    { $$ = new AstOperator(AstOperator::eOr, $1, $4); }
+  | expr PIPE_PIPE   opt_nl expr                    { $$ = new AstOperator(AstOperator::eOr, $1, $4); }
+  | expr AND         opt_nl expr                    { $$ = new AstOperator(AstOperator::eAnd, $1, $4); }
+  | expr AMPER_AMPER opt_nl expr                    { $$ = new AstOperator(AstOperator::eAnd, $1, $4); }
+  | expr EQUAL_EQUAL opt_nl expr                    { $$ = new AstOperator(AstOperator::eEqualTo, $1, $4); }
+  | expr PLUS        opt_nl expr                    { $$ = new AstOperator('+', $1, $4); }
+  | expr MINUS       opt_nl expr                    { $$ = new AstOperator('-', $1, $4); }
+  | expr STAR        opt_nl expr                    { $$ = new AstOperator('*', $1, $4); }
+  | expr SLASH       opt_nl expr                    { $$ = new AstOperator('/', $1, $4); }
   ;
 
 primary_expr
   : list_expr                                       { std::swap($$,$1); }
   | NUMBER                                          { $$ = new AstNumber($1.m_value, $1.m_objType); }
-  | LPAREN standalone_node_seq_expr RPAREN          { $$ = $2; }
+  | LPAREN node_seq RPAREN                          { $$ = $2; }
   | LPAREN RPAREN                                   { $$ = new AstNop(); }
   | ID                                              { $$ = new AstSymbol($1); }
   | NOP                                             { $$ = new AstNop(); }
@@ -429,8 +431,8 @@ list_expr
   | WHILE             naked_while          kwac     { std::swap($$,$2); }
   | RAW_NEW_LPAREN    type initializer_arg RPAREN   { $$ = nullptr; }
   | RAW_NEW           type initializer_arg kwac     { $$ = nullptr; }
-  | RAW_DELETE_LPAREN sub_expr             RPAREN   { $$ = nullptr; }
-  | RAW_DELETE        sub_expr             kwac     { $$ = nullptr; }
+  | RAW_DELETE_LPAREN expr                 RPAREN   { $$ = nullptr; }
+  | RAW_DELETE        expr                 kwac     { $$ = nullptr; }
   | RETURN_LPAREN     ct_list              RPAREN   { $$ = new AstReturn($2); }
   ;
 
@@ -438,7 +440,7 @@ list_expr
 kwac
   : DOLLAR
   | END
-  | ENDOF opt_newline id_or_keyword opt_newline DOLLAR /* or consider end(...) */
+  | ENDOF opt_nl id_or_keyword opt_nl DOLLAR /* or consider end(...) */
   ;
 
 id_or_keyword
@@ -461,12 +463,12 @@ naked_data_def
   ;
 
 naked_fun_def
-  : opt_id opt_fun_signature_arg equal_as_sep block_expr             { $$ = parserExt.mkFunDef($1, ($2).m_paramDefs, ($2).m_retType, $4); }
+  : opt_id opt_fun_signature_arg equal_as_sep block                  { $$ = parserExt.mkFunDef($1, ($2).m_paramDefs, ($2).m_retType, $4); }
   ;
 
 fun_signature_arg
-  : COLON                                 opt_type                   { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = $2; }
-  | opt_colon LPAREN param_ct_list RPAREN opt_type                   { ($$).m_paramDefs = $3;                             ($$).m_retType = $5; }
+  : COLON                              opt_type                      { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = $2; }
+  | opt_colon LPAREN param_list RPAREN opt_type                      { ($$).m_paramDefs = $3;                             ($$).m_retType = $5; }
   ;
 
 opt_fun_signature_arg                           
@@ -474,14 +476,14 @@ opt_fun_signature_arg
   | fun_signature_arg                                                { swap($$,$1); }
   ;
 
-param_ct_list
+param_list
   : %empty                                                           { $$ = new std::vector<AstDataDef*>(); }
-  | pure_param_ct_list opt_comma                                     { swap($$,$1); }
+  | pure_param_list opt_comma                                        { swap($$,$1); }
   ;
 
-pure_param_ct_list
+pure_param_list
   : param_def                                                        { $$ = new std::vector<AstDataDef*>(); ($$)->push_back($1); }
-  | pure_param_ct_list COMMA param_def                               { ($1)->push_back($3); std::swap($$,$1); }
+  | pure_param_list COMMA param_def                                  { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
 param_def
@@ -506,11 +508,11 @@ for function parameters in in a function definition.
 
 TODO: semantic analizer must report error/warning when noinit is used in return.
 
-1) If that is an parenthesized expression, say "val a = (42)$", then the resulting
-   initializer in the AST is two nested AstSeq, i.e. (;;42) (the complete AST is
-   ":;data(a int (;;42))"). One is because ct_list_arg is ultimatively an
-   standalone_node_seq_expr, and one is because here "(...)" is a primary_expr,
-   whose content is again a standalone_node_seq_expr. */
+1) If that is an parenthesized expression, say "val a = (42)$", then the
+   resulting initializer in the AST is two nested AstSeq, i.e. (;;42) (the
+   complete AST is ":;data(a int (;;42))"). One is because ct_list_arg is
+   ultimatively an node_seq, and one is because here "(...)" is a primary_expr,
+   whose content is again a node_seq. */
 naked_initializer
   /* note that "LPAREN RPAREN" is already handled within ct_list_arg by "LPAREN RPAREN" being a primary_expr*/
   : LPAREN ct_list_2plus RPAREN                                      { swap($$,$2); }
@@ -557,21 +559,21 @@ elif_chain
 
 opt_else
   : %empty                                                           { $$ = nullptr; }
-  | else_sep block_expr                                              { $$ = $2; }
+  | else_sep block                                                   { $$ = $2; }
   ;
 
 naked_while
   /* not ct_list_arg because do_sep allows newline as sep, which in ct_list_arg
   are seq_operator */
-  : standalone_expr do_sep block_expr                                { $$ = new AstBlock(new AstLoop($1, $3)); }
+  : standalone_expr do_sep block                                     { $$ = new AstBlock(new AstLoop($1, $3)); }
   ;
 
 condition_action_pair_then
   /* see naked_while why it's standalone_expr and not  seq_operator */
-  : standalone_expr then_sep block_expr                              { $$ = ConditionActionPair{ $1, $3}; }
+  : standalone_expr then_sep block                                   { $$ = ConditionActionPair{ $1, $3}; }
   ;
 
-opt_newline
+opt_nl
   : %empty
   | NEWLINE
   ;
