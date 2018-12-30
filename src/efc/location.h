@@ -1,192 +1,92 @@
-// A Bison parser, made by GNU Bison 3.0.4.
+#pragma once
 
-// Locations for Bison parsers in C++
+#include "position.h"
 
-// Copyright (C) 2002-2015 Free Software Foundation, Inc.
+/** A losition in the EF source file. */
+class Location {
+public:
+  Location(const Position& b, const Position& e) : begin{b}, end{e} {}
 
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+  explicit Location(const Position& p = Position{}) : begin{p}, end{p} {}
 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+  explicit Location(std::string* f, unsigned int l = 1u, unsigned int c = 1u)
+    : begin{f, l, c}, end{f, l, c} {}
 
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-// As a special exception, you may create a larger work that contains
-// part or all of the Bison parser skeleton and distribute that work
-// under terms of your choice, so long as that work isn't itself a
-// parser generator using the skeleton or a modified version thereof
-// as a parser skeleton.  Alternatively, if you modify or redistribute
-// the parser skeleton itself, you may (at your option) remove this
-// special exception, which will cause the skeleton and the resulting
-// Bison output files to be licensed under the GNU General Public
-// License without this special exception.
-
-// This special exception was added by the Free Software Foundation in
-// version 2.2 of Bison.
-
-/**
- ** \file /home/sensorflo/src/ef/src/efc/gensrc/location.hh
- ** Define the yy::location class.
- */
-
-#ifndef YY_YY_HOME_SENSORFLO_SRC_EF_SRC_EFC_GENSRC_LOCATION_HH_INCLUDED
-# define YY_YY_HOME_SENSORFLO_SRC_EF_SRC_EFC_GENSRC_LOCATION_HH_INCLUDED
-
-# include "position.h"
-
-
-namespace yy {
-#line 46 "/home/sensorflo/src/ef/src/efc/gensrc/location.hh" // location.cc:296
-  /// Abstract a location.
-  class location
-  {
-  public:
-
-    /// Construct a location from \a b to \a e.
-    location (const position& b, const position& e)
-      : begin (b)
-      , end (e)
-    {
-    }
-
-    /// Construct a 0-width location in \a p.
-    explicit location (const position& p = position ())
-      : begin (p)
-      , end (p)
-    {
-    }
-
-    /// Construct a 0-width location in \a f, \a l, \a c.
-    explicit location (std::string* f,
-                       unsigned int l = 1u,
-                       unsigned int c = 1u)
-      : begin (f, l, c)
-      , end (f, l, c)
-    {
-    }
-
-
-    /// Initialization.
-    void initialize (std::string* f = YY_NULLPTR,
-                     unsigned int l = 1u,
-                     unsigned int c = 1u)
-    {
-      begin.initialize (f, l, c);
-      end = begin;
-    }
-
-    /** \name Line and Column related manipulators
-     ** \{ */
-  public:
-    /// Reset initial location to final location.
-    void step ()
-    {
-      begin = end;
-    }
-
-    /// Extend the current location to the COUNT next columns.
-    void columns (int count = 1)
-    {
-      end += count;
-    }
-
-    /// Extend the current location to the COUNT next lines.
-    void lines (int count = 1)
-    {
-      end.lines (count);
-    }
-    /** \} */
-
-
-  public:
-    /// Beginning of the located region.
-    position begin;
-    /// End of the located region.
-    position end;
-  };
-
-  /// Join two locations, in place.
-  inline location& operator+= (location& res, const location& end)
-  {
-    res.end = end.end;
-    return res;
+  void initialize(
+    std::string* f = nullptr, unsigned int l = 1u, unsigned int c = 1u) {
+    begin.initialize(f, l, c);
+    end = begin;
   }
 
-  /// Join two locations.
-  inline location operator+ (location res, const location& end)
-  {
-    return res += end;
-  }
+public:
+  /** Reset initial location to final location. */
+  void step() { begin = end; }
 
-  /// Add \a width columns to the end position, in place.
-  inline location& operator+= (location& res, int width)
-  {
-    res.columns (width);
-    return res;
-  }
+  /** Extend the current location to the COUNT next columns. */
+  void columns(int count = 1) { end += count; }
 
-  /// Add \a width columns to the end position.
-  inline location operator+ (location res, int width)
-  {
-    return res += width;
-  }
+  /** Extend the current location to the COUNT next lines. */
+  void lines(int count = 1) { end.lines(count); }
 
-  /// Subtract \a width columns to the end position, in place.
-  inline location& operator-= (location& res, int width)
-  {
-    return res += -width;
-  }
+public:
+  /** Beginning of the located region. */
+  Position begin;
+  /** End of the located region. */
+  Position end;
+};
 
-  /// Subtract \a width columns to the end position.
-  inline location operator- (location res, int width)
-  {
-    return res -= width;
-  }
+/** Join two locations, in place. */
+inline Location& operator+=(Location& res, const Location& end) {
+  res.end = end.end;
+  return res;
+}
 
-  /// Compare two location objects.
-  inline bool
-  operator== (const location& loc1, const location& loc2)
-  {
-    return loc1.begin == loc2.begin && loc1.end == loc2.end;
-  }
+/** Join two locations. */
+inline Location operator+(Location res, const Location& end) {
+  return res += end;
+}
 
-  /// Compare two location objects.
-  inline bool
-  operator!= (const location& loc1, const location& loc2)
-  {
-    return !(loc1 == loc2);
-  }
+/** Add \a width columns to the end position, in place. */
+inline Location& operator+=(Location& res, int width) {
+  res.columns(width);
+  return res;
+}
 
-  /** \brief Intercept output stream redirection.
-   ** \param ostr the destination output stream
-   ** \param loc a reference to the location to redirect
-   **
-   ** Avoid duplicate information.
-   */
-  template <typename YYChar>
-  inline std::basic_ostream<YYChar>&
-  operator<< (std::basic_ostream<YYChar>& ostr, const location& loc)
-  {
-    unsigned int end_col = 0 < loc.end.column ? loc.end.column - 1 : 0;
-    ostr << loc.begin;
-    if (loc.end.filename
-        && (!loc.begin.filename
-            || *loc.begin.filename != *loc.end.filename))
-      ostr << '-' << loc.end.filename << ':' << loc.end.line << '.' << end_col;
-    else if (loc.begin.line < loc.end.line)
-      ostr << '-' << loc.end.line << '.' << end_col;
-    else if (loc.begin.column < end_col)
-      ostr << '-' << end_col;
-    return ostr;
-  }
+/** Add \a width columns to the end position. */
+inline Location operator+(Location res, int width) {
+  return res += width;
+}
 
+/** Subtract \a width columns to the end position, in place. */
+inline Location& operator-=(Location& res, int width) {
+  return res += -width;
+}
 
-} // yy
-#line 192 "/home/sensorflo/src/ef/src/efc/gensrc/location.hh" // location.cc:296
-#endif // !YY_YY_HOME_SENSORFLO_SRC_EF_SRC_EFC_GENSRC_LOCATION_HH_INCLUDED
+/** Subtract \a width columns to the end position. */
+inline Location operator-(Location res, int width) {
+  return res -= width;
+}
+
+inline bool operator==(const Location& loc1, const Location& loc2) {
+  return loc1.begin == loc2.begin && loc1.end == loc2.end;
+}
+
+inline bool operator!=(const Location& loc1, const Location& loc2) {
+  return !(loc1 == loc2);
+}
+
+template<typename YYChar>
+inline std::basic_ostream<YYChar>& operator<<(
+  std::basic_ostream<YYChar>& ostr, const Location& loc) {
+  unsigned int end_col = 0 < loc.end.m_column ? loc.end.m_column - 1 : 0;
+  ostr << loc.begin;
+  if (loc.end.m_fileName &&
+    (!loc.begin.m_fileName || *loc.begin.m_fileName != *loc.end.m_fileName))
+    ostr << '-' << loc.end.m_fileName << ':' << loc.end.m_line << '.'
+         << end_col;
+  else if (loc.begin.m_line < loc.end.m_line)
+    ostr << '-' << loc.end.m_line << '.' << end_col;
+  else if (loc.begin.m_column < end_col)
+    ostr << '-' << end_col;
+  return ostr;
+}

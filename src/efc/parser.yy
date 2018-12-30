@@ -9,11 +9,23 @@
 %define api.token.constructor
 %define api.value.type variant
 %define parse.assert
-%define api.location.type { yy::location }
+%define api.location.type { Location }
 
 %code requires
 {
   #include "../location.h"
+
+  /* If api.location.type is not %define-ed, then the generated header files
+  which define a location type also define YY_NULLPTR. I think this is a bug in
+  Bison. The generated parser should care himself about defining YY_NULLPTR,
+  since _he_ want's to use it internally. */
+  #ifndef YY_NULLPTR
+  # if defined __cplusplus && 201103L <= __cplusplus
+  #  define YY_NULLPTR nullptr
+  # else
+  #  define YY_NULLPTR 0
+  # endif
+  #endif
 
   /* Declarations and definitions needed to declare semantic value types used in
   tokens produced by scanner. */

@@ -28,7 +28,7 @@
 
  using namespace std;
  using namespace yy;
- yy::location loc;
+ Location loc;
  void yyinitializeParserLoc(string* filename) {
    loc.initialize(filename);
  }

@@ -8,8 +8,8 @@
 
 namespace yy {
 class Parser;
-class location;
 }
+class Location;
 class ErrorHandler;
 class Env;
 class ParserExt;
@@ -39,9 +39,9 @@ public:
 
   // referenced by scanner, parser etc.
   // --------------------------------------------------
-  void warning(const yy::location& loc, const std::string& msg);
-  void error(const yy::location& loc, const std::string& msg);
-  void exitInternError(const yy::location& loc, const std::string& msg);
+  void warning(const Location& loc, const std::string& msg);
+  void error(const Location& loc, const std::string& msg);
+  void exitInternError(const Location& loc, const std::string& msg);
   void exitInternError(const std::string& msg);
 
   std::string& fileName() { return m_fileName; }
@@ -55,7 +55,7 @@ private:
 
   /** Guarantess to return non-null */
   std::unique_ptr<AstObject> addImplicitMain(std::unique_ptr<AstNode> ast);
-  std::basic_ostream<char>& print(const yy::location& loc);
+  std::basic_ostream<char>& print(const Location& loc);
 
   /** The name of the file being parsed */
   std::string m_fileName;

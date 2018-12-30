@@ -134,22 +134,22 @@ int Driver::jitExecMain() {
   return m_executionEngine->jitExecFunction(".main");
 }
 
-basic_ostream<char>& Driver::print(const location& loc) {
-  return m_ostream << *loc.begin.filename << ":" << loc.begin.line << ":"
-                   << loc.begin.column << ": ";
+basic_ostream<char>& Driver::print(const Location& loc) {
+  return m_ostream << *loc.begin.m_fileName << ":" << loc.begin.m_line << ":"
+                   << loc.begin.m_column << ": ";
 }
 
-void Driver::warning(const location& loc, const string& msg) {
+void Driver::warning(const Location& loc, const string& msg) {
   print(loc) << "warning: " << msg << "\n";
   m_gotWarning = true;
 }
 
-void Driver::error(const location& loc, const string& msg) {
+void Driver::error(const Location& loc, const string& msg) {
   print(loc) << "error: " << msg << "\n";
   m_gotError = true;
 }
 
-void Driver::exitInternError(const location& loc, const string& msg) {
+void Driver::exitInternError(const Location& loc, const string& msg) {
   print(loc) << "internal error: " << msg << "\n";
   exit(1);
 }

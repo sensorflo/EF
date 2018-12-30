@@ -338,6 +338,6 @@ TEST(ScannerTest, MAKE_TEST_NAME2(
   Scanner& UUT = driver.scanner();
   const auto& actualPosition = UUT.pop().location.begin;
   EXPECT_EQ(
-    position(actualPosition.filename, 3, 1),
+    Position(actualPosition.m_fileName, 3, 1),
     actualPosition);
 }
