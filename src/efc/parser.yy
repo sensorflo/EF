@@ -9,9 +9,12 @@
 %define api.token.constructor
 %define api.value.type variant
 %define parse.assert
+%define api.location.type { yy::location }
 
 %code requires
 {
+  #include "../location.h"
+
   /* Declarations and definitions needed to declare semantic value types used in
   tokens produced by scanner. */
   #include "../generalvalue.h"
