@@ -903,12 +903,6 @@ AstCtList::AstCtList(vector<AstObject*>* childs)
   for (const auto& child : *m_childs) { assert(child); }
 }
 
-/** When child is nullptr it is ignored */
-AstCtList::AstCtList(AstObject* child) : m_childs(new vector<AstObject*>()) {
-  assert(m_childs);
-  if (child) { m_childs->push_back(child); }
-}
-
 /** nullptr childs are ignored.*/
 AstCtList::AstCtList(AstObject* child1, AstObject* child2, AstObject* child3,
   AstObject* child4, AstObject* child5, AstObject* child6)

@@ -782,11 +782,10 @@ public:
 /** Maybe it should be an independent type, that is not derive from AstNode */
 class AstCtList : public AstNode {
 public:
-  AstCtList(std::vector<AstObject*>* childs);
-  AstCtList(AstObject* child1 = nullptr);
-  AstCtList(AstObject* child1, AstObject* child2, AstObject* child3 = nullptr,
-    AstObject* child4 = nullptr, AstObject* child5 = nullptr,
-    AstObject* child6 = nullptr);
+  AstCtList(std::vector<AstObject*>* childs = nullptr);
+  AstCtList(AstObject* child1, AstObject* child2 = nullptr,
+    AstObject* child3 = nullptr, AstObject* child4 = nullptr,
+    AstObject* child5 = nullptr, AstObject* child6 = nullptr);
   ~AstCtList() override;
 
   // -- overrides for AstNode
