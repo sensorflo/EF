@@ -63,17 +63,18 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstObject* astRoot,
   }
 
 TEST(DriverSystemTest, MAKE_TEST_NAME(
-    a,
-    b,
-    c)) {
-  string spec = "Assigning to literal";
+    an_invalid_AST,
+    doSemanticAnalysis_and_generateIr_is_called,
+    the_appropriate_error_is_reported)) {
+  string spec =
+    "Example: Assigning to literal should result in reporting of eWriteToImmutable";
   TEST_SA_TRANS_AND_IR_BUILD_REPORTS_ERROR(
     new AstOperator('=', new AstNumber(42), new AstNumber(77)),
     Error::eWriteToImmutable, spec);
 }
 
 TEST(DriverSystemTest, MAKE_TEST_NAME(
-    an_well_formed_EF_program,
+    a_well_formed_EF_program,
     compile,
     writes_nothing_to_its_error_ostream)) {
   // setup
