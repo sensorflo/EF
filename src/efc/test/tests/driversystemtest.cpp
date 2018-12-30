@@ -53,13 +53,13 @@ void testSaTransAndIrBuildReportsError(TestingDriver& UUT, AstObject* astRoot,
   }
 }
 
-#define TEST_SATRANSANDIRBUILD_REPORTS_ERROR(astRoot, expectedErrorNo, spec) \
-  {                                                                          \
-    SCOPED_TRACE(                                                            \
-      "testSaTransAndIrBuildSucceeds called from here (via "                 \
-      "TEST_SATRANSANDIRBUILD_SUCCEEDS)");                                   \
-    TestingDriver UUT;                                                       \
-    testSaTransAndIrBuildReportsError(UUT, astRoot, expectedErrorNo, spec);  \
+#define TEST_SA_TRANS_AND_IR_BUILD_REPORTS_ERROR(astRoot, expectedErrorNo, spec) \
+  {                                                                              \
+    SCOPED_TRACE(                                                                \
+      "testSaTransAndIrBuildSucceeds called from here (via "                     \
+      "TEST_SA_TRANS_AND_IR_BUILD_SUCCEEDS)");                                   \
+    TestingDriver UUT;                                                           \
+    testSaTransAndIrBuildReportsError(UUT, astRoot, expectedErrorNo, spec);      \
   }
 
 TEST(DriverSystemTest, MAKE_TEST_NAME(
@@ -67,7 +67,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
     b,
     c)) {
   string spec = "Assigning to literal";
-  TEST_SATRANSANDIRBUILD_REPORTS_ERROR(
+  TEST_SA_TRANS_AND_IR_BUILD_REPORTS_ERROR(
     new AstOperator('=', new AstNumber(42), new AstNumber(77)),
     Error::eWriteToImmutable, spec);
 }
@@ -77,7 +77,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
     b,
     c)) {
   string spec = "Assigning to literal";
-  TEST_SATRANSANDIRBUILD_REPORTS_ERROR(
+  TEST_SA_TRANS_AND_IR_BUILD_REPORTS_ERROR(
     new AstOperator('=', new AstNumber(42), new AstNumber(77)),
     Error::eWriteToImmutable, spec);
 }
