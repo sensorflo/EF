@@ -2,16 +2,16 @@
 /** \file
 yy::Parser implementation extension. Has two related responsibilities:
 
-1) So bison's input file ef.yy can only contain tiny fragments of
-   code. Anything larger than tiny is implemented here and ef.yy should make
-   only the call.  ParserApiExt is similar, but extends the public interface
-   of yy::Parser.
+1) So Bison's input file parser.yy can only contain tiny fragments of
+   code. Anything larger than tiny is implemented here and parser.yy should make
+   only the call.  ParserApiExt is similar, but extends the public interface of
+   yy::Parser.
 
 2) So SemanticAnalizer can make less traversals of the AST, ParserExt does
    some of SemanticAnalizer's responsibilities already while creating the
    AST. Currently the design is that it is intentionally left open who is
    responsible for what, so that responsibilities can easily be moved between
-   the two.*/
+   the two until the design is more stable.*/
 #include "astforwards.h"
 #include "declutils.h"
 #include "objtype.h"
