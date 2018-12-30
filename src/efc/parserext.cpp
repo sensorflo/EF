@@ -108,9 +108,9 @@ AstOperator* ParserExt::mkOperatorTree(const string& op, AstObject* child1,
 AstDataDef* ParserExt::mkDataDef(
   ObjType::Qualifiers qualifiers, RawAstDataDef*& rawAstDataDef) {
   assert(rawAstDataDef);
-  const auto unqualifiedAstObjType = rawAstDataDef->m_astObjType
+  const auto unqualifiedAstObjType = rawAstDataDef->m_astObjType != nullptr
     ? rawAstDataDef->m_astObjType
-    : new AstObjTypeSymbol(ObjTypeFunda::eInt);
+    : mkDefaultType();
   const auto qualifiedAstObjType =
     new AstObjTypeQuali(qualifiers, unqualifiedAstObjType);
 
