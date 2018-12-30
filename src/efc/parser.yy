@@ -240,6 +240,7 @@ pure_standalone_node_seq_expr
   | pure_standalone_node_seq_expr seq_operator standalone_node  { ($1)->push_back($3); std::swap($$,$1); }
   ;
 
+/* can later be also e.g. a type definition or import declarative etc. */
 standalone_node
   : standalone_expr                                 { $$ = $1; }
   ;
@@ -264,7 +265,12 @@ pure_ct_list
 
 /* will later be more complex than standalone_node_seq_expr, e.g. by allowing
 designated initializer. For now, I like the alias, since it's easier for me to
-think about this way. */
+think about this way.
+
+TODO: Note that the standalone_expr within standalone_node_seq_expr have their
+own semantics, e.g. concerning temporaries. So now we have these rules nested,
+which is awfully complex to understand. It might work because the sequence
+typically only has one element */
 ct_list_arg
   : standalone_node_seq_expr                        { swap($$,$1); }
   ;
