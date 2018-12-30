@@ -73,16 +73,6 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
 }
 
 TEST(DriverSystemTest, MAKE_TEST_NAME(
-    a2,
-    b,
-    c)) {
-  string spec = "Assigning to literal";
-  TEST_SA_TRANS_AND_IR_BUILD_REPORTS_ERROR(
-    new AstOperator('=', new AstNumber(42), new AstNumber(77)),
-    Error::eWriteToImmutable, spec);
-}
-
-TEST(DriverSystemTest, MAKE_TEST_NAME(
     an_well_formed_EF_program,
     compile,
     writes_nothing_to_its_error_ostream)) {
