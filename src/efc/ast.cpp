@@ -113,7 +113,7 @@ AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child)
 AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstCtList* args)
   : m_specifiedNewAstObjType(specifiedNewAstObjType
         ? unique_ptr<AstObjType>(specifiedNewAstObjType)
-        : make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt))
+        : make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInfer))
   , m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
 }
 
@@ -187,7 +187,7 @@ AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
   : AstObjDef(name)
   , m_declaredAstObjType(declaredAstObjType
         ? unique_ptr<AstObjType>(declaredAstObjType)
-        : make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInt))
+        : make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInfer))
   , m_declaredStorageDuration(declaredStorageDuration)
   , m_ctorArgs(mkCtorArgs(ctorArgs, m_declaredStorageDuration, m_doNotInit)) {
   assert(declaredStorageDuration != StorageDuration::eYetUndefined);
