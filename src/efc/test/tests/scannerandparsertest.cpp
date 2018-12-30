@@ -490,10 +490,10 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE("fun foo: (arg1:int, arg2:int) int = 42$", ":;fun(foo ((arg1 int) (arg2 int)) int :;42)", spec);
 
   spec = "example with no function name";
-  TEST_PARSE("fun : () int = 42$", ":;fun(<none> () int :;42)", spec);
+  TEST_PARSE("fun : () int = 42$", ":;fun(<anonymous> () int :;42)", spec);
 
   spec = "example with no paramater name";
-  TEST_PARSE("fun foo: (:int) int = 42$", ":;fun(foo ((<none> int)) int :;42)", spec);
+  TEST_PARSE("fun foo: (:int) int = 42$", ":;fun(foo ((<anonymous> int)) int :;42)", spec);
 
   spec = "example with various ways of specifying parameter";
   TEST_PARSE("fun foo: (foo        :int       ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
@@ -645,16 +645,16 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE("val foo  (noinit):int$", ":;data(foo int noinit)", spec);
 
   spec = "no variable name";
-  TEST_PARSE("val          :int =   42  $", ":;data(<none> int (;42))", spec);
-  TEST_PARSE("val          :int = ( 42 )$", ":;data(<none> int (;;42))", spec);
-  TEST_PARSE("val = 42     :int         $", ":;data(<none> int (;42))", spec);
-  TEST_PARSE("val = ( 42 ) :int         $", ":;data(<none> int (;;42))", spec);
-  TEST_PARSE("val   ( 42 ) :int         $", ":;data(<none> int (;42))", spec);
-  TEST_PARSE("val               =   42  $", ":;data(<none> infer (;42))", spec);
-  TEST_PARSE("val               = ( 42 )$", ":;data(<none> infer (;;42))", spec);
-  TEST_PARSE("val = 42                  $", ":;data(<none> infer (;42))", spec);
-  TEST_PARSE("val = ( 42 )              $", ":;data(<none> infer (;;42))", spec);
-  TEST_PARSE("val   ( 42 )              $", ":;data(<none> infer (;42))", spec);
+  TEST_PARSE("val          :int =   42  $", ":;data(<anonymous> int (;42))", spec);
+  TEST_PARSE("val          :int = ( 42 )$", ":;data(<anonymous> int (;;42))", spec);
+  TEST_PARSE("val = 42     :int         $", ":;data(<anonymous> int (;42))", spec);
+  TEST_PARSE("val = ( 42 ) :int         $", ":;data(<anonymous> int (;;42))", spec);
+  TEST_PARSE("val   ( 42 ) :int         $", ":;data(<anonymous> int (;42))", spec);
+  TEST_PARSE("val               =   42  $", ":;data(<anonymous> infer (;42))", spec);
+  TEST_PARSE("val               = ( 42 )$", ":;data(<anonymous> infer (;;42))", spec);
+  TEST_PARSE("val = 42                  $", ":;data(<anonymous> infer (;42))", spec);
+  TEST_PARSE("val = ( 42 )              $", ":;data(<anonymous> infer (;;42))", spec);
+  TEST_PARSE("val   ( 42 )              $", ":;data(<anonymous> infer (;42))", spec);
 }
 
 // note that it is a semantic error, not a grammar error

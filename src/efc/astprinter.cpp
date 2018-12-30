@@ -10,7 +10,7 @@ namespace {
 string wrapName(const string& str) {
   if (!str.empty()) { return str; }
   else {
-    return "<none>";
+    return "<anonymous>";
   }
 }
 }
