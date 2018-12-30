@@ -61,11 +61,6 @@ and by declaration of free function yylex */
 %lex-param { TokenStream& tokenStream }
 %parse-param { TokenStream& tokenStream } { Driver& driver } { ParserExt& parserExt } { std::unique_ptr<AstNode>& astRoot }
 
-%code provides
-{
-  #include "../parserapiext.h"
-}
-
 %locations
 %initial-action
 {

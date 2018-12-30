@@ -1,5 +1,7 @@
 #include "tokenfilter.h"
 
+#include "parserapiext.h"
+
 using namespace yy;
 
 TokenFilter::TokenFilter(TokenStream& input)

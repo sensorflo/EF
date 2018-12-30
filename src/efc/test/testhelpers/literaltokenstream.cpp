@@ -1,4 +1,7 @@
 #include "literaltokenstream.h"
+
+#include "../parserapiext.h"
+
 using namespace std;
 using namespace yy;
 

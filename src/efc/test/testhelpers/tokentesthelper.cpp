@@ -1,5 +1,7 @@
 #include "tokentesthelper.h"
 
+#include "../parserapiext.h"
+
 #include <sstream>
 
 using namespace std;
