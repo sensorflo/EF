@@ -52,7 +52,6 @@
   /* Further declarations and definitions needed to declare the generated parser */
   class Driver;
   class ParserExt;
-  class AstNode;
   class TokenStream;
 }
 
