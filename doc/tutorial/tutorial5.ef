@@ -11,9 +11,9 @@
 // expression having a value. If cond_expr is true, then the overall value
 // equals to then_expr, and if cond_expr is false then the overall value equals
 // to else_expr.
-x:=1
-y:=2
-foo1 := if x==y: x else y$
+val x: int = 1$
+val y: int = 2$
+val z: int = (if x==y: x else y$)$
 
 // Also definitions and declarations like 'val foo: int = 3$' and 'decl fun
 // foo: () -> int$' are expressions. Their value is that of the identifier
@@ -60,4 +60,4 @@ if   x==y then x else y endof if$
 
 // Also operators can be written in the call syntax.
 // operator syntax       call syntax
-   tmp1 := x+y      ;    tmp2 := op+(x,y)
+   x+y                 ; op+(x,y)

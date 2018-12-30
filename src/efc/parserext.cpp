@@ -42,7 +42,7 @@ ParserExt::ParserExt(Env&, ErrorHandler& errorHandler)
 }
 
 AstObjType* ParserExt::mkDefaultType() {
-  return new AstObjTypeSymbol(ObjTypeFunda::eInt);
+  return new AstObjTypeSymbol(ObjTypeFunda::eInfer);
 }
 
 StorageDuration ParserExt::mkDefaultStorageDuration() {
