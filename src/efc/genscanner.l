@@ -19,7 +19,11 @@
  #undef yywrap
  #define yywrap() 1
 
- // an action which is always executed prior to the matched rule's action
+ // YY_USER_ACTION is always executed prior to the respective matched rule's
+ // action. Here we advance the end point of the location as many chars as there
+ // are in the current match. Note that in case the match contains newlines,
+ // from a first point of view that is not correct. But the action of the
+ // respective rule below will then modify loc correctly.
  #define YY_USER_ACTION  loc.columns(yyleng);
 
  using namespace std;
@@ -36,7 +40,10 @@ ID [a-zA-Z_][a-zA-Z_0-9]*
 ----------------------------------------------------------------------*/
 %%
 
-  // code which is to be executed whenever the scanning routine is entered
+  // Code which is to be executed whenever the scanning routine is entered. If
+  // the action of a rule does not return, we stay within the scanning routine,
+  // i.e. the following code is not executed again. Thus they need to call
+  // loc.step().
 %{
   loc.step();
 %}
