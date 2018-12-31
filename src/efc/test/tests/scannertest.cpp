@@ -1,4 +1,5 @@
 #include "test.h"
+#include "../errorhandler.h"
 #include "../scanner.h"
 #include "driverontmpfile.h"
 #include "tokentesthelper.h"
@@ -26,8 +27,6 @@ void testScanner(const string& input, const string& spec,
 
     // verify
     EXPECT_EQ(expectedToken, actualToken)
-      << amendSpec(spec) << "Input: '" << input << "'\n";
-    EXPECT_FALSE(driver.d().gotError())
       << amendSpec(spec) << "Input: '" << input << "'\n";
     if (Parser::token::TOK_END_OF_FILE == actualToken ||
       Parser::token::TOK_END_OF_FILE == expectedToken) {
@@ -95,7 +94,6 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     Parser::symbol_type st = UUT.pop();
     EXPECT_TOK_EQ(TOK_ID, st);
     EXPECT_EQ("foo", st.value.as<string>());
-    EXPECT_FALSE(driver.d().gotError());
   }
 
   string spec = "Example: An identifier composed of parts which each for"
@@ -125,8 +123,6 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   EXPECT_EQ(ObjTypeFunda::eChar, st.value.as<NumberToken>().m_objType);
 
   EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop());
-
-  EXPECT_FALSE(driver.d().gotError());
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -144,8 +140,6 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     EXPECT_EQ(ObjTypeFunda::eInt, st.value.as<NumberToken>().m_objType);
 
     EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop());
-
-    EXPECT_FALSE(driver.d().gotError());
   }
 
   spec = "Example: a literal floating point value";
@@ -159,8 +153,6 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     EXPECT_EQ(ObjTypeFunda::eDouble, st.value.as<NumberToken>().m_objType);
 
     EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop());
-
-    EXPECT_FALSE(driver.d().gotError());
   }
 }
 
@@ -177,8 +169,6 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   EXPECT_EQ(ObjTypeFunda::eBool, st.value.as<NumberToken>().m_objType);
 
   EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop());
-
-  EXPECT_FALSE(driver.d().gotError());
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -194,20 +184,30 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   EXPECT_EQ(ObjTypeFunda::eBool, st.value.as<NumberToken>().m_objType);
 
   EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop());
-
-  EXPECT_FALSE(driver.d().gotError());
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_number_WITH_an_unknown_suffix,
     pop,
-    returns_TOK_NUMBER_AND_fails)) {
+    reports_eUnknownStringLiteralSuffix)) {
+  // setup
   stringstream errorStream;
   DriverOnTmpFile driver("42if", &errorStream);
   Scanner& UUT = driver.scanner();
-  EXPECT_TOK_EQ(TOK_NUMBER, UUT.pop());
-  EXPECT_TRUE(driver.d().gotError());
-  EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop());
+
+  // exercise
+  try {
+    UUT.pop();
+  }
+
+  // verify
+  catch (...) {
+    const auto& errors = driver.errorHandler().errors();
+    ASSERT_EQ(1u, errors.size());
+    EXPECT_EQ(Error::eUnknownStringLiteralSuffix, errors.front()->no());
+    return;
+  }
+  FAIL();
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -222,7 +222,6 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     EXPECT_TOK_EQ(TOK_OP_NAME, st) << amendSpec(spec);
     EXPECT_EQ("*", st.value.as<string>()) << amendSpec(spec);
     EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop()) << amendSpec(spec);
-    EXPECT_FALSE(driver.d().gotError()) << amendSpec(spec);
   }
 
   spec = "an operator with multiple chars (punctuation)";
@@ -233,7 +232,6 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     EXPECT_TOK_EQ(TOK_OP_NAME, st) << amendSpec(spec);
     EXPECT_EQ("&&", st.value.as<string>()) << amendSpec(spec);
     EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop()) << amendSpec(spec);
-    EXPECT_FALSE(driver.d().gotError()) << amendSpec(spec);
   }
 
   spec = "an operator with multiple chars (alphanumeric, thus preceded by an underscore)";
@@ -244,7 +242,6 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     EXPECT_TOK_EQ(TOK_OP_NAME, st) << amendSpec(spec);
     EXPECT_EQ("and", st.value.as<string>()) << amendSpec(spec);
     EXPECT_TOK_EQ(TOK_END_OF_FILE, UUT.pop()) << amendSpec(spec);
-    EXPECT_FALSE(driver.d().gotError()) << amendSpec(spec);
   }
 }
 

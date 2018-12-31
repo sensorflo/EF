@@ -4,15 +4,15 @@
 
 #include <memory>
 
-class Driver;
+class ErrorHandler;
 
 /** \internal See also yylex and yylex_raw */
 class Scanner : public TokenStream {
 public:
-  Scanner(Driver& driver);
+  Scanner(ErrorHandler& errorHandler);
 
   Parser::symbol_type pop() override;
 
 private:
-  Driver& m_driver;
+  ErrorHandler& m_errorHandler;
 };

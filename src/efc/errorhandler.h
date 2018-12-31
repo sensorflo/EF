@@ -15,6 +15,9 @@ class Error final {
 public:
   enum No {
     eNone,
+    eInternalError,
+    eUnknownStringLiteralSuffix,
+    eLiteralOutOfValidRange,
     eUnknownName,
     eRedefinition,
     eWriteToImmutable,

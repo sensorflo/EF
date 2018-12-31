@@ -20,10 +20,8 @@ Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
   : m_fileName(std::move(fileName))
   , m_errorHandler(make_unique<ErrorHandler>())
   , m_env(make_unique<Env>())
-  , m_gotError(false)
-  , m_gotWarning(false)
   , m_ostream(ostream ? *ostream : cerr)
-  , m_scanner(make_unique<Scanner>(*this))
+  , m_scanner(make_unique<Scanner>(*m_errorHandler))
   , m_tokenFilter(make_unique<TokenFilter>(*m_scanner.get()))
   , m_parser(make_unique<Parser>(
       m_fileName, *m_tokenFilter.get(), *m_env, *m_errorHandler))
@@ -93,29 +91,4 @@ void Driver::generateIr(AstNode& ast) {
 int Driver::jitExecMain() {
   assert(m_executionEngine);
   return m_executionEngine->jitExecFunction(".main");
-}
-
-basic_ostream<char>& Driver::print(const Location& loc) {
-  return m_ostream << *loc.begin.m_fileName << ":" << loc.begin.m_line << ":"
-                   << loc.begin.m_column << ": ";
-}
-
-void Driver::warning(const Location& loc, const string& msg) {
-  print(loc) << "warning: " << msg << "\n";
-  m_gotWarning = true;
-}
-
-void Driver::error(const Location& loc, const string& msg) {
-  print(loc) << "error: " << msg << "\n";
-  m_gotError = true;
-}
-
-void Driver::exitInternError(const Location& loc, const string& msg) {
-  print(loc) << "internal error: " << msg << "\n";
-  exit(1);
-}
-
-void Driver::exitInternError(const string& msg) {
-  m_ostream << "internal error: " << msg << "\n";
-  exit(1);
 }

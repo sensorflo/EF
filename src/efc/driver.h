@@ -34,23 +34,12 @@ public:
   void generateIr(AstNode& ast);
   int jitExecMain();
 
-  // referenced by scanner, parser etc.
-  // --------------------------------------------------
-  void warning(const Location& loc, const std::string& msg);
-  void error(const Location& loc, const std::string& msg);
-  void exitInternError(const Location& loc, const std::string& msg);
-  void exitInternError(const std::string& msg);
-
   std::string& fileName() { return m_fileName; }
-  bool gotError() const { return m_gotError; }
-  bool gotWarning() const { return m_gotWarning; }
 
 private:
   friend class TestingDriver;
 
   NEITHER_COPY_NOR_MOVEABLE(Driver);
-
-  std::basic_ostream<char>& print(const Location& loc);
 
   /** The name of the file being parsed */
   std::string m_fileName;
@@ -58,8 +47,6 @@ private:
   std::unique_ptr<ErrorHandler> m_errorHandler;
   /** Guaranteed to be non-null */
   std::unique_ptr<Env> m_env;
-  bool m_gotError;
-  bool m_gotWarning;
   std::basic_ostream<char>& m_ostream;
   /** Guaranteed to be non-nullptr */
   std::unique_ptr<Scanner> m_scanner;

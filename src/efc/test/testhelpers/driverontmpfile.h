@@ -55,6 +55,7 @@ public:
   operator TestingDriver&() { return m_driver; }
   TestingDriver& d() { return m_driver; }
   Scanner& scanner() { return m_driver.scanner(); }
+  ErrorHandler& errorHandler() { return m_driver.errorHandler(); }
 
 private:
   TmpFile m_tmpFile;
