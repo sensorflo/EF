@@ -42,7 +42,7 @@ public:
     : Driver(fileName, ostream){};
 
   using Driver::m_errorHandler;
-  using Driver::m_parserExt;
+  using Driver::m_genParserExt;
   using Driver::m_env;
   using Driver::m_astRootFromParser;
 };

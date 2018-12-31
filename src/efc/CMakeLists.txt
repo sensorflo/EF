@@ -92,7 +92,7 @@ set(SRCS
   object.cpp
   objtype.cpp
   parser.cpp
-  parserext.cpp
+  genparserext.cpp
   semanticanalizer.cpp
   signatureaugmentor.cpp
   storageduration.cpp
@@ -133,7 +133,7 @@ set(TEST_TEST_SRCS
   test/tests/driversystemtest.cpp
   test/tests/testhelpers/literaltokenstreamtest.cpp
   test/tests/scannertest.cpp
-  test/tests/parserexttest.cpp
+  test/tests/genparserexttest.cpp
 )
 set(TEST_OTHER_SRCS
   test/efctest.cpp

@@ -1,5 +1,5 @@
 #include "test.h"
-#include "../parserext.h"
+#include "../genparserext.h"
 #include "../env.h"
 #include "../errorhandler.h"
 #include "../ast.h"
@@ -15,14 +15,14 @@ SemanticAnalizerTest, which tests features which don't clearly belong to
 either ParserExt or SemanticAnalizer. */
 
 
-TEST(ParserExtTest, MAKE_TEST_NAME2(
+TEST(GenParserExtTest, MAKE_TEST_NAME2(
     mkOperatorTree_WITH_a_CtList,
     returns_an_AST_tree_of_Operator_nodes_with_two_child_nodes_each)) {
   DisableLocationRequirement dummy;
 
   Env env;
   ErrorHandler errorHandler;
-  ParserExt UUT(env, errorHandler);
+  GenParserExt UUT(env, errorHandler);
 
   string spec = "Example with left associative operator and two childs in CtList";
   {

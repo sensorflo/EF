@@ -17,9 +17,9 @@ details of the generated parser. */
 class Parser final : public yy::GenParser {
 public:
   Parser(TokenStream& tokenStream_yyarg, Driver& driver_yyarg,
-    ParserExt& parserExt_yyarg, std::unique_ptr<AstNode>& astRoot_yyarg)
+    GenParserExt& genParserExt_yyarg, std::unique_ptr<AstNode>& astRoot_yyarg)
     : yy::GenParser{
-        tokenStream_yyarg, driver_yyarg, parserExt_yyarg, astRoot_yyarg} {}
+        tokenStream_yyarg, driver_yyarg, genParserExt_yyarg, astRoot_yyarg} {}
 
   enum TokenClass {
     TKStarter,

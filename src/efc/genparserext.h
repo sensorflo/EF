@@ -1,13 +1,12 @@
 #pragma once
 /** \file
-Parser implementation extension. Has two related responsibilities:
+GenParser implementation extension. Has two related responsibilities:
 
-1) So Bison's input file parser.yy can only contain tiny fragments of
-   code. Anything larger than tiny is implemented here and parser.yy should make
-   only the call.  ParserApiExt is similar, but extends the public interface of
-   Parser.
+1) So Bison's input file genparser.yy can only contain tiny fragments of
+   code. Anything larger than tiny is implemented here and genparser.yy should
+   make only the call.
 
-2) So SemanticAnalizer can make less traversals of the AST, ParserExt does
+2) So SemanticAnalizer can make less traversals of the AST, GenParserExt does
    some of SemanticAnalizer's responsibilities already while creating the
    AST. Currently the design is that it is intentionally left open who is
    responsible for what, so that responsibilities can easily be moved between
@@ -22,7 +21,7 @@ Parser implementation extension. Has two related responsibilities:
 
 class Env;
 class ErrorHandler;
-class ParserExt;
+class GenParserExt;
 
 class RawAstDataDef final {
 public:
@@ -32,7 +31,7 @@ public:
   ~RawAstDataDef() = default;
 
 private:
-  friend ParserExt;
+  friend GenParserExt;
 
   NEITHER_COPY_NOR_MOVEABLE(RawAstDataDef);
 
@@ -44,10 +43,10 @@ private:
 };
 
 /** See file's decription */
-class ParserExt final {
+class GenParserExt final {
 public:
-  ParserExt(Env& env, ErrorHandler& errorHandler);
-  ~ParserExt() = default;
+  GenParserExt(Env& env, ErrorHandler& errorHandler);
+  ~GenParserExt() = default;
 
   AstObjType* mkDefaultType(Location loc = s_nullLoc);
   StorageDuration mkDefaultStorageDuration();
@@ -74,7 +73,7 @@ public:
   ErrorHandler& errorHandler() { return m_errorHandler; }
 
 private:
-  NEITHER_COPY_NOR_MOVEABLE(ParserExt);
+  NEITHER_COPY_NOR_MOVEABLE(GenParserExt);
 
   ErrorHandler& m_errorHandler;
 };

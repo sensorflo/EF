@@ -10,7 +10,7 @@ class Parser;
 class Location;
 class ErrorHandler;
 class Env;
-class ParserExt;
+class GenParserExt;
 class SemanticAnalizer;
 class IrGen;
 class ExecutionEngineApater;
@@ -70,7 +70,7 @@ private:
   std::unique_ptr<TokenFilter> m_tokenFilter;
   std::unique_ptr<AstNode> m_astRootFromParser;
   /** Guaranteed to be non-nullptr */
-  std::unique_ptr<ParserExt> m_parserExt;
+  std::unique_ptr<GenParserExt> m_genParserExt;
   /** Guaranteed to be non-nullptr */
   std::unique_ptr<Parser> m_parser;
   /** Guaranteed to be non-nullptr */

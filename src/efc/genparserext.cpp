@@ -1,4 +1,4 @@
-#include "parserext.h"
+#include "genparserext.h"
 
 #include "ast.h"
 #include "env.h"
@@ -37,26 +37,26 @@ RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler, std::string name,
   , m_storageDuration(storageDuration) {
 }
 
-ParserExt::ParserExt(Env&, ErrorHandler& errorHandler)
+GenParserExt::GenParserExt(Env&, ErrorHandler& errorHandler)
   : m_errorHandler(errorHandler) {
 }
 
-AstObjType* ParserExt::mkDefaultType(Location loc) {
+AstObjType* GenParserExt::mkDefaultType(Location loc) {
   return new AstObjTypeSymbol(ObjTypeFunda::eInfer, move(loc));
 }
 
-StorageDuration ParserExt::mkDefaultStorageDuration() {
+StorageDuration GenParserExt::mkDefaultStorageDuration() {
   return StorageDuration::eLocal;
 }
 
-ObjType::Qualifiers ParserExt::mkDefaultObjectTypeQualifier() {
+ObjType::Qualifiers GenParserExt::mkDefaultObjectTypeQualifier() {
   return ObjType::eNoQualifier;
 }
 
 /** Turns the AstCtList in an AstOperator tree with at most two childs per
 node.  The AstCtList object is deleted, its ex-childs are now owned by their
 respective AstOperator parent. */
-AstOperator* ParserExt::mkOperatorTree(
+AstOperator* GenParserExt::mkOperatorTree(
   const string& op_as_str, AstCtList* args, Location loc) {
   assert(args);
   args->releaseOwnership();
@@ -98,14 +98,14 @@ AstOperator* ParserExt::mkOperatorTree(
   return tree;
 }
 
-AstOperator* ParserExt::mkOperatorTree(const string& op, AstObject* child1,
+AstOperator* GenParserExt::mkOperatorTree(const string& op, AstObject* child1,
   AstObject* child2, AstObject* child3, AstObject* child4, AstObject* child5,
   AstObject* child6) {
   return mkOperatorTree(
     op, new AstCtList(child1, child2, child3, child4, child5, child6));
 }
 
-AstDataDef* ParserExt::mkDataDef(
+AstDataDef* GenParserExt::mkDataDef(
   ObjType::Qualifiers qualifiers, RawAstDataDef*& rawAstDataDef, Location loc) {
   assert(rawAstDataDef);
 
@@ -121,24 +121,24 @@ AstDataDef* ParserExt::mkDataDef(
     rawAstDataDef->m_storageDuration, rawAstDataDef->m_ctorArgs, loc);
 }
 
-AstFunDef* ParserExt::mkFunDef(const string name, vector<AstDataDef*>* astArgs,
+AstFunDef* GenParserExt::mkFunDef(const string name, vector<AstDataDef*>* astArgs,
   AstObjType* retAstObjType, AstObject* astBody, Location loc) {
   astArgs = astArgs ? astArgs : new vector<AstDataDef*>();
   return new AstFunDef(name, astArgs, retAstObjType, astBody, move(loc));
 }
 
-AstFunDef* ParserExt::mkFunDef(
+AstFunDef* GenParserExt::mkFunDef(
   const string name, ObjTypeFunda::EType ret, AstObject* body, Location loc) {
   return mkFunDef(
     name, AstFunDef::createArgs(), new AstObjTypeSymbol(ret), body, move(loc));
 }
 
-AstFunDef* ParserExt::mkFunDef(
+AstFunDef* GenParserExt::mkFunDef(
   const string name, AstObjType* ret, AstObject* body, Location loc) {
   return mkFunDef(name, AstFunDef::createArgs(), ret, body, move(loc));
 }
 
-AstFunDef* ParserExt::mkMainFunDef(AstObject* body) {
+AstFunDef* GenParserExt::mkMainFunDef(AstObject* body) {
   // note that a valid Location is created, opposed to passing s_nullLoc
   return mkFunDef("main", new AstObjTypeSymbol(ObjTypeFunda::eInt, Location{}),
     body, Location{});

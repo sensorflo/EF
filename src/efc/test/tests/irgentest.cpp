@@ -2,7 +2,7 @@
 #include "../irgen.h"
 #include "../executionengineadapter.h"
 #include "../semanticanalizer.h"
-#include "../parserext.h"
+#include "../genparserext.h"
 #include "../ast.h"
 #include "../env.h"
 #include "../errorhandler.h"
@@ -97,7 +97,7 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot, const string& spec,
   {                                                                         \
     SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_0ARG)");      \
     TestingIrGen UUT;                                                       \
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                           \
+    GenParserExt pe(UUT.m_env, *UUT.m_errorHandler);                        \
     testgenIr<rettype>(UUT, astRoot, spec, expectedResult, fqFunctionName); \
   }
 
@@ -106,7 +106,7 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot, const string& spec,
   {                                                                       \
     SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_1ARG)");    \
     TestingIrGen UUT;                                                     \
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                         \
+    GenParserExt pe(UUT.m_env, *UUT.m_errorHandler);                      \
     testgenIr<rettype, arg1type>(                                         \
       UUT, astRoot, spec, expectedResult, fqFunctionName, arg1);          \
   }
@@ -116,7 +116,7 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot, const string& spec,
   {                                                                        \
     SCOPED_TRACE("testgenIr called from here (via TEST_GEN_IR_2ARG)");     \
     TestingIrGen UUT;                                                      \
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);                          \
+    GenParserExt pe(UUT.m_env, *UUT.m_errorHandler);                       \
     testgenIr<rettype, arg1type, arg2type>(                                \
       UUT, astRoot, spec, expectedResult, fqFunctionName, arg1, arg2);     \
   }
@@ -627,7 +627,7 @@ TEST_F(IrGenTest, MAKE_TEST_NAME(
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
+    GenParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstObject> ast(
       pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(42)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
@@ -649,7 +649,7 @@ TEST_F(IrGenTest, MAKE_TEST_NAME(
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
+    GenParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstObject> ast(
       pe.mkFunDef(
         "foo",
@@ -682,7 +682,7 @@ TEST_F(IrGenTest, MAKE_TEST_NAME(
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
+    GenParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstObject> ast(
       pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(77)));
     UUT.m_semanticAnalizer.analyze(*ast.get());
@@ -704,7 +704,7 @@ TEST_F(IrGenTest, MAKE_TEST_NAME(
     // IrGen is currently dumb and expects an expression having a value at
     // the end of a seq, thus provide one altought not needed for this test
     TestingIrGen UUT;
-    ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
+    GenParserExt pe(UUT.m_env, *UUT.m_errorHandler);
     unique_ptr<AstObject> ast(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
@@ -732,7 +732,7 @@ TEST_F(IrGenTest, MAKE_TEST_NAME(
     JIT_executing_foo_succeeds))   {
   // setup
   TestingIrGen UUT;
-  ParserExt pe(UUT.m_env, *UUT.m_errorHandler);
+  GenParserExt pe(UUT.m_env, *UUT.m_errorHandler);
   unique_ptr<AstObject> ast(
     pe.mkFunDef("foo", ObjTypeFunda::eVoid, new AstNop()));
   UUT.m_semanticAnalizer.analyze(*ast.get());

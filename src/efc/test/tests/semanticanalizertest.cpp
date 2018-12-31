@@ -5,7 +5,7 @@
 #include "../env.h"
 #include "../errorhandler.h"
 #include "../astdefaultiterator.h"
-#include "../parserext.h"
+#include "../genparserext.h"
 
 #include <memory>
 #include <string>
@@ -15,7 +15,7 @@ using namespace testing;
 using namespace std;
 
 /** \file
-Since SemanticAnalizer and ParserExt don't have clearly separated
+Since SemanticAnalizer and GenParserExt don't have clearly separated
 responsibilities, see the comments of the two, this test test responsibilities
 which can be implemented by either of the two. */
 
@@ -73,7 +73,7 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
 #define TEST_ASTTRAVERSAL(ast, expectedErrorNo, spec)                   \
   ErrorHandler errorHandler;                                            \
   Env env; /* must live shorter than the AST */                         \
-  ParserExt pe(env, errorHandler);                                      \
+  GenParserExt pe(env, errorHandler);                                   \
   TestingSemanticAnalizer UUT(env, errorHandler);                       \
   bool foreignThrow = false;                                            \
   string excptionwhat;                                                  \
@@ -652,7 +652,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
   // setup
   ErrorHandler errorHandler;
   Env env;
-  ParserExt pe(env, errorHandler);
+  GenParserExt pe(env, errorHandler);
   const auto innerAstFunDef =
     pe.mkFunDef("inner", ObjTypeFunda::eInt,
       new AstNumber(42));
@@ -1118,7 +1118,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     AstFunCall* funCall = new AstFunCall(new AstSymbol("foo"));
     unique_ptr<AstObject> ast{
       new AstSeq(
@@ -1146,7 +1146,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     unique_ptr<AstObject> ast{
       new AstCast(
         new AstObjTypeSymbol(ObjTypeFunda::eInt),
@@ -1170,7 +1170,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
   // setup
   ErrorHandler errorHandler;
   Env env;
-  ParserExt pe(env, errorHandler);
+  GenParserExt pe(env, errorHandler);
   AstObject* retAst = new AstReturn(new AstNumber(42, ObjTypeFunda::eInt));
   unique_ptr<AstObject> ast{
     pe.mkFunDef("foo", ObjTypeFunda::eInt,
@@ -1195,7 +1195,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     AstNode* ast =
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
         new AstReturn(new AstNumber(42, ObjTypeFunda::eInt)));
@@ -1214,7 +1214,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     AstNode* ast =
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
         new AstSeq(
@@ -1237,7 +1237,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     AstNode* ast =
       pe.mkFunDef("outer", ObjTypeFunda::eInt,
         new AstSeq(
@@ -1381,7 +1381,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     // setup
     Env env;
     ErrorHandler errorHandler;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -1409,7 +1409,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -1436,7 +1436,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -1487,7 +1487,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     AstObject* astIf =
       new AstIf(
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -1571,7 +1571,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     auto loop =
       new AstLoop(
         new AstNumber(0, ObjTypeFunda::eBool),
@@ -1705,7 +1705,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     unique_ptr<AstObject> ast{
       new AstSeq(
         pe.mkFunDef("foo",
@@ -1731,7 +1731,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     // setup
     ErrorHandler errorHandler;
     Env env;
-    ParserExt pe(env, errorHandler);
+    GenParserExt pe(env, errorHandler);
     unique_ptr<AstObject> ast{
       new AstSeq(
         pe.mkFunDef("foo",

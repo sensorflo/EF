@@ -4,9 +4,9 @@
 #include "env.h"
 #include "errorhandler.h"
 #include "executionengineadapter.h"
+#include "genparserext.h"
 #include "irgen.h"
 #include "parser.h"
-#include "parserext.h"
 #include "scanner.h"
 #include "semanticanalizer.h"
 #include "tokenfilter.h"
@@ -37,9 +37,9 @@ Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
   , m_ostream(ostream ? *ostream : cerr)
   , m_scanner(make_unique<Scanner>(*this))
   , m_tokenFilter(make_unique<TokenFilter>(*m_scanner.get()))
-  , m_parserExt(make_unique<ParserExt>(*m_env, *m_errorHandler))
+  , m_genParserExt(make_unique<GenParserExt>(*m_env, *m_errorHandler))
   , m_parser(make_unique<Parser>(
-      *m_tokenFilter.get(), *this, *m_parserExt, m_astRootFromParser))
+      *m_tokenFilter.get(), *this, *m_genParserExt, m_astRootFromParser))
   , m_irGen(make_unique<IrGen>(*m_errorHandler))
   , m_semanticAnalizer(make_unique<SemanticAnalizer>(*m_env, *m_errorHandler)) {
   assert(m_errorHandler);
@@ -47,7 +47,7 @@ Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
   assert(m_scanner);
   assert(m_tokenFilter);
   assert(m_parser);
-  assert(m_parserExt);
+  assert(m_genParserExt);
   assert(m_irGen);
   assert(m_semanticAnalizer);
 
@@ -115,7 +115,7 @@ unique_ptr<AstObject> Driver::addImplicitMain(unique_ptr<AstNode> ast) {
   }
 
   auto astAfterImplicitMain = unique_ptr<AstObject>(
-    m_parserExt->mkMainFunDef(astAfterParseAsObject.release()));
+    m_genParserExt->mkMainFunDef(astAfterParseAsObject.release()));
   assert(astAfterImplicitMain);
   return astAfterImplicitMain;
 }

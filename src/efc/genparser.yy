@@ -66,14 +66,14 @@
 
   /* Further declarations and definitions needed to declare the generated parser */
   class Driver;
-  class ParserExt;
+  class GenParserExt;
   class TokenStream;
 }
 
 /** \internal Signature of yylex is redundantely defined here by %lex-param
 and by declaration of free function yylex */
 %lex-param { TokenStream& tokenStream }
-%parse-param { TokenStream& tokenStream } { Driver& driver } { ParserExt& parserExt } { std::unique_ptr<AstNode>& astRoot }
+%parse-param { TokenStream& tokenStream } { Driver& driver } { GenParserExt& genParserExt } { std::unique_ptr<AstNode>& astRoot }
 
 %locations
 %initial-action
@@ -87,7 +87,7 @@ and by declaration of free function yylex */
 %code
 {
   #include "../driver.h"
-  #include "../parserext.h"
+  #include "../genparserext.h"
   #include "../objtype.h"
   #include "../storageduration.h"
   #include "../ast.h"
@@ -294,7 +294,7 @@ type
   ;
 
 opt_type
-  : %empty                                          { $$ = parserExt.mkDefaultType(@$); }
+  : %empty                                          { $$ = genParserExt.mkDefaultType(@$); }
   | type                                            { swap($$,$1); }
   ;
 
@@ -317,8 +317,8 @@ storage_duration_arg
 
 type_and_or_storage_duration_arg
   : type_arg                                        { ($$).m_type = $1;
-                                                      ($$).m_storageDuration = parserExt.mkDefaultStorageDuration(); }
-  | storage_duration_arg                            { ($$).m_type = parserExt.mkDefaultType(@$);
+                                                      ($$).m_storageDuration = genParserExt.mkDefaultStorageDuration(); }
+  | storage_duration_arg                            { ($$).m_type = genParserExt.mkDefaultType(@$);
                                                       ($$).m_storageDuration = $1; }
   | type_arg storage_duration_arg                   { ($$).m_type = $1;
                                                       ($$).m_storageDuration = $2; }
@@ -393,7 +393,7 @@ expr
 operator_expr
   /* function call and cast (aka construction of temporary) */
   : expr             LPAREN ct_list RPAREN          { $$ = new AstFunCall($1, $3, @2); }
-  | OP_NAME          LPAREN ct_list RPAREN          { $$ = parserExt.mkOperatorTree($1, $3, @2); }
+  | OP_NAME          LPAREN ct_list RPAREN          { $$ = genParserExt.mkOperatorTree($1, $3, @2); }
   | FUNDAMENTAL_TYPE LPAREN ct_list RPAREN          { $$ = new AstCast(new AstObjTypeSymbol($1, @1), $3, @2); }
 
   /* unary prefix */
@@ -408,7 +408,7 @@ operator_expr
   /* binary operators */
   | expr EQUAL       opt_nl expr                    { $$ = new AstOperator('=', $1, $4, @2); }
   | expr EQUAL_LESS  opt_nl expr                    { $$ = new AstOperator("=<", $1, $4, @2); }
-  | ID   COLON_EQUAL opt_nl expr %prec ASSIGNEMENT  { $$ = new AstDataDef($1, parserExt.mkDefaultType(@2), parserExt.mkDefaultStorageDuration(), new AstCtList(@2, $4), @2); }
+  | ID   COLON_EQUAL opt_nl expr %prec ASSIGNEMENT  { $$ = new AstDataDef($1, genParserExt.mkDefaultType(@2), genParserExt.mkDefaultStorageDuration(), new AstCtList(@2, $4), @2); }
   | expr OR          opt_nl expr                    { $$ = new AstOperator(AstOperator::eOr, $1, $4, @2); }
   | expr PIPE_PIPE   opt_nl expr                    { $$ = new AstOperator(AstOperator::eOr, $1, $4, @2); }
   | expr AND         opt_nl expr                    { $$ = new AstOperator(AstOperator::eAnd, $1, $4, @2); }
@@ -430,8 +430,8 @@ primary_expr
   ;
 
 list_expr
-  : valvar_lparen     naked_data_def       RPAREN   { $$ = parserExt.mkDataDef($1, $2, @$); }
-  | valvar            naked_data_def       kwac     { $$ = parserExt.mkDataDef($1, $2, @$); }
+  : valvar_lparen     naked_data_def       RPAREN   { $$ = genParserExt.mkDataDef($1, $2, @$); }
+  | valvar            naked_data_def       kwac     { $$ = genParserExt.mkDataDef($1, $2, @$); }
   | FUN_LPAREN        naked_fun_def        RPAREN   { $$ = $2; }
   | FUN               naked_fun_def        kwac     { $$ = $2; }
   | IF_LPAREN         naked_if             RPAREN   { std::swap($$,$2); }
@@ -462,17 +462,17 @@ naked_data_def
   /* A trailing opt_initializer_arg is only possible if there's at least one
   type or storage duration arg, because else its equal_as_sep conflicts with any
   = in the opt_initializer_special_arg's standalone_expr */
-  : opt_id opt_initializer_special_arg type_and_or_storage_duration_arg opt_initializer_arg   { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $4, ($3).m_type, ($3).m_storageDuration, @1); }
+  : opt_id opt_initializer_special_arg type_and_or_storage_duration_arg opt_initializer_arg   { $$ = new RawAstDataDef(genParserExt.errorHandler(), $1, $2, $4, ($3).m_type, ($3).m_storageDuration, @1); }
 
   /* KLUDGE: We want to disallow an empty naked_data_def. The above already
   ensures that at type or storage duration is specified. Now we ensure that
   either id or initializer is specified. */
-  | opt_id initializer_special_arg                                                            { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2     , nullptr, parserExt.mkDefaultType(@1), parserExt.mkDefaultStorageDuration(), @1); }
-  | ID                                                                                        { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, nullptr, nullptr, parserExt.mkDefaultType(@1), parserExt.mkDefaultStorageDuration(), @1); }
+  | opt_id initializer_special_arg                                                            { $$ = new RawAstDataDef(genParserExt.errorHandler(), $1, $2     , nullptr, genParserExt.mkDefaultType(@1), genParserExt.mkDefaultStorageDuration(), @1); }
+  | ID                                                                                        { $$ = new RawAstDataDef(genParserExt.errorHandler(), $1, nullptr, nullptr, genParserExt.mkDefaultType(@1), genParserExt.mkDefaultStorageDuration(), @1); }
   ;
 
 naked_fun_def
-  : opt_id opt_fun_signature_arg equal_as_sep block                  { $$ = parserExt.mkFunDef($1, ($2).m_paramDefs, ($2).m_retType, $4, @$); }
+  : opt_id opt_fun_signature_arg equal_as_sep block                  { $$ = genParserExt.mkFunDef($1, ($2).m_paramDefs, ($2).m_retType, $4, @$); }
   ;
 
 fun_signature_arg
@@ -481,7 +481,7 @@ fun_signature_arg
   ;
 
 opt_fun_signature_arg                           
-  : %empty                                                           { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = parserExt.mkDefaultType(@$); }
+  : %empty                                                           { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = genParserExt.mkDefaultType(@$); }
   | fun_signature_arg                                                { swap($$,$1); }
   ;
 
@@ -496,7 +496,7 @@ pure_param_list
   ;
 
 param_def
-  : opt_valvar naked_data_def                                        { $$ = parserExt.mkDataDef($1, $2, @$); }
+  : opt_valvar naked_data_def                                        { $$ = genParserExt.mkDataDef($1, $2, @$); }
   ;
 
 initializer_arg
@@ -547,7 +547,7 @@ valvar
   ;
 
 opt_valvar
-  : %empty                                                           { $$ = parserExt.mkDefaultObjectTypeQualifier(); }
+  : %empty                                                           { $$ = genParserExt.mkDefaultObjectTypeQualifier(); }
   | valvar                                                           { swap($$,$1); }
   ; 
 
