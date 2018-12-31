@@ -92,6 +92,7 @@ set(SRCS
   object.cpp
   objtype.cpp
   parser.cpp
+  scanner.cpp
   genparserext.cpp
   semanticanalizer.cpp
   signatureaugmentor.cpp

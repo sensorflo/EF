@@ -70,9 +70,8 @@
   class TokenStream;
 }
 
-/** \internal Signature of yylex is redundantely defined here by %lex-param
-and by declaration of free function yylex */
-%lex-param { TokenStream& tokenStream }
+// see declaration of yylex
+%lex-param { TokenStream& tokenStream } 
 %parse-param { TokenStream& tokenStream } { std::string& fileName } { GenParserExt& genParserExt } { std::unique_ptr<AstNode>& astRoot }
 
 %locations
@@ -94,13 +93,12 @@ and by declaration of free function yylex */
   using namespace std;
   using namespace yy;
 
-  /** \internal Signature is redundantely defined here and by %lex-param of
-  bison's .yy input file. The only reason for the existence of the free
-  function yylex is that the author doesn't know how to make bison's generated
-  parser use tokenStream directly */
+  /** Returns the next token. It is called by the generated parser, which
+  expects this method to be defined. The argument type is specified by the
+  %lex-param directive. The definition is in the epilogue section of this
+  file. See also yylex_raw in genscanner.l */
   yy::GenParser::symbol_type yylex(TokenStream& tokenStream);
 }
-
 %define api.token.prefix {TOK_}
 %token
   END_OF_FILE  0  "end of file"
@@ -602,6 +600,7 @@ void yy::GenParser::error(const location_type& loc, const std::string& msg)
   Error::throwError(genParserExt.errorHandler(), Error::eScanOrParseFailed);
 }
 
+// See declaration at the top of this file
 yy::GenParser::symbol_type yylex(TokenStream& tokenStream) {
   return tokenStream.pop();
 }
