@@ -1,7 +1,6 @@
 #include "parser.h"
 
 #include "ast.h"
-#include "driver.h"
 #include "errorhandler.h"
 #include "tokenfilter.h"
 
@@ -31,17 +30,17 @@ Parser::symbol_type makeTokenT(Parser::token_type tt) {
 vector<Parser::TokenTypeAttr> Parser::m_TokenAttrs;
 vector<char> Parser::m_OneCharTokenNames(256 * 2); // 256 * (char+'\0')
 
-Parser::Parser(std::string& fileName, TokenStream& tokenStream, Driver& driver,
-  Env& env, ErrorHandler& errorHandler)
-  : yy::GenParser{tokenStream, driver, m_genParserExt, m_astRootFromParser}
+Parser::Parser(std::string& fileName, TokenStream& tokenStream, Env& env,
+  ErrorHandler& errorHandler)
+  : yy::GenParser{tokenStream, fileName, m_genParserExt, m_astRootFromParser}
   , m_errorHandler{errorHandler}
   , m_genParserExt{env, errorHandler}
   , m_opened_yyin{false} {
   if (fileName.empty() || fileName == "-") { yyin = stdin; }
   else {
     if (!(yyin = fopen(fileName.c_str(), "r"))) {
-      driver.exitInternError(
-        "cannot open " + fileName + ": " + strerror(errno));
+      Error::throwError(m_errorHandler, Error::eCantOpenFileForReading,
+        "cannot open '" + fileName + "' for reading (" + strerror(errno) + ")");
     }
     m_opened_yyin = true;
   }

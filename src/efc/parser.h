@@ -23,8 +23,8 @@ Note that there's also ParserExt which extends the private implementation
 details of the generated parser. */
 class Parser final : public yy::GenParser {
 public:
-  Parser(std::string& fileName, TokenStream& tokenStream_yyarg,
-    Driver& driver_yyarg, Env& env, ErrorHandler& errorHandler);
+  Parser(std::string& fileName, TokenStream& tokenStream, Env& env,
+    ErrorHandler& errorHandler);
   ~Parser() override;
 
   enum TokenClass {

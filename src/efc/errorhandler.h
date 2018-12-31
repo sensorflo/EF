@@ -18,6 +18,7 @@ public:
     eUnknownName,
     eRedefinition,
     eWriteToImmutable,
+    eCantOpenFileForReading,
     eNoImplicitConversion,
     eInvalidArguments,
     eNoSuchMember,

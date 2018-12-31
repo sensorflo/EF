@@ -26,7 +26,7 @@ Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
   , m_scanner(make_unique<Scanner>(*this))
   , m_tokenFilter(make_unique<TokenFilter>(*m_scanner.get()))
   , m_parser(make_unique<Parser>(
-      m_fileName, *m_tokenFilter.get(), *this, *m_env, *m_errorHandler))
+      m_fileName, *m_tokenFilter.get(), *m_env, *m_errorHandler))
   , m_irGen(make_unique<IrGen>(*m_errorHandler))
   , m_semanticAnalizer(make_unique<SemanticAnalizer>(*m_env, *m_errorHandler)) {
   assert(m_errorHandler);

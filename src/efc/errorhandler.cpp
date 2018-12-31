@@ -26,6 +26,7 @@ const char* toStr(Error::No no) {
   case Error::eUnknownName: return "eUnknownName";
   case Error::eRedefinition: return "eRedefinition";
   case Error::eWriteToImmutable: return "eWriteToImmutable";
+  case Error::eCantOpenFileForReading: return "eCantOpenFileForReading";
   case Error::eNoImplicitConversion: return "eNoImplicitConversion";
   case Error::eInvalidArguments: return "eInvalidArguments";
   case Error::eNoSuchMember: return "eNoSuchMember";

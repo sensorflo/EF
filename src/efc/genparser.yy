@@ -65,7 +65,7 @@
   };
 
   /* Further declarations and definitions needed to declare the generated parser */
-  class Driver;
+  #include <string>
   class GenParserExt;
   class TokenStream;
 }
@@ -73,12 +73,12 @@
 /** \internal Signature of yylex is redundantely defined here by %lex-param
 and by declaration of free function yylex */
 %lex-param { TokenStream& tokenStream }
-%parse-param { TokenStream& tokenStream } { Driver& driver } { GenParserExt& genParserExt } { std::unique_ptr<AstNode>& astRoot }
+%parse-param { TokenStream& tokenStream } { std::string& fileName } { GenParserExt& genParserExt } { std::unique_ptr<AstNode>& astRoot }
 
 %locations
 %initial-action
 {
-  @$.initialize(&driver.fileName());
+  @$.initialize(&fileName);
 };
 
 /*%define parse.trace*/
@@ -86,11 +86,11 @@ and by declaration of free function yylex */
 
 %code
 {
-  #include "../driver.h"
   #include "../genparserext.h"
   #include "../objtype.h"
   #include "../storageduration.h"
   #include "../ast.h"
+  #include "../errorhandler.h"
   using namespace std;
   using namespace yy;
 
@@ -599,7 +599,7 @@ opt_id
 
 void yy::GenParser::error(const location_type& loc, const std::string& msg)
 {
-  driver.error(loc, msg);
+  Error::throwError(genParserExt.errorHandler(), Error::eScanOrParseFailed);
 }
 
 yy::GenParser::symbol_type yylex(TokenStream& tokenStream) {
