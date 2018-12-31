@@ -385,8 +385,9 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     // ctor. However default ctors are not yet implemented. Thus the workaround
     // is to insert a default arg into the AST.
     if (ctorArgs.empty()) {
-      ctorArgs.push_back(dataDef.declaredAstObjType()
-                           .createDefaultAstObjectForSemanticAnalizer());
+      const auto& loc = dataDef.ctorArgs().location();
+      const auto& ot = dataDef.declaredAstObjType();
+      ctorArgs.push_back(ot.createDefaultAstObjectForSemanticAnalizer(loc));
     }
 
     // -- responsibility 1: set access to direct childs and descent AST subtree

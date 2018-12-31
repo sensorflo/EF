@@ -14,6 +14,7 @@ yy::Parser implementation extension. Has two related responsibilities:
    the two until the design is more stable.*/
 #include "astforwards.h"
 #include "declutils.h"
+#include "location.h"
 #include "objtype.h"
 #include "storageduration.h"
 
@@ -27,7 +28,7 @@ class RawAstDataDef final {
 public:
   RawAstDataDef(ErrorHandler& errorHandler, std::string name,
     AstCtList* ctorArgs1, AstCtList* ctorArgs2, AstObjType* astObjType,
-    StorageDuration storageDuration);
+    StorageDuration storageDuration, const Location& loc);
   ~RawAstDataDef() = default;
 
 private:
@@ -48,23 +49,25 @@ public:
   ParserExt(Env& env, ErrorHandler& errorHandler);
   ~ParserExt() = default;
 
-  AstObjType* mkDefaultType();
+  AstObjType* mkDefaultType(Location loc = s_nullLoc);
   StorageDuration mkDefaultStorageDuration();
   ObjType::Qualifiers mkDefaultObjectTypeQualifier();
 
-  AstOperator* mkOperatorTree(const std::string& op, AstCtList* args);
+  AstOperator* mkOperatorTree(
+    const std::string& op, AstCtList* args, Location loc = s_nullLoc);
   AstOperator* mkOperatorTree(const std::string& op, AstObject* child1,
     AstObject* child2, AstObject* child3 = nullptr, AstObject* child4 = nullptr,
     AstObject* child5 = nullptr, AstObject* child6 = nullptr);
 
-  AstDataDef* mkDataDef(
-    ObjType::Qualifiers qualifiers, RawAstDataDef*& rawAstDataDef);
+  AstDataDef* mkDataDef(ObjType::Qualifiers qualifiers,
+    RawAstDataDef*& rawAstDataDef, Location loc = s_nullLoc);
 
   AstFunDef* mkFunDef(const std::string name, std::vector<AstDataDef*>* astArgs,
-    AstObjType* retAstObjType, AstObject* astBody);
-  AstFunDef* mkFunDef(
-    const std::string name, ObjTypeFunda::EType ret, AstObject* body);
-  AstFunDef* mkFunDef(const std::string name, AstObjType* ret, AstObject* body);
+    AstObjType* retAstObjType, AstObject* astBody, Location loc = s_nullLoc);
+  AstFunDef* mkFunDef(const std::string name, ObjTypeFunda::EType ret,
+    AstObject* body, Location loc = s_nullLoc);
+  AstFunDef* mkFunDef(const std::string name, AstObjType* ret, AstObject* body,
+    Location loc = s_nullLoc);
 
   AstFunDef* mkMainFunDef(AstObject* body);
 

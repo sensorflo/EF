@@ -5,9 +5,12 @@
 /** A losition in the EF source file. */
 class Location {
 public:
+  /** Initializes to a valid location pointing to the beginning of the
+  input. I.e. does _not_ initialize to the 'null location'.  */
+  Location() : Location{Position{}} {}
   Location(const Position& b, const Position& e) : begin{b}, end{e} {}
 
-  explicit Location(const Position& p = Position{}) : begin{p}, end{p} {}
+  explicit Location(const Position& p) : begin{p}, end{p} {}
 
   explicit Location(std::string* f, unsigned int l = 1u, unsigned int c = 1u)
     : begin{f, l, c}, end{f, l, c} {}
@@ -27,6 +30,9 @@ public:
 
   /** Extend the current location to the COUNT next lines. */
   void lines(int count = 1) { end.lines(count); }
+
+  /** True if this location compares equal to s_nullLoc */
+  bool isNull() const { return begin.isNull() || end.isNull(); }
 
 public:
   /** Beginning of the located region. */
@@ -90,3 +96,5 @@ inline std::basic_ostream<YYChar>& operator<<(
     ostr << '-' << end_col;
   return ostr;
 }
+
+extern const Location s_nullLoc;

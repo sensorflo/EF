@@ -20,6 +20,8 @@ TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(toType)) {
 
 TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(
     createDefaultAstObjectForSemanticAnalizer)) {
+  DisableLocationRequirement dummy;
+
   // examples: fundamental types
   {
     vector<ObjTypeFunda::EType> inputTypes = {ObjTypeFunda::eBool,
@@ -31,7 +33,7 @@ TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(
 
       // exercise
       const auto defaultValue = unique_ptr<AstNumber>(dynamic_cast<AstNumber*>(
-        UUT->createDefaultAstObjectForSemanticAnalizer()));
+          UUT->createDefaultAstObjectForSemanticAnalizer(Location{})));
 
       // verify
       EXPECT_TRUE(defaultValue != nullptr);
@@ -49,7 +51,7 @@ TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(
 
     // exercise
     const auto defaultValue = unique_ptr<AstNumber>(dynamic_cast<AstNumber*>(
-      UUT->createDefaultAstObjectForSemanticAnalizer()));
+        UUT->createDefaultAstObjectForSemanticAnalizer(Location{})));
 
     // verify
     EXPECT_TRUE(defaultValue != nullptr);
@@ -66,7 +68,7 @@ TEST(AstObjTypeSymbolTest, MAKE_TEST_NAME1(
 
     // exercise
     const auto defaultValue = unique_ptr<AstNumber>(dynamic_cast<AstNumber*>(
-      UUT->createDefaultAstObjectForSemanticAnalizer()));
+        UUT->createDefaultAstObjectForSemanticAnalizer(Location{})));
 
     // verify
     EXPECT_TRUE(defaultValue != nullptr);

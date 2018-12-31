@@ -97,6 +97,7 @@ set(SRCS
   storageduration.cpp
   tokenfilter.cpp
   tokenstreamlookahead.cpp
+  location.cpp
 )
 
 add_library(efc_as_lib ${SRCS} ${BISON_parser_OUTPUTS} ${FLEX_scanner_OUTPUTS})

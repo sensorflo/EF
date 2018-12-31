@@ -19,6 +19,11 @@ Since SemanticAnalizer and ParserExt don't have clearly separated
 responsibilities, see the comments of the two, this test test responsibilities
 which can be implemented by either of the two. */
 
+class SemanticAnalizerTest : public Test {
+private:
+  DisableLocationRequirement m_Dummy;
+};
+
 class TestingAstSymbol : public AstSymbol {
 public:
   TestingAstSymbol(const std::string& name) : AstSymbol(name) {}
@@ -98,7 +103,7 @@ with ParserExt, see also file's comment. */
     TEST_ASTTRAVERSAL(ast, Error::eNone, spec)                          \
   }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_AstObjType_node,
     transform,
     sets_the_correct_objType_on_the_node)) {
@@ -185,7 +190,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     an_node_whose_childs_need_an_implicit_type_conversion_AND_the_rhs_is_of_larger_type,
     transform,
     reports_eNoImplicitConversion,
@@ -218,7 +223,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     Error::eNoImplicitConversion, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     an_node_whose_childs_need_an_implicit_type_conversion_AND_the_rhs_is_of_smaller_type,
     transform,
     reports_eNoImplicitConversion,
@@ -251,7 +256,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     Error::eNoImplicitConversion, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_a_logical_and_or_logical_or_operator_WITH_an_rhs_of_type_noreturn,
     THEN_it_succeeds)) {
 
@@ -272,7 +277,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     "");
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     an_flow_control_expresssion_WITH_a_condition_whose_type_is_not_bool,
     transform,
     reports_eNoImplicitConversion,
@@ -290,7 +295,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     Error::eNoImplicitConversion, "");
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_simple_data_obj_definition,
     transform,
     inserts_an_appropriate_symbol_table_entry_into_Env)) {
@@ -358,7 +363,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     a_data_obj_definition_WITH_zero_ctor_arguments,
     transform,
     inserts_an_AstNumber_with_value_zero_as_single_ctor_argument,
@@ -375,7 +380,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   EXPECT_EQ(0, arg->value()) << amendAst(ast);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_data_obj_initialization_WITH_incorrect_argument_count_for_the_constructor,
     transform,
     reports_a_eInvalidArguments)) {
@@ -395,7 +400,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eInvalidArguments, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_static_data_obj_definition_initialized_with_an_non_ctconst_expression,
     transform,
     reports_eCTConstRequired)) {
@@ -411,7 +416,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 // The semantic analizer shall handle this case independently of whether the
 // grammar already rules out this case or not, so the two are, well,
 // independent.
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_parameter_defined_with_non_local_storage_duration,
     transform,
     reports_eOnlyLocalStorageDurationApplicable)) {
@@ -426,7 +431,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eOnlyLocalStorageDurationApplicable, "");
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_simple_example_of_a_reference_to_an_unknown_name,
     transform,
     reports_an_eErrUnknownName)) {
@@ -441,7 +446,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eUnknownName, "");
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_reference_to_an_entity_other_than_local_data_object_before_its_definition,
     transform,
     succeeds)) {
@@ -467,7 +472,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 // eUnknownName, because the name _is_ known and really refers to the local
 // data object, it's just not allowed to access it yet, except for
 // eIgnoreValueAndAddr access.
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     a_non_ignore_access_to_a_local_data_object_before_its_initialization,
     transform,
     reports_eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization)) {
@@ -487,7 +492,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     an_ignore_access_to_a_local_data_object_before_its_initialization,
     transform,
     succeeds,
@@ -518,7 +523,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     a_data_obj_definition_in_a_block,
     transform,
     a_later_symbol_of_that_name_references_the_definition)) {
@@ -542,7 +547,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   EXPECT_EQ(dataDef, symbol->m_referencedAstObj) << amendAst(ast);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     a_local_data_object_definition_named_x_in_a_block_AND_a_symbol_named_x_after_the_block,
     transform,
     reports_eUnknownName,
@@ -555,7 +560,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     Error::eUnknownName, "");
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_nested_non_local_definition_with_same_name_as_another_outer_non_local_definition,
     genIr,
     succeeds)) {
@@ -570,7 +575,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     "");
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_redefinition,
     transform,
     reports_eRedefinition)) {
@@ -639,7 +644,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eRedefinition, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_nested_function_definition,
     transform,
     succeeds_AND_inserts_both_appropriately_into_env)) {
@@ -676,7 +681,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 // aka temporary objects are immutable
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_a_block,
     THEN_its_objectType_is_that_of_the_body_however_with_an_immutable_qualifier))   {
 
@@ -720,7 +725,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_addrof_operator,
     THEN_the_operands_accessFromAstParent_is_eTakeAddr))
 {
@@ -739,7 +744,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   EXPECT_EQ(Access::eTakeAddress, operand->accessFromAstParent()) << amendAst(ast);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_AstObject_whichs_object_is_never_modified_nor_its_address_is_taken,
     THEN_the_target_object_remembers_that))
 {
@@ -761,7 +766,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_modifying_or_address_taking_AstNode,
     THEN_the_target_object_remembers_that))
 {
@@ -808,7 +813,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_any_access_to_a_bock,
     THEN_the_bodys_accessFromAstParent_is_still_always_eRead))
 {
@@ -830,7 +835,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   EXPECT_EQ(Access::eRead, body->accessFromAstParent()) << amendAst(ast);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_access_to_a_sequence,
     THEN_accessFromAstParent_to_seqs_last_operand_equals_that_outer_access_value_AND_accessFromAstParent_to_the_leading_operands_is_eIgnoreValueAndAddr))
 {
@@ -859,7 +864,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     lastOpAst->accessFromAstParent()) << amendAst(ast);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_a_sequence_WITH_the_last_operator_not_being_an_AstObject,
     THEN_it_reports_eObjectExpected))
 {
@@ -877,7 +882,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 }
 
 // aka temporary objects are immutable
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_arithmetic_or_logical_operator,
     transform,
     sets_the_objectType_of_the_AstOperator_node_to_the_type_of_the_two_operands_however_with_an_immutable_qualifier)) {
@@ -954,7 +959,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 // aka temporary objects are immutable
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_sequence,
     transform,
     sets_the_objectType_of_the_seq_node_to_the_type_of_the_last_operand)) {
@@ -977,7 +982,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     amendAst(ast);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_addrOf_operator,
     transform,
     sets_the_objType_of_the_AstOperator_node_to_pointer_to_operands_type)) {
@@ -997,7 +1002,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   EXPECT_MATCHES_FULLY(expectedObjType, ast->object().objType()) << amendAst(ast);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_deref_operator,
     transform,
     sets_the_objectType_of_the_AstOperator_node_)) {
@@ -1023,7 +1028,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 // aka temporary objects are immutable
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_non_dot_assignment_operator,
     transform,
     sets_the_objectType_of_the_AstOperator_node_to_void)) {
@@ -1049,7 +1054,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     amendAst(ast);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_dot_assignment_operator,
     transform,
     sets_the_objectType_of_the_AstOperator_node_to_lhs_which_includes_being_mutable)) {
@@ -1080,7 +1085,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 // aka temporary objects are immutable
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_comparision_operator,
     transform,
     sets_the_objectType_of_the_AstOperator_node_to_immutable_bool)) {
@@ -1103,7 +1108,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 // aka temporary objects are immutable
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_function_call,
     transform,
     sets_the_objectType_of_the_AstFunCall_node_to_the_return_type_of_the_called_function)) {
@@ -1132,7 +1137,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_cast,
     transform,
     sets_the_objectType_of_the_AstCast_node_to_the_type_of_the_cast)) {
@@ -1158,7 +1163,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_a_return_expression,
     THEN_the_objType_is_noreturn)) {
 
@@ -1181,7 +1186,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
     amendAst(ast);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_a_return_expression_whose_retVal_ObjType_does_match_functions_return_ObjType,
     THEN_it_succeeds)) {
 
@@ -1252,7 +1257,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_a_return_expression_whose_retVal_ObjType_does_not_match_functions_return_ObjType,
     THEN_it_reports_eNoImplicitConversion)) {
 
@@ -1288,7 +1293,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 
 // i.e. the if expression is just like an operator, which is just like an
 // call: they return temporaries, i.e. new objects on the stack
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_if_expression_with_else_clause_AND_none_of_the_two_clauses_is_of_obj_type_noreturn,
     THEN_the_if_expressions_obj_type_is_a_temporay)) {
 
@@ -1366,7 +1371,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_if_expression_with_else_clause_AND_either_of_the_two_clauses_is_of_obj_type_noreturn,
     THEN_the_if_expressions_obj_type_is_exactly_that_of_the_other_clause)) {
 
@@ -1452,7 +1457,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     GIVEN_an_if_expression_with_no_else_clause,
     THEN_the_if_expressions_obj_type_is_void,
     BECAUSE_the_type_of_the_inexistent_else_clause_is_void)) {
@@ -1506,7 +1511,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
 
 // i.e. an if expression is just as an operator which in turn is just as an
 // call
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_any_access_to_an_if_expression,
     THEN_accessFromAstParent_to_both_clauses_is_still_always_eRead))
 {
@@ -1536,7 +1541,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
 }
 
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     GIVEN_an_loop_expression,
     THEN_the_loop_expressions_obj_type_is_void,
     BEAUSE_the_condition_might_prevent_the_block_from_ever_being_executed)) {
@@ -1586,7 +1591,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_an_loop_expression,
     THEN_accessFromAstParent_to_the_condition_is_eRead_AND_accessFromAstParent_to_body_is_eIgnoreValueAndAddr))
 {
@@ -1607,7 +1612,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   EXPECT_EQ(Access::eIgnoreValueAndAddr, body->accessFromAstParent()) << amendAst(ast);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_assignment_to_an_immutable_data_object,
     transform,
     reports_an_eWriteToImmutable)) {
@@ -1643,7 +1648,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eWriteToImmutable, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_function_call_to_a_defined_function_WITH_incorrect_argument_count_or_incorrect_argument_type,
     transform,
     reports_a_eInvalidArguments)) {
@@ -1690,7 +1695,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eInvalidArguments, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_function_call_to_an_defined_function_WITH_correct_number_of_arguments_and_types,
     transform,
     succeeds)) {
@@ -1747,7 +1752,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_operator_WITH_an_argument_whose_obj_type_does_not_have_that_operator_as_member,
     transform,
     reports_eNoSuchMember)) {
@@ -1796,7 +1801,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME(
     Error::eNoSuchMember, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     GIVEN_a_cast_aka_constructor,
     THEN_it_succeeds_if_newtype_has_respective_constructor_or_if_both_types_matchsaufqualifiers)) {
 
@@ -1889,7 +1894,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME2(
   }
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     a_return_expression_outside_a_function_body,
     transform,
     reports_eInvalidArguments)) {
@@ -1909,7 +1914,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     Error::eInvalidArguments, spec);
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     a_return_expression_outside_a_function_body,
     transform,
     reports_an_eNotInFunBodyContext)) {
@@ -1918,7 +1923,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
     Error::eNotInFunBodyContext, "");
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     an_expression_of_obj_type_noreturn_as_lhs_to_the_sequence_operator,
     transform,
     reports_an_eUnreachableCode,
@@ -1931,7 +1936,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME4(
     Error::eUnreachableCode, "");
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     GIVEN_a_return_type_with_mutable_qualifier,
     THEN_eRetTypeCantHaveMutQualifier_is_reported,
     BECAUSE_currently_temporary_objects_are_always_immutable)) {
@@ -1943,7 +1948,7 @@ TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
 
 }
 
-TEST(SemanticAnalizerTest, MAKE_TEST_NAME3(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     an_occurence_of_type_inference,
     transform,
     reports_an_eTypeInferenceIsNotYetSupported)) {

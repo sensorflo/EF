@@ -227,7 +227,7 @@ program
   ;
 
 block
-  : node_seq                                        { $$ = new AstBlock($1); }
+  : node_seq                                        { $$ = new AstBlock($1, @$); }
   ;
 
 /* Sequence of standalone nodes being itself an expr. The dynamic type of the
@@ -240,7 +240,7 @@ Note that the seq_operator is _not_ the thing that builds / creates the
 sequence. It is the context where node_seq is used that defines that an sequence
 must be created, also if it only contains one element. */
 node_seq
-  : pure_node_seq opt_seq_operator                  { $$ = new AstSeq($1); }
+  : pure_node_seq opt_seq_operator                  { $$ = new AstSeq($1, @$); }
   ;
 
 pure_node_seq
@@ -258,12 +258,12 @@ standalone_expr
   ;
 
 ct_list
-  : %empty                                          { $$ = new AstCtList(); }
-  | pure_ct_list opt_sep                            { $$ = new AstCtList($1); }
+  : %empty                                          { $$ = new AstCtList(@$); }
+  | pure_ct_list opt_sep                            { $$ = new AstCtList($1, @$); }
   ;
 
 ct_list_2plus
-  : ct_list_arg sep pure_ct_list opt_sep            { ($3)->insert(($3)->begin(),$1); $$ = new AstCtList($3); }
+  : ct_list_arg sep pure_ct_list opt_sep            { ($3)->insert(($3)->begin(),$1); $$ = new AstCtList($3, @$); }
   ;
 
 pure_ct_list
@@ -287,14 +287,14 @@ ct_list_arg
   ;
 
 type
-  : FUNDAMENTAL_TYPE                                { $$ = new AstObjTypeSymbol($1); }
-  | STAR           opt_nl type                      { $$ = new AstObjTypePtr($3); }
-  | type_qualifier opt_nl type                      { $$ = new AstObjTypeQuali($1, $3); }
+  : FUNDAMENTAL_TYPE                                { $$ = new AstObjTypeSymbol($1, @$); }
+  | STAR           opt_nl type                      { $$ = new AstObjTypePtr($3, @$); }
+  | type_qualifier opt_nl type                      { $$ = new AstObjTypeQuali($1, $3, @$); }
   | ID                                              { assert(false); /* user defined names not yet supported; but I wanted to have ID already in grammar*/ }
   ;
 
 opt_type
-  : %empty                                          { $$ = parserExt.mkDefaultType(); }
+  : %empty                                          { $$ = parserExt.mkDefaultType(@$); }
   | type                                            { swap($$,$1); }
   ;
 
@@ -318,7 +318,7 @@ storage_duration_arg
 type_and_or_storage_duration_arg
   : type_arg                                        { ($$).m_type = $1;
                                                       ($$).m_storageDuration = parserExt.mkDefaultStorageDuration(); }
-  | storage_duration_arg                            { ($$).m_type = parserExt.mkDefaultType();
+  | storage_duration_arg                            { ($$).m_type = parserExt.mkDefaultType(@$);
                                                       ($$).m_storageDuration = $1; }
   | type_arg storage_duration_arg                   { ($$).m_type = $1;
                                                       ($$).m_storageDuration = $2; }
@@ -392,46 +392,46 @@ expr
 
 operator_expr
   /* function call and cast (aka construction of temporary) */
-  : expr             LPAREN ct_list RPAREN          { $$ = new AstFunCall($1, $3); }
-  | OP_NAME          LPAREN ct_list RPAREN          { $$ = parserExt.mkOperatorTree($1, $3); }
-  | FUNDAMENTAL_TYPE LPAREN ct_list RPAREN          { $$ = new AstCast(new AstObjTypeSymbol($1), $3); }
+  : expr             LPAREN ct_list RPAREN          { $$ = new AstFunCall($1, $3, @2); }
+  | OP_NAME          LPAREN ct_list RPAREN          { $$ = parserExt.mkOperatorTree($1, $3, @2); }
+  | FUNDAMENTAL_TYPE LPAREN ct_list RPAREN          { $$ = new AstCast(new AstObjTypeSymbol($1, @1), $3, @2); }
 
   /* unary prefix */
-  | NOT    opt_nl expr                              { $$ = new AstOperator(AstOperator::eNot, $3); }
-  | EXCL   opt_nl expr                              { $$ = new AstOperator(AstOperator::eNot, $3); }
-  | STAR   opt_nl expr                              { $$ = new AstOperator(AstOperator::eDeref, $3); }
-  | AMPER  opt_nl expr                              { $$ = new AstOperator('&', $3); }
-  | MINUS  opt_nl expr                              { $$ = new AstOperator('-', $3); }
-  | PLUS   opt_nl expr                              { $$ = new AstOperator('+', $3); }
-  | RETURN        expr                              { $$ = new AstReturn($2); }
+  | NOT    opt_nl expr                              { $$ = new AstOperator(AstOperator::eNot, $3, nullptr, @1); }
+  | EXCL   opt_nl expr                              { $$ = new AstOperator(AstOperator::eNot, $3, nullptr, @1); }
+  | STAR   opt_nl expr                              { $$ = new AstOperator(AstOperator::eDeref, $3, nullptr, @1); }
+  | AMPER  opt_nl expr                              { $$ = new AstOperator('&', $3, nullptr, @1); }
+  | MINUS  opt_nl expr                              { $$ = new AstOperator('-', $3, nullptr, @1); }
+  | PLUS   opt_nl expr                              { $$ = new AstOperator('+', $3, nullptr, @1); }
+  | RETURN        expr                              { $$ = new AstReturn($2, @1); }
 
   /* binary operators */
-  | expr EQUAL       opt_nl expr                    { $$ = new AstOperator('=', $1, $4); }
-  | expr EQUAL_LESS  opt_nl expr                    { $$ = new AstOperator("=<", $1, $4); }
-  | ID   COLON_EQUAL opt_nl expr %prec ASSIGNEMENT  { $$ = new AstDataDef($1, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration(), new AstCtList($4)); }
-  | expr OR          opt_nl expr                    { $$ = new AstOperator(AstOperator::eOr, $1, $4); }
-  | expr PIPE_PIPE   opt_nl expr                    { $$ = new AstOperator(AstOperator::eOr, $1, $4); }
-  | expr AND         opt_nl expr                    { $$ = new AstOperator(AstOperator::eAnd, $1, $4); }
-  | expr AMPER_AMPER opt_nl expr                    { $$ = new AstOperator(AstOperator::eAnd, $1, $4); }
-  | expr EQUAL_EQUAL opt_nl expr                    { $$ = new AstOperator(AstOperator::eEqualTo, $1, $4); }
-  | expr PLUS        opt_nl expr                    { $$ = new AstOperator('+', $1, $4); }
-  | expr MINUS       opt_nl expr                    { $$ = new AstOperator('-', $1, $4); }
-  | expr STAR        opt_nl expr                    { $$ = new AstOperator('*', $1, $4); }
-  | expr SLASH       opt_nl expr                    { $$ = new AstOperator('/', $1, $4); }
+  | expr EQUAL       opt_nl expr                    { $$ = new AstOperator('=', $1, $4, @2); }
+  | expr EQUAL_LESS  opt_nl expr                    { $$ = new AstOperator("=<", $1, $4, @2); }
+  | ID   COLON_EQUAL opt_nl expr %prec ASSIGNEMENT  { $$ = new AstDataDef($1, parserExt.mkDefaultType(@2), parserExt.mkDefaultStorageDuration(), new AstCtList(@2, $4), @2); }
+  | expr OR          opt_nl expr                    { $$ = new AstOperator(AstOperator::eOr, $1, $4, @2); }
+  | expr PIPE_PIPE   opt_nl expr                    { $$ = new AstOperator(AstOperator::eOr, $1, $4, @2); }
+  | expr AND         opt_nl expr                    { $$ = new AstOperator(AstOperator::eAnd, $1, $4, @2); }
+  | expr AMPER_AMPER opt_nl expr                    { $$ = new AstOperator(AstOperator::eAnd, $1, $4, @2); }
+  | expr EQUAL_EQUAL opt_nl expr                    { $$ = new AstOperator(AstOperator::eEqualTo, $1, $4, @2); }
+  | expr PLUS        opt_nl expr                    { $$ = new AstOperator('+', $1, $4, @2); }
+  | expr MINUS       opt_nl expr                    { $$ = new AstOperator('-', $1, $4, @2); }
+  | expr STAR        opt_nl expr                    { $$ = new AstOperator('*', $1, $4, @2); }
+  | expr SLASH       opt_nl expr                    { $$ = new AstOperator('/', $1, $4, @2); }
   ;
 
 primary_expr
   : list_expr                                       { std::swap($$,$1); }
-  | NUMBER                                          { $$ = new AstNumber($1.m_value, $1.m_objType); }
+  | NUMBER                                          { $$ = new AstNumber($1.m_value, $1.m_objType, @1); }
   | LPAREN node_seq RPAREN                          { $$ = $2; }
-  | LPAREN RPAREN                                   { $$ = new AstNop(); }
-  | ID                                              { $$ = new AstSymbol($1); }
-  | NOP                                             { $$ = new AstNop(); }
+  | LPAREN RPAREN                                   { $$ = new AstNop(@$); }
+  | ID                                              { $$ = new AstSymbol($1, @1); }
+  | NOP                                             { $$ = new AstNop(@1); }
   ;
 
 list_expr
-  : valvar_lparen     naked_data_def       RPAREN   { $$ = parserExt.mkDataDef($1, $2); }
-  | valvar            naked_data_def       kwac     { $$ = parserExt.mkDataDef($1, $2); }
+  : valvar_lparen     naked_data_def       RPAREN   { $$ = parserExt.mkDataDef($1, $2, @$); }
+  | valvar            naked_data_def       kwac     { $$ = parserExt.mkDataDef($1, $2, @$); }
   | FUN_LPAREN        naked_fun_def        RPAREN   { $$ = $2; }
   | FUN               naked_fun_def        kwac     { $$ = $2; }
   | IF_LPAREN         naked_if             RPAREN   { std::swap($$,$2); }
@@ -442,7 +442,7 @@ list_expr
   | RAW_NEW           type initializer_arg kwac     { $$ = nullptr; }
   | RAW_DELETE_LPAREN expr                 RPAREN   { $$ = nullptr; }
   | RAW_DELETE        expr                 kwac     { $$ = nullptr; }
-  | RETURN_LPAREN     ct_list              RPAREN   { $$ = new AstReturn($2); }
+  | RETURN_LPAREN     ct_list              RPAREN   { $$ = new AstReturn($2, @$); }
   ;
 
 /* keyword argument list close delimiter */
@@ -462,17 +462,17 @@ naked_data_def
   /* A trailing opt_initializer_arg is only possible if there's at least one
   type or storage duration arg, because else its equal_as_sep conflicts with any
   = in the opt_initializer_special_arg's standalone_expr */
-  : opt_id opt_initializer_special_arg type_and_or_storage_duration_arg opt_initializer_arg   { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $4, ($3).m_type, ($3).m_storageDuration); }
+  : opt_id opt_initializer_special_arg type_and_or_storage_duration_arg opt_initializer_arg   { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2, $4, ($3).m_type, ($3).m_storageDuration, @1); }
 
   /* KLUDGE: We want to disallow an empty naked_data_def. The above already
   ensures that at type or storage duration is specified. Now we ensure that
   either id or initializer is specified. */
-  | opt_id initializer_special_arg                                                            { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2     , nullptr, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration()); }
-  | ID                                                                                        { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, nullptr, nullptr, parserExt.mkDefaultType(), parserExt.mkDefaultStorageDuration()); }
+  | opt_id initializer_special_arg                                                            { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, $2     , nullptr, parserExt.mkDefaultType(@1), parserExt.mkDefaultStorageDuration(), @1); }
+  | ID                                                                                        { $$ = new RawAstDataDef(parserExt.errorHandler(), $1, nullptr, nullptr, parserExt.mkDefaultType(@1), parserExt.mkDefaultStorageDuration(), @1); }
   ;
 
 naked_fun_def
-  : opt_id opt_fun_signature_arg equal_as_sep block                  { $$ = parserExt.mkFunDef($1, ($2).m_paramDefs, ($2).m_retType, $4); }
+  : opt_id opt_fun_signature_arg equal_as_sep block                  { $$ = parserExt.mkFunDef($1, ($2).m_paramDefs, ($2).m_retType, $4, @$); }
   ;
 
 fun_signature_arg
@@ -481,7 +481,7 @@ fun_signature_arg
   ;
 
 opt_fun_signature_arg                           
-  : %empty                                                           { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = parserExt.mkDefaultType(); }
+  : %empty                                                           { ($$).m_paramDefs = new std::vector<AstDataDef*>(); ($$).m_retType = parserExt.mkDefaultType(@$); }
   | fun_signature_arg                                                { swap($$,$1); }
   ;
 
@@ -496,7 +496,7 @@ pure_param_list
   ;
 
 param_def
-  : opt_valvar naked_data_def                                        { $$ = parserExt.mkDataDef($1, $2); }
+  : opt_valvar naked_data_def                                        { $$ = parserExt.mkDataDef($1, $2, @$); }
   ;
 
 initializer_arg
@@ -525,15 +525,15 @@ TODO: semantic analizer must report error/warning when noinit is used in return.
 naked_initializer
   /* note that "LPAREN RPAREN" is already handled within ct_list_arg by "LPAREN RPAREN" being a primary_expr*/
   : LPAREN ct_list_2plus RPAREN                                      { swap($$,$2); }
-  | LPAREN NOINIT        RPAREN                                      { $$ = new AstCtList(AstDataDef::noInit); }
-  | ct_list_arg /* 1) */                                             { auto objs = new std::vector<AstObject*>(); objs->push_back($1); $$ = new AstCtList(objs); }
-  | NOINIT                                                           { $$ = new AstCtList(AstDataDef::noInit); }
+  | LPAREN NOINIT        RPAREN                                      { $$ = new AstCtList(@$, AstDataDef::noInit); }
+  | ct_list_arg /* 1) */                                             { auto objs = new std::vector<AstObject*>(); objs->push_back($1); $$ = new AstCtList(objs, @$); }
+  | NOINIT                                                           { $$ = new AstCtList(@$, AstDataDef::noInit); }
   ;
 
 initializer_special_arg
   : initializer_arg                                                  { swap($$,$1); }
   | lparen_as_sep ct_list RPAREN                                     { swap($$,$2); }
-  | lparen_as_sep NOINIT  RPAREN                                     { $$ = new AstCtList(AstDataDef::noInit); }
+  | lparen_as_sep NOINIT  RPAREN                                     { $$ = new AstCtList(@$, AstDataDef::noInit); }
   ;
 
 opt_initializer_special_arg
@@ -557,13 +557,13 @@ valvar_lparen
   ;
 
 naked_if
-  : condition_action_pair_then opt_else                              { $$ = new AstBlock(new AstIf(($1).m_condition, ($1).m_action, $2)); }
-  | condition_action_pair_then elif_chain                            { $$ = new AstBlock(new AstIf(($1).m_condition, ($1).m_action, $2)); }
+  : condition_action_pair_then opt_else                              { $$ = new AstBlock(new AstIf(($1).m_condition, ($1).m_action, $2, @1), @1); }
+  | condition_action_pair_then elif_chain                            { $$ = new AstBlock(new AstIf(($1).m_condition, ($1).m_action, $2, @1), @1); }
   ;
 
 elif_chain
-  : ELIF condition_action_pair_then opt_else                         { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }
-  | ELIF condition_action_pair_then elif_chain                       { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3)); }
+  : ELIF condition_action_pair_then opt_else                         { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3, @1), @1); }
+  | ELIF condition_action_pair_then elif_chain                       { $$ = new AstBlock(new AstIf(($2).m_condition, ($2).m_action, $3, @1), @1); }
   ;
 
 opt_else
@@ -574,7 +574,7 @@ opt_else
 naked_while
   /* not ct_list_arg because do_sep allows newline as sep, which in ct_list_arg
   are seq_operator */
-  : standalone_expr do_sep block                                     { $$ = new AstBlock(new AstLoop($1, $3)); }
+  : standalone_expr do_sep block                                     { $$ = new AstBlock(new AstLoop($1, $3, @1), @1); }
   ;
 
 condition_action_pair_then

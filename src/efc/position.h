@@ -29,6 +29,10 @@ public:
   /** (column related) Advance to the COUNT next columns. */
   void columns(int count = 1) { m_column = add_(m_column, count, 1); }
 
+  bool isNull() const {
+    return m_fileName == nullptr && m_line == 0 && m_column == 0;
+  }
+
   /** File name to which this position refers. */
   std::string* m_fileName;
   /** Current line number. */

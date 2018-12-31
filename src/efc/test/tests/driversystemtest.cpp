@@ -66,6 +66,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
     an_invalid_AST,
     doSemanticAnalysis_and_generateIr_is_called,
     the_appropriate_error_is_reported)) {
+  DisableLocationRequirement dummy;
   string spec =
     "Example: Assigning to literal should result in reporting of eWriteToImmutable";
   TEST_SA_TRANS_AND_IR_BUILD_REPORTS_ERROR(

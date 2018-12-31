@@ -11,6 +11,8 @@ using namespace testing;
 TEST(AstPrinterTest, MAKE_TEST_NAME2(
     toStr,
     returns_the_canonical_string_representation_of_the_AST)) {
+  DisableLocationRequirement dummy;
+
   string spec = "AstNop";
   EXPECT_TOSTR_EQ("nop", AstNop(), spec);
 

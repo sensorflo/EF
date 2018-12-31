@@ -17,6 +17,11 @@ using namespace testing;
 using namespace std;
 using namespace llvm;
 
+class IrGenTest : public Test {
+private:
+  DisableLocationRequirement m_Dummy;
+};
+
 class TestingIrGen : public IrGen {
 public:
   TestingIrGen()
@@ -116,7 +121,7 @@ void testgenIr(TestingIrGen& UUT, AstObject* astRoot, const string& spec,
       UUT, astRoot, spec, expectedResult, fqFunctionName, arg1, arg2);     \
   }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_single_literal,
     genIrInImplicitMain,
     returns_the_literal_s_value)) {
@@ -136,7 +141,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstNumber(1, ObjTypeFunda::eBool), true, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_block,
     genIrInImplicitMain,
     returns_the_blocks_bodies_value)) {
@@ -144,7 +149,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   TEST_GEN_IR_IN_IMPLICIT_MAIN(new AstBlock(new AstNumber(42)), 42, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     an_operator,
     genIrInImplicitMain,
     returns_the_result_of_that_operator)) {
@@ -280,7 +285,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     2.5 / 2.0, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_an_addrOf_or_dereference_operator,
     THEN_addrOf_returns_the_objects_address_as_pointer_AND_dereference_returns_the_object_pointed_to_by_an_pointer)) {
   string spec = "Example: addrOf followed by dereferencing is a nop";
@@ -350,7 +355,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     1 + 2, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     an_short_circuit_perator,
     genIrInImplicitMain,
     does_not_evaluate_rhs_operand_if_after_evaluating_lhs_operand_the_result_of_the_operator_is_already_known)) {
@@ -404,7 +409,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     false, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_cast,
     genIrInImplicitMain,
     succeeds)) {
@@ -544,7 +549,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
 }
 
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_dot_assignment_expression,
     THEN_its_value_is_the_lhs_data_object)) {
 
@@ -573,7 +578,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     77, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_seq_expression,
     THEN_its_lhs_is_evaluated_AND_then_its_rhs_is_evaluated_and_its_value_is_returned)) {
   string spec = "Reading from the seq expression gives the value of the rhs";
@@ -597,7 +602,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     77, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_seq_with_some_expressions_not_having_a_value_but_the_last_having_a_value,
     genIrInImplicitMain,
     returns_the_result_of_the_last_expression)) {
@@ -612,7 +617,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     42, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_function_definition,
     genIr,
     adds_the_function_definition_to_the_module_with_the_correct_signature)) {
@@ -667,7 +672,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   }
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_function_definition,
     genIr,
     adds_the_definition_to_the_module_with_the_correct_signature)) {
@@ -721,7 +726,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
   }
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_function_definition_foo_with_return_type_void,
     genIr,
     JIT_executing_foo_succeeds))   {
@@ -742,7 +747,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     << amendAst(ast) << amend(&ee.module());
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_function_defintion_returning_a_value,
     THEN_JIT_executing_it_returns_that_value)) {
   string spec = "Example: zero arguments, returning a literal";
@@ -800,7 +805,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     spec, int, ".foo.foo", 42);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_call_to_a_terminating_recursive_function,
     genIrInImplicitMain,
     returns_result_of_that_function_call)) {
@@ -822,7 +827,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     2 * 1, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_function_call_before_that_functions_defintion,
     THEN_that_changes_nothing)) {
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -835,7 +840,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     42, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_nested_function_definition_AND_calls_to_both,
     genIrInImplicitMain,
     succeeds)) {
@@ -850,7 +855,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     42, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_immutable_local_data_object_definition_of_foo_being_initialized_with_x,
     genIrInImplicitMain,
     returns_x_rvalue)) {
@@ -858,7 +863,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     new AstDataDef("foo", ObjTypeFunda::eInt, new AstNumber(42)), 42, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_data_objec_definition_WITH_noinit,
     genIr,
     it_succeeds)) {
@@ -873,7 +878,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     1 /* x/x is always 1 */, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     GIVEN_a_mutable_local_data_object_definition_expression,
     genIrInImplicitMain,
     returns_x_lvalue)) {
@@ -910,7 +915,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     77, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_static_data_object_definition_being_initialized_with_x,
     genIrInImplicitMain,
     returns_x)) {
@@ -929,7 +934,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     42, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME3(
+TEST_F(IrGenTest, MAKE_TEST_NAME3(
     GIVEN_a_static_data_object_definition,
     THEN_the_initialization_is_ignored_at_runtime_when_control_flow_reaches_it,
     BECAUSE_initialization_of_an_static_data_object_is_done_at_program_startup)) {
@@ -964,7 +969,7 @@ TEST(IrGenTest, MAKE_TEST_NAME3(
     1, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_reference_to_an_static_data_object_before_its_defintion,
     THEN_that_changes_nothing)) {
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
@@ -979,7 +984,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     42, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_data_object_defintion_with_an_explict_or_implicit_initialization,
     THEN_a_later_read_of_that_data_object_delivers_its_current_value)) {
   string spec = "Example: local immutable data object";
@@ -1020,7 +1025,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     42, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_an_assignmnt_to_a_mutable_data_object,
     THEN_a_later_read_of_of_that_data_object_delivers_the_new_value)) {
   string spec = "Example: local data object and using operator '='";
@@ -1061,7 +1066,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     77, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME(
+TEST_F(IrGenTest, MAKE_TEST_NAME(
     a_value_definition_of_foo_with_no_explicit_initializer,
     genIrInImplicitMain,
     returns_the_default_which_is_zero)) {
@@ -1071,7 +1076,7 @@ TEST(IrGenTest, MAKE_TEST_NAME(
     0, "");
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_a_pseudo_global_variable_named_x_AND_a_function_definition_also_defining_a_variable_x,
     THEN_the_inner_defintion_of_variable_x_shadows_the_outer_variable_x)) {
   // 'global' in quotes because there not really global variables
@@ -1104,7 +1109,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     42, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_an_if_expression,
     THEN_its_value_is_the_resulting_obj_of_the_evaluated_clase)) {
 
@@ -1128,7 +1133,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     77, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_an_return_expression,
     THEN_the_current_function_is_terminated_and_the_operands_value_is_returned_to_the_caller)) {
 
@@ -1166,7 +1171,7 @@ TEST(IrGenTest, MAKE_TEST_NAME2(
     42, spec);
 }
 
-TEST(IrGenTest, MAKE_TEST_NAME2(
+TEST_F(IrGenTest, MAKE_TEST_NAME2(
     GIVEN_an_loop_expression,
     THEN_it_loops_as_long_as_condition_evaluates_to_true)) {
   string spec = "Example: Count x down from 1 to 0";

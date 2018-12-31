@@ -5,6 +5,7 @@
 #include "declutils.h"
 #include "envnode.h"
 #include "generalvalue.h"
+#include "location.h"
 #include "object.h"
 #include "objtype.h"
 #include "storageduration.h"
@@ -24,8 +25,28 @@ class AstConstVisitor;
 class AstVisitor;
 class ErrorHandler;
 
+/** AST nodes must have a location, see ctor of AstNode.  However during certain
+unittests it's too noisy to be forced to pass a location to the constructor of
+an AST node. These tests can create a local instance of
+DisableLocationRequirement at their beginning and are then allowed to make use
+of the default argument for the location parameter. */
+class DisableLocationRequirement {
+public:
+  DisableLocationRequirement() {
+    assert(m_areLocationsRequired);
+    m_areLocationsRequired = false;
+  }
+  ~DisableLocationRequirement() { m_areLocationsRequired = true; }
+
+  static bool areLocationsRequired() { return m_areLocationsRequired; }
+
+private:
+  static bool m_areLocationsRequired;
+};
+
 class AstNode {
 public:
+  AstNode(Location loc = s_nullLoc);
   virtual ~AstNode() = default;
 
   virtual void accept(AstVisitor& visitor) = 0;
@@ -45,15 +66,20 @@ public:
 
   std::string toStr() const;
 
+  const Location& location() const { return m_loc; }
+
 protected:
   AstNode() = default;
 
 private:
   NEITHER_COPY_NOR_MOVEABLE(AstNode);
+  const Location m_loc;
 };
 
 class AstObject : public AstNode {
 public:
+  AstObject(Location loc = s_nullLoc) : AstNode(std::move(loc)) {}
+
   // -- overrides for AstNode
   bool isObjTypeNoReturn() const override;
 
@@ -67,7 +93,7 @@ public:
 /** AstObject directly being an Object, as opposed to refering to an Object. */
 class AstObjInstance : public AstObject, public Object {
 public:
-  AstObjInstance();
+  AstObjInstance(Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void setAccessFromAstParent(Access access) override;
@@ -99,7 +125,7 @@ public:
   }
 
 protected:
-  AstObjDef(std::string name);
+  AstObjDef(std::string name, Location loc = s_nullLoc);
 
 private:
   /** Relative to program order, which equals AST post-order traversal, childs
@@ -112,6 +138,8 @@ private:
 
 class AstNop : public AstObjInstance {
 public:
+  AstNop(Location loc = s_nullLoc) : AstObjInstance(std::move(loc)) {}
+
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
@@ -124,7 +152,7 @@ public:
 
 class AstBlock : public AstObjInstance, public EnvNode {
 public:
-  AstBlock(AstObject* body);
+  AstBlock(AstObject* body, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -147,7 +175,8 @@ private:
 class AstCast : public AstObjInstance {
 public:
   AstCast(AstObjType* specifiedNewAstObjType, AstObject* arg);
-  AstCast(AstObjType* specifiedNewAstObjType, AstCtList* args);
+  AstCast(AstObjType* specifiedNewAstObjType, AstCtList* args,
+    Location loc = s_nullLoc);
   AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child);
 
   // -- overrides for AstNode
@@ -174,7 +203,7 @@ private:
 class AstFunDef : public AstObjDef {
 public:
   AstFunDef(const std::string& name, std::vector<AstDataDef*>* args,
-    AstObjType* ret, AstObject* body);
+    AstObjType* ret, AstObject* body, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -225,14 +254,16 @@ AstObject is wrong in this case. */
 class AstDataDef : public AstObjDef {
 public:
   AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
-    StorageDuration declaredStorageDuration, AstCtList* ctorArgs = nullptr);
+    StorageDuration declaredStorageDuration, AstCtList* ctorArgs = nullptr,
+    Location loc = s_nullLoc);
   AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
-    StorageDuration declaredStorageDuration, AstObject* initObj);
+    StorageDuration declaredStorageDuration, AstObject* initObj,
+    Location loc = s_nullLoc);
   AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
-    AstObject* initObj = nullptr);
+    AstObject* initObj = nullptr, Location loc = s_nullLoc);
   AstDataDef(const std::string& name,
     ObjTypeFunda::EType declaredObjType = ObjTypeFunda::eInt,
-    AstObject* initObj = nullptr);
+    AstObject* initObj = nullptr, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -260,8 +291,8 @@ public:
 private:
   friend class AstPrinter;
 
-  static std::unique_ptr<AstCtList> mkCtorArgs(
-    AstCtList* ctorArgs, StorageDuration storageDuration, bool& doNotInit);
+  static std::unique_ptr<AstCtList> mkCtorArgs(AstCtList* ctorArgs,
+    StorageDuration storageDuration, bool& doNotInit, const Location& loc);
 
   // -- childs of this node
   // m_name is in EnvNode
@@ -282,8 +313,10 @@ composition'. Obviously a well defined term is needed, and then the class
 should be renamed. */
 class AstNumber : public AstObjInstance {
 public:
-  AstNumber(GeneralValue value, AstObjType* astObjType = nullptr);
-  AstNumber(GeneralValue value, ObjTypeFunda::EType eType);
+  AstNumber(GeneralValue value, AstObjType* astObjType = nullptr,
+    Location loc = s_nullLoc);
+  AstNumber(
+    GeneralValue value, ObjTypeFunda::EType eType, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -309,8 +342,9 @@ private:
 /** Here symbol as an synonym to identifier */
 class AstSymbol : public AstObject {
 public:
-  AstSymbol(std::string name)
-    : m_referencedAstObj{}
+  AstSymbol(std::string name, Location loc = s_nullLoc)
+    : AstObject{std::move(loc)}
+    , m_referencedAstObj{}
     , m_accessFromAstParent{Access::eYetUndefined}
     , m_name(std::move(name)) {}
 
@@ -350,7 +384,8 @@ private:
 
 class AstFunCall : public AstObjInstance {
 public:
-  AstFunCall(AstObject* address, AstCtList* args = nullptr);
+  AstFunCall(
+    AstObject* address, AstCtList* args = nullptr, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -402,15 +437,15 @@ public:
     eOther
   };
 
-  AstOperator(char op, AstCtList* args);
-  AstOperator(const std::string& op, AstCtList* args);
-  AstOperator(EOperation op, AstCtList* args);
-  AstOperator(
-    char op, AstObject* operand1 = nullptr, AstObject* operand2 = nullptr);
+  AstOperator(char op, AstCtList* args, Location loc = s_nullLoc);
+  AstOperator(const std::string& op, AstCtList* args, Location loc = s_nullLoc);
+  AstOperator(EOperation op, AstCtList* args, Location loc = s_nullLoc);
+  AstOperator(char op, AstObject* operand1 = nullptr,
+    AstObject* operand2 = nullptr, Location loc = s_nullLoc);
   AstOperator(const std::string& op, AstObject* operand1 = nullptr,
-    AstObject* operand2 = nullptr);
+    AstObject* operand2 = nullptr, Location loc = s_nullLoc);
   AstOperator(EOperation op, AstObject* operand1 = nullptr,
-    AstObject* operand2 = nullptr);
+    AstObject* operand2 = nullptr, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -485,7 +520,7 @@ the last AstNode to an AstObject and report an error if that is not
 possible. */
 class AstSeq : public AstObject {
 public:
-  AstSeq(std::vector<AstNode*>* operands);
+  AstSeq(std::vector<AstNode*>* operands, Location loc = s_nullLoc);
   AstSeq(AstNode* op1 = nullptr, AstNode* op2 = nullptr, AstNode* op3 = nullptr,
     AstNode* op4 = nullptr, AstNode* op5 = nullptr);
 
@@ -523,7 +558,8 @@ private:
 /* If flow control expression */
 class AstIf : public AstObjInstance {
 public:
-  AstIf(AstObject* cond, AstObject* action, AstObject* elseAction = nullptr);
+  AstIf(AstObject* cond, AstObject* action, AstObject* elseAction = nullptr,
+    Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -557,7 +593,7 @@ private:
 
 class AstLoop : public AstObjInstance {
 public:
-  AstLoop(AstObject* cond, AstObject* body);
+  AstLoop(AstObject* cond, AstObject* body, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -582,8 +618,8 @@ private:
 
 class AstReturn : public AstObjInstance {
 public:
-  AstReturn(AstObject* retVal = nullptr);
-  AstReturn(AstCtList* ctorArgs);
+  AstReturn(AstObject* retVal = nullptr, Location loc = s_nullLoc);
+  AstReturn(AstCtList* ctorArgs, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -606,6 +642,8 @@ private:
 /** See also ObjType */
 class AstObjType : public AstNode {
 public:
+  AstObjType(Location loc = s_nullLoc) : AstNode{std::move(loc)} {}
+
   void setAccessFromAstParent(Access access) override {
     assert(access == Access::eIgnoreValueAndAddr);
   }
@@ -616,7 +654,8 @@ public:
   has the semantics of a temporary. Asserts in case of there is no default
   AstObject. The returned AstObject is set up as if it had passed all passes
   prior to SemanticAnalizer, but not yet passed SemanticAnalizer's pass. */
-  virtual AstObject* createDefaultAstObjectForSemanticAnalizer() const = 0;
+  virtual AstObject* createDefaultAstObjectForSemanticAnalizer(
+    Location loc) const = 0;
 
   /** Can only be called after this AstObjType has been visited by the
   SemanticAnalizer. */
@@ -630,8 +669,8 @@ public:
 
 class AstObjTypeSymbol : public AstObjType {
 public:
-  AstObjTypeSymbol(const std::string name);
-  AstObjTypeSymbol(ObjTypeFunda::EType fundaType);
+  AstObjTypeSymbol(const std::string name, Location loc = s_nullLoc);
+  AstObjTypeSymbol(ObjTypeFunda::EType fundaType, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -640,7 +679,7 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer() const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer(Location loc) const override;
 
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -673,7 +712,8 @@ public:
 
 class AstObjTypeQuali : public AstObjType {
 public:
-  AstObjTypeQuali(ObjType::Qualifiers qualifiers, AstObjType* targetType);
+  AstObjTypeQuali(ObjType::Qualifiers qualifiers, AstObjType* targetType,
+    Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -682,7 +722,7 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer() const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer(Location loc) const override;
 
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -708,7 +748,7 @@ public:
 
 class AstObjTypePtr : public AstObjType {
 public:
-  AstObjTypePtr(AstObjType* pointee);
+  AstObjTypePtr(AstObjType* pointee, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -717,7 +757,7 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer() const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer(Location loc) const override;
 
   const ObjTypePtr& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -742,7 +782,8 @@ public:
 /** Definition of a class. See also ObjTypeClass */
 class AstClassDef : public AstObjType {
 public:
-  AstClassDef(std::string name, std::vector<AstDataDef*>* dataMembers);
+  AstClassDef(std::string name, std::vector<AstDataDef*>* dataMembers,
+    Location loc = s_nullLoc);
   AstClassDef(std::string name, AstDataDef* m1 = nullptr,
     AstDataDef* m2 = nullptr, AstDataDef* m3 = nullptr);
 
@@ -753,7 +794,7 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer() const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer(Location loc) const override;
 
   const ObjTypeClass& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -782,7 +823,10 @@ public:
 /** Maybe it should be an independent type, that is not derive from AstNode */
 class AstCtList : public AstNode {
 public:
-  AstCtList(std::vector<AstObject*>* childs = nullptr);
+  AstCtList(
+    std::vector<AstObject*>* childs = nullptr, Location loc = s_nullLoc);
+  AstCtList(
+    Location loc, AstObject* child1 = nullptr, AstObject* child2 = nullptr);
   AstCtList(AstObject* child1, AstObject* child2 = nullptr,
     AstObject* child3 = nullptr, AstObject* child4 = nullptr,
     AstObject* child5 = nullptr, AstObject* child6 = nullptr);
