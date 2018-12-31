@@ -41,7 +41,8 @@ Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
   , m_parser(make_unique<Parser>(
       *m_tokenFilter.get(), *this, *m_genParserExt, m_astRootFromParser))
   , m_irGen(make_unique<IrGen>(*m_errorHandler))
-  , m_semanticAnalizer(make_unique<SemanticAnalizer>(*m_env, *m_errorHandler)) {
+  , m_semanticAnalizer(make_unique<SemanticAnalizer>(*m_env, *m_errorHandler))
+  , m_opened_yyin{false} {
   assert(m_errorHandler);
   assert(m_env);
   assert(m_scanner);
@@ -54,15 +55,18 @@ Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
   // Ctor/Dtor must RAII yyin and m_parser
 
   if (m_fileName.empty() || m_fileName == "-") { yyin = stdin; }
-  else if (!(yyin = fopen(m_fileName.c_str(), "r"))) {
-    exitInternError("cannot open " + m_fileName + ": " + strerror(errno));
+  else {
+    if (!(yyin = fopen(m_fileName.c_str(), "r"))) {
+      exitInternError("cannot open " + m_fileName + ": " + strerror(errno));
+    }
+    m_opened_yyin = true;
   }
   yyinitializeParserLoc(&m_fileName);
   yyrestart(yyin);
 }
 
 Driver::~Driver() {
-  fclose(yyin);
+  if (m_opened_yyin) { fclose(yyin); }
 }
 
 Scanner& Driver::scanner() {

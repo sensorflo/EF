@@ -78,4 +78,5 @@ private:
   /** Guaranteed to be non-nullptr */
   std::unique_ptr<SemanticAnalizer> m_semanticAnalizer;
   std::unique_ptr<ExecutionEngineApater> m_executionEngine;
+  bool m_opened_yyin;
 };
