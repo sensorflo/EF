@@ -616,7 +616,7 @@ public:
   has the semantics of a temporary. Asserts in case of there is no default
   AstObject. The returned AstObject is set up as if it had passed all passes
   prior to SemanticAnalizer, but not yet passed SemanticAnalizer's pass. */
-  virtual AstObject* createDefaultAstObjectForSemanticAnalizer() = 0;
+  virtual AstObject* createDefaultAstObjectForSemanticAnalizer() const = 0;
 
   /** Can only be called after this AstObjType has been visited by the
   SemanticAnalizer. */
@@ -640,7 +640,7 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer() override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer() const override;
 
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -682,7 +682,7 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer() override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer() const override;
 
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -717,7 +717,7 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer() override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer() const override;
 
   const ObjTypePtr& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -753,7 +753,7 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer() override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer() const override;
 
   const ObjTypeClass& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;

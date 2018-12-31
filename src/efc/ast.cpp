@@ -717,7 +717,7 @@ bool AstObjTypeSymbol::isValueInRange(GeneralValue value) const {
   return false;
 }
 
-AstObject* AstObjTypeSymbol::createDefaultAstObjectForSemanticAnalizer() {
+AstObject* AstObjTypeSymbol::createDefaultAstObjectForSemanticAnalizer() const {
   // What parser does
   const auto newAstNode = new AstNumber(0, new AstObjTypeSymbol(m_name));
 
@@ -774,7 +774,7 @@ bool AstObjTypeQuali::isValueInRange(GeneralValue value) const {
   return m_targetType->isValueInRange(value);
 }
 
-AstObject* AstObjTypeQuali::createDefaultAstObjectForSemanticAnalizer() {
+AstObject* AstObjTypeQuali::createDefaultAstObjectForSemanticAnalizer() const {
   return m_targetType->createDefaultAstObjectForSemanticAnalizer();
 }
 
@@ -812,7 +812,7 @@ bool AstObjTypePtr::isValueInRange(GeneralValue value) const {
   return (value <= UINT_MAX) && (value == static_cast<unsigned int>(value));
 }
 
-AstObject* AstObjTypePtr::createDefaultAstObjectForSemanticAnalizer() {
+AstObject* AstObjTypePtr::createDefaultAstObjectForSemanticAnalizer() const {
   // What parser does
   const auto newAstNode = new AstNumber(0, ObjTypeFunda::eNullptr);
 
@@ -866,7 +866,7 @@ bool AstClassDef::isValueInRange(GeneralValue value) const {
   assert(false);
 }
 
-AstObject* AstClassDef::createDefaultAstObjectForSemanticAnalizer() {
+AstObject* AstClassDef::createDefaultAstObjectForSemanticAnalizer() const {
   // The liskov substitution principle is broken here
   assert(false);
 }
