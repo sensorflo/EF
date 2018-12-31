@@ -7,7 +7,7 @@ public:
   virtual ~TokenStream() = default;
 
   /** Removes and returns front token */
-  virtual yy::Parser::symbol_type pop() = 0;
+  virtual Parser::symbol_type pop() = 0;
 
 protected:
   TokenStream() = default;

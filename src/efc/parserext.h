@@ -1,11 +1,11 @@
 #pragma once
 /** \file
-yy::Parser implementation extension. Has two related responsibilities:
+Parser implementation extension. Has two related responsibilities:
 
 1) So Bison's input file parser.yy can only contain tiny fragments of
    code. Anything larger than tiny is implemented here and parser.yy should make
    only the call.  ParserApiExt is similar, but extends the public interface of
-   yy::Parser.
+   Parser.
 
 2) So SemanticAnalizer can make less traversals of the AST, ParserExt does
    some of SemanticAnalizer's responsibilities already while creating the

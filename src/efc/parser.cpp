@@ -1,41 +1,41 @@
-#include "parserapiext.h"
+#include "parser.h"
 
 #include <map>
 
 using namespace std;
 using namespace yy;
 
-vector<ParserApiExt::TokenTypeAttr> ParserApiExt::m_TokenAttrs;
-vector<char> ParserApiExt::m_OneCharTokenNames(256 * 2); // 256 * (char+'\0')
+vector<Parser::TokenTypeAttr> Parser::m_TokenAttrs;
+vector<char> Parser::m_OneCharTokenNames(256 * 2); // 256 * (char+'\0')
 
-ParserApiExt::TokenTypeAttr::TokenTypeAttr()
+Parser::TokenTypeAttr::TokenTypeAttr()
   : m_name{}, m_semanticValueType{SVTInvalid} {
 }
 
-ParserApiExt::TokenTypeAttr::TokenTypeAttr(
+Parser::TokenTypeAttr::TokenTypeAttr(
   const char* name, SemanticValueType svt, TokenClass tc)
   : m_name{name}, m_semanticValueType{svt}, m_tokenClass{tc} {
 }
 
-const char* ParserApiExt::tokenName(Parser::token_type t) {
+const char* Parser::tokenName(Parser::token_type t) {
   initTokenAttrs();
   return m_TokenAttrs.at(t).m_name;
 }
 
-ParserApiExt::TokenClass ParserApiExt::tokenClass(Parser::token_type t) {
+Parser::TokenClass Parser::tokenClass(Parser::token_type t) {
   initTokenAttrs();
   return m_TokenAttrs.at(t).m_tokenClass;
 }
 
 /** Analogous to makeToken */
 template<typename T>
-Parser::symbol_type ParserApiExt::makeTokenT(Parser::token_type tt) {
+Parser::symbol_type Parser::makeTokenT(Parser::token_type tt) {
   return Parser::symbol_type(tt, T{}, Parser::location_type());
 }
 
 /** Returns a new Parser::symbol_type with the semantic value member and the
 location member being default initialized */
-Parser::symbol_type ParserApiExt::makeToken(Parser::token_type tt) {
+Parser::symbol_type Parser::makeToken(Parser::token_type tt) {
   switch (m_TokenAttrs.at(tt).m_semanticValueType) {
   case SVTInvalid: assert(false); // fall through
   case SVTVoid: return Parser::symbol_type(tt, Parser::location_type());
@@ -49,7 +49,7 @@ Parser::symbol_type ParserApiExt::makeToken(Parser::token_type tt) {
 
 /** Is not required to be called explicitely. But it helps to dedect errors
 earlier. */
-void ParserApiExt::initTokenAttrs() {
+void Parser::initTokenAttrs() {
   if (!m_TokenAttrs.empty()) { return; }
   m_TokenAttrs.resize(Parser::token::TOK_TOKENLISTEND);
   for (auto i = 0U; i < 256; ++i) {
@@ -132,7 +132,7 @@ void ParserApiExt::initTokenAttrs() {
   for (auto i = 0U; i < Parser::token::TOK_TOKENLISTEND; ++i) {
     if (!m_TokenAttrs.at(i).m_name) {
       cerr << "token " << i << " has no been given a name. Update the "
-           << "redundant above map with what yy::Parser::token::yytokentype "
+           << "redundant above map with what Parser::token::yytokentype "
            << "defines" << endl;
       assert(false);
     }
@@ -141,7 +141,7 @@ void ParserApiExt::initTokenAttrs() {
 
 basic_ostream<char>& yy::operator<<(
   basic_ostream<char>& os, Parser::token_type t) {
-  return os << ParserApiExt::tokenName(t);
+  return os << Parser::tokenName(t);
 }
 
 basic_ostream<char>& std::operator<<(

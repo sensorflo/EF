@@ -17,6 +17,6 @@
 #define TOKIL5(tok1, tok2, tok3, tok4, tok5) { Parser::token::tok1, Parser::token::tok2, Parser::token::tok3, Parser::token::tok4, Parser::token::tok5 }
 // clang-format on
 
-std::string amend(const std::vector<yy::Parser::token_type>& inputTokens,
-  const std::vector<yy::Parser::token_type>& expectedTokens,
+std::string amend(const std::vector<Parser::token_type>& inputTokens,
+  const std::vector<Parser::token_type>& expectedTokens,
   int currentExpectedPos);

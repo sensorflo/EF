@@ -9,7 +9,7 @@ TokenStreamLookAhead::~TokenStreamLookAhead() {
   while (m_lookAheadCnt) { pop(); }
 }
 
-yy::Parser::symbol_type TokenStreamLookAhead::pop() {
+Parser::symbol_type TokenStreamLookAhead::pop() {
   if (0 == m_lookAheadCnt) { return m_input.pop(); }
   else {
     auto frontRawIndexOld = m_frontRawIndex;
@@ -19,11 +19,11 @@ yy::Parser::symbol_type TokenStreamLookAhead::pop() {
   }
 }
 
-yy::Parser::symbol_type& TokenStreamLookAhead::lookAhead(size_t pos) {
+Parser::symbol_type& TokenStreamLookAhead::lookAhead(size_t pos) {
   assert(pos < m_buf.size());
   size_t backRawIndex = (m_frontRawIndex + m_lookAheadCnt) % m_buf.size();
   while (pos >= m_lookAheadCnt) {
-    yy::Parser::symbol_type tmp(m_input.pop());
+    Parser::symbol_type tmp(m_input.pop());
     m_buf[backRawIndex].~basic_symbol();
     m_buf[backRawIndex].move(tmp);
     backRawIndex = (backRawIndex + 1) % m_buf.size();

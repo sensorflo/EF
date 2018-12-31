@@ -6,9 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace yy {
 class Parser;
-}
 class Location;
 class ErrorHandler;
 class Env;
@@ -74,7 +72,7 @@ private:
   /** Guaranteed to be non-nullptr */
   std::unique_ptr<ParserExt> m_parserExt;
   /** Guaranteed to be non-nullptr */
-  std::unique_ptr<yy::Parser> m_parser;
+  std::unique_ptr<Parser> m_parser;
   /** Guaranteed to be non-nullptr */
   std::unique_ptr<IrGen> m_irGen;
   /** Guaranteed to be non-nullptr */

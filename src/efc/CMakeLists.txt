@@ -91,7 +91,7 @@ set(SRCS
   irgenforwarddeclarator.cpp
   object.cpp
   objtype.cpp
-  parserapiext.cpp
+  parser.cpp
   parserext.cpp
   semanticanalizer.cpp
   signatureaugmentor.cpp

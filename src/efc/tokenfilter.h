@@ -8,7 +8,7 @@ class TokenFilter : public TokenStream {
 public:
   TokenFilter(TokenStream& input);
 
-  yy::Parser::symbol_type pop() override;
+  Parser::symbol_type pop() override;
 
 private:
   TokenStreamLookAhead m_input;
