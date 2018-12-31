@@ -13,7 +13,7 @@ add_definitions(-std=c++14 -Wall -Wextra -Wpedantic -Wno-unused-parameter -Werro
 
 
 add_subdirectory(doc)
-add_subdirectory(googletest/googletest)
+add_subdirectory(googletest)
 add_subdirectory(src/efc)
 
 # clang format

@@ -143,7 +143,7 @@ set(TEST_OTHER_SRCS
 
 add_executable(efc_test ${TEST_TEST_SRCS} ${TEST_OTHER_SRCS})
 target_include_directories(efc_test PRIVATE test test/testhelpers)
-target_link_libraries(efc_test PRIVATE efc_as_lib gtest)
+target_link_libraries(efc_test PRIVATE efc_as_lib gtest gmock)
 
 # TODO: pass path to testdox and to doc/tutorial dir as parameter
 # TODO: make adding an entry to PATH more portable
