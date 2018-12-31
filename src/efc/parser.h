@@ -33,8 +33,6 @@ public:
   static const char* tokenName(Parser::token_type t);
   static TokenClass tokenClass(Parser::token_type t);
 
-  template<typename SemanticValueType>
-  static Parser::symbol_type makeTokenT(Parser::token_type tt);
   static Parser::symbol_type makeToken(Parser::token_type tt);
 
 private:

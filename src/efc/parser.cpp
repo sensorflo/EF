@@ -5,6 +5,15 @@
 using namespace std;
 using namespace yy;
 
+namespace {
+
+/** Analogous to makeToken */
+template<typename T>
+Parser::symbol_type makeTokenT(Parser::token_type tt) {
+  return Parser::symbol_type(tt, T{}, Parser::location_type());
+}
+}
+
 vector<Parser::TokenTypeAttr> Parser::m_TokenAttrs;
 vector<char> Parser::m_OneCharTokenNames(256 * 2); // 256 * (char+'\0')
 
@@ -25,12 +34,6 @@ const char* Parser::tokenName(Parser::token_type t) {
 Parser::TokenClass Parser::tokenClass(Parser::token_type t) {
   initTokenAttrs();
   return m_TokenAttrs.at(t).m_tokenClass;
-}
-
-/** Analogous to makeToken */
-template<typename T>
-Parser::symbol_type Parser::makeTokenT(Parser::token_type tt) {
-  return Parser::symbol_type(tt, T{}, Parser::location_type());
 }
 
 /** Returns a new Parser::symbol_type with the semantic value member and the
