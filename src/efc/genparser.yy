@@ -5,7 +5,7 @@
 %require "3.0.2"
 %expect 0
 %defines
-%define parser_class_name {Parser}
+%define parser_class_name { GenParser }
 %define api.token.constructor
 %define api.value.type variant
 %define parse.assert
@@ -98,7 +98,7 @@ and by declaration of free function yylex */
   bison's .yy input file. The only reason for the existence of the free
   function yylex is that the author doesn't know how to make bison's generated
   parser use tokenStream directly */
-  yy::Parser::symbol_type yylex(TokenStream& tokenStream);
+  yy::GenParser::symbol_type yylex(TokenStream& tokenStream);
 }
 
 %define api.token.prefix {TOK_}
@@ -597,11 +597,11 @@ opt_id
 %%
 #include "../tokenstream.h"
 
-void yy::Parser::error(const location_type& loc, const std::string& msg)
+void yy::GenParser::error(const location_type& loc, const std::string& msg)
 {
   driver.error(loc, msg);
 }
 
-yy::Parser::symbol_type yylex(TokenStream& tokenStream) {
+yy::GenParser::symbol_type yylex(TokenStream& tokenStream) {
   return tokenStream.pop();
 }

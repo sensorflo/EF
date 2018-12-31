@@ -5,7 +5,7 @@
 %{
   #include "../scanner.h"
   #include "../driver.h"
-  #include "parser.hpp"
+  #include "../parser.h"
   #include <cerrno>
   #include <climits>
   #include <cfloat>

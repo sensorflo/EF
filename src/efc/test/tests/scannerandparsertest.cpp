@@ -2,7 +2,7 @@
 #include "driverontmpfile.h"
 #include "../ast.h"
 #include "../errorhandler.h"
-#include "../gensrc/parser.hpp"
+#include "../parser.h"
 
 using namespace testing;
 using namespace std;

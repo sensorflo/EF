@@ -1,6 +1,6 @@
 #pragma once
 #include "declutils.h"
-#include "gensrc/parser.hpp"
+#include "parser.h"
 
 class TokenStream {
 public:

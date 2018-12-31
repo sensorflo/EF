@@ -1,5 +1,5 @@
 #pragma once
-#include "../gensrc/parser.hpp"
+#include "../parser.h"
 
 #include <string>
 #include <vector>
