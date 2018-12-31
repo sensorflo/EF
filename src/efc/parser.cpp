@@ -1,9 +1,23 @@
 #include "parser.h"
 
+#include "ast.h"
+#include "driver.h"
+#include "errorhandler.h"
+#include "tokenfilter.h"
+
+#include <cerrno>
+#include <cstdio>
 #include <map>
+#include <stdexcept>
+#include <string.h>
+#include <utility>
 
 using namespace std;
 using namespace yy;
+
+extern FILE* yyin;
+extern void yyrestart(FILE*);
+extern void yyinitializeParserLoc(std::string* filename);
 
 namespace {
 
@@ -16,6 +30,49 @@ Parser::symbol_type makeTokenT(Parser::token_type tt) {
 
 vector<Parser::TokenTypeAttr> Parser::m_TokenAttrs;
 vector<char> Parser::m_OneCharTokenNames(256 * 2); // 256 * (char+'\0')
+
+Parser::Parser(std::string& fileName, TokenStream& tokenStream, Driver& driver,
+  Env& env, ErrorHandler& errorHandler)
+  : yy::GenParser{tokenStream, driver, m_genParserExt, m_astRootFromParser}
+  , m_errorHandler{errorHandler}
+  , m_genParserExt{env, errorHandler}
+  , m_opened_yyin{false} {
+  if (fileName.empty() || fileName == "-") { yyin = stdin; }
+  else {
+    if (!(yyin = fopen(fileName.c_str(), "r"))) {
+      driver.exitInternError(
+        "cannot open " + fileName + ": " + strerror(errno));
+    }
+    m_opened_yyin = true;
+  }
+  yyinitializeParserLoc(&fileName);
+  yyrestart(yyin);
+}
+
+Parser::~Parser() {
+  if (m_opened_yyin) { fclose(yyin); }
+}
+
+Parser::Result Parser::parse_() {
+  Result res{};
+  res.m_errorCode = parse();
+  res.m_astRoot = move(m_astRootFromParser);
+  return res;
+}
+
+unique_ptr<AstObject> Parser::addImplicitMain(unique_ptr<AstNode> ast) {
+  assert(ast);
+  auto astAfterParseAsObject =
+    unique_ptr<AstObject>(dynamic_cast<AstObject*>(ast.release()));
+  if (!astAfterParseAsObject) {
+    Error::throwError(m_errorHandler, Error::eObjectExpected);
+  }
+
+  auto astAfterImplicitMain = unique_ptr<AstObject>(
+    m_genParserExt.mkMainFunDef(astAfterParseAsObject.release()));
+  assert(astAfterImplicitMain);
+  return astAfterImplicitMain;
+}
 
 Parser::TokenTypeAttr::TokenTypeAttr()
   : m_name{}, m_semanticValueType{SVTInvalid} {

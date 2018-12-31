@@ -4,7 +4,6 @@
 #include "env.h"
 #include "errorhandler.h"
 #include "executionengineadapter.h"
-#include "genparserext.h"
 #include "irgen.h"
 #include "parser.h"
 #include "scanner.h"
@@ -14,18 +13,7 @@
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/IR/Module.h"
 
-#include <cerrno>
-#include <cstdio>
-#include <stdexcept>
-#include <string>
-#include <utility>
-
 using namespace std;
-using namespace yy;
-
-extern FILE* yyin;
-extern void yyrestart(FILE*);
-extern void yyinitializeParserLoc(string* filename);
 
 /** \param osstream caller keeps ownership */
 Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
@@ -37,37 +25,20 @@ Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
   , m_ostream(ostream ? *ostream : cerr)
   , m_scanner(make_unique<Scanner>(*this))
   , m_tokenFilter(make_unique<TokenFilter>(*m_scanner.get()))
-  , m_genParserExt(make_unique<GenParserExt>(*m_env, *m_errorHandler))
   , m_parser(make_unique<Parser>(
-      *m_tokenFilter.get(), *this, *m_genParserExt, m_astRootFromParser))
+      m_fileName, *m_tokenFilter.get(), *this, *m_env, *m_errorHandler))
   , m_irGen(make_unique<IrGen>(*m_errorHandler))
-  , m_semanticAnalizer(make_unique<SemanticAnalizer>(*m_env, *m_errorHandler))
-  , m_opened_yyin{false} {
+  , m_semanticAnalizer(make_unique<SemanticAnalizer>(*m_env, *m_errorHandler)) {
   assert(m_errorHandler);
   assert(m_env);
   assert(m_scanner);
   assert(m_tokenFilter);
   assert(m_parser);
-  assert(m_genParserExt);
   assert(m_irGen);
   assert(m_semanticAnalizer);
-
-  // Ctor/Dtor must RAII yyin and m_parser
-
-  if (m_fileName.empty() || m_fileName == "-") { yyin = stdin; }
-  else {
-    if (!(yyin = fopen(m_fileName.c_str(), "r"))) {
-      exitInternError("cannot open " + m_fileName + ": " + strerror(errno));
-    }
-    m_opened_yyin = true;
-  }
-  yyinitializeParserLoc(&m_fileName);
-  yyrestart(yyin);
 }
 
-Driver::~Driver() {
-  if (m_opened_yyin) { fclose(yyin); }
-}
+Driver::~Driver() = default;
 
 Scanner& Driver::scanner() {
   return *m_scanner;
@@ -85,7 +56,8 @@ void Driver::compile() {
     auto astAfterParse = scanAndParse();
 
     // It's currently implied that the module wants an implicit main method
-    const auto astAfterImplicitMain = addImplicitMain(move(astAfterParse));
+    const auto astAfterImplicitMain =
+      m_parser->addImplicitMain(move(astAfterParse));
 
     doSemanticAnalysis(*astAfterImplicitMain);
 
@@ -101,27 +73,12 @@ void Driver::compile() {
 
 unique_ptr<AstNode> Driver::scanAndParse() {
   // the parser internally drives the scanner
-  const auto errorCode =
-    m_parser->parse(); // as a side-effect, sets m_astRootFromParser
-  if (errorCode) {
+  auto res = m_parser->parse_();
+  if (res.m_errorCode) {
     Error::throwError(*m_errorHandler, Error::eScanOrParseFailed);
   }
-  assert(m_astRootFromParser);
-  return move(m_astRootFromParser);
-}
-
-unique_ptr<AstObject> Driver::addImplicitMain(unique_ptr<AstNode> ast) {
-  assert(ast);
-  auto astAfterParseAsObject =
-    unique_ptr<AstObject>(dynamic_cast<AstObject*>(ast.release()));
-  if (!astAfterParseAsObject) {
-    Error::throwError(*m_errorHandler, Error::eObjectExpected);
-  }
-
-  auto astAfterImplicitMain = unique_ptr<AstObject>(
-    m_genParserExt->mkMainFunDef(astAfterParseAsObject.release()));
-  assert(astAfterImplicitMain);
-  return astAfterImplicitMain;
+  assert(res.m_astRoot);
+  return move(res.m_astRoot);
 }
 
 void Driver::doSemanticAnalysis(AstNode& ast) {

@@ -10,7 +10,6 @@ class Parser;
 class Location;
 class ErrorHandler;
 class Env;
-class GenParserExt;
 class SemanticAnalizer;
 class IrGen;
 class ExecutionEngineApater;
@@ -51,8 +50,6 @@ private:
 
   NEITHER_COPY_NOR_MOVEABLE(Driver);
 
-  /** Guarantess to return non-null */
-  std::unique_ptr<AstObject> addImplicitMain(std::unique_ptr<AstNode> ast);
   std::basic_ostream<char>& print(const Location& loc);
 
   /** The name of the file being parsed */
@@ -68,9 +65,6 @@ private:
   std::unique_ptr<Scanner> m_scanner;
   /** Guaranteed to be non-nullptr */
   std::unique_ptr<TokenFilter> m_tokenFilter;
-  std::unique_ptr<AstNode> m_astRootFromParser;
-  /** Guaranteed to be non-nullptr */
-  std::unique_ptr<GenParserExt> m_genParserExt;
   /** Guaranteed to be non-nullptr */
   std::unique_ptr<Parser> m_parser;
   /** Guaranteed to be non-nullptr */
@@ -78,5 +72,4 @@ private:
   /** Guaranteed to be non-nullptr */
   std::unique_ptr<SemanticAnalizer> m_semanticAnalizer;
   std::unique_ptr<ExecutionEngineApater> m_executionEngine;
-  bool m_opened_yyin;
 };

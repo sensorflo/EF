@@ -92,7 +92,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
     << "\n"
     << "errorMsgFromDriver: \"" << errorMsgFromDriver.str() << "\"\n"
     << "EF program: \"" << well_formed_ef_program << "\"\n"
-    << amend(*UUT.m_env) << amendAst(UUT.m_astRootFromParser);
+    << amend(*UUT.m_env);
 }
 
 TEST(DriverSystemTest, MAKE_TEST_NAME(

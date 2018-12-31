@@ -1,9 +1,16 @@
 #pragma once
+#include "astforwards.h"
 #include "declutils.h"
+#include "genparserext.h"
 #include "gensrc/genparser.hpp"
 
 #include <iostream>
+#include <memory>
+#include <string>
 #include <vector>
+
+class Env;
+class ErrorHandler;
 
 /** Wraps the generated parser. That includes the API intended for the scanner /
 tokenstream and the API intended for the driver.
@@ -16,10 +23,9 @@ Note that there's also ParserExt which extends the private implementation
 details of the generated parser. */
 class Parser final : public yy::GenParser {
 public:
-  Parser(TokenStream& tokenStream_yyarg, Driver& driver_yyarg,
-    GenParserExt& genParserExt_yyarg, std::unique_ptr<AstNode>& astRoot_yyarg)
-    : yy::GenParser{
-        tokenStream_yyarg, driver_yyarg, genParserExt_yyarg, astRoot_yyarg} {}
+  Parser(std::string& fileName, TokenStream& tokenStream_yyarg,
+    Driver& driver_yyarg, Env& env, ErrorHandler& errorHandler);
+  ~Parser() override;
 
   enum TokenClass {
     TKStarter,
@@ -28,6 +34,18 @@ public:
     TKComponentOrAmbigous,
     TKNewline,
   };
+
+  struct Result {
+    /** from generated parser */
+    int m_errorCode;
+    std::unique_ptr<AstNode> m_astRoot;
+  };
+
+  Result parse_();
+
+  /** Guarantess to return non-null */
+  std::unique_ptr<AstObject> addImplicitMain(std::unique_ptr<AstNode> ast);
+
   static void initTokenAttrs();
 
   static const char* tokenName(Parser::token_type t);
@@ -54,6 +72,8 @@ private:
     TokenClass m_tokenClass;
   };
 
+  int parse() override { return yy::GenParser::parse(); };
+
   /** Redundant copy information allready stored in GenParser.
 
   m_TokenAttrs[].m_name is redundant to GenParser::yytname_. The author did
@@ -68,6 +88,12 @@ private:
   anything within parser.hpp / parser.cpp. */
   static std::vector<TokenTypeAttr> m_TokenAttrs;
   static std::vector<char> m_OneCharTokenNames;
+
+  ErrorHandler& m_errorHandler;
+  /** Guaranteed to be non-nullptr */
+  GenParserExt m_genParserExt;
+  std::unique_ptr<AstNode> m_astRootFromParser;
+  bool m_opened_yyin;
 };
 
 namespace yy {
