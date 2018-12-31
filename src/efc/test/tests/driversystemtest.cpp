@@ -108,7 +108,7 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
   UUT.compile();
 
   // verify
-  EXPECT_EQ(0U, errorMsgFromDriver.str().find("Build error(s):"))
+  ASSERT_THAT(errorMsgFromDriver.str(), HasSubstr("Build error(s):"))
     << "\n"
     << "errorMsgFromDriver: \"" << errorMsgFromDriver.str() << "\"\n"
     << "EF program: \"" << ef_program_with_error << "\"\n";
