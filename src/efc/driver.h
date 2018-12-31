@@ -34,15 +34,11 @@ public:
   void generateIr(AstNode& ast);
   int jitExecMain();
 
-  std::string& fileName() { return m_fileName; }
-
 private:
   friend class TestingDriver;
 
   NEITHER_COPY_NOR_MOVEABLE(Driver);
 
-  /** The name of the file being parsed */
-  std::string m_fileName;
   /** Guaranteed to be non-null */
   std::unique_ptr<ErrorHandler> m_errorHandler;
   /** Guaranteed to be non-null */

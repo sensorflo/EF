@@ -200,6 +200,4 @@ int charCount(const char* p, char ch) {
   return cnt;
 }
 
-void yyinitializeParserLoc(string* filename) {
-  loc.initialize(filename);
-}
+Location& locOfGenScanner() { return loc; }

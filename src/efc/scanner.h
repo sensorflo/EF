@@ -3,6 +3,7 @@
 #include "tokenstream.h"
 
 #include <memory>
+#include <string>
 
 class ErrorHandler;
 
@@ -13,13 +14,19 @@ implemented by the generated scanner, wheras yylex, see genparser.yy, is the
 function used by the generated parser, see there. */
 #define YY_DECL Parser::symbol_type yylex_raw(ErrorHandler& errorHandler)
 
-/** Wraps the generated scanner. */
+/** Wraps the generated scanner.
+
+@todo Make it a singleton, since the generated scanner effectively is also a
+      singleton */
 class Scanner : public TokenStream {
 public:
-  Scanner(ErrorHandler& errorHandler);
+  Scanner(std::string fileName, ErrorHandler& errorHandler);
+  ~Scanner();
 
   Parser::symbol_type pop() override;
 
 private:
+  std::string m_fileName;
   ErrorHandler& m_errorHandler;
+  bool m_opened_yyin;
 };

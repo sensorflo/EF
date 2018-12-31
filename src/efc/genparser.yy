@@ -72,7 +72,7 @@
 
 // see declaration of yylex
 %lex-param { TokenStream& tokenStream } 
-%parse-param { TokenStream& tokenStream } { std::string& fileName } { GenParserExt& genParserExt } { std::unique_ptr<AstNode>& astRoot }
+%parse-param { TokenStream& tokenStream } { GenParserExt& genParserExt } { std::unique_ptr<AstNode>& astRoot }
 
 %locations
 

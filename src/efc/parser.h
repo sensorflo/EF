@@ -6,7 +6,6 @@
 
 #include <iostream>
 #include <memory>
-#include <string>
 #include <vector>
 
 class Env;
@@ -23,8 +22,7 @@ Note that there's also ParserExt which extends the private implementation
 details of the generated parser. */
 class Parser final : public yy::GenParser {
 public:
-  Parser(std::string& fileName, TokenStream& tokenStream, Env& env,
-    ErrorHandler& errorHandler);
+  Parser(TokenStream& tokenStream, Env& env, ErrorHandler& errorHandler);
   ~Parser() override;
 
   enum TokenClass {
@@ -93,7 +91,6 @@ private:
   /** Guaranteed to be non-nullptr */
   GenParserExt m_genParserExt;
   std::unique_ptr<AstNode> m_astRootFromParser;
-  bool m_opened_yyin;
 };
 
 namespace yy {
