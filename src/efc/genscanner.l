@@ -29,9 +29,6 @@
  using namespace std;
  using namespace yy;
  Location loc;
- void yyinitializeParserLoc(string* filename) {
-   loc.initialize(filename);
- }
 
  int charCount(const char*, char ch);
 %}
@@ -206,4 +203,8 @@ int charCount(const char* p, char ch) {
     }
   }
   return cnt;
+}
+
+void yyinitializeParserLoc(string* filename) {
+  loc.initialize(filename);
 }
