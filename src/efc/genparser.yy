@@ -75,10 +75,6 @@
 %parse-param { TokenStream& tokenStream } { std::string& fileName } { GenParserExt& genParserExt } { std::unique_ptr<AstNode>& astRoot }
 
 %locations
-%initial-action
-{
-  @$.initialize(&fileName);
-};
 
 /*%define parse.trace*/
 %define parse.error verbose
