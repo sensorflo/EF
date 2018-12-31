@@ -14,18 +14,30 @@ implemented by the generated scanner, wheras yylex, see genparser.yy, is the
 function used by the generated parser, see there. */
 #define YY_DECL Parser::symbol_type yylex_raw(ErrorHandler& errorHandler)
 
-/** Wraps the generated scanner.
-
-@todo Make it a singleton, since the generated scanner effectively is also a
-      singleton */
+/** Wraps the generated scanner. Is implemented as singleton, because the
+underlying generated parser is also effectively a singleton, since it is
+implemented using static variables. */
 class Scanner : public TokenStream {
 public:
-  Scanner(std::string fileName, ErrorHandler& errorHandler);
-  ~Scanner();
+  /** Creates a singleton instance and returns it. If currently there is already
+  an singleton instance, the method asserts. */
+  static std::shared_ptr<Scanner> create(
+    std::string fileName, ErrorHandler& errorHandler);
 
   Parser::symbol_type pop() override;
 
 private:
+  class Deleter {
+  public:
+    void operator()(Scanner* p) const { delete p; }
+  };
+  friend class Deleter;
+
+  Scanner(std::string fileName, ErrorHandler& errorHandler);
+  ~Scanner();
+
+  /** The singleton instance */
+  static std::weak_ptr<Scanner> sm_instance;
   std::string m_fileName;
   ErrorHandler& m_errorHandler;
   bool m_opened_yyin;

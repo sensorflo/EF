@@ -8,6 +8,8 @@
 #include <string.h>
 #include <utility>
 
+using namespace std;
+
 /** _declare_ the function specified by YY_DECL, see YY_DECL. */
 YY_DECL;
 
@@ -18,6 +20,17 @@ extern void yyrestart(FILE*);
 
 // defined in configuration of generated scanner (genscanner.l).
 extern Location& locOfGenScanner();
+
+std::weak_ptr<Scanner> Scanner::sm_instance{};
+
+std::shared_ptr<Scanner> Scanner::create(
+  std::string fileName, ErrorHandler& errorHandler) {
+  assert(sm_instance.expired());
+  auto instance =
+    shared_ptr<Scanner>{new Scanner{move(fileName), errorHandler}, Deleter()};
+  sm_instance = instance;
+  return instance;
+}
 
 Scanner::Scanner(std::string fileName, ErrorHandler& errorHandler)
   : m_fileName{move(fileName)}

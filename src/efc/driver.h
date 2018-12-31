@@ -45,7 +45,7 @@ private:
   std::unique_ptr<Env> m_env;
   std::basic_ostream<char>& m_ostream;
   /** Guaranteed to be non-nullptr */
-  std::unique_ptr<Scanner> m_scanner;
+  std::shared_ptr<Scanner> m_scanner;
   /** Guaranteed to be non-nullptr */
   std::unique_ptr<TokenFilter> m_tokenFilter;
   /** Guaranteed to be non-nullptr */
