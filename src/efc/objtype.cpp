@@ -162,7 +162,24 @@ std::shared_ptr<const ObjType> ObjTypeQuali::unqualifiedObjType() const {
   return m_type;
 }
 
-ObjTypeFunda::ObjTypeFunda(EType type) : ObjType(""), m_type(type) {
+namespace {
+std::string toStr(ObjTypeFunda::EType type) {
+  switch (type) {
+  case ObjTypeFunda::eVoid: return "void";
+  case ObjTypeFunda::eNoreturn: return "noreturn";
+  case ObjTypeFunda::eInfer: return "infer";
+  case ObjTypeFunda::eChar: return "char";
+  case ObjTypeFunda::eInt: return "int";
+  case ObjTypeFunda::eBool: return "bool";
+  case ObjTypeFunda::eDouble: return "double";
+  case ObjTypeFunda::eNullptr: return "Nullptr";
+  case ObjTypeFunda::ePointer: return "raw*";
+  case ObjTypeFunda::eTypeCnt: assert(false);
+  };
+}
+}
+
+ObjTypeFunda::ObjTypeFunda(EType type) : ObjType(::toStr(type)), m_type(type) {
 }
 
 ObjType::MatchType ObjTypeFunda::match(
@@ -176,19 +193,7 @@ ObjType::MatchType ObjTypeFunda::match2(
 }
 
 basic_ostream<char>& ObjTypeFunda::printTo(basic_ostream<char>& os) const {
-  switch (m_type) {
-  case eVoid: os << "void"; break;
-  case eNoreturn: os << "noreturn"; break;
-  case eInfer: os << "infer"; break;
-  case eChar: os << "char"; break;
-  case eInt: os << "int"; break;
-  case eBool: os << "bool"; break;
-  case eDouble: os << "double"; break;
-  case eNullptr: os << "Nullptr"; break;
-  case ePointer: os << "raw*"; break;
-  case eTypeCnt: assert(false);
-  };
-  return os;
+  return os << name();
 }
 
 bool ObjTypeFunda::is(ObjType::EClass class_) const {
