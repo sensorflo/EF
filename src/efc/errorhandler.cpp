@@ -18,9 +18,9 @@ void Error::throwError(
     ss << loc.begin.m_line << ":" << loc.begin.m_column << ": error "
        << additionalMsg << "[" << no << "]";
 
-    errorHandler.add(unique_ptr<Error>(new Error{no, ss.str()}));
-
-    throw BuildError(ss.str());
+    auto error = shared_ptr<Error>(new Error{no, ss.str()});
+    errorHandler.add(error);
+    throw BuildError(error);
   }
 }
 
@@ -63,14 +63,14 @@ ostream& operator<<(ostream& os, Error::No no) {
 }
 
 ostream& operator<<(ostream& os, const Error& error) {
-  return os << error.no();
+  return os << error.message();
 }
 
 ErrorHandler::ErrorHandler() : m_disabledErrors{} {
 }
 
-void ErrorHandler::add(std::unique_ptr<Error> error) {
-  m_errors.emplace_back(std::move(error));
+void ErrorHandler::add(shared_ptr<Error> error) {
+  m_errors.emplace_back(move(error));
 }
 
 void ErrorHandler::disableReportingOf(Error::No no) {
@@ -96,5 +96,13 @@ ostream& operator<<(ostream& os, const ErrorHandler& errorHandler) {
   return os << "}";
 }
 
-BuildError::BuildError(const string& what) : logic_error(what) {
+BuildError::BuildError(std::shared_ptr<const Error> error)
+  : logic_error{error->message()}, m_error{error} {
+}
+
+BuildError::~BuildError() = default;
+
+std::ostream& operator<<(std::ostream& os, const BuildError& error) {
+  os << error.error();
+  return os;
 }

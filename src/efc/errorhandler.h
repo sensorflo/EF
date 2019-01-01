@@ -39,8 +39,6 @@ public:
     eCnt
   };
 
-  ~Error() = default;
-
   /** Unless given error is disabled, adds a new Error to ErrorHandler and
   throws an according BuildError. */
   static void throwError(ErrorHandler& errorHandler, No no,
@@ -67,12 +65,12 @@ std::ostream& operator<<(std::ostream& os, const Error& error);
 
 class ErrorHandler final {
 public:
-  using Container = std::vector<std::unique_ptr<Error>>;
+  using Container = std::vector<std::shared_ptr<Error>>;
 
   ErrorHandler();
   ~ErrorHandler();
 
-  void add(std::unique_ptr<Error> error);
+  void add(std::shared_ptr<Error> error);
   const Container& errors() const { return m_errors; }
   bool hasNoErrors() const { return m_errors.empty(); }
   void disableReportingOf(Error::No no);
@@ -88,21 +86,38 @@ private:
 
 std::ostream& operator<<(std::ostream& os, const ErrorHandler& errorHandler);
 
-/** Class used to throw by value via Error::throwError and be catched by
-reference. The 'what' description is redundant to the associated Error
-instance and is only intended to be used if an instance of BuildError is
-catched at an wide outside safety net catch, i.e. at a place where controlled
-error handling with proper counter actions is no longer possible and the only
-option is to print as much info as we can and then probably die.
+/** Wrapper arround Error so we can throw by value.
 
-Rational for not throwing Error directly but inventing a new class which is
-used to throw: Exceptions should be thrown by value, thus can't be owned by
-anybody. But ErrorHandler owns its exceptions. We could throw pointers to
-Error instances, but that does not work well together with gtest in the case
-of an test throwing unexpectetly. gtest writes the .what of an unexpected
-exception only if it is thrown by value. */
+Rational for not throwing directly Error but inventing a new class which is used
+to throw: We could throw a smart pointer to Error, but that does not work well
+together with gtest in the case of an test throwing unexpectetly. gtest can't
+know all the types a test probably will throw, and the most general thing it can
+catch which still provides some information is std::exception */
 class BuildError : public std::logic_error {
+public:
+  ~BuildError() override;
+
+  const Error& error() const { return *m_error; }
+
+  // convenience methods
+  Error::No no() const { return m_error->no(); }
+  const std::string& message() const { return m_error->message(); }
+  const char* what() const noexcept override {
+    return m_error->message().c_str();
+  }
+
 private:
   friend class Error;
-  BuildError(const std::string& what);
+  BuildError(std::shared_ptr<const Error> error);
+
+  std::shared_ptr<const Error> m_error;
 };
+
+std::ostream& operator<<(std::ostream& os, const BuildError& error);
+
+inline std::ostream& operator<<(
+  std::ostream& os, const std::shared_ptr<Error>& error) {
+  // to do: nullptr check
+  os << *error;
+  return os;
+}
