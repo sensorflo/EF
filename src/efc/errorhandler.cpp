@@ -33,7 +33,7 @@ const char* toStr(Error::No no) {
     // clang-format off
   case Error::eNone: return "eNone";
   case Error::eInternalError: return "eInternalError";
-  case Error::eUnknownStringLiteralSuffix: return "eUnknownStringLiteralSuffix";
+  case Error::eUnknownIntegralLiteralSuffix: return "eUnknownIntegralLiteralSuffix";
   case Error::eLiteralOutOfValidRange: return "eLiteralOutOfValidRange";
   case Error::eUnknownName: return "eUnknownName";
   case Error::eRedefinition: return "eRedefinition";

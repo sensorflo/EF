@@ -17,7 +17,7 @@ public:
   enum No {
     eNone,
     eInternalError,
-    eUnknownStringLiteralSuffix,
+    eUnknownIntegralLiteralSuffix,
     eLiteralOutOfValidRange,
     eUnknownName,
     eRedefinition,

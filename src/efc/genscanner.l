@@ -123,7 +123,7 @@ true                return Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBoo
 
   // currently no suffixes are recognized
   } else if (*suffix!='\0') {
-    Error::throwError(errorHandler, Error::eUnknownStringLiteralSuffix,
+    Error::throwError(errorHandler, Error::eUnknownIntegralLiteralSuffix,
       string("Unknown literal number suffix: ") + suffix);
   }
 

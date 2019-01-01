@@ -189,7 +189,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_number_WITH_an_unknown_suffix,
     pop,
-    reports_eUnknownStringLiteralSuffix)) {
+    reports_eUnknownIntegralLiteralSuffix)) {
   // setup
   stringstream errorStream;
   DriverOnTmpFile driver("42if", &errorStream);
@@ -204,7 +204,7 @@ TEST(ScannerTest, MAKE_TEST_NAME(
   catch (...) {
     const auto& errors = driver.errorHandler().errors();
     ASSERT_EQ(1u, errors.size());
-    EXPECT_EQ(Error::eUnknownStringLiteralSuffix, errors.front()->no());
+    EXPECT_EQ(Error::eUnknownIntegralLiteralSuffix, errors.front()->no());
     return;
   }
   FAIL();
