@@ -48,8 +48,11 @@ public:
     eFunction
   };
 
+  /** Writes the complete type name to the specified output stream. Note that
+  name() (inherited from EnvNode) denotes only the 'template' name. */
   virtual std::basic_ostream<char>& printTo(
     std::basic_ostream<char>& os) const = 0;
+  /** returns as string was printTo writes into a stream */
   std::string toStr() const;
 
   bool isVoid() const;
@@ -99,6 +102,7 @@ protected:
   ObjType(std::string name);
 };
 
+/** ObjType::printTo */
 std::basic_ostream<char>& operator<<(
   std::basic_ostream<char>& os, const ObjType& objType);
 

@@ -380,7 +380,7 @@ std::shared_ptr<const ObjType> ObjTypePtr::pointee() const {
 
 ObjTypeFun::ObjTypeFun(
   vector<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret)
-  : ObjType("")
+  : ObjType("fun") // todo: what shall the correct type name of a function be?
   , m_args{args ? std::unique_ptr<vector<shared_ptr<const ObjType>>>{args}
                 : std::make_unique<vector<shared_ptr<const ObjType>>>()}
   , m_ret{
