@@ -121,8 +121,9 @@ AstDataDef* GenParserExt::mkDataDef(
     rawAstDataDef->m_storageDuration, rawAstDataDef->m_ctorArgs, loc);
 }
 
-AstFunDef* GenParserExt::mkFunDef(const string name, vector<AstDataDef*>* astArgs,
-  AstObjType* retAstObjType, AstObject* astBody, Location loc) {
+AstFunDef* GenParserExt::mkFunDef(const string name,
+  vector<AstDataDef*>* astArgs, AstObjType* retAstObjType, AstObject* astBody,
+  Location loc) {
   astArgs = astArgs ? astArgs : new vector<AstDataDef*>();
   return new AstFunDef(name, astArgs, retAstObjType, astBody, move(loc));
 }

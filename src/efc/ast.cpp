@@ -905,7 +905,8 @@ bool AstClassDef::isValueInRange(GeneralValue value) const {
   assert(false);
 }
 
-AstObject* AstClassDef::createDefaultAstObjectForSemanticAnalizer(Location) const {
+AstObject* AstClassDef::createDefaultAstObjectForSemanticAnalizer(
+  Location) const {
   // The liskov substitution principle is broken here
   assert(false);
 }

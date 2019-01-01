@@ -679,7 +679,8 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer(Location loc) const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer(
+    Location loc) const override;
 
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -722,7 +723,8 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer(Location loc) const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer(
+    Location loc) const override;
 
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -757,7 +759,8 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer(Location loc) const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer(
+    Location loc) const override;
 
   const ObjTypePtr& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -794,7 +797,8 @@ public:
   // -- overrides for AstObjType
   void printValueTo(std::ostream& os, GeneralValue value) const override;
   bool isValueInRange(GeneralValue value) const override;
-  AstObject* createDefaultAstObjectForSemanticAnalizer(Location loc) const override;
+  AstObject* createDefaultAstObjectForSemanticAnalizer(
+    Location loc) const override;
 
   const ObjTypeClass& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
