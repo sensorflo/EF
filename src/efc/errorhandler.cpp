@@ -52,7 +52,7 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eInvalidArguments: return "eInvalidArguments";
   case Error::eNoSuchMember: return "eNoSuchMember";
   case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
-  case Error::eUnreachableCode: return "eUnreachableCode";
+  case Error::eUnreachableCode: return "leaves control flow and the following code is not reachable";
   case Error::eCTConstRequired: return "eCTConstRequired";
   case Error::eRetTypeCantHaveMutQualifier: return "eRetTypeCantHaveMutQualifier";
   case Error::eSameArgWasDefinedMultipleTimes: return "eSameArgWasDefinedMultipleTimes";

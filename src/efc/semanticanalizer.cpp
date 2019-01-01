@@ -238,7 +238,7 @@ void SemanticAnalizer::visit(AstSeq& seq) {
     // -- responsibility 2, part 2 of 2: semantic analysis
     // see also beginning of method
     if (op != lastOp && op->isObjTypeNoReturn()) {
-      Error::throwError(m_errorHandler, Error::eUnreachableCode);
+      Error::throwError(m_errorHandler, Error::eUnreachableCode, op->loc());
     }
 
     // -- responsibility 3: set properties of associated object: type, sd, access
