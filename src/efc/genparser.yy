@@ -234,7 +234,7 @@ Note that the seq_operator is _not_ the thing that builds / creates the
 sequence. It is the context where node_seq is used that defines that an sequence
 must be created, also if it only contains one element. */
 node_seq
-  : pure_node_seq opt_seq_operator                  { $$ = new AstSeq($1, @$); }
+  : pure_node_seq opt_seq_operator                  { $$ = new AstSeq($1); }
   ;
 
 pure_node_seq

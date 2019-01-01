@@ -25,7 +25,8 @@ void EnvInserter::visit(AstDataDef& dataDef) {
   if (dataDef.declaredStorageDuration() != StorageDuration::eMember) {
     const auto success = m_env.insertLeaf(dataDef);
     if (!success) {
-      Error::throwError(m_errorHandler, Error::eRedefinition, dataDef.name());
+      Error::throwError(
+        m_errorHandler, Error::eRedefinition, dataDef.loc(), dataDef.name());
     }
   }
 
@@ -37,7 +38,8 @@ void EnvInserter::visit(AstFunDef& funDef) {
   Env::AutoScope scope(
     m_env, funDef, Env::AutoScope::insertScopeAndDescent, success);
   if (!success) {
-    Error::throwError(m_errorHandler, Error::eRedefinition, funDef.name());
+    Error::throwError(
+      m_errorHandler, Error::eRedefinition, funDef.loc(), funDef.name());
   }
 
   AstDefaultIterator::visit(funDef);

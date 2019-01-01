@@ -66,7 +66,7 @@ public:
 
   std::string toStr() const;
 
-  const Location& location() const { return m_loc; }
+  const Location& loc() const { return m_loc; }
 
 protected:
   AstNode() = default;
@@ -520,7 +520,12 @@ the last AstNode to an AstObject and report an error if that is not
 possible. */
 class AstSeq : public AstObject {
 public:
-  AstSeq(std::vector<AstNode*>* operands, Location loc = s_nullLoc);
+  /** Location of this AstSeq is implicitly the location of the last
+  operand. The rational is that if our parent node has a problem with us, that's
+  due to the last operand in the sequence since that defines the objectc type of
+  the sequence. When the parent reports an error, the location will point to
+  the last operand, as intended. */
+  AstSeq(std::vector<AstNode*>* operands);
   AstSeq(AstNode* op1 = nullptr, AstNode* op2 = nullptr, AstNode* op3 = nullptr,
     AstNode* op4 = nullptr, AstNode* op5 = nullptr);
 

@@ -139,12 +139,14 @@ void SemanticAnalizer::visit(AstOperator& op) {
       if (!lhs.matchesSaufQualifiers(rhs) &&
         (!op.isBinaryLogicalShortCircuit() ||
           !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eNoreturn)))) {
-        Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+        Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
+          op.loc(), rhs.name(), lhs.name());
       }
     }
     else if (class_ != AstOperator::eOther) {
       if (!lhs.matchesSaufQualifiers(rhs)) {
-        Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+        Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
+          op.loc(), rhs.name(), lhs.name());
       }
     }
   }
@@ -163,8 +165,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   if (class_ == AstOperator::eAssignment) {
     if (!(argschilds.front()->object().objType().qualifiers() &
           ObjType::eMutable)) {
-      Error::throwError(
-        m_errorHandler, Error::eWriteToImmutable, op.location());
+      Error::throwError(m_errorHandler, Error::eWriteToImmutable, op.loc());
     }
   }
 
@@ -274,7 +275,8 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
   // -- responsibility 2, part 1 of 2: semantic analysis
   auto node = m_env.find(symbol.name());
   if (nullptr == node) {
-    Error::throwError(m_errorHandler, Error::eUnknownName);
+    Error::throwError(
+      m_errorHandler, Error::eUnknownName, symbol.loc(), symbol.name());
   }
   const auto object = dynamic_cast<AstObjDef*>(node);
   assert(object);
@@ -386,7 +388,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     // ctor. However default ctors are not yet implemented. Thus the workaround
     // is to insert a default arg into the AST.
     if (ctorArgs.empty()) {
-      const auto& loc = dataDef.ctorArgs().location();
+      const auto& loc = dataDef.ctorArgs().loc();
       const auto& ot = dataDef.declaredAstObjType();
       ctorArgs.push_back(ot.createDefaultAstObjectForSemanticAnalizer(loc));
     }

@@ -109,8 +109,8 @@ TEST(DriverSystemTest, MAKE_TEST_NAME(
   UUT.compile();
 
   // verify
-  ASSERT_THAT(errorMsgFromDriver.str(), HasSubstr("Build error(s):"))
+  ASSERT_THAT(errorMsgFromDriver.str(),
+    MatchesRegex("\\w+:1:4: error: .* \\[eWriteToImmutable\\]\n"))
     << "\n"
-    << "errorMsgFromDriver: \"" << errorMsgFromDriver.str() << "\"\n"
     << "EF program: \"" << ef_program_with_error << "\"\n";
 }

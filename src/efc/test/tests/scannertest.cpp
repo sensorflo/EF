@@ -42,7 +42,9 @@ void testScanner(const string& input, const string& spec,
     testScanner(input, spec, expectedTokens);                        \
   }
 
-void testScannerReportsError(const string& input, Error::No expectedErrorNo, const string& spec) {
+void testScannerReportsError(const string& input, Error::No expectedErrorNo,
+  const string& expectedMsgParam1, const string& expectedMsgParam2,
+  const string& expectedMsgParam3, const string& spec) {
   // setup
   DriverOnTmpFile driver(input);
   Scanner& UUT = driver.scanner();
@@ -55,23 +57,40 @@ void testScannerReportsError(const string& input, Error::No expectedErrorNo, con
 
   // verify
   const auto& errors = driver.errorHandler().errors();
+  const auto details = amendSpec(spec) + "Input: '" + input + "'\n";
+
   ASSERT_TRUE(driver.errorHandler().hasErrors())
-    << amendSpec(spec) << "expected the error '" << expectedErrorNo
-    << "' but no error at all occured.\n"
-    << "Input: '" << input << "'\n";
+    << "expected the error '" << expectedErrorNo << "' but no error at all occured.\n"
+    << details;
   ASSERT_EQ(1, errors.size())
-    << amendSpec(spec) << "expected the single error " << expectedErrorNo
-    << " but more errors occured: {" << driver.errorHandler() << "}\n"
-    << "Input: '" << input << "'\n";
-  EXPECT_EQ(expectedErrorNo, errors.front()->no())
-    << amendSpec(spec) << "Input: '" << input << "'\n";
+    << "expected the single error " << expectedErrorNo
+    << " but more errors occured:" << driver.errorHandler()
+    << details;
+
+  const auto& error = *errors.front();
+  EXPECT_EQ(expectedErrorNo,   error.no())        << details;
+  EXPECT_EQ(expectedMsgParam1, error.msgParam1()) << details;
+  EXPECT_EQ(expectedMsgParam2, error.msgParam2()) << details;
+  EXPECT_EQ(expectedMsgParam3, error.msgParam3()) << details;
 }
 
 /** Analogous to testScannerReportsError, see there */
 #define TEST_SCANNER_REPORTS_ERROR(input, expectedErrorNo, spec)     \
   {                                                                  \
-    SCOPED_TRACE("testScannerReportsError called from here (via TEST_SCANNER_REPORTS_ERROR)"); \
-    testScannerReportsError(input, expectedErrorNo, spec);           \
+    SCOPED_TRACE("testScannerReportsError called from here"); \
+    testScannerReportsError(input, expectedErrorNo, "", "", "", spec);   \
+  }
+
+#define TEST_SCANNER_REPORTS_ERROR_1MSGPARAM(input, expectedErrorNo, expectedMsgParam1, spec) \
+  {                                                                  \
+    SCOPED_TRACE("testScannerReportsError called from here"); \
+    testScannerReportsError(input, expectedErrorNo, expectedMsgParam1, "", "", spec); \
+  }
+
+#define TEST_SCANNER_REPORTS_ERROR_2MSGPARAMS(input, expectedErrorNo, expectedMsgParam1, expectedMsgParam2, spec) \
+  {                                                                  \
+    SCOPED_TRACE("testScannerReportsError called from here"); \
+    testScannerReportsError(input, expectedErrorNo, expectedMsgParam1, expectedMsgParam2, "", spec); \
   }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
@@ -246,16 +265,22 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_integral_number_which_is_not_representable_by_type_int,
     pop,
     reports_eLiteralOutOfValidRange)) {
-  TEST_SCANNER_REPORTS_ERROR("3141592653589793238462643383",
-    Error::eLiteralOutOfValidRange, "");
+  TEST_SCANNER_REPORTS_ERROR_2MSGPARAMS("3141592653589793238462643383",
+    Error::eLiteralOutOfValidRange,
+    "-2147483648",
+    "2147483647",
+    "");
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
     a_literal_float_number_which_is_not_representable_by_type_double,
     pop,
     reports_eLiteralOutOfValidRange)) {
-  TEST_SCANNER_REPORTS_ERROR("3.14E14142135623",
-    Error::eLiteralOutOfValidRange, "");
+  TEST_SCANNER_REPORTS_ERROR_2MSGPARAMS("3.14E14142135623",
+    Error::eLiteralOutOfValidRange,
+    "0.000000",
+    "1.797693E+308",
+    "");
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(

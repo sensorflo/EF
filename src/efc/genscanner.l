@@ -130,23 +130,25 @@ true                return Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBoo
   }
 
   if (errno) {
-    Error::throwError(errorHandler, Error::eInternalError,
+    Error::throwError(errorHandler, Error::eInternalError, loc,
       string("Scanner's rule matched a number, but strtol doesn't recognize a number. ")
       + strerror(errno));
     errno = 0;
 
   // currently no suffixes are recognized
   } else if (*suffix!='\0') {
-    Error::throwError(errorHandler, Error::eUnknownIntegralLiteralSuffix,
-      string("Unknown literal number suffix: ") + suffix);
+    Error::throwError(errorHandler, Error::eUnknownIntegralLiteralSuffix, loc,
+      suffix);
   }
 
   // It's an floating point literal. Since we don't have suffixes yet its always
   // of type double
   else if (containsDot || containsE) {
     if (number==HUGE_VALL || number<DBL_MIN || number>DBL_MAX) {
-      Error::throwError(errorHandler, Error::eLiteralOutOfValidRange,
-        "Floating point number literal is out of range");
+      char maxAsStr[32];
+      snprintf(maxAsStr, sizeof(maxAsStr), "%E", DBL_MAX);
+      Error::throwError(errorHandler, Error::eLiteralOutOfValidRange, loc,
+        to_string(DBL_MIN), maxAsStr);
     }
     // todo: also check for underflow / too many digits behind dot
     return Parser::make_NUMBER(
@@ -158,8 +160,8 @@ true                return Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBoo
   else {
     // todo: the following code fails to take the different range between signed and unsigned into account
     if (number==HUGE_VALL || number<INT_MIN || number>INT_MAX) {
-      Error::throwError(errorHandler, Error::eLiteralOutOfValidRange,
-        "Integer number literal is out of range");
+      Error::throwError(errorHandler, Error::eLiteralOutOfValidRange, loc,
+        to_string(INT_MIN), to_string(INT_MAX));
     }
     return Parser::make_NUMBER(
       NumberToken(static_cast<GeneralValue>(number), ObjTypeFunda::eInt), loc);
@@ -199,7 +201,7 @@ op([-+*/!]|&&|"||"|"=="|"_and"|"_or"|"_not"|"_new"|"_delete") {
   /* misc */
 {ID}                return Parser::make_ID(yytext, loc);
 <<EOF>>             return Parser::make_END_OF_FILE(loc);
-.                   Error::throwError(errorHandler, Error::eInternalError, string("Scanner: unexpected character '") + yytext + "'");
+.                   Error::throwError(errorHandler, Error::eInternalError, loc, string("scanner encountered unexpected character '") + yytext + "'");
 
 
 %%

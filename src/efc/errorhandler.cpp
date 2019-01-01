@@ -6,26 +6,65 @@
 
 using namespace std;
 
-Error::Error(Error::No no, string message)
-  : m_no(no), m_message(move(message)) {
+Error::Error(Error::No no, string message, std::string msgParam1,
+  std::string msgParam2, std::string msgParam3)
+  : m_no(no)
+  , m_message(move(message))
+  , m_msgParam1(move(msgParam1))
+  , m_msgParam2(move(msgParam2))
+  , m_msgParam3(move(msgParam3)) {
 }
 
-void Error::throwError(
-  ErrorHandler& errorHandler, No no, string additionalMsg, Location loc) {
+void Error::throwError(ErrorHandler& errorHandler, No no, Location loc,
+  std::string msgParam1, const std::string msgParam2, std::string msgParam3) {
   if (!errorHandler.isReportingDisabledFor(no)) {
     stringstream ss;
-    if (loc.begin.m_fileName) { ss << *loc.begin.m_fileName << ":"; }
-    ss << loc.begin.m_line << ":" << loc.begin.m_column << ": error "
-       << additionalMsg << "[" << no << "]";
+    if (!loc.isNull()) {
+      if (loc.begin.m_fileName != nullptr) { ss << *loc.begin.m_fileName; }
+      else {
+        ss << "<anonymous file>";
+      }
+      ss << ":" << loc.begin.m_line << ":" << loc.begin.m_column << ": ";
+    }
+    ss << "error: " << describe(no, msgParam1, msgParam2, msgParam3) << " ["
+       << no << "]";
 
-    auto error = shared_ptr<Error>(new Error{no, ss.str()});
+    auto error = shared_ptr<Error>(new Error{
+      no, ss.str(), move(msgParam1), move(msgParam2), move(msgParam3)});
     errorHandler.add(error);
     throw BuildError(error);
   }
 }
 
-void Error::throwError(ErrorHandler& errorHandler, No no, Location loc) {
-  throwError(errorHandler, no, "", loc);
+string Error::describe(Error::No no, const std::string& msgParam1,
+  const std::string& msgParam2, const std::string& msgParam3) {
+  switch (no) {
+    // clang-format off
+  case Error::eNone: return "no error";
+  case Error::eInternalError: return "internal error: " + msgParam1;
+  case Error::eUnknownIntegralLiteralSuffix: return "unknown literal number suffix '" + msgParam1 + "'";
+  case Error::eLiteralOutOfValidRange: return "literal is outside of the valid range [" + msgParam1 + ", " + msgParam2 + "]";
+  case Error::eUnknownName: return "use of undefined name '" + msgParam1 + "'";
+  case Error::eRedefinition: return "redefinition of name '" + msgParam1 + "'";
+  case Error::eWriteToImmutable: return "can't modify immutable object";
+  case Error::eCantOpenFileForReading: return "Can't open file '" + msgParam1 + "' for reading (" + msgParam2 + ")";
+  case Error::eNoImplicitConversion: return "there's no implicit conversion from type '" + msgParam1+ "' to type '" + msgParam2 + "'";
+  case Error::eInvalidArguments: return "eInvalidArguments";
+  case Error::eNoSuchMember: return "eNoSuchMember";
+  case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
+  case Error::eUnreachableCode: return "eUnreachableCode";
+  case Error::eCTConstRequired: return "eCTConstRequired";
+  case Error::eRetTypeCantHaveMutQualifier: return "eRetTypeCantHaveMutQualifier";
+  case Error::eSameArgWasDefinedMultipleTimes: return "eSameArgWasDefinedMultipleTimes";
+  case Error::eObjectExpected: return "eObjectExpected";
+  case Error::eScanOrParseFailed: return "eScanOrParseFailed";
+  case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
+  case Error::eTypeInferenceIsNotYetSupported: return "eTypeInferenceIsNotYetSupported";
+  case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization";
+  case Error::eCnt: return "<unknown>";
+    // clang-format on
+  }
+  return "<unknown>";
 }
 
 const char* toStr(Error::No no) {
@@ -84,16 +123,15 @@ bool ErrorHandler::isReportingDisabledFor(Error::No no) const {
 ErrorHandler::~ErrorHandler() = default;
 
 ostream& operator<<(ostream& os, const ErrorHandler& errorHandler) {
-  os << "{";
   auto isFirstIter = true;
   for (const auto& e : errorHandler.errors()) {
     if (!isFirstIter) {
-      os << ", ";
+      os << "\n";
       isFirstIter = false;
     }
-    os << e->no();
+    os << *e;
   }
-  return os << "}";
+  return os;
 }
 
 BuildError::BuildError(std::shared_ptr<const Error> error)

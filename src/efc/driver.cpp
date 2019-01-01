@@ -61,10 +61,9 @@ void Driver::compile() {
   }
   catch (BuildError& e) {
     // nop -- BuildError exception is handled below by printing any errors
-    m_ostream << e.what();
   }
   if (!m_errorHandler->errors().empty()) {
-    m_ostream << "Build error(s): " << *m_errorHandler << "\n";
+    m_ostream << *m_errorHandler << "\n";
   }
 }
 

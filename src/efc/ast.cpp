@@ -528,8 +528,21 @@ basic_ostream<char>& operator<<(
   }
 }
 
-AstSeq::AstSeq(std::vector<AstNode*>* operands, Location loc)
-  : AstObject{move(loc)}
+namespace {
+/** Returns the location of the last operand in the sequence, or s_nullLoc if
+that doesn't exist. */
+Location locationOf(std::vector<AstNode*>* operands) {
+  if (operands == nullptr || operands->empty() || operands->back() == nullptr) {
+    return s_nullLoc;
+  }
+  else {
+    return operands->back()->loc();
+  }
+}
+}
+
+AstSeq::AstSeq(std::vector<AstNode*>* operands)
+  : AstObject{locationOf(operands)}
   , m_accessFromAstParent{Access::eYetUndefined}
   , m_operands(toUniquePtrs(operands)) {
   for (const auto& operand : m_operands) { assert(operand); }

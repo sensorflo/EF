@@ -40,21 +40,36 @@ public:
   };
 
   /** Unless given error is disabled, adds a new Error to ErrorHandler and
-  throws an according BuildError. */
+  throws an according BuildError. Regarding msgParamX, see method describe. */
   static void throwError(ErrorHandler& errorHandler, No no,
-    std::string additionalMsg = "", Location loc = s_nullLoc);
-  static void throwError(ErrorHandler& errorHandler, No no, Location loc);
+    Location loc = s_nullLoc, std::string msgParam1 = "",
+    std::string msgParam2 = "", std::string msgParam3 = "");
 
   No no() const { return m_no; }
   const std::string& message() const { return m_message; }
 
+  /** Returns a verbose description of the error. */
+  static std::string describe(Error::No no, const std::string& msgParam1 = "",
+    const std::string& msgParam2 = "", const std::string& msgParam3 = "");
+
+  const std::string& msgParam1() const { return m_msgParam1; }
+  const std::string& msgParam2() const { return m_msgParam2; }
+  const std::string& msgParam3() const { return m_msgParam3; }
+
 private:
   NEITHER_COPY_NOR_MOVEABLE(Error);
 
-  Error(No no, std::string message);
+  Error(No no, std::string message, std::string msgParam1 = "",
+    std::string msgParam2 = "", std::string msgParam3 = "");
 
   const No m_no;
   const std::string m_message;
+
+  // m_message already contains the msg params, see the describe method, but for
+  // automated tests it is convenient to access them explicitly individually.
+  const std::string m_msgParam1;
+  const std::string m_msgParam2;
+  const std::string m_msgParam3;
 };
 
 const char* toStr(Error::No no);

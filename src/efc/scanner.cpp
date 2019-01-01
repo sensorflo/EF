@@ -40,8 +40,7 @@ Scanner::Scanner(std::string fileName, ErrorHandler& errorHandler)
   else {
     if (!(yyin = fopen(m_fileName.c_str(), "r"))) {
       Error::throwError(m_errorHandler, Error::eCantOpenFileForReading,
-        "cannot open '" + m_fileName + "' for reading (" + strerror(errno) +
-          ")");
+        Location{}, m_fileName, strerror(errno));
     }
     m_opened_yyin = true;
   }
