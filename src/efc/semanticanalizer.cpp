@@ -58,7 +58,7 @@ void SemanticAnalizer::visit(AstCast& cast) {
         cast.args().childs().front()->object().objType()) &&
     !specifiedNewObjType.hasConstructor(
       cast.args().childs().front()->object().objType())) {
-    Error::throwError(m_errorHandler, Error::eNoSuchMember);
+    Error::throwError(m_errorHandler, Error::eNoSuchCtor);
   }
 
   // -- responsibility 3: set properties of associated object: type, sd, access
@@ -171,7 +171,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
 
   // Verify that the first argument has the operator as member function.
   if (!argschilds.front()->object().objType().hasMember(opop)) {
-    Error::throwError(m_errorHandler, Error::eNoSuchMember);
+    Error::throwError(m_errorHandler, Error::eNoSuchMemberFun);
   }
 
   // -- responsibility 3: set properties of associated object: type, sd, access

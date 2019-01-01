@@ -50,7 +50,8 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eCantOpenFileForReading: return "Can't open file '" + msgParam1 + "' for reading (" + msgParam2 + ")";
   case Error::eNoImplicitConversion: return "there's no implicit conversion from type '" + msgParam1+ "' to type '" + msgParam2 + "'";
   case Error::eInvalidArguments: return "eInvalidArguments";
-  case Error::eNoSuchMember: return "eNoSuchMember";
+  case Error::eNoSuchCtor: return "eNoSuchCtor";
+  case Error::eNoSuchMemberFun: return "eNoSuchMemberFun";
   case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
   case Error::eUnreachableCode: return "leaves control flow and the following code is not reachable";
   case Error::eCTConstRequired: return "eCTConstRequired";
@@ -80,7 +81,8 @@ const char* toStr(Error::No no) {
   case Error::eCantOpenFileForReading: return "eCantOpenFileForReading";
   case Error::eNoImplicitConversion: return "eNoImplicitConversion";
   case Error::eInvalidArguments: return "eInvalidArguments";
-  case Error::eNoSuchMember: return "eNoSuchMember";
+  case Error::eNoSuchCtor: return "eNoSuchCtor";
+  case Error::eNoSuchMemberFun: return "eNoSuchMemberFun";
   case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
   case Error::eUnreachableCode: return "eUnreachableCode";
   case Error::eCTConstRequired: return "eCTConstRequired";

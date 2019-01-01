@@ -1751,7 +1751,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_operator_WITH_an_argument_whose_obj_type_does_not_have_that_operator_as_member,
     transform,
-    reports_eNoSuchMember)) {
+    reports_eNoSuchMemberFun)) {
   // Note that after introducing implicit casts, the objec types of the
   // operands always match sauf qualifiers. That is specified by other
   // tests.
@@ -1764,7 +1764,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     new AstOperator('+',
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(0, ObjTypeFunda::eBool)),
-    Error::eNoSuchMember, spec);
+    Error::eNoSuchMemberFun, spec);
 
   spec = "Example: Arithemtic operator (+) with argument not being of arithmetic class (here function)";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
@@ -1773,14 +1773,14 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
       new AstOperator('+',
         new AstSymbol("foo"),
         new AstSymbol("foo"))),
-    Error::eNoSuchMember, spec);
+    Error::eNoSuchMemberFun, spec);
 
   spec = "Example: Logic operator (&&) with argument not being bool (here int)";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator("&&",
       new AstNumber(0, ObjTypeFunda::eInt),
       new AstNumber(0, ObjTypeFunda::eInt)),
-    Error::eNoSuchMember, spec);
+    Error::eNoSuchMemberFun, spec);
 
   spec = "Example: Comparision operator (==) with argument not being of scalar class (here function)";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
@@ -1789,12 +1789,12 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
       new AstOperator("==",
         new AstSymbol("foo"),
         new AstSymbol("foo"))),
-    Error::eNoSuchMember, spec);
+    Error::eNoSuchMemberFun, spec);
 
   spec = "Example: Dereference operator (*) with an non-pointer argument";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstOperator(AstOperator::eDeref, new AstNumber(0)),
-    Error::eNoSuchMember, spec);
+    Error::eNoSuchMemberFun, spec);
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
@@ -1885,7 +1885,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     } else {
       TEST_ASTTRAVERSAL_REPORTS_ERROR(
         pe.mkFunDef("foo", ObjTypeFunda::eInt, funbody),
-        Error::eNoSuchMember, "");
+        Error::eNoSuchCtor, "");
     }
   }
 }
