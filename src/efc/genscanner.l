@@ -109,12 +109,17 @@ true                return Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBoo
 
 
   /* literal integral / floatingpoint number  */
-[0-9]+(\.[0-9]+)?{ID}?  {
+[0-9]+(\.[0-9]*)?(e[0-9]+)?{ID}?  {
   errno = 0;
   char* suffix = nullptr;
-  bool containsDot = (nullptr != strchr(yytext, '.'));
   long double number = strtold(yytext, &suffix);
   ObjTypeFunda::EType objType = ObjTypeFunda::eVoid;
+
+  const auto dotPos = strchr(yytext, '.');
+  const auto containsDot = nullptr!=dotPos && dotPos<suffix;
+
+  const auto ePos = strchr(yytext, 'e');
+  const auto containsE = nullptr!=ePos && ePos<suffix;
 
   if (errno) {
     Error::throwError(errorHandler, Error::eInternalError,
@@ -128,7 +133,7 @@ true                return Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBoo
   }
 
   // it's an floating point literal
-  else if (containsDot) {
+  else if (containsDot || containsE) {
     if (number<DBL_MIN || number>DBL_MAX) {
       number = number<DBL_MIN ? DBL_MIN : DBL_MAX;
       Error::throwError(errorHandler, Error::eLiteralOutOfValidRange,
