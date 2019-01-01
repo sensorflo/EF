@@ -1,11 +1,12 @@
 #pragma once
 #include "declutils.h"
+#include "location.h"
 
 #include <array>
-#include <list>
 #include <memory>
 #include <ostream>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 class ErrorHandler;
@@ -42,16 +43,20 @@ public:
 
   /** Unless given error is disabled, adds a new Error to ErrorHandler and
   throws an according BuildError. */
-  static void throwError(
-    ErrorHandler& errorHandler, No no, std::string additionalMsg = "");
+  static void throwError(ErrorHandler& errorHandler, No no,
+    std::string additionalMsg = "", Location loc = s_nullLoc);
+  static void throwError(ErrorHandler& errorHandler, No no, Location loc);
 
   No no() const { return m_no; }
+  const std::string& message() const { return m_message; }
 
 private:
   NEITHER_COPY_NOR_MOVEABLE(Error);
 
-  Error(No no);
-  No m_no;
+  Error(No no, std::string message);
+
+  const No m_no;
+  const std::string m_message;
 };
 
 const char* toStr(Error::No no);
@@ -67,7 +72,6 @@ public:
   ErrorHandler();
   ~ErrorHandler();
 
-  /** Errorhandler overtakes ownership */
   void add(std::unique_ptr<Error> error);
   const Container& errors() const { return m_errors; }
   bool hasNoErrors() const { return m_errors.empty(); }

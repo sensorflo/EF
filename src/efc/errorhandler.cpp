@@ -1,22 +1,31 @@
 #include "errorhandler.h"
 
 #include <sstream>
+#include <string>
+#include <utility>
 
 using namespace std;
 
-Error::Error(Error::No no) : m_no(no) {
+Error::Error(Error::No no, string message)
+  : m_no(no), m_message(move(message)) {
 }
 
 void Error::throwError(
-  ErrorHandler& errorHandler, No no, string additionalMsg) {
+  ErrorHandler& errorHandler, No no, string additionalMsg, Location loc) {
   if (!errorHandler.isReportingDisabledFor(no)) {
-    auto error = std::unique_ptr<Error>(new Error(no));
     stringstream ss;
-    ss << *error;
-    if (!additionalMsg.empty()) { ss << ", " << additionalMsg; }
-    errorHandler.add(std::move(error));
+    if (loc.begin.m_fileName) { ss << *loc.begin.m_fileName << ":"; }
+    ss << loc.begin.m_line << ":" << loc.begin.m_column << ": error "
+       << additionalMsg << "[" << no << "]";
+
+    errorHandler.add(unique_ptr<Error>(new Error{no, ss.str()}));
+
     throw BuildError(ss.str());
   }
+}
+
+void Error::throwError(ErrorHandler& errorHandler, No no, Location loc) {
+  throwError(errorHandler, no, "", loc);
 }
 
 const char* toStr(Error::No no) {

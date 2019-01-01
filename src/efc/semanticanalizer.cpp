@@ -163,7 +163,8 @@ void SemanticAnalizer::visit(AstOperator& op) {
   if (class_ == AstOperator::eAssignment) {
     if (!(argschilds.front()->object().objType().qualifiers() &
           ObjType::eMutable)) {
-      Error::throwError(m_errorHandler, Error::eWriteToImmutable);
+      Error::throwError(
+        m_errorHandler, Error::eWriteToImmutable, op.location());
     }
   }
 
