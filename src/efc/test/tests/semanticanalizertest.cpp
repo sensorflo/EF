@@ -41,32 +41,37 @@ public:
 void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
   Error::No expectedErrorNo, const string& spec, bool foreignThrow,
   string excptionwhat) {
+
+  const auto details = "\n" + amendSpec(spec) + amendAst(ast) +
+    amend(UUT.m_errorHandler) + amend(UUT.m_env);
+
   // verify no foreign exception where thrown
   EXPECT_FALSE(foreignThrow)
-    << amendSpec(spec) << amendAst(ast) << amend(UUT.m_errorHandler)
-    << "\nexceptionwhat: " << excptionwhat << amend(UUT.m_env);
+    << "A foreign exception with description '" << excptionwhat << "' was thrown."
+    << details;
 
   // verify that as expected no error was reported
-  const ErrorHandler::Container& errors = UUT.m_errorHandler.errors();
   if (expectedErrorNo == Error::eNone) {
-    EXPECT_TRUE(errors.empty()) << "Expecting no error\n"
-                                << amendSpec(spec) << amend(UUT.m_errorHandler)
-                                << amendAst(ast) << amend(UUT.m_env);
+    EXPECT_FALSE(UUT.m_errorHandler.hasErrors())
+      << "Unexpectedly errors occured:\n" << UUT.m_errorHandler
+      << details;
   }
 
+  // verify that the actual error is as expected
   else {
-    // verify that only exactly one error is reported
-    EXPECT_EQ(1U, errors.size())
-      << "Expecting error " << expectedErrorNo << "\n"
-      << amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast)
-      << amend(UUT.m_env);
+    const auto& errors = UUT.m_errorHandler.errors();
 
-    // ... and that that one error has the expected ErrorNo
-    if (!errors.empty()) {
-      EXPECT_EQ(expectedErrorNo, errors.front()->no())
-        << amendSpec(spec) << amend(UUT.m_errorHandler) << amendAst(ast)
-        << amend(UUT.m_env);
-    }
+    ASSERT_TRUE(UUT.m_errorHandler.hasErrors())
+      << "expected the error '" << expectedErrorNo << "' but no error at all occured."
+      << details;
+
+    ASSERT_EQ(1U, errors.size())
+      << "expected the single error " << expectedErrorNo
+      << " but more errors occured:" << UUT.m_errorHandler
+      << details;
+
+    const auto& error = *errors.front();
+    EXPECT_EQ(expectedErrorNo, error.no()) << details;
   }
 }
 
@@ -92,14 +97,14 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
 with ParserExt, see also file's comment. */
 #define TEST_ASTTRAVERSAL_REPORTS_ERROR(ast, expectedErrorNo, spec)     \
   {                                                                     \
-    SCOPED_TRACE("testAstTraversal called from here (via TEST_ASTTRAVERSAL_REPORTS_ERROR)"); \
+    SCOPED_TRACE("testAstTraversal called from here");                  \
     TEST_ASTTRAVERSAL(ast, expectedErrorNo, spec)                       \
   }
 
 /** Analogous to TEST_ASTTRAVERSAL_REPORTS_ERROR */
 #define TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(ast, spec)            \
   {                                                                     \
-    SCOPED_TRACE("testAstTraversal called from here (via TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS)"); \
+    SCOPED_TRACE("testAstTraversal called from here");                  \
     TEST_ASTTRAVERSAL(ast, Error::eNone, spec)                          \
   }
 
