@@ -713,7 +713,7 @@ void AstObjTypeSymbol::initMap() {
         m_typeToName[i] = "<invalid(pointer)>";
       }
       else {
-        m_typeToName[i] = ObjTypeFunda(type).toStr();
+        m_typeToName[i] = ObjTypeFunda(type).completeName();
       }
     }
     for (const auto& x : m_typeToName) { assert(!x.empty()); }

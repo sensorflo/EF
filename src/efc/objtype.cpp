@@ -38,7 +38,7 @@ std::shared_ptr<const ObjType> ObjType::unqualifiedObjType() const {
   return shared_from_this();
 }
 
-string ObjType::toStr() const {
+string ObjType::completeName() const {
   std::ostringstream ss;
   printTo(ss);
   return ss.str();

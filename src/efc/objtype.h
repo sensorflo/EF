@@ -53,7 +53,7 @@ public:
   virtual std::basic_ostream<char>& printTo(
     std::basic_ostream<char>& os) const = 0;
   /** returns as string was printTo writes into a stream */
-  std::string toStr() const;
+  std::string completeName() const;
 
   bool isVoid() const;
   bool isNoreturn() const;

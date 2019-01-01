@@ -32,52 +32,52 @@ void testMatch(const string& spec, ObjType::MatchType expectedMatchType,
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
   // fundamental types
-  EXPECT_EQ("void", ObjTypeFunda(ObjTypeFunda::eVoid).toStr());
-  EXPECT_EQ("noreturn", ObjTypeFunda(ObjTypeFunda::eNoreturn).toStr());
-  EXPECT_EQ("infer", ObjTypeFunda(ObjTypeFunda::eInfer).toStr());
-  EXPECT_EQ("char", ObjTypeFunda(ObjTypeFunda::eChar).toStr());
-  EXPECT_EQ("int", ObjTypeFunda(ObjTypeFunda::eInt).toStr());
-  EXPECT_EQ("bool", ObjTypeFunda(ObjTypeFunda::eBool).toStr());
-  EXPECT_EQ("double", ObjTypeFunda(ObjTypeFunda::eDouble).toStr());
+  EXPECT_EQ("void", ObjTypeFunda(ObjTypeFunda::eVoid).completeName());
+  EXPECT_EQ("noreturn", ObjTypeFunda(ObjTypeFunda::eNoreturn).completeName());
+  EXPECT_EQ("infer", ObjTypeFunda(ObjTypeFunda::eInfer).completeName());
+  EXPECT_EQ("char", ObjTypeFunda(ObjTypeFunda::eChar).completeName());
+  EXPECT_EQ("int", ObjTypeFunda(ObjTypeFunda::eInt).completeName());
+  EXPECT_EQ("bool", ObjTypeFunda(ObjTypeFunda::eBool).completeName());
+  EXPECT_EQ("double", ObjTypeFunda(ObjTypeFunda::eDouble).completeName());
 
   // qualifiers
   EXPECT_EQ("mut-int",
     ObjTypeQuali(
       ObjType::eMutable, make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))
-      .toStr());
+      .completeName());
 
   // pointer type
   EXPECT_EQ("raw*int",
-    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
+    ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).completeName());
 
   // function type
   EXPECT_EQ("fun(() int)",
     ObjTypeFun(
       ObjTypeFun::createArgs(), make_shared<ObjTypeFunda>(ObjTypeFunda::eInt))
-      .toStr());
+      .completeName());
   EXPECT_EQ("fun((int, int) int)",
     ObjTypeFun(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eInt),
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)
-      ).toStr());
+      ).completeName());
   EXPECT_EQ("fun((bool, int) bool)",
     ObjTypeFun(
       ObjTypeFun::createArgs(
         new ObjTypeFunda(ObjTypeFunda::eBool),
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eBool)
-      ).toStr());
+      ).completeName());
 
   // class
-  EXPECT_EQ("class(foo)", ObjTypeClass("foo").toStr());
+  EXPECT_EQ("class(foo)", ObjTypeClass("foo").completeName());
   EXPECT_EQ("class(foo int)",
-    ObjTypeClass("foo", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).toStr());
+    ObjTypeClass("foo", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).completeName());
   EXPECT_EQ("class(foo int bool)",
     ObjTypeClass("foo", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eBool))
-      .toStr());
+      .completeName());
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(match)) {

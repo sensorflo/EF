@@ -83,7 +83,8 @@ void IrGen::visit(AstCast& cast) {
   const auto& newtype = dynamic_cast<const ObjTypeFunda&>(cast.objType());
   auto oldsize = oldtype.size();
   auto newsize = newtype.size();
-  string irValueName = childIr->getName().str() + "_as_" + newtype.toStr();
+  string irValueName =
+    childIr->getName().str() + "_as_" + newtype.completeName();
 
   // unity conversion
   if (newtype.type() == oldtype.type()) {
