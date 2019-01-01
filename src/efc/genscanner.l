@@ -111,9 +111,12 @@ true                return Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBoo
   /* literal integral / floatingpoint number  */
 [0-9]+(\.[0-9]*)?(e[0-9]+)?{ID}?  {
   errno = 0;
-  char* suffix = nullptr;
-  long double number = strtold(yytext, &suffix);
-  ObjTypeFunda::EType objType = ObjTypeFunda::eVoid;
+
+  // convert the literal's text to long double, i.e. a type which is larger than
+  // any type EF currently supports.
+  char* suffix = nullptr; // after the call to strold, points past the end
+                          // of the literal number/text
+  const auto number = strtold(yytext, &suffix);
 
   const auto dotPos = strchr(yytext, '.');
   const auto containsDot = nullptr!=dotPos && dotPos<suffix;
@@ -132,28 +135,28 @@ true                return Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBoo
       string("Unknown literal number suffix: ") + suffix);
   }
 
-  // it's an floating point literal
+  // It's an floating point literal. Since we don't have suffixes yet its always
+  // of type double
   else if (containsDot || containsE) {
     if (number<DBL_MIN || number>DBL_MAX) {
-      number = number<DBL_MIN ? DBL_MIN : DBL_MAX;
       Error::throwError(errorHandler, Error::eLiteralOutOfValidRange,
         "Floating point number literal is out of range");
     }
     // todo: also check for underflow / too many digits behind dot
-    objType = ObjTypeFunda::eDouble;
+    return Parser::make_NUMBER(
+      NumberToken(static_cast<GeneralValue>(number), ObjTypeFunda::eDouble), loc);
   }
 
-  // it's an integral literal
+  // it's an integral literal. Since we don't have suffixes yet its always of
+  // type int.
   else {
     if (number<INT_MIN || number>INT_MAX) {
-      number = number<INT_MIN ? INT_MIN : INT_MAX;
       Error::throwError(errorHandler, Error::eLiteralOutOfValidRange,
         "Integer number literal is out of range");
     }
-    objType = ObjTypeFunda::eInt;
+    return Parser::make_NUMBER(
+      NumberToken(static_cast<GeneralValue>(number), ObjTypeFunda::eInt), loc);
   }
-  return Parser::make_NUMBER(
-    NumberToken(static_cast<GeneralValue>(number), objType), loc);
 }
 
   /* punctuation */
