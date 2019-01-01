@@ -9,6 +9,7 @@
   #include <cerrno>
   #include <climits>
   #include <cfloat>
+  #include <cmath>
   #include <cstdlib>
   #include <string>
 
@@ -124,10 +125,15 @@ true                return Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBoo
   const auto ePos = strchr(yytext, 'e');
   const auto containsE = nullptr!=ePos && ePos<suffix;
 
+  if (errno && number == HUGE_VALL) {
+    errno = 0; // we handle the case 'number == HUGE_VALL' below
+  }
+
   if (errno) {
     Error::throwError(errorHandler, Error::eInternalError,
       string("Scanner's rule matched a number, but strtol doesn't recognize a number. ")
       + strerror(errno));
+    errno = 0;
 
   // currently no suffixes are recognized
   } else if (*suffix!='\0') {
@@ -138,7 +144,7 @@ true                return Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBoo
   // It's an floating point literal. Since we don't have suffixes yet its always
   // of type double
   else if (containsDot || containsE) {
-    if (number<DBL_MIN || number>DBL_MAX) {
+    if (number==HUGE_VALL || number<DBL_MIN || number>DBL_MAX) {
       Error::throwError(errorHandler, Error::eLiteralOutOfValidRange,
         "Floating point number literal is out of range");
     }
@@ -150,7 +156,8 @@ true                return Parser::make_NUMBER(NumberToken(1, ObjTypeFunda::eBoo
   // it's an integral literal. Since we don't have suffixes yet its always of
   // type int.
   else {
-    if (number<INT_MIN || number>INT_MAX) {
+    // todo: the following code fails to take the different range between signed and unsigned into account
+    if (number==HUGE_VALL || number<INT_MIN || number>INT_MAX) {
       Error::throwError(errorHandler, Error::eLiteralOutOfValidRange,
         "Integer number literal is out of range");
     }

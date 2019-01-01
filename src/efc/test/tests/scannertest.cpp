@@ -42,6 +42,38 @@ void testScanner(const string& input, const string& spec,
     testScanner(input, spec, expectedTokens);                        \
   }
 
+void testScannerReportsError(const string& input, Error::No expectedErrorNo, const string& spec) {
+  // setup
+  DriverOnTmpFile driver(input);
+  Scanner& UUT = driver.scanner();
+
+  // execute
+  try {
+    while (Parser::token::TOK_END_OF_FILE == UUT.pop().token()) { /* nop */ }
+  }
+  catch (BuildError&) { /* handled below via errorhandler */ }
+
+  // verify
+  const auto& errors = driver.errorHandler().errors();
+  ASSERT_TRUE(driver.errorHandler().hasErrors())
+    << amendSpec(spec) << "expected the error '" << expectedErrorNo
+    << "' but no error at all occured.\n"
+    << "Input: '" << input << "'\n";
+  ASSERT_EQ(1, errors.size())
+    << amendSpec(spec) << "expected the single error " << expectedErrorNo
+    << " but more errors occured: {" << driver.errorHandler() << "}\n"
+    << "Input: '" << input << "'\n";
+  EXPECT_EQ(expectedErrorNo, errors.front()->no())
+    << amendSpec(spec) << "Input: '" << input << "'\n";
+}
+
+/** Analogous to testScannerReportsError, see there */
+#define TEST_SCANNER_REPORTS_ERROR(input, expectedErrorNo, spec)     \
+  {                                                                  \
+    SCOPED_TRACE("testScannerReportsError called from here (via TEST_SCANNER_REPORTS_ERROR)"); \
+    testScannerReportsError(input, expectedErrorNo, spec);           \
+  }
+
 TEST(ScannerTest, MAKE_TEST_NAME(
     an_empty_file,
     pop,
@@ -208,6 +240,22 @@ TEST(ScannerTest, MAKE_TEST_NAME(
     return;
   }
   FAIL();
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
+    a_literal_integral_number_which_is_not_representable_by_type_int,
+    pop,
+    reports_eLiteralOutOfValidRange)) {
+  TEST_SCANNER_REPORTS_ERROR("3141592653589793238462643383",
+    Error::eLiteralOutOfValidRange, "");
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
+    a_literal_float_number_which_is_not_representable_by_type_double,
+    pop,
+    reports_eLiteralOutOfValidRange)) {
+  TEST_SCANNER_REPORTS_ERROR("3.14E14142135623",
+    Error::eLiteralOutOfValidRange, "");
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
