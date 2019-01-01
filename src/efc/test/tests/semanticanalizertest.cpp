@@ -39,10 +39,12 @@ public:
 };
 
 void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
-  Error::No expectedErrorNo, const string& spec, bool foreignThrow,
+  Error::No expectedErrorNo, const string& expectedMsgParam1,
+  const string& expectedMsgParam2, const string& expectedMsgParam3,
+  const string& spec, bool foreignThrow,
   string excptionwhat) {
 
-  const auto details = "\n" + amendSpec(spec) + amendAst(ast) +
+  const auto details = amendSpec(spec) + amendAst(ast) +
     amend(UUT.m_errorHandler) + amend(UUT.m_env);
 
   // verify no foreign exception where thrown
@@ -71,11 +73,14 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
       << details;
 
     const auto& error = *errors.front();
-    EXPECT_EQ(expectedErrorNo, error.no()) << details;
+    EXPECT_EQ(expectedErrorNo  , error.no()) << details;
+    EXPECT_EQ(expectedMsgParam1, error.msgParam1()) << details;
+    EXPECT_EQ(expectedMsgParam2, error.msgParam2()) << details;
+    EXPECT_EQ(expectedMsgParam3, error.msgParam3()) << details;
   }
 }
 
-#define TEST_ASTTRAVERSAL(ast, expectedErrorNo, spec)                   \
+#define TEST_ASTTRAVERSAL(ast, expectedErrorNo, expectedMsgParam1, expectedMsgParam2, expectedMsgParam3, spec) \
   ErrorHandler errorHandler;                                            \
   Env env; /* must live shorter than the AST */                         \
   GenParserExt pe(env, errorHandler);                                   \
@@ -91,21 +96,33 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
   catch (exception& e) { foreignThrow = true; excptionwhat = e.what(); } \
   catch (exception* e) { foreignThrow = true; if (e) { excptionwhat = e->what(); } } \
   catch (...)          { foreignThrow = true; }                         \
-  verifyAstTraversal(UUT, ast_, expectedErrorNo, spec, foreignThrow, excptionwhat);
+  SCOPED_TRACE("testAstTraversal called from here");                    \
+  verifyAstTraversal(UUT, ast_, expectedErrorNo, expectedMsgParam1,     \
+    expectedMsgParam2, expectedMsgParam3, spec, foreignThrow, excptionwhat);
 
 /** Actually does not only test traversal of AST, but also creation of it
 with ParserExt, see also file's comment. */
 #define TEST_ASTTRAVERSAL_REPORTS_ERROR(ast, expectedErrorNo, spec)     \
   {                                                                     \
-    SCOPED_TRACE("testAstTraversal called from here");                  \
-    TEST_ASTTRAVERSAL(ast, expectedErrorNo, spec)                       \
+    TEST_ASTTRAVERSAL(ast, expectedErrorNo, "", "", "", spec)           \
+  }
+
+/** Analogous to TEST_ASTTRAVERSAL_REPORTS_ERROR. */
+#define TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(ast, expectedErrorNo, expectedMsgParam1, spec) \
+  {                                                                     \
+    TEST_ASTTRAVERSAL(ast, expectedErrorNo, expectedMsgParam1, "", "", spec) \
+  }
+
+/** Analogous to TEST_ASTTRAVERSAL_REPORTS_ERROR. */
+#define TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(ast, expectedErrorNo, expectedMsgParam1, expectedMsgParam2, spec) \
+  {                                                                     \
+    TEST_ASTTRAVERSAL(ast, expectedErrorNo, expectedMsgParam1, expectedMsgParam2, "", spec) \
   }
 
 /** Analogous to TEST_ASTTRAVERSAL_REPORTS_ERROR */
 #define TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(ast, spec)            \
   {                                                                     \
-    SCOPED_TRACE("testAstTraversal called from here");                  \
-    TEST_ASTTRAVERSAL(ast, Error::eNone, spec)                          \
+    TEST_ASTTRAVERSAL(ast, Error::eNone, "", "", "", spec)              \
   }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -440,15 +457,15 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_simple_example_of_a_reference_to_an_unknown_name,
     transform,
     reports_an_eErrUnknownName)) {
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     new AstSymbol("x"),
-    Error::eUnknownName, "");
+    Error::eUnknownName, "x", "");
 
   // separate test for symbol and funcal since currently the two do sadly not
   // share a common implementation
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     new AstFunCall(new AstSymbol("foo")),
-    Error::eUnknownName, "");
+    Error::eUnknownName, "foo", "");
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -557,12 +574,12 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     transform,
     reports_eUnknownName,
     BECAUSE_the_scope_of_local_data_objects_declarations_is_that_of_the_enclosing_block)) {
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     new AstSeq(
       new AstBlock(
         new AstDataDef("x", ObjTypeFunda::eInt)),
       new AstSymbol("x")),
-    Error::eUnknownName, "");
+    Error::eUnknownName, "x", "");
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -586,67 +603,67 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     reports_eRedefinition)) {
 
   string spec = "Example: types differs: two different fundamental types";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     new AstSeq(
       new AstDataDef("x", ObjTypeFunda::eInt),
       new AstDataDef("x", ObjTypeFunda::eBool)),
-    Error::eRedefinition, spec);
+    Error::eRedefinition, "x", spec);
 
   spec = "Example: types differ: first function type, then fundamental type";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     new AstSeq(
       pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(42)),
       new AstDataDef("foo", ObjTypeFunda::eInt)),
-    Error::eRedefinition, spec);
+    Error::eRedefinition, "foo", spec);
 
   spec = "Example: types differ: First fundamental type, then function type";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     new AstSeq(
       new AstDataDef("foo", ObjTypeFunda::eInt),
       pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(42))),
-    Error::eRedefinition, spec);
+    Error::eRedefinition, "foo", spec);
 
   spec = "Example: storage duration differs";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     new AstSeq(
       new AstDataDef("x", new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eLocal),
       new AstDataDef("x", new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eStatic)),
-    Error::eRedefinition, "");
+    Error::eRedefinition, "x", "");
 
   spec = "Example: two local variables in implicit main method";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     new AstSeq(
       new AstDataDef("x", ObjTypeFunda::eInt),
       new AstDataDef("x", ObjTypeFunda::eInt)),
-    Error::eRedefinition, spec);
+    Error::eRedefinition, "x", spec);
 
   spec = "Example: two parameters";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     pe.mkFunDef("foo",
       AstFunDef::createArgs(
         new AstDataDef("x", ObjTypeFunda::eInt),
         new AstDataDef("x", ObjTypeFunda::eInt)),
       new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstNumber(42)),
-    Error::eRedefinition, spec);
+    Error::eRedefinition, "x", spec);
 
   spec = "Example: a parameter and a local variable in the function's body";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     pe.mkFunDef("foo",
       AstFunDef::createArgs(
         new AstDataDef("x", ObjTypeFunda::eInt)),
       new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstDataDef("x", ObjTypeFunda::eInt)),
-    Error::eRedefinition, spec);
+    Error::eRedefinition, "x", spec);
 
   spec = "Example: two functions";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
     new AstSeq(
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
         new AstNumber(42)),
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
         new AstNumber(42))),
-    Error::eRedefinition, spec);
+    Error::eRedefinition, "foo", spec);
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
