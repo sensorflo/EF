@@ -199,11 +199,11 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     Error::eNoImplicitConversion, spec);
 
   spec = "Example: Binary math operator";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstOperator('+',
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(77, ObjTypeFunda::eInt)),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "int", "bool", spec);
 
   spec = "Example: If else clause (note that there is an excpetion if one type "
     "is noreturn, see other specifications)";
@@ -231,11 +231,11 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     Error::eNoImplicitConversion, spec);
 
   spec = "Example: Binary math operator";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstOperator('+',
       new AstNumber(42, ObjTypeFunda::eInt),
       new AstNumber(1, ObjTypeFunda::eBool)),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "bool", "int", spec);
 
   spec = "Example: If else clause (note that there is an excpetion if one type "
     "is noreturn, see other specifications)";
