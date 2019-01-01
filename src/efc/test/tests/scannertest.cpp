@@ -85,10 +85,22 @@ void testScannerReportsError(const string& input, Error::No expectedErrorNo,
   }
 
 TEST(ScannerTest, MAKE_TEST_NAME(
-    an_empty_file,
-    pop,
-    returns_TOK_END_OF_FILE)) {
-  TEST_SCANNER("", "", TOKIL0());
+    an_invalid_file_name,
+    create,
+    reports_eCantOpenFileForReading)) {
+  // setup
+  ErrorHandler errorHandler;
+  const string invalidFileName = "invalid-file-name.ef";
+
+  // exercise
+  const auto res = tryCatch(
+    [&](){Scanner::create(invalidFileName, errorHandler);});
+
+  // verify
+  SCOPED_TRACE("called from here");
+  verifyErrorHandlerHasExpectedError(errorHandler, "",
+    res.m_foreignCatches, res.m_excptionWhat, Error::eCantOpenFileForReading,
+    invalidFileName, "<dont_verify>");
 }
 
 TEST(ScannerTest, MAKE_TEST_NAME2(
