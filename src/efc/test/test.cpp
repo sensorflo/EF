@@ -85,6 +85,27 @@ AstObject* createAccessTo(const string& symbolName, Access access) {
   return createAccessTo(new AstSymbol(symbolName), access);
 }
 
+TryCatchResult tryCatch(const function<void()>& f) {
+  TryCatchResult res;
+  try {
+    f();
+  }
+  catch (const BuildError&) { /* nop, implicitely added to error handler */
+  }
+  catch (const exception& e) {
+    res.m_foreignCatches = true;
+    res.m_excptionWhat = e.what();
+  }
+  catch (const exception* e) {
+    res.m_foreignCatches = true;
+    if (e) { res.m_excptionWhat = e->what(); }
+  }
+  catch (...) {
+    res.m_foreignCatches = true;
+  }
+  return res;
+}
+
 void verifyErrorHandlerHasExpectedError(const ErrorHandler& errorHandler,
   const string& details, bool foreignCatches, const string& exceptionWhat,
   Error::No expectedErrorNo, const string& expectedMsgParam1,

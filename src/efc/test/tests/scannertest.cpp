@@ -50,21 +50,18 @@ void testScannerReportsError(const string& input, Error::No expectedErrorNo,
   Scanner& UUT = driver.scanner();
 
   // execute
-  bool foreignCatches = false;
-  string excptionwhat;
-  try {
-    while (Parser::token::TOK_END_OF_FILE == UUT.pop().token()) { /* nop */ }
-  }
+  const auto body = [&](){
+    while (Parser::token::TOK_END_OF_FILE == UUT.pop().token()) {
+      /* nop */
+    }
+  };
+  const auto res = tryCatch(body);
 
   // verify
-  catch (BuildError&)  { /* handled below via errorhandler */ }
-  catch (exception& e) { foreignCatches = true; excptionwhat = e.what(); }
-  catch (exception* e) { foreignCatches = true; if (e) { excptionwhat = e->what(); } }
-  catch (...)          { foreignCatches = true; }
   const auto details = amendSpec(spec) + "Input: '" + input + "'\n";
   SCOPED_TRACE("verifyErrorHandlerHasExpectedError called from here");
   verifyErrorHandlerHasExpectedError(driver.errorHandler(), details,
-    foreignCatches, excptionwhat, expectedErrorNo, expectedMsgParam1,
+    res.m_foreignCatches, res.m_excptionWhat, expectedErrorNo, expectedMsgParam1,
     expectedMsgParam2, expectedMsgParam3);
 }
 

@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 class AstNode;
 class AstObject;
@@ -99,6 +100,19 @@ AstObject* createAccessTo(AstObject* obj, Access access);
 
 /** as the above, whereas obj is 'new AstSymbol(symbolName)' */
 AstObject* createAccessTo(const std::string& symbolName, Access access);
+
+/** see tryCatch */
+struct TryCatchResult {
+  bool m_foreignCatches = false;
+  std::string m_excptionWhat;
+};
+
+/** Execute f in in a try block and catch any exception. If its of type 'const
+BuildError&', set m_foreignCatches of the result value to false. As always you
+can access the error via the error handler. Otherwise, set it to true. If its of
+type 'const exception&' or 'const exception*', additionally set m_excptionWhat
+to the return value of the what() method of the catched exception. */
+TryCatchResult tryCatch(const std::function<void()>& f);
 
 /** Verifies with gtest assertions that errorHandler contains either no error if
 expectedErrorNo is eNone, or exactly one error which is described by
