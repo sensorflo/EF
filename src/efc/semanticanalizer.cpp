@@ -140,13 +140,13 @@ void SemanticAnalizer::visit(AstOperator& op) {
         (!op.isBinaryLogicalShortCircuit() ||
           !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eNoreturn)))) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
-          op.loc(), rhs.name(), lhs.name());
+          op.loc(), rhs.completeName(), lhs.completeName());
       }
     }
     else if (class_ != AstOperator::eOther) {
       if (!lhs.matchesSaufQualifiers(rhs)) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
-          op.loc(), rhs.name(), lhs.name());
+          op.loc(), rhs.completeName(), lhs.completeName());
       }
     }
   }
@@ -335,11 +335,12 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
 
 void SemanticAnalizer::visit(AstFunDef& funDef) {
   preConditionCheck(funDef);
+  const auto& retObjType = funDef.ret().objType();
 
   // -- responsibility 2 / part 1 of 2: semantic analysis
   // verify signature before descending into AST subtree, so the subtree can
   // see a valid signature
-  if (funDef.ret().objType().qualifiers() & ObjType::eMutable) {
+  if (retObjType.qualifiers() & ObjType::eMutable) {
     Error::throwError(m_errorHandler, Error::eRetTypeCantHaveMutQualifier);
   }
   for (const auto& arg : funDef.declaredArgs()) {
@@ -361,9 +362,11 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 
   // -- responsibility 2 / part 2 of 2: semantic analysis
   const auto& bodyObjType = funDef.body().object().objType();
-  if (!bodyObjType.matchesSaufQualifiers(funDef.ret().objType()) &&
+  if (!bodyObjType.matchesSaufQualifiers(retObjType) &&
     !bodyObjType.isNoreturn()) {
-    Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+    Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
+      funDef.body().loc(), bodyObjType.completeName(),
+      retObjType.completeName());
   }
 
   // -- responsibility 3: set properties of associated object: type, sd, access
@@ -406,9 +409,11 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
       Error::throwError(m_errorHandler, Error::eInvalidArguments);
     }
     const auto initializer = ctorArgs.front();
-    if (dataDef.objType().match(initializer->object().objType()) ==
-      ObjType::eNoMatch) {
-      Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+    const auto& initializerObjType = initializer->object().objType();
+    if (dataDef.objType().match(initializerObjType) == ObjType::eNoMatch) {
+      Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
+        initializer->loc(), initializerObjType.completeName(),
+        dataDef.objType().completeName());
     }
     if (dataDef.storageDuration() == StorageDuration::eStatic &&
       !initializer->isCTConst()) {
@@ -435,9 +440,12 @@ void SemanticAnalizer::visit(AstIf& if_) {
   }
 
   // -- responsibility 2: semantic analysis
-  if (!if_.condition().object().objType().matchesSaufQualifiers(
+  const auto& conditionObjType = if_.condition().object().objType();
+  if (!conditionObjType.matchesSaufQualifiers(
         ObjTypeFunda(ObjTypeFunda::eBool))) {
-    Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+    Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
+      if_.condition().loc(), conditionObjType.completeName(),
+      ObjTypeFunda(ObjTypeFunda::eBool).completeName());
   }
 
   // In case of two clauses, check that both clauses are of the same obj type,
@@ -451,7 +459,8 @@ void SemanticAnalizer::visit(AstIf& if_) {
     auto& rhs = if_.elseAction()->object().objType();
     if (!lhs.matchesSaufQualifiers(rhs)) {
       if (!actionIsOfTypeNoreturn && !rhs.isNoreturn()) {
-        Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+        Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
+          if_.loc(), rhs.completeName(), lhs.completeName());
       }
     }
   }
@@ -483,9 +492,12 @@ void SemanticAnalizer::visit(AstLoop& loop) {
   setAccessAndCallAcceptOn(loop.body(), Access::eIgnoreValueAndAddr);
 
   // -- responsibility 2: semantic analysis
-  if (!loop.condition().object().objType().matchesSaufQualifiers(
+  const auto& conditionObjType = loop.condition().object().objType();
+  if (!conditionObjType.matchesSaufQualifiers(
         ObjTypeFunda(ObjTypeFunda::eBool))) {
-    Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+    Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
+      loop.condition().loc(), conditionObjType.completeName(),
+      ObjTypeFunda(ObjTypeFunda::eBool).completeName());
   }
 
   // -- responsibility 3: set properties of associated object: type, sd, access
@@ -511,10 +523,12 @@ void SemanticAnalizer::visit(AstReturn& return_) {
   if (ctorArgs.size() != 1U) {
     Error::throwError(m_errorHandler, Error::eInvalidArguments);
   }
-  const auto& currentFunReturnType = *m_funRetAstObjTypes.top();
-  if (!ctorArgs.front()->object().objType().matchesSaufQualifiers(
-        currentFunReturnType.objType())) {
-    Error::throwError(m_errorHandler, Error::eNoImplicitConversion);
+  const auto& definedReturnObjType = m_funRetAstObjTypes.top()->objType();
+  const auto& returnedObjType = ctorArgs.front()->object().objType();
+  if (!returnedObjType.matchesSaufQualifiers(definedReturnObjType)) {
+    Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
+      return_.loc(), returnedObjType.completeName(),
+      definedReturnObjType.completeName());
   }
 
   // -- responsibility 3: set properties of associated object: type, sd, access

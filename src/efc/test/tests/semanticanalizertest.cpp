@@ -192,11 +192,11 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     reports_eNoImplicitConversion,
     BECAUSE_there_are_no_narrowing_implicit_conversions)) {
   string spec = "Example: Data object definition";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstDataDef("x",
       ObjTypeFunda::eBool,
       new AstNumber(42, ObjTypeFunda::eInt)),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "int", "bool", spec);
 
   spec = "Example: Binary math operator";
   TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
@@ -207,16 +207,16 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
 
   spec = "Example: If else clause (note that there is an excpetion if one type "
     "is noreturn, see other specifications)";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstIf(new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(77, ObjTypeFunda::eInt)),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "int", "bool", spec);
 
   spec = "Example: Body of a function definition must match function's return type";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     pe.mkFunDef("foo", ObjTypeFunda::eBool, new AstNumber(42)),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "int", "bool", spec);
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
@@ -225,10 +225,10 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     reports_eNoImplicitConversion,
     BECAUSE_currently_there_are_no_implicit_widening_conversions)) {
   string spec = "Example: Data object definition";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstDataDef("x", ObjTypeFunda::eInt,
       new AstNumber(0, ObjTypeFunda::eBool)),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "bool", "int", spec);
 
   spec = "Example: Binary math operator";
   TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
@@ -239,17 +239,17 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
 
   spec = "Example: If else clause (note that there is an excpetion if one type "
     "is noreturn, see other specifications)";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstIf(new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(77, ObjTypeFunda::eInt),
       new AstNumber(0, ObjTypeFunda::eBool)),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "bool", "int", spec);
 
   spec = "Example: Body of a function definition must match function's return type";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     pe.mkFunDef("foo", ObjTypeFunda::eInt,
       new AstNumber(0, ObjTypeFunda::eBool)),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "bool", "int", spec);
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
@@ -279,16 +279,16 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     reports_eNoImplicitConversion,
     BECAUSE_currently_there_are_no_implicit_widening_conversions)) {
 
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstIf(new AstNumber(0, ObjTypeFunda::eInt),
       new AstNumber(42),
       new AstNumber(77)),
-    Error::eNoImplicitConversion, "");
+    Error::eNoImplicitConversion, "int", "bool", "");
 
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstLoop(new AstNumber(0, ObjTypeFunda::eInt),
       new AstNop()),
-    Error::eNoImplicitConversion, "");
+    Error::eNoImplicitConversion, "int", "bool", "");
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -1258,25 +1258,25 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     THEN_it_reports_eNoImplicitConversion)) {
 
   string spec = "Example: return expression as last (and only) expression in fun's body";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     pe.mkFunDef("foo", ObjTypeFunda::eInt,
       new AstReturn(new AstNumber(0, ObjTypeFunda::eBool))),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "bool", "int", spec);
 
   spec = "Example: Early return, return expression in an if clause";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     pe.mkFunDef("foo", ObjTypeFunda::eInt,
       new AstSeq(
         new AstIf(
           new AstNumber(0, ObjTypeFunda::eBool),
           new AstReturn(new AstNumber(0, ObjTypeFunda::eBool))), // early return
         new AstNumber(77, ObjTypeFunda::eInt))),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "bool", "int", spec);
 
   spec = "Example: Nested function. Return expression in body of inner function "
     "does not match return type of its function, but would match that of the "
     "outer function. Naturally that is still an error.";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     pe.mkFunDef("outer", ObjTypeFunda::eInt,
       new AstSeq(
 
@@ -1284,7 +1284,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
           new AstReturn(new AstNumber(0, ObjTypeFunda::eInt))), // return under test
 
         new AstNumber(42))),
-    Error::eNoImplicitConversion, spec);
+    Error::eNoImplicitConversion, "int", "bool", spec);
 }
 
 // i.e. the if expression is just like an operator, which is just like an
