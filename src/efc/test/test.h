@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../access.h"
+#include "../errorhandler.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -98,3 +99,17 @@ AstObject* createAccessTo(AstObject* obj, Access access);
 
 /** as the above, whereas obj is 'new AstSymbol(symbolName)' */
 AstObject* createAccessTo(const std::string& symbolName, Access access);
+
+/** Verifies with gtest assertions that errorHandler contains either no error if
+expectedErrorNo is eNone, or exactly one error which is described by
+(expectedErrorNo, expectedMsgParam1, expectedMsgParam2, expectedMsgParam3). Also
+verifies that foreignCatches is false. Set foreignCatches to true if something
+other than BuildError was thrown (i.e. catched) and exceptionWhat to the result
+of its std::exception::what() if available. 'details' is appended to the output
+if an gtest assertion fires. */
+void verifyErrorHandlerHasExpectedError(const ErrorHandler& errorHandler,
+  const std::string& details, bool foreignCatches,
+  const std::string& exceptionWhat, Error::No expectedErrorNo = Error::eNone,
+  const std::string& expectedMsgParam1 = "",
+  const std::string& expectedMsgParam2 = "",
+  const std::string& expectedMsgParam3 = "");

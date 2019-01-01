@@ -84,3 +84,43 @@ AstObject* createAccessTo(AstObject* obj, Access access) {
 AstObject* createAccessTo(const string& symbolName, Access access) {
   return createAccessTo(new AstSymbol(symbolName), access);
 }
+
+void verifyErrorHandlerHasExpectedError(const ErrorHandler& errorHandler,
+  const string& details, bool foreignCatches, const string& exceptionWhat,
+  Error::No expectedErrorNo, const string& expectedMsgParam1,
+  const string& expectedMsgParam2, const string& expectedMsgParam3) {
+  // verify no foreign exception was thrown
+  ASSERT_FALSE(foreignCatches) << "A foreign exception with description '"
+                               << exceptionWhat << "' was thrown." << details;
+
+  // verify that as expected no error was reported
+  if (expectedErrorNo == Error::eNone) {
+    EXPECT_FALSE(errorHandler.hasErrors()) << "Unexpectedly errors occured:\n"
+                                           << errorHandler << details;
+  }
+
+  // verify that the actual error is as expected
+  else {
+    const auto& errors = errorHandler.errors();
+
+    ASSERT_TRUE(errorHandler.hasErrors())
+      << "expected the error '" << expectedErrorNo
+      << "' but no error at all occured." << details;
+
+    ASSERT_EQ(1U, errors.size())
+      << "expected the single error " << expectedErrorNo
+      << " but more errors occured:" << errorHandler << details;
+
+    const auto& error = *errors.front();
+    EXPECT_EQ(expectedErrorNo, error.no()) << details;
+    if (expectedMsgParam1 != "<dont_verify>") {
+      EXPECT_EQ(expectedMsgParam1, error.msgParam1()) << details;
+    }
+    if (expectedMsgParam2 != "<dont_verify>") {
+      EXPECT_EQ(expectedMsgParam2, error.msgParam2()) << details;
+    }
+    if (expectedMsgParam3 != "<dont_verify>") {
+      EXPECT_EQ(expectedMsgParam3, error.msgParam3()) << details;
+    }
+  }
+}

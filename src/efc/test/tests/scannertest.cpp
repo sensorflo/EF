@@ -50,28 +50,22 @@ void testScannerReportsError(const string& input, Error::No expectedErrorNo,
   Scanner& UUT = driver.scanner();
 
   // execute
+  bool foreignCatches = false;
+  string excptionwhat;
   try {
     while (Parser::token::TOK_END_OF_FILE == UUT.pop().token()) { /* nop */ }
   }
-  catch (BuildError&) { /* handled below via errorhandler */ }
 
   // verify
-  const auto& errors = driver.errorHandler().errors();
+  catch (BuildError&)  { /* handled below via errorhandler */ }
+  catch (exception& e) { foreignCatches = true; excptionwhat = e.what(); }
+  catch (exception* e) { foreignCatches = true; if (e) { excptionwhat = e->what(); } }
+  catch (...)          { foreignCatches = true; }
   const auto details = amendSpec(spec) + "Input: '" + input + "'\n";
-
-  ASSERT_TRUE(driver.errorHandler().hasErrors())
-    << "expected the error '" << expectedErrorNo << "' but no error at all occured.\n"
-    << details;
-  ASSERT_EQ(1, errors.size())
-    << "expected the single error " << expectedErrorNo
-    << " but more errors occured:" << driver.errorHandler()
-    << details;
-
-  const auto& error = *errors.front();
-  EXPECT_EQ(expectedErrorNo,   error.no())        << details;
-  EXPECT_EQ(expectedMsgParam1, error.msgParam1()) << details;
-  EXPECT_EQ(expectedMsgParam2, error.msgParam2()) << details;
-  EXPECT_EQ(expectedMsgParam3, error.msgParam3()) << details;
+  SCOPED_TRACE("verifyErrorHandlerHasExpectedError called from here");
+  verifyErrorHandlerHasExpectedError(driver.errorHandler(), details,
+    foreignCatches, excptionwhat, expectedErrorNo, expectedMsgParam1,
+    expectedMsgParam2, expectedMsgParam3);
 }
 
 /** Analogous to testScannerReportsError, see there */

@@ -38,46 +38,20 @@ public:
   using SemanticAnalizer::m_env;
 };
 
+// this method is mainly not inlined into TEST_ASTTRAVERSAL so we have a nicer
+// stack trace with SCOPED_TRACE.
 void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
   Error::No expectedErrorNo, const string& expectedMsgParam1,
   const string& expectedMsgParam2, const string& expectedMsgParam3,
-  const string& spec, bool foreignThrow,
-  string excptionwhat) {
+  const string& spec, bool foreignCatches, string excptionWhat) {
 
   const auto details = amendSpec(spec) + amendAst(ast) +
     amend(UUT.m_errorHandler) + amend(UUT.m_env);
 
-  // verify no foreign exception where thrown
-  EXPECT_FALSE(foreignThrow)
-    << "A foreign exception with description '" << excptionwhat << "' was thrown."
-    << details;
-
-  // verify that as expected no error was reported
-  if (expectedErrorNo == Error::eNone) {
-    EXPECT_FALSE(UUT.m_errorHandler.hasErrors())
-      << "Unexpectedly errors occured:\n" << UUT.m_errorHandler
-      << details;
-  }
-
-  // verify that the actual error is as expected
-  else {
-    const auto& errors = UUT.m_errorHandler.errors();
-
-    ASSERT_TRUE(UUT.m_errorHandler.hasErrors())
-      << "expected the error '" << expectedErrorNo << "' but no error at all occured."
-      << details;
-
-    ASSERT_EQ(1U, errors.size())
-      << "expected the single error " << expectedErrorNo
-      << " but more errors occured:" << UUT.m_errorHandler
-      << details;
-
-    const auto& error = *errors.front();
-    EXPECT_EQ(expectedErrorNo  , error.no()) << details;
-    EXPECT_EQ(expectedMsgParam1, error.msgParam1()) << details;
-    EXPECT_EQ(expectedMsgParam2, error.msgParam2()) << details;
-    EXPECT_EQ(expectedMsgParam3, error.msgParam3()) << details;
-  }
+  SCOPED_TRACE("verifyErrorHandlerHasExpectedError called from here");
+  verifyErrorHandlerHasExpectedError(UUT.m_errorHandler, details,
+    foreignCatches, excptionWhat, expectedErrorNo, expectedMsgParam1,
+    expectedMsgParam2, expectedMsgParam3);
 }
 
 #define TEST_ASTTRAVERSAL(ast, expectedErrorNo, expectedMsgParam1, expectedMsgParam2, expectedMsgParam3, spec) \
@@ -96,7 +70,7 @@ void verifyAstTraversal(TestingSemanticAnalizer& UUT, AstNode* ast,
   catch (exception& e) { foreignThrow = true; excptionwhat = e.what(); } \
   catch (exception* e) { foreignThrow = true; if (e) { excptionwhat = e->what(); } } \
   catch (...)          { foreignThrow = true; }                         \
-  SCOPED_TRACE("testAstTraversal called from here");                    \
+  SCOPED_TRACE("verifyAstTraversal called from here");                  \
   verifyAstTraversal(UUT, ast_, expectedErrorNo, expectedMsgParam1,     \
     expectedMsgParam2, expectedMsgParam3, spec, foreignThrow, excptionwhat);
 
