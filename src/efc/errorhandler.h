@@ -72,7 +72,7 @@ public:
 
   void add(std::shared_ptr<Error> error);
   const Container& errors() const { return m_errors; }
-  bool hasNoErrors() const { return m_errors.empty(); }
+  bool hasErrors() const { return !m_errors.empty(); }
   void disableReportingOf(Error::No no);
   bool isReportingDisabledFor(Error::No no) const;
 

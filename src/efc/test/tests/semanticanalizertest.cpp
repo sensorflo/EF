@@ -668,7 +668,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
   UUT.analyze(*outerAstFunDef);
 
   // verify
-  EXPECT_TRUE(errorHandler.hasNoErrors()) << amendAst(outerAstFunDef.get());
+  EXPECT_FALSE(errorHandler.hasErrors()) << amendAst(outerAstFunDef.get());
 
   const auto outerFoundNode = env.find("outer");
   EXPECT_EQ(outerAstFunDef.get(), outerFoundNode) << amendAst(outerAstFunDef.get());
@@ -1206,7 +1206,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast);
 
     // verify
-    EXPECT_TRUE(errorHandler.hasNoErrors()) << amendAst(ast) << amendSpec(spec);
+    EXPECT_FALSE(errorHandler.hasErrors()) << amendAst(ast) << amendSpec(spec);
   }
 
   spec = "Example: Early return, return expression in an if clause";
@@ -1229,7 +1229,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast);
 
     // verify
-    EXPECT_TRUE(errorHandler.hasNoErrors()) << amendAst(ast);
+    EXPECT_FALSE(errorHandler.hasErrors()) << amendAst(ast);
   }
 
   spec = "Example: Nested functions with different return types.";
@@ -1253,7 +1253,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
     UUT.analyze(*ast);
 
     // verify
-    EXPECT_TRUE(errorHandler.hasNoErrors()) << amendAst(ast);
+    EXPECT_FALSE(errorHandler.hasErrors()) << amendAst(ast);
   }
 }
 
@@ -1723,7 +1723,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_TRUE(errorHandler.hasNoErrors()) << amendSpec(spec) << amendAst(ast);
+    EXPECT_FALSE(errorHandler.hasErrors()) << amendSpec(spec) << amendAst(ast);
   }
 
   spec = "Parameter is mutable, argument is immutable";
@@ -1748,7 +1748,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     UUT.analyze(*ast.get());
 
     // verify
-    EXPECT_TRUE(errorHandler.hasNoErrors()) << amendSpec(spec) << amendAst(ast);
+    EXPECT_FALSE(errorHandler.hasErrors()) << amendSpec(spec) << amendAst(ast);
   }
 }
 
