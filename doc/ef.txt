@@ -2192,16 +2192,30 @@ The syntax to initialize a data object is always is composed of the following
 enclosing expression list, and it introduces an argument being an initializer.
 
 ----------------------------------------------------------------------
-initializer = ",=" (
+initializer = "=" #* a seperator *#   (
   arg_list |
-  sub_expr | ## short for "(sub_expr)"
-  'nop_init |
+  sub_expr | ## short for "(sub_expr)", notably can be "infer(...)"
+  'noinit  |
   'laterctor);
 
 initializer2 =
   arg_list |
   literal_list; ## short for "(literal_list)"
 ----------------------------------------------------------------------
+
+Notes
+
+- In a function call, when parameter objects are constructed with a constructor
+  taking multiple arguments, the syntax becomes "foo((a, b, c), (d, e,f))". That
+  might look obscure. Allowing something like this "foo(infer(a, b, c), infer(d,
+  e, f))" makes it more clear. That would also not require more syntax
+  rules. Actually it makes the syntax more general: from a syntax point of view,
+  `infer' is the name of a type, and `type(...,...)' constructs a new type.
+
+- Should really each initializer (optionally) start with an `='? E.g. in
+  function calls "foo(=(a, b, c), =(d, e,f))", or returns "return =(a, b,
+  c)". It doesn't look right. And the `=' in data defs is really just a
+  separator and is not really part of the initializer.
 
 Caveats:
 
