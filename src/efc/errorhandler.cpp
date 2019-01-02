@@ -61,7 +61,7 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eObjectExpected: return "expecting an expression of meta type object";
   case Error::eParseFailed: return msgParam1;
   case Error::eUnexpectedCharacter: return "encountered unexpected character '" + msgParam1 + "'";
-  case Error::eInvalidStorageDurationInDef: return "eInvalidStorageDurationInDef";
+  case Error::eInvalidStorageDurationInDef: return "storage duration '" + msgParam1 + "' is invalid for this definition";
   case Error::eTypeInferenceIsNotYetSupported: return "eTypeInferenceIsNotYetSupported";
   case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization";
   case Error::eCnt: return "<unknown>";
