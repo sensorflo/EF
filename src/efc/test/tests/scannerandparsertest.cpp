@@ -468,18 +468,18 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE("fun foo: (:int) int = 42$", ":;fun(foo ((<anonymous> int)) int :;42)", spec);
 
   spec = "example with various ways of specifying parameter";
-  TEST_PARSE("fun foo: (foo        :int       ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo (42)   :int       ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo = 42   :int       ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo = (42) :int       ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo        :int = 42  ) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo        :int = (42)) int = 42$", ":;fun(foo ((foo int)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo                   ) int = 42$", ":;fun(foo ((foo infer)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo (42)              ) int = 42$", ":;fun(foo ((foo infer)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo = 42              ) int = 42$", ":;fun(foo ((foo infer)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo = (42)            ) int = 42$", ":;fun(foo ((foo infer)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo             = 42  ) int = 42$", ":;fun(foo ((foo infer)) int :;42)", spec);
-  TEST_PARSE("fun foo: (foo             = (42)) int = 42$", ":;fun(foo ((foo infer)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1        :int       ) int = 42$", ":;fun(foo ((arg1 int)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1 (77)   :int       ) int = 42$", ":;fun(foo ((arg1 int)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1 = 77   :int       ) int = 42$", ":;fun(foo ((arg1 int)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1 = (77) :int       ) int = 42$", ":;fun(foo ((arg1 int)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1        :int = 77  ) int = 42$", ":;fun(foo ((arg1 int)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1        :int = (77)) int = 42$", ":;fun(foo ((arg1 int)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1                   ) int = 42$", ":;fun(foo ((arg1 infer)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1 (77)              ) int = 42$", ":;fun(foo ((arg1 infer)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1 = 77              ) int = 42$", ":;fun(foo ((arg1 infer)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1 = (77)            ) int = 42$", ":;fun(foo ((arg1 infer)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1             = 77  ) int = 42$", ":;fun(foo ((arg1 infer)) int :;42)", spec);
+  TEST_PARSE("fun foo: (arg1             = (77)) int = 42$", ":;fun(foo ((arg1 infer)) int :;42)", spec);
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
