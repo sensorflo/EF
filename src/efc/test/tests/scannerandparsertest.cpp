@@ -659,11 +659,11 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 
 // note that it is a semantic error, not a grammar error
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
-    a_data_definition_WITH_multiple_same_arg,
+    a_data_definition_WITH_multiple_initializers,
     scanAndParse,
-    reports_eSameArgWasDefinedMultipleTimes)) {
+    reports_eMultipleInitializers)) {
   TEST_PARSE_REPORTS_ERROR(
-    "val foo = 42 :int = 42$", Error::eSameArgWasDefinedMultipleTimes, "");
+    "val foo = 42 :int = 42$", Error::eMultipleInitializers, "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(

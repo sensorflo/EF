@@ -31,7 +31,7 @@ public:
     eUnreachableCode,
     eCTConstRequired,
     eRetTypeCantHaveMutQualifier,
-    eSameArgWasDefinedMultipleTimes,
+    eMultipleInitializers,
     eObjectExpected,
     eOnlyLocalStorageDurationApplicable,
     eTypeInferenceIsNotYetSupported,

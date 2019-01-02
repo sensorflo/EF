@@ -57,7 +57,7 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eUnreachableCode: return "leaves control flow and the following code is not reachable";
   case Error::eCTConstRequired: return "eCTConstRequired";
   case Error::eRetTypeCantHaveMutQualifier: return "eRetTypeCantHaveMutQualifier";
-  case Error::eSameArgWasDefinedMultipleTimes: return "eSameArgWasDefinedMultipleTimes";
+  case Error::eMultipleInitializers: return "eMultipleInitializers";
   case Error::eObjectExpected: return "eObjectExpected";
   case Error::eScanOrParseFailed: return "eScanOrParseFailed";
   case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
@@ -88,7 +88,7 @@ const char* toStr(Error::No no) {
   case Error::eUnreachableCode: return "eUnreachableCode";
   case Error::eCTConstRequired: return "eCTConstRequired";
   case Error::eRetTypeCantHaveMutQualifier: return "eRetTypeCantHaveMutQualifier";
-  case Error::eSameArgWasDefinedMultipleTimes: return "eSameArgWasDefinedMultipleTimes";
+  case Error::eMultipleInitializers: return "eMultipleInitializers";
   case Error::eObjectExpected: return "eObjectExpected";
   case Error::eScanOrParseFailed: return "eScanOrParseFailed";
   case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";

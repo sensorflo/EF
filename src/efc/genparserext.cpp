@@ -14,7 +14,7 @@ namespace {
 AstCtList* combine(ErrorHandler& errorHandler, AstCtList* ctorArgs1,
   AstCtList* ctorArgs2, const Location& loc) {
   if (ctorArgs1 && ctorArgs2) {
-    Error::throwError(errorHandler, Error::eSameArgWasDefinedMultipleTimes);
+    Error::throwError(errorHandler, Error::eMultipleInitializers);
   }
   else if (!ctorArgs1 && !ctorArgs2) {
     return new AstCtList(loc);
