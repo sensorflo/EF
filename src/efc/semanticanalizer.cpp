@@ -48,8 +48,10 @@ void SemanticAnalizer::visit(AstCast& cast) {
 
   // TODO: write test
   // test that only one arg is provided
-  if (cast.args().childs().size() != 1U) {
-    Error::throwError(m_errorHandler, Error::eInvalidArguments);
+  const auto argCnt = cast.args().childs().size();
+  if (argCnt != 1U) {
+    Error::throwError(m_errorHandler, Error::eInvalidArguments, cast.loc(),
+      to_string(argCnt), "1");
   }
 
   // test if conversion is eligible
@@ -319,7 +321,8 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
   const auto& argsCall = funCall.args().childs();
   const auto& argsCallee = objTypeFun.args();
   if (argsCall.size() != argsCallee.size()) {
-    Error::throwError(m_errorHandler, Error::eInvalidArguments);
+    Error::throwError(m_errorHandler, Error::eInvalidArguments, funCall.loc(),
+      to_string(argsCall.size()), to_string(argsCallee.size()));
   }
   auto argCallIter = argsCall.begin();
   auto argCallEnd = argsCall.end();
@@ -416,7 +419,8 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     // initializer. Note that the case of passing zero argument was handled
     // above.
     if (ctorArgs.size() != 1) {
-      Error::throwError(m_errorHandler, Error::eInvalidArguments);
+      Error::throwError(m_errorHandler, Error::eInvalidArguments,
+        dataDef.ctorArgs().loc(), to_string(ctorArgs.size()), "1");
     }
     const auto initializer = ctorArgs.front();
     const auto& initializerObjType = initializer->object().objType();
@@ -535,7 +539,8 @@ void SemanticAnalizer::visit(AstReturn& return_) {
       m_errorHandler, Error::eNotInFunBodyContext, return_.loc());
   }
   if (ctorArgs.size() != 1U) {
-    Error::throwError(m_errorHandler, Error::eInvalidArguments);
+    Error::throwError(m_errorHandler, Error::eInvalidArguments,
+      return_.ctorArgs().loc(), to_string(ctorArgs.size()), "1");
   }
   const auto& definedReturnObjType = m_funRetAstObjTypes.top()->objType();
   const auto& returnedObjType = ctorArgs.front()->object().objType();

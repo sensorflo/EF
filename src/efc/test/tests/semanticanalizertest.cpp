@@ -384,16 +384,16 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
   // note that if the type doesn't match, the reported error is eNoImplicitConversion
 
   string spec = "Example: data object definition";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstDataDef("x", new AstObjTypeSymbol(ObjTypeFunda::eInt), StorageDuration::eLocal,
       new AstCtList(new AstNumber(0), new AstNumber(0))),
-    Error::eInvalidArguments, spec);
+    Error::eInvalidArguments, "2", "1", spec);
 
   spec = "Example: return value";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     pe.mkFunDef("foo", ObjTypeFunda::eInt,
       new AstReturn(new AstCtList(new AstNumber(0), new AstNumber(0)))),
-    Error::eInvalidArguments, spec);
+    Error::eInvalidArguments, "2", "1", spec);
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -1670,7 +1670,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     reports_a_eInvalidArguments)) {
 
   string spec = "Function foo expects one arg, but zero where passed on call";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstSeq(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
@@ -1678,15 +1678,15 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstObjTypeSymbol(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"))),
-    Error::eInvalidArguments, spec);
+    Error::eInvalidArguments, "0", "1", spec);
 
   spec = "Function foo expects no args, but one arg was passed on call";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstSeq(
       pe.mkFunDef("foo", ObjTypeFunda::eInt,
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
-    Error::eInvalidArguments, spec);
+    Error::eInvalidArguments, "1", "0", spec);
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
@@ -1932,18 +1932,18 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     reports_eInvalidArguments)) {
 
   string spec = "Zero instead exactly one argument";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstCast(
       new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstCtList()),
-    Error::eInvalidArguments, spec);
+    Error::eInvalidArguments, "0", "1", spec);
 
   spec = "More than one argument";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstCast(
       new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstCtList(new AstNumber(42), new AstNumber(77))),
-    Error::eInvalidArguments, spec);
+    Error::eInvalidArguments, "2", "1", spec);
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(

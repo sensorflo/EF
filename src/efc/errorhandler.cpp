@@ -6,6 +6,25 @@
 
 using namespace std;
 
+namespace {
+std::string plural(const string& noun, const string& count) {
+  if (count == "0") { return "zero " + noun + "s"; }
+  else if (count == "1") {
+    return count + " " + noun;
+  }
+  else {
+    return count + " " + noun + "s";
+  }
+}
+
+std::string conjucateToBe(const string& count) {
+  if (count == "1") { return "is"; }
+  else {
+    return "are";
+  }
+}
+}
+
 Error::Error(Error::No no, string message, std::string msgParam1,
   std::string msgParam2, std::string msgParam3)
   : m_no(no)
@@ -49,7 +68,7 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eWriteToImmutable: return "can't modify immutable object";
   case Error::eCantOpenFileForReading: return "Can't open file '" + msgParam1 + "' for reading (" + msgParam2 + ")";
   case Error::eNoImplicitConversion: return "there's no implicit conversion from type '" + msgParam1+ "' to type '" + msgParam2 + "'";
-  case Error::eInvalidArguments: return "eInvalidArguments";
+  case Error::eInvalidArguments: return "passed " + plural("argument", msgParam1) + ", but " + plural("argument", msgParam2) + " " + conjucateToBe(msgParam2) + " expected";
     // we take advantage of the fact that currently constructors only have one argument
   case Error::eNoSuchCtor: return "type '" + msgParam1 + "' has no constructor callable with (" + msgParam2 + ")";
   case Error::eNoSuchMemberFun: return "type '" + msgParam1 + "' has no member function '" + msgParam2 + "'";
