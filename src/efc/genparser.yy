@@ -174,7 +174,7 @@
 %token TOKENLISTEND "<TOKENLISTEND>"
 
 
-%type <AstCtList*> ct_list ct_list_2plus initializer_arg opt_initializer_arg initializer_special_arg opt_initializer_special_arg naked_initializer
+%type <AstCtList*> ct_list ct_list_2plus initializer_arg opt_initializer_arg initializer_special_arg opt_initializer_special_arg naked_initializer naked_special_initializer
 %type <std::vector<AstNode*>*> pure_node_seq
 %type <std::vector<AstDataDef*>*> param_list pure_param_list
 %type <std::vector<AstObject*>*> pure_ct_list
@@ -358,11 +358,6 @@ equal_as_sep
   : opt_nl EQUAL opt_nl
   ;
 
-/* tokenfilter already removes newlines after LPAREN */
-lparen_as_sep
-  : opt_nl LPAREN
-  ;
-
 opt_comma
   : %empty
   | COMMA
@@ -493,12 +488,22 @@ param_def
   ;
 
 initializer_arg
-  : equal_as_sep        naked_initializer                            { swap($$,$2); }
+  : equal_as_sep naked_initializer                                   { swap($$,$2); }
   ;
 
 opt_initializer_arg
   : %empty                                                           { $$ = nullptr;  }
   | initializer_arg                                                  { swap($$,$1); }
+  ;
+
+initializer_special_arg
+  : initializer_arg                                                  { swap($$,$1); }
+  | opt_nl naked_special_initializer                                 { swap($$,$2); }
+  ;
+
+opt_initializer_special_arg
+  : %empty                                                           { $$ = nullptr;  }
+  | initializer_special_arg                                          { swap($$,$1); }
   ;
 
 /*
@@ -516,22 +521,16 @@ TODO: semantic analizer must report error/warning when noinit is used in return.
    ultimatively an node_seq, and one is because here "(...)" is a primary_expr,
    whose content is again a node_seq. */
 naked_initializer
-  /* note that "LPAREN RPAREN" is already handled within ct_list_arg by "LPAREN RPAREN" being a primary_expr*/
-  : LPAREN ct_list_2plus RPAREN                                      { swap($$,$2); }
-  | LPAREN NOINIT        RPAREN                                      { $$ = new AstCtList(@$, AstDataDef::noInit); }
+  /* note that "LPAREN RPAREN" is already handled within ct_list_arg by "LPAREN RPAREN" being a primary_expr */
+  : LPAREN ct_list_2plus  RPAREN                                     { swap($$,$2); }
+  | LPAREN NOINIT         RPAREN                                     { $$ = new AstCtList(@$, AstDataDef::noInit); }
   | ct_list_arg /* 1) */                                             { auto objs = new std::vector<AstObject*>(); objs->push_back($1); $$ = new AstCtList(objs, @$); }
   | NOINIT                                                           { $$ = new AstCtList(@$, AstDataDef::noInit); }
   ;
 
-initializer_special_arg
-  : initializer_arg                                                  { swap($$,$1); }
-  | lparen_as_sep ct_list RPAREN                                     { swap($$,$2); }
-  | lparen_as_sep NOINIT  RPAREN                                     { $$ = new AstCtList(@$, AstDataDef::noInit); }
-  ;
-
-opt_initializer_special_arg
-  : %empty                                                           { $$ = nullptr;  }
-  | initializer_special_arg                                          { swap($$,$1); }
+naked_special_initializer
+  : LPAREN ct_list        RPAREN                                     { swap($$,$2); }
+  | LPAREN NOINIT         RPAREN                                     { $$ = new AstCtList(@$, AstDataDef::noInit); }
   ;
 
 valvar
