@@ -488,6 +488,24 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
   }
 }
 
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
+    a_ignore_access_to_a_local_data_object_before_its_initialization,
+    transform,
+    succeeds)) {
+  string spec = "An example would be using typeof(x) before defining x further below "
+    "in the same block. 'typeof' does not yet exist however. The example used here is "
+    "'x ; val x$', which however is a bad example since that should trigger another "
+    "warning, which however does not exist yet.";
+  TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
+    new AstSeq(
+      new AstSymbol("x"),
+      new AstDataDef("x")),
+    "");
+
+  // todo: once there is something like 'typeof(expr)', use that as example to
+  // write a test for.
+}
+
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME4(
     an_ignore_access_to_a_local_data_object_before_its_initialization,
     transform,
