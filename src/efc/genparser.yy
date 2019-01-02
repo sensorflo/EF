@@ -121,7 +121,6 @@
   RAW_DELETE_LPAREN "raw_delete("
   RAW_DELETE "raw_delete"
   NOP "nop"
-  RETURN_LPAREN "return("
   RETURN "return"
   EQUAL "="
   EQUAL_LESS "=<"
@@ -398,6 +397,7 @@ operator_expr
   | MINUS  opt_nl expr                              { $$ = new AstOperator('-', $3, nullptr, @1); }
   | PLUS   opt_nl expr                              { $$ = new AstOperator('+', $3, nullptr, @1); }
   | RETURN        expr                              { $$ = new AstReturn($2, @1); }
+  | RETURN        LPAREN ct_list_2plus RPAREN       { $$ = new AstReturn($3, @1); }
 
   /* binary operators */
   | expr EQUAL       opt_nl expr                    { $$ = new AstOperator('=', $1, $4, @2); }
@@ -436,7 +436,6 @@ list_expr
   | RAW_NEW           type initializer_arg kwac     { $$ = nullptr; }
   | RAW_DELETE_LPAREN expr                 RPAREN   { $$ = nullptr; }
   | RAW_DELETE        expr                 kwac     { $$ = nullptr; }
-  | RETURN_LPAREN     ct_list              RPAREN   { $$ = new AstReturn($2, @$); }
   ;
 
 /* keyword argument list close delimiter */

@@ -82,7 +82,6 @@ raw_new             return Parser::make_RAW_NEW(loc);
 raw_delete\(        return Parser::make_RAW_DELETE_LPAREN(loc);
 raw_delete          return Parser::make_RAW_DELETE(loc);
 nop                 return Parser::make_NOP(loc);
-return\(            return Parser::make_RETURN_LPAREN(loc);
 return              return Parser::make_RETURN(loc);
 mut                 return Parser::make_MUT(loc);
 is                  return Parser::make_IS(loc);
