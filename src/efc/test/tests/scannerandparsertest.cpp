@@ -28,80 +28,39 @@ void testParse(const string efProgram, const string& expectedAst,
   Error::No expectedErrorNo, const string& spec) {
   // setup
   DriverOnTmpFile driver(efProgram);
-  bool foreignThrow = false;
-  string excptionwhat;
   std::unique_ptr<AstNode> actualAst{};
 
   // exercise
-  try {
-    actualAst = driver.d().scanAndParse();
-  }
+  const auto body = [&](){ actualAst = driver.d().scanAndParse(); };
+  const auto res = tryCatch(body);
 
-  catch (BuildError&) { /* nop */
-  }
-  catch (exception& e) {
-    foreignThrow = true;
-    excptionwhat = e.what();
-  }
-  catch (exception* e) {
-    foreignThrow = true;
-    if (e) { excptionwhat = e->what(); }
-  }
-  catch (...) {
-    foreignThrow = true;
-  }
+  // verify
+  const auto details = amendSpec(spec) + amend(driver.d().errorHandler())
+    + amendEfProgram(efProgram);
 
-  // verify that ...
+  SCOPED_TRACE("verifyErrorHandlerHasExpectedError called from here");
+  verifyErrorHandlerHasExpectedError(driver.errorHandler(), details,
+    res.m_foreignCatches, res.m_excptionWhat, expectedErrorNo);
 
-  // ... no foreign exception is thrown
-  ASSERT_FALSE(foreignThrow)
-    << amendSpec(spec) << amend(driver.d().errorHandler())
-    << amendEfProgram(efProgram) << "\nexceptionwhat: " << excptionwhat;
-
-  // ... no error occured in case no error was expected
-  const ErrorHandler::Container& errors = driver.d().errorHandler().errors();
   if (expectedErrorNo == Error::eNone) {
-    EXPECT_TRUE(errors.empty())
-      << "Expecting no error\n"
-      << amendSpec(spec) << amend(driver.d().errorHandler())
-      << amendEfProgram(efProgram);
-
-    // ... and ast is as expected
     ASSERT_TRUE(nullptr != actualAst)
       << "scanAndParse did return nullptr as actualAst\n"
-      << amendSpec(spec) << amendEfProgram(efProgram);
+      << details;
     EXPECT_EQ(expectedAst, actualAst->toStr())
-      << amendSpec(spec) << amendEfProgram(efProgram);
-  }
-
-  // ... or if an error occured, it is the one we expected
-  else {
-    EXPECT_EQ(1U, errors.size())
-      << "Expecting exactly one error\n"
-      << amendSpec(spec) << amend(driver.d().errorHandler())
-      << amendEfProgram(efProgram);
-
-    if (!errors.empty()) {
-      EXPECT_EQ(expectedErrorNo, errors.front()->no())
-        << amendSpec(spec) << amend(driver.d().errorHandler())
-        << amendEfProgram(efProgram);
-      ;
-    }
+      << details;
   }
 }
 
 #define TEST_PARSE_REPORTS_ERROR(efProgram, expectedErrorNo, spec) \
   {                                                                \
-    SCOPED_TRACE(                                                  \
-      "testParseReportsError called from here (via "               \
-      "TEST_PARSE_REPORTS_ERROR)");                                \
+    SCOPED_TRACE("testParse called from here");                    \
     static_assert(expectedErrorNo != Error::eNone, "");            \
     testParse(efProgram, "", expectedErrorNo, spec);               \
   }
 
 #define TEST_PARSE(efProgram, expectedAst, spec)                 \
   {                                                              \
-    SCOPED_TRACE("testParse called from here (via TEST_PARSE)"); \
+    SCOPED_TRACE("testParse called from here");                  \
     testParse(efProgram, expectedAst, Error::eNone, spec);       \
   }
 
