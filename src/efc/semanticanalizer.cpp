@@ -325,11 +325,12 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
   auto argCallEnd = argsCall.end();
   auto argCalleeIter = argsCallee.begin();
   for (; argCallIter != argCallEnd; ++argCallIter, ++argCalleeIter) {
-    if (!(*argCallIter)
-           ->object()
-           .objType()
-           .matchesSaufQualifiers(**argCalleeIter)) {
-      Error::throwError(m_errorHandler, Error::eInvalidArguments);
+    const auto& argCallObjType = (*argCallIter)->object().objType();
+    const auto& argCalleeObjType = **argCalleeIter;
+    if (!argCallObjType.matchesSaufQualifiers(argCalleeObjType)) {
+      Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
+        (*argCallIter)->loc(), argCallObjType.completeName(),
+        argCalleeObjType.completeName());
     }
   }
 

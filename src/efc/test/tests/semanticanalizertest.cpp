@@ -1665,7 +1665,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
-    a_function_call_to_a_defined_function_WITH_incorrect_argument_count_or_incorrect_argument_type,
+    a_function_call_to_a_defined_function_WITH_incorrect_argument_count,
     transform,
     reports_a_eInvalidArguments)) {
 
@@ -1687,9 +1687,15 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0)))),
     Error::eInvalidArguments, spec);
+}
 
-  spec = "Function foo expects one bool arg, but one int is passed";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_function_call_to_a_defined_function_WITH_correct_argument_count_but_non_matching_types,
+    transform,
+    reports_eNoImplicitConversion)) {
+
+  string spec = "Function foo expects one bool arg, but one int is passed";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstSeq(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
@@ -1697,10 +1703,13 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstObjTypeSymbol(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0, ObjTypeFunda::eInt)))),
-    Error::eInvalidArguments, spec);
+    Error::eNoImplicitConversion,
+    "int",
+    "bool",
+    spec);
 
   spec = "Function foo expects one int arg, but one bool is passed";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstSeq(
       pe.mkFunDef("foo",
         AstFunDef::createArgs(
@@ -1708,7 +1717,10 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
         new AstObjTypeSymbol(ObjTypeFunda::eInt),
         new AstNumber(42)),
       new AstFunCall(new AstSymbol("foo"), new AstCtList(new AstNumber(0, ObjTypeFunda::eBool)))),
-    Error::eInvalidArguments, spec);
+    Error::eNoImplicitConversion,
+    "bool",
+    "int",
+    spec);
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
