@@ -48,17 +48,26 @@ void testScannerReportsError(const string& input, Error::No expectedErrorNo,
   // setup
   DriverOnTmpFile driver(input);
   Scanner& UUT = driver.scanner();
+  stringstream tokenSs;
 
   // execute
   const auto body = [&](){
-    while (Parser::token::TOK_END_OF_FILE == UUT.pop().token()) {
-      /* nop */
+    bool isFirstIter = true;
+    while (true) {
+      const auto& token = UUT.pop().token();
+      if (!isFirstIter) {
+        tokenSs << ", ";
+      }
+      isFirstIter = false;
+      tokenSs << token;
+      if (Parser::token::TOK_END_OF_FILE == token) { break; }
     }
   };
   const auto res = tryCatch(body);
 
   // verify
-  const auto details = amendSpec(spec) + "Input: '" + input + "'\n";
+  const auto details = amendSpec(spec) + "Input: '" + input + "'\n" +
+    "returned tokens: {" + tokenSs.str() + "}";
   SCOPED_TRACE("verifyErrorHandlerHasExpectedError called from here");
   verifyErrorHandlerHasExpectedError(driver.errorHandler(), details,
     res.m_foreignCatches, res.m_excptionWhat, expectedErrorNo, expectedMsgParam1,
