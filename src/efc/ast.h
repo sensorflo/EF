@@ -807,7 +807,7 @@ public:
   AstObject* createDefaultAstObjectForSemanticAnalizer(
     Location loc) const override;
 
-  const ObjTypeClass& objType() const override;
+  const ObjTypeCompound& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
   void createAndSetObjType() override;
 
@@ -819,7 +819,7 @@ public:
 
 private:
   // -- to implement overrides
-  std::shared_ptr<const ObjTypeClass> m_objType;
+  std::shared_ptr<const ObjTypeCompound> m_objType;
 
   // -- childs of this node
   const std::string m_name;

@@ -71,11 +71,11 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(toStr)) {
       ).completeName());
 
   // class
-  EXPECT_EQ("class(foo)", ObjTypeClass("foo").completeName());
+  EXPECT_EQ("class(foo)", ObjTypeCompound("foo").completeName());
   EXPECT_EQ("class(foo int)",
-    ObjTypeClass("foo", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).completeName());
+    ObjTypeCompound("foo", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)).completeName());
   EXPECT_EQ("class(foo int bool)",
-    ObjTypeClass("foo", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
+    ObjTypeCompound("foo", make_shared<ObjTypeFunda>(ObjTypeFunda::eInt),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eBool))
       .completeName());
 }
@@ -176,33 +176,33 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(match)) {
         new ObjTypeFunda(ObjTypeFunda::eInt)),
       make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
 
-  // class <-> class
+  // compound <-> compound
   // ---------------
-  const auto& class1 = ObjTypeClass("samename");
-  const auto& class2 = ObjTypeClass("samename");
-  TEST_MATCH("", ObjType::eFullMatch, class1, class1);
-  TEST_MATCH("", ObjType::eNoMatch, class1, class2);
+  const auto& compound1 = ObjTypeCompound("samename");
+  const auto& compound2 = ObjTypeCompound("samename");
+  TEST_MATCH("", ObjType::eFullMatch, compound1, compound1);
+  TEST_MATCH("", ObjType::eNoMatch, compound1, compound2);
 
-  // class <-> other / other <-> class
+  // compound <-> other / other <-> compound
   // ---------------------------------
   TEST_MATCH("", ObjType::eNoMatch,
-    class1,
+    compound1,
     ObjTypeFunda(ObjTypeFunda::eInt));
   TEST_MATCH("", ObjType::eNoMatch,
     ObjTypeFunda(ObjTypeFunda::eInt),
-    class1);
+    compound1);
   TEST_MATCH("", ObjType::eNoMatch,
-    class1,
+    compound1,
     ObjTypeFun(ObjTypeFun::createArgs()));
   TEST_MATCH("", ObjType::eNoMatch,
     ObjTypeFun(ObjTypeFun::createArgs()),
-    class1);
+    compound1);
   TEST_MATCH("", ObjType::eNoMatch,
-    class1,
+    compound1,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)));
   TEST_MATCH("", ObjType::eNoMatch,
     ObjTypePtr(make_shared<ObjTypeFunda>(ObjTypeFunda::eInt)),
-    class1);
+    compound1);
 }
 
 TEST(ObjTypeTest, MAKE_TEST_NAME1(hasConstructor)) {
@@ -384,8 +384,8 @@ TEST(ObjTypeTest, MAKE_TEST_NAME1(size)) {
 
   const auto& charType = make_shared<ObjTypeFunda>(ObjTypeFunda::eChar);
   const auto& intType = make_shared<ObjTypeFunda>(ObjTypeFunda::eInt);
-  EXPECT_EQ(0, ObjTypeClass("").size());
-  EXPECT_EQ(charType->size(), ObjTypeClass("", charType).size());
+  EXPECT_EQ(0, ObjTypeCompound("").size());
+  EXPECT_EQ(charType->size(), ObjTypeCompound("", charType).size());
   EXPECT_EQ(charType->size() + intType->size(),
-    ObjTypeClass("", charType, intType).size());
+    ObjTypeCompound("", charType, intType).size());
 }

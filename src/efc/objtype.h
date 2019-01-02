@@ -11,7 +11,7 @@ class ObjTypeQuali;
 class ObjTypeFunda;
 class ObjTypePtr;
 class ObjTypeFun;
-class ObjTypeClass;
+class ObjTypeCompound;
 class AstObject;
 namespace llvm {
 class Type;
@@ -74,7 +74,7 @@ public:
     return eNoMatch;
   }
   virtual MatchType match2(
-    const ObjTypeClass& /*src*/, bool /*isLevel0*/) const {
+    const ObjTypeCompound& /*src*/, bool /*isLevel0*/) const {
     return eNoMatch;
   }
 
@@ -248,12 +248,12 @@ private:
   const std::shared_ptr<const ObjType> m_ret;
 };
 
-/** Compount-type/class */
-class ObjTypeClass : public ObjType {
+/** for example user defined class */
+class ObjTypeCompound : public ObjType {
 public:
-  ObjTypeClass(const std::string& name,
+  ObjTypeCompound(const std::string& name,
     std::vector<std::shared_ptr<const ObjType>>&& members);
-  ObjTypeClass(const std::string& name,
+  ObjTypeCompound(const std::string& name,
     std::shared_ptr<const ObjType> member1 = nullptr,
     std::shared_ptr<const ObjType> member2 = nullptr,
     std::shared_ptr<const ObjType> member3 = nullptr);
@@ -268,7 +268,7 @@ public:
 
   MatchType match(const ObjType& dst, bool isLevel0) const override;
   using ObjType::match2;
-  MatchType match2(const ObjTypeClass& src, bool isLevel0) const override;
+  MatchType match2(const ObjTypeCompound& src, bool isLevel0) const override;
   llvm::Type* llvmType() const override;
   bool hasMember(int) const override;
   bool hasConstructor(const ObjType& other) const override;

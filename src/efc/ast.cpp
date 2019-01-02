@@ -941,7 +941,7 @@ llvm::Value* AstClassDef::createLlvmValueFrom(GeneralValue value) const {
   assert(false);
 }
 
-const ObjTypeClass& AstClassDef::objType() const {
+const ObjTypeCompound& AstClassDef::objType() const {
   assert(m_objType);
   return *m_objType;
 }
@@ -958,7 +958,7 @@ void AstClassDef::createAndSetObjType() {
     assert(dataMember->objTypeAsSp());
     dataMembersCopy.emplace_back(dataMember->objTypeAsSp());
   }
-  m_objType = make_shared<ObjTypeClass>(m_name, move(dataMembersCopy));
+  m_objType = make_shared<ObjTypeCompound>(m_name, move(dataMembersCopy));
 }
 
 /** The vectors's elements must be non-null */

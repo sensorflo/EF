@@ -434,18 +434,18 @@ llvm::Type* ObjTypeFun::llvmType() const {
   assert(false); // not implemented yet
 }
 
-ObjTypeClass::ObjTypeClass(
+ObjTypeCompound::ObjTypeCompound(
   const string& name, vector<shared_ptr<const ObjType>>&& members)
   : ObjType(move(name)), m_members(move(members)) {
 }
 
-ObjTypeClass::ObjTypeClass(const string& name,
+ObjTypeCompound::ObjTypeCompound(const string& name,
   shared_ptr<const ObjType> member1, shared_ptr<const ObjType> member2,
   shared_ptr<const ObjType> member3)
-  : ObjTypeClass(name, createMembers(member1, member2, member3)) {
+  : ObjTypeCompound(name, createMembers(member1, member2, member3)) {
 }
 
-vector<shared_ptr<const ObjType>> ObjTypeClass::createMembers(
+vector<shared_ptr<const ObjType>> ObjTypeCompound::createMembers(
   shared_ptr<const ObjType> member1, shared_ptr<const ObjType> member2,
   shared_ptr<const ObjType> member3) {
   vector<shared_ptr<const ObjType>> members;
@@ -455,44 +455,44 @@ vector<shared_ptr<const ObjType>> ObjTypeClass::createMembers(
   return members;
 }
 
-basic_ostream<char>& ObjTypeClass::printTo(basic_ostream<char>& os) const {
+basic_ostream<char>& ObjTypeCompound::printTo(basic_ostream<char>& os) const {
   os << "class(" << name();
   for (const auto& member : m_members) { os << " " << *member; }
   return os << ")";
 }
 
-ObjType::MatchType ObjTypeClass::match(
+ObjType::MatchType ObjTypeCompound::match(
   const ObjType& dst, bool isLevel0) const {
   return dst.match2(*this, isLevel0);
 }
 
-ObjType::MatchType ObjTypeClass::match2(
-  const ObjTypeClass& src, bool isRoot) const {
-  // Each ObjTypeClass instance represents a distinct type
+ObjType::MatchType ObjTypeCompound::match2(
+  const ObjTypeCompound& src, bool isRoot) const {
+  // Each ObjTypeCompound instance represents a distinct type
   return this == &src ? eFullMatch : eNoMatch;
 }
 
-bool ObjTypeClass::is(EClass class_) const {
+bool ObjTypeCompound::is(EClass class_) const {
   return false;
 }
 
-int ObjTypeClass::size() const {
+int ObjTypeCompound::size() const {
   int sum = 0;
   for (const auto& member : m_members) { sum += member->size(); }
   return sum;
 }
 
-llvm::Type* ObjTypeClass::llvmType() const {
+llvm::Type* ObjTypeCompound::llvmType() const {
   assert(false);
   return nullptr;
 }
 
-bool ObjTypeClass::hasMember(int op) const {
+bool ObjTypeCompound::hasMember(int op) const {
   assert(false);
   return false;
 }
 
-bool ObjTypeClass::hasConstructor(const ObjType& other) const {
+bool ObjTypeCompound::hasConstructor(const ObjType& other) const {
   assert(false);
   return false;
 }
