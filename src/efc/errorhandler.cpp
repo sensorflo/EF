@@ -59,7 +59,7 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eRetTypeCantHaveMutQualifier: return "currently the return type cannot have the mutable qualifier";
   case Error::eMultipleInitializers: return "definition has multipile initializers";
   case Error::eObjectExpected: return "expecting an expression of meta type object";
-  case Error::eParseFailed: return "eParseFailed";
+  case Error::eParseFailed: return msgParam1;
   case Error::eUnexpectedCharacter: return "encountered unexpected character '" + msgParam1 + "'";
   case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
   case Error::eTypeInferenceIsNotYetSupported: return "eTypeInferenceIsNotYetSupported";

@@ -591,9 +591,11 @@ opt_id
 %%
 #include "../tokenstream.h"
 
+// The generated parser expects this method to be defined. See Bison manual
+// chapter "The Error Reporting Function ‘yyerror’"
 void yy::GenParser::error(const location_type& loc, const std::string& msg)
 {
-  Error::throwError(genParserExt.errorHandler(), Error::eParseFailed);
+  Error::throwError(genParserExt.errorHandler(), Error::eParseFailed, loc, msg);
 }
 
 // See declaration at the top of this file

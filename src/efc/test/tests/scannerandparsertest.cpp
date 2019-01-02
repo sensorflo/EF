@@ -25,7 +25,9 @@ string explainParseErrorCode(int errorCode) {
 }
 
 void testParse(const string efProgram, const string& expectedAst,
-  Error::No expectedErrorNo, const string& spec) {
+  Error::No expectedErrorNo, const string& expectedMsgParam1,
+  const string& expectedMsgParam2, const string& expectedMsgParam3,
+  const string& spec) {
   // setup
   DriverOnTmpFile driver(efProgram);
   std::unique_ptr<AstNode> actualAst{};
@@ -40,7 +42,8 @@ void testParse(const string efProgram, const string& expectedAst,
 
   SCOPED_TRACE("verifyErrorHandlerHasExpectedError called from here");
   verifyErrorHandlerHasExpectedError(driver.errorHandler(), details,
-    res.m_foreignCatches, res.m_excptionWhat, expectedErrorNo);
+    res.m_foreignCatches, res.m_excptionWhat, expectedErrorNo,
+    expectedMsgParam1, expectedMsgParam2, expectedMsgParam3);
 
   if (expectedErrorNo == Error::eNone) {
     ASSERT_TRUE(nullptr != actualAst)
@@ -55,13 +58,20 @@ void testParse(const string efProgram, const string& expectedAst,
   {                                                                \
     SCOPED_TRACE("testParse called from here");                    \
     static_assert(expectedErrorNo != Error::eNone, "");            \
-    testParse(efProgram, "", expectedErrorNo, spec);               \
+    testParse(efProgram, "", expectedErrorNo, "", "", "", spec);   \
+  }
+
+#define TEST_PARSE_REPORTS_ERROR_1MSGPARAM(efProgram, expectedErrorNo, expectedMsgParam1, spec) \
+  {                                                                \
+    SCOPED_TRACE("testParse called from here");                    \
+    static_assert(expectedErrorNo != Error::eNone, "");            \
+    testParse(efProgram, "", expectedErrorNo, expectedMsgParam1, "", "", spec); \
   }
 
 #define TEST_PARSE(efProgram, expectedAst, spec)                 \
   {                                                              \
     SCOPED_TRACE("testParse called from here");                  \
-    testParse(efProgram, expectedAst, Error::eNone, spec);       \
+    testParse(efProgram, expectedAst, Error::eNone, "", "", "", spec); \
   }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -84,11 +94,13 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
   TEST_PARSE("return()"      , ":;return(nop)", spec);
 }
 
-TEST(ScannerAndParserTest, MAKE_TEST_NAME(
+TEST(ScannerAndParserTest, MAKE_TEST_NAME4(
     a_return_separated_by_newline_from_the_argument,
     scanAndParse,
-    reports_eParseFailed_altough_after_other_unary_prefix_operators_newline_is_allowed)) {
-  TEST_PARSE_REPORTS_ERROR("return\n(42)", Error::eParseFailed, "");
+    reports_eParseFailed_altough_after_other_unary_prefix_operators_newline_is_allowed,
+    BECAUSE_a_single_return_on_a_line_could_easily_be_misinterpreted_as_return_without_args)) {
+  TEST_PARSE_REPORTS_ERROR_1MSGPARAM("return\n(42)",
+    Error::eParseFailed, "<dont_verify>", "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -333,7 +345,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME4(
   BECAUSE_no_binary_operator_can_appear_before_another_binary_operator_or_unary_postfix_operator)) {
 
   string spec = "Example: binary operetor which is not also an unary prefix operator";
-  TEST_PARSE_REPORTS_ERROR("a \n / b", Error::eParseFailed, spec);
+  TEST_PARSE_REPORTS_ERROR_1MSGPARAM("a \n / b",
+    Error::eParseFailed, "<dont_verify>", spec);
 
   // no unary postfix operators yet
 }
