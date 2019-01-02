@@ -118,17 +118,18 @@ StorageDuration AstBlock::storageDuration() const {
 }
 
 AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child)
-  : AstCast(
-      specifiedNewAstObjType, new AstCtList(child ? child : new AstNumber(0))) {
+  : AstCast(specifiedNewAstObjType,
+      new AstCtList(child != nullptr ? child : new AstNumber(0))) {
 }
 
 AstCast::AstCast(
   AstObjType* specifiedNewAstObjType, AstCtList* args, Location loc)
   : AstObjInstance(move(loc))
-  , m_specifiedNewAstObjType(specifiedNewAstObjType
+  , m_specifiedNewAstObjType(specifiedNewAstObjType != nullptr
         ? unique_ptr<AstObjType>(specifiedNewAstObjType)
         : make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInfer))
-  , m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
+  , m_args(args != nullptr ? unique_ptr<AstCtList>(args)
+                           : make_unique<AstCtList>()) {
 }
 
 AstCast::AstCast(ObjTypeFunda::EType specifiedNewOjType, AstObject* child)
@@ -165,9 +166,9 @@ AstFunDef::AstFunDef(const string& name, std::vector<AstDataDef*>* args,
 vector<AstDataDef*>* AstFunDef::createArgs(
   AstDataDef* arg1, AstDataDef* arg2, AstDataDef* arg3) {
   auto args = new vector<AstDataDef*>;
-  if (arg1) { args->push_back(arg1); }
-  if (arg2) { args->push_back(arg2); }
-  if (arg3) { args->push_back(arg3); }
+  if (arg1 != nullptr) { args->push_back(arg1); }
+  if (arg2 != nullptr) { args->push_back(arg2); }
+  if (arg3 != nullptr) { args->push_back(arg3); }
   return args;
 }
 
@@ -202,7 +203,8 @@ AstObject* const AstDataDef::noInit = reinterpret_cast<AstObject*>(1);
 AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
   StorageDuration declaredStorageDuration, AstCtList* ctorArgs, Location loc)
   : AstObjDef(name, loc)
-  , m_declaredAstObjType(declaredAstObjType
+  , m_doNotInit{false} // conceptually initialized by mkCtorArgs below
+  , m_declaredAstObjType(declaredAstObjType != nullptr
         ? unique_ptr<AstObjType>(declaredAstObjType)
         : make_unique<AstObjTypeSymbol>(ObjTypeFunda::eInfer))
   , m_declaredStorageDuration(declaredStorageDuration)
@@ -215,7 +217,7 @@ AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
 AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
   StorageDuration declaredStorageDuration, AstObject* initObj, Location loc)
   : AstDataDef(name, declaredAstObjType, declaredStorageDuration,
-      initObj ? new AstCtList(loc, initObj) : nullptr, loc) {
+      initObj != nullptr ? new AstCtList(loc, initObj) : nullptr, loc) {
 }
 
 AstDataDef::AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
@@ -243,13 +245,11 @@ unique_ptr<AstCtList> AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
     doNotInit = true;
     assert(nullptr == ctorArgs || ctorArgs->childs().empty());
     if (nullptr == ctorArgs) { return make_unique<AstCtList>(loc); }
-    else {
-      return unique_ptr<AstCtList>(ctorArgs);
-    }
+    return unique_ptr<AstCtList>(ctorArgs);
   }
   else {
     doNotInit = false; // assumption
-    if (not ctorArgs) { ctorArgs = new AstCtList(loc); }
+    if (ctorArgs == nullptr) { ctorArgs = new AstCtList(loc); }
     if (not ctorArgs->childs().empty()) {
       if (ctorArgs->childs().front() == noInit) {
         doNotInit = true;
@@ -262,7 +262,7 @@ unique_ptr<AstCtList> AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
 }
 
 AstObjType& AstDataDef::declaredAstObjType() const {
-  return *m_declaredAstObjType.get();
+  return *m_declaredAstObjType;
 }
 
 StorageDuration AstDataDef::declaredStorageDuration() const {
@@ -272,8 +272,9 @@ StorageDuration AstDataDef::declaredStorageDuration() const {
 AstNumber::AstNumber(GeneralValue value, AstObjType* astObjType, Location loc)
   : AstObjInstance(loc)
   , m_value(value)
-  , m_declaredAstObjType(
-      astObjType ? astObjType : new AstObjTypeSymbol(ObjTypeFunda::eInt, loc)) {
+  , m_declaredAstObjType(astObjType != nullptr
+        ? astObjType
+        : new AstObjTypeSymbol(ObjTypeFunda::eInt, loc)) {
   assert(m_declaredAstObjType);
 }
 
@@ -303,7 +304,7 @@ void AstSymbol::setAccessFromAstParent(Access access) {
   assert(Access::eYetUndefined != access);
   assert(Access::eYetUndefined == m_accessFromAstParent);
   m_accessFromAstParent = access;
-  if (m_referencedAstObj) { m_referencedAstObj->addAccess(access); }
+  if (m_referencedAstObj != nullptr) { m_referencedAstObj->addAccess(access); }
 }
 
 Access AstSymbol::accessFromAstParent() const {
@@ -373,7 +374,8 @@ AstOperator::AstOperator(
   , m_accessFromAstParent{Access::eYetUndefined}
   , m_storageDuration{StorageDuration::eYetUndefined}
   , m_op(op)
-  , m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
+  , m_args(args != nullptr ? unique_ptr<AstCtList>(args)
+                           : make_unique<AstCtList>()) {
   if ('-' == m_op || '+' == m_op) {
     const auto argCnt = m_args->childs().size();
     assert(argCnt == 1 || argCnt == 2);
@@ -404,7 +406,7 @@ void AstOperator::setAccessFromAstParent(Access access) {
   assert(Access::eYetUndefined != access);
   assert(Access::eYetUndefined == m_accessFromAstParent);
   m_accessFromAstParent = access;
-  if (m_referencedObj) { m_referencedObj->addAccess(access); }
+  if (m_referencedObj != nullptr) { m_referencedObj->addAccess(access); }
   addAccess(access);
 }
 
@@ -414,11 +416,12 @@ Access AstOperator::accessFromAstParent() const {
 }
 
 Object& AstOperator::object() {
-  return m_referencedObj ? *m_referencedObj : *this;
+  return m_referencedObj != nullptr ? *m_referencedObj : *this;
 }
 
 const Object& AstOperator::object() const {
-  return m_referencedObj ? *m_referencedObj : static_cast<const Object&>(*this);
+  return m_referencedObj != nullptr ? *m_referencedObj
+                                    : static_cast<const Object&>(*this);
 }
 
 const ObjType& AstOperator::objType() const {
@@ -533,11 +536,9 @@ AstOperator::EOperation AstOperator::toEOperation(const string& op) {
 basic_ostream<char>& operator<<(
   basic_ostream<char>& os, AstOperator::EOperation op) {
   if (static_cast<int>(op) < 128) { return os << static_cast<char>(op); }
-  else {
-    auto i = AstOperator::m_opReverseMap.find(op);
-    assert(i != AstOperator::m_opReverseMap.end());
-    return os << i->second;
-  }
+  auto i = AstOperator::m_opReverseMap.find(op);
+  assert(i != AstOperator::m_opReverseMap.end());
+  return os << i->second;
 }
 
 namespace {
@@ -547,9 +548,7 @@ Location locationOf(std::vector<AstNode*>* operands) {
   if (operands == nullptr || operands->empty() || operands->back() == nullptr) {
     return s_nullLoc;
   }
-  else {
-    return operands->back()->loc();
-  }
+  return operands->back()->loc();
 }
 }
 
@@ -648,13 +647,14 @@ StorageDuration AstLoop::storageDuration() const {
 }
 
 AstReturn::AstReturn(AstObject* retVal, Location loc)
-  : AstReturn(new AstCtList(retVal ? retVal : new AstNop(loc)), loc) {
+  : AstReturn(
+      new AstCtList(retVal != nullptr ? retVal : new AstNop(loc)), loc) {
 }
 
 AstReturn::AstReturn(AstCtList* args, Location loc)
   : AstObjInstance{loc}
-  , m_ctorArgs(
-      args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>(loc)) {
+  , m_ctorArgs(args != nullptr ? unique_ptr<AstCtList>(args)
+                               : make_unique<AstCtList>(loc)) {
   if (m_ctorArgs->childs().empty()) { m_ctorArgs->Add(new AstNop(loc)); }
 }
 
@@ -672,9 +672,10 @@ StorageDuration AstReturn::storageDuration() const {
 
 AstFunCall::AstFunCall(AstObject* address, AstCtList* args, Location loc)
   : AstObjInstance{move(loc)}
-  , m_address(
-      address ? unique_ptr<AstObject>(address) : make_unique<AstSymbol>(""))
-  , m_args(args ? unique_ptr<AstCtList>(args) : make_unique<AstCtList>()) {
+  , m_address(address != nullptr ? unique_ptr<AstObject>(address)
+                                 : make_unique<AstSymbol>(""))
+  , m_args(args != nullptr ? unique_ptr<AstCtList>(args)
+                           : make_unique<AstCtList>()) {
   assert(m_address);
   assert(m_args);
 }
@@ -694,8 +695,8 @@ StorageDuration AstFunCall::storageDuration() const {
   return StorageDuration::eLocal;
 }
 
-AstObjTypeSymbol::AstObjTypeSymbol(const std::string name, Location loc)
-  : AstObjType{move(loc)}, m_name(name) {
+AstObjTypeSymbol::AstObjTypeSymbol(std::string name, Location loc)
+  : AstObjType{move(loc)}, m_name(move(name)) {
 }
 
 AstObjTypeSymbol::AstObjTypeSymbol(ObjTypeFunda::EType fundaType, Location loc)
@@ -719,16 +720,15 @@ ObjTypeFunda::EType AstObjTypeSymbol::toType(const string& name) {
 void AstObjTypeSymbol::initMap() {
   if (!m_isMapInitialzied) {
     m_isMapInitialzied = true;
-    for (int i = 0; i < ObjTypeFunda::eTypeCnt; ++i) {
+    auto i = 0u;
+    for (auto& name : m_typeToName) {
       const auto type = static_cast<ObjTypeFunda::EType>(i);
-      if (type == ObjTypeFunda::ePointer) {
-        m_typeToName[i] = "<invalid(pointer)>";
-      }
+      if (type == ObjTypeFunda::ePointer) { name = "<invalid(pointer)>"; }
       else {
-        m_typeToName[i] = ObjTypeFunda(type).completeName();
+        name = ObjTypeFunda(type).completeName();
       }
+      ++i;
     }
-    for (const auto& x : m_typeToName) { assert(!x.empty()); }
   }
 }
 
@@ -864,7 +864,8 @@ AstObjTypePtr::AstObjTypePtr(AstObjType* pointee, Location loc)
   assert(m_pointee);
 }
 
-void AstObjTypePtr::printValueTo(ostream& os, GeneralValue value) const {
+void AstObjTypePtr::printValueTo(
+  ostream& /*os*/, GeneralValue /*value*/) const {
   // not yet implemented
   assert(false);
 }
@@ -887,7 +888,7 @@ AstObject* AstObjTypePtr::createDefaultAstObjectForSemanticAnalizer(
   return newAstNode;
 }
 
-llvm::Value* AstObjTypePtr::createLlvmValueFrom(GeneralValue value) const {
+llvm::Value* AstObjTypePtr::createLlvmValueFrom(GeneralValue /*value*/) const {
   // not yet implemented
   assert(false);
 }
@@ -920,12 +921,12 @@ AstClassDef::AstClassDef(
   : m_name(std::move(name)), m_dataMembers(toUniquePtrs(m1, m2, m3)) {
 }
 
-void AstClassDef::printValueTo(ostream& os, GeneralValue value) const {
+void AstClassDef::printValueTo(ostream& /*os*/, GeneralValue /*value*/) const {
   // The liskov substitution principle is broken here
   assert(false);
 }
 
-bool AstClassDef::isValueInRange(GeneralValue value) const {
+bool AstClassDef::isValueInRange(GeneralValue /*value*/) const {
   // The liskov substitution principle is broken here
   assert(false);
 }
@@ -971,18 +972,18 @@ AstCtList::AstCtList(vector<AstObject*>* childs, Location loc)
 /** nullptr childs are ignored.*/
 AstCtList::AstCtList(Location loc, AstObject* child1, AstObject* child2)
   : AstCtList(nullptr, move(loc)) {
-  if (child1) { m_childs->push_back(child1); }
-  if (child2) { m_childs->push_back(child2); }
+  if (child1 != nullptr) { m_childs->push_back(child1); }
+  if (child2 != nullptr) { m_childs->push_back(child2); }
 }
 
 /** nullptr childs are ignored.*/
 AstCtList::AstCtList(AstObject* child1, AstObject* child2, AstObject* child3,
   AstObject* child4, AstObject* child5, AstObject* child6)
   : AstCtList(Location{}, child1, child2) {
-  if (child3) { m_childs->push_back(child3); }
-  if (child4) { m_childs->push_back(child4); }
-  if (child5) { m_childs->push_back(child5); }
-  if (child6) { m_childs->push_back(child6); }
+  if (child3 != nullptr) { m_childs->push_back(child3); }
+  if (child4 != nullptr) { m_childs->push_back(child4); }
+  if (child5 != nullptr) { m_childs->push_back(child5); }
+  if (child6 != nullptr) { m_childs->push_back(child6); }
 }
 
 AstCtList::~AstCtList() {

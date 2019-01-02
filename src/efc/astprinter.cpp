@@ -9,9 +9,7 @@ using namespace std;
 namespace {
 string wrapName(const string& str) {
   if (!str.empty()) { return str; }
-  else {
-    return "<anonymous>";
-  }
+  return "<anonymous>";
 }
 }
 
@@ -32,7 +30,7 @@ basic_ostream<char>& AstPrinter::printTo(
   return os;
 }
 
-void AstPrinter::visit(const AstNop& nop) {
+void AstPrinter::visit(const AstNop& /*nop*/) {
   m_os << "nop";
 }
 
@@ -131,7 +129,7 @@ void AstPrinter::visit(const AstIf& if_) {
   if_.condition().accept(*this);
   m_os << " ";
   if_.action().accept(*this);
-  if (if_.elseAction()) {
+  if (if_.elseAction() != nullptr) {
     m_os << " ";
     if_.elseAction()->accept(*this);
   }

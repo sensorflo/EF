@@ -297,6 +297,9 @@ private:
   static std::unique_ptr<AstCtList> mkCtorArgs(AstCtList* ctorArgs,
     StorageDuration storageDuration, bool& doNotInit, const Location& loc);
 
+  // -- misc
+  bool m_doNotInit;
+
   // -- childs of this node
   // m_name is in EnvNode
   /** Guaranteed to be non-null. */
@@ -306,9 +309,6 @@ private:
   /** Is garanteed to be non-null. Currently, zero args means to default
   initialize: semantic analizer will add an initilizer*/
   const std::unique_ptr<AstCtList> m_ctorArgs;
-
-  // -- misc
-  bool m_doNotInit;
 };
 
 /** Literal 'scalar', where scalar means 'not an aggregation /
@@ -679,7 +679,7 @@ public:
 
 class AstObjTypeSymbol : public AstObjType {
 public:
-  AstObjTypeSymbol(const std::string name, Location loc = s_nullLoc);
+  AstObjTypeSymbol(std::string name, Location loc = s_nullLoc);
   AstObjTypeSymbol(ObjTypeFunda::EType fundaType, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
