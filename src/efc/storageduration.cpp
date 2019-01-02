@@ -9,7 +9,7 @@ std::string toString(StorageDuration sd) {
   switch (sd) {
   case StorageDuration::eYetUndefined: return "yetundefined";
   case StorageDuration::eUnknown: return "unknown";
-  case StorageDuration::eLocal: return "";
+  case StorageDuration::eLocal: return "local";
   case StorageDuration::eStatic: return "static";
   case StorageDuration::eMember: return "member";
   }
