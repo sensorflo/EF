@@ -70,7 +70,7 @@ string Env::makeUniqueInternalName(string baseName) {
   thread_local auto thread_local_cnt = 0U;
   ++thread_local_cnt;
   const auto isEmpty = baseName.empty();
-  stringstream ss{std::move(baseName)};
+  stringstream ss{move(baseName)};
   if (isEmpty) { ss << "$tmp"; }
   ss << this_thread::get_id() << "_" << thread_local_cnt;
   return ss.str();

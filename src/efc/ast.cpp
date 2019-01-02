@@ -117,9 +117,9 @@ StorageDuration AstBlock::storageDuration() const {
   return StorageDuration::eLocal;
 }
 
-AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* child)
+AstCast::AstCast(AstObjType* specifiedNewAstObjType, AstObject* arg)
   : AstCast(specifiedNewAstObjType,
-      new AstCtList(child != nullptr ? child : new AstNumber(0))) {
+      new AstCtList(arg != nullptr ? arg : new AstNumber(0))) {
 }
 
 AstCast::AstCast(
@@ -247,17 +247,17 @@ unique_ptr<AstCtList> AstDataDef::mkCtorArgs(AstCtList* ctorArgs,
     if (nullptr == ctorArgs) { return make_unique<AstCtList>(loc); }
     return unique_ptr<AstCtList>(ctorArgs);
   }
-  else {
-    doNotInit = false; // assumption
-    if (ctorArgs == nullptr) { ctorArgs = new AstCtList(loc); }
-    if (not ctorArgs->childs().empty()) {
-      if (ctorArgs->childs().front() == noInit) {
-        doNotInit = true;
-        assert(ctorArgs->childs().size() == 1);
-        ctorArgs->childs().clear();
-      }
+
+  doNotInit = false; // assumption
+  if (ctorArgs == nullptr) { ctorArgs = new AstCtList(loc); }
+  if (not ctorArgs->childs().empty()) {
+    if (ctorArgs->childs().front() == noInit) {
+      doNotInit = true;
+      assert(ctorArgs->childs().size() == 1);
+      ctorArgs->childs().clear();
     }
   }
+
   return unique_ptr<AstCtList>(ctorArgs);
 }
 
@@ -515,9 +515,7 @@ AstOperator::EClass AstOperator::classOf(AstOperator::EOperation op) {
 AstOperator::EOperation AstOperator::toEOperationPreferingBinary(
   const string& op) {
   if (op == "*") { return eMul; }
-  else {
-    return toEOperation(op);
-  }
+  return toEOperation(op);
 }
 
 AstOperator::EOperation AstOperator::toEOperation(const string& op) {
@@ -526,11 +524,9 @@ AstOperator::EOperation AstOperator::toEOperation(const string& op) {
     assert(op[0] != ';'); // ';' is not really an operator, use AstSeq
     return static_cast<EOperation>(op[0]);
   }
-  else {
-    auto i = m_opMap.find(op);
-    assert(i != m_opMap.end());
-    return i->second;
-  }
+  auto i = m_opMap.find(op);
+  assert(i != m_opMap.end());
+  return i->second;
 }
 
 basic_ostream<char>& operator<<(
@@ -651,10 +647,10 @@ AstReturn::AstReturn(AstObject* retVal, Location loc)
       new AstCtList(retVal != nullptr ? retVal : new AstNop(loc)), loc) {
 }
 
-AstReturn::AstReturn(AstCtList* args, Location loc)
+AstReturn::AstReturn(AstCtList* ctorArgs, Location loc)
   : AstObjInstance{loc}
-  , m_ctorArgs(args != nullptr ? unique_ptr<AstCtList>(args)
-                               : make_unique<AstCtList>(loc)) {
+  , m_ctorArgs(ctorArgs != nullptr ? unique_ptr<AstCtList>(ctorArgs)
+                                   : make_unique<AstCtList>(loc)) {
   if (m_ctorArgs->childs().empty()) { m_ctorArgs->Add(new AstNop(loc)); }
 }
 
@@ -707,7 +703,7 @@ AstObjTypeSymbol::AstObjTypeSymbol(ObjTypeFunda::EType fundaType, Location loc)
 string AstObjTypeSymbol::toName(ObjTypeFunda::EType fundaType) {
   initMap();
   assert(fundaType != ObjTypeFunda::ePointer);
-  return m_typeToName[fundaType];
+  return m_typeToName.at(fundaType);
 }
 
 ObjTypeFunda::EType AstObjTypeSymbol::toType(const string& name) {
@@ -937,7 +933,7 @@ AstObject* AstClassDef::createDefaultAstObjectForSemanticAnalizer(
   assert(false);
 }
 
-llvm::Value* AstClassDef::createLlvmValueFrom(GeneralValue value) const {
+llvm::Value* AstClassDef::createLlvmValueFrom(GeneralValue /*value*/) const {
   // not yet implemented
   assert(false);
 }
@@ -964,7 +960,8 @@ void AstClassDef::createAndSetObjType() {
 
 /** The vectors's elements must be non-null */
 AstCtList::AstCtList(vector<AstObject*>* childs, Location loc)
-  : AstNode{move(loc)}, m_childs(childs ? childs : new vector<AstObject*>()) {
+  : AstNode{move(loc)}
+  , m_childs(childs != nullptr ? childs : new vector<AstObject*>()) {
   assert(m_childs);
   for (const auto& child : *m_childs) { assert(child); }
 }
@@ -999,7 +996,7 @@ void AstCtList::releaseOwnership() {
 
 /** When child is nullptr it is ignored */
 AstCtList* AstCtList::Add(AstObject* child) {
-  if (child) m_childs->push_back(child);
+  if (child != nullptr) { m_childs->push_back(child); }
   return this;
 }
 

@@ -25,7 +25,7 @@ else()
   add_custom_target(clang-format
     COMMAND find -iname "\\*.h" -o -iname "\\*.cpp" |
             grep -v "/build\\\\\\|/googletest/\\\\\\|/efc/test/tests/\\\\\\|/efc/gensrc/" |
-            xargs ${CLANG_FORMAT} -i
+            xargs ${CLANG_FORMAT} -i # reads config from .clang-format
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   )
 endif()
@@ -54,8 +54,7 @@ else()
   # - I would like cppcoreguidelines-pro-bounds-array-to-pointer-decay and
   #   hicpp-no-array-decay, but the implementation of assert seems to violate it.
   add_custom_target(clang-modernize
-    COMMAND run-clang-tidy.py "'-header-filter=.*/efc/(test/(testhelpers/)?)?\\w*\\.h'"
-      -checks='*,-google-build-using-namespace,-fuchsia-default-arguments,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-fuchsia-overloaded-operator,-hicpp-no-array-decay,-llvm-namespace-comment'
+    COMMAND run-clang-tidy.py # reads config from .clang-tidy
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
 endif()

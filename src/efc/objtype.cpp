@@ -90,7 +90,7 @@ ObjType::MatchType ObjTypeQuali::match(
 }
 
 ObjType::MatchType ObjTypeQuali::match2(
-  const ObjTypeQuali& src, bool isRoot) const {
+  const ObjTypeQuali& src, bool /*isRoot*/) const {
   switch (src.m_type->match(*m_type)) {
   case eNoMatch: return eNoMatch;
   case eFullMatch:
@@ -106,13 +106,13 @@ ObjType::MatchType ObjTypeQuali::match2(
 }
 
 ObjType::MatchType ObjTypeQuali::match2(
-  const ObjTypeFunda& src, bool isRoot) const {
-  return match2Quali(src, isRoot, true);
+  const ObjTypeFunda& src, bool isLevel0) const {
+  return match2Quali(src, isLevel0, true);
 }
 
 ObjType::MatchType ObjTypeQuali::match2(
-  const ObjTypePtr& src, bool isRoot) const {
-  return match2Quali(src, isRoot, true);
+  const ObjTypePtr& src, bool isLevel0) const {
+  return match2Quali(src, isLevel0, true);
 }
 
 ObjType::MatchType ObjTypeQuali::match2(
@@ -121,7 +121,7 @@ ObjType::MatchType ObjTypeQuali::match2(
 }
 
 ObjType::MatchType ObjTypeQuali::match2Quali(
-  const ObjType& type, bool isRoot, bool typeIsSrc) const {
+  const ObjType& type, bool /*isRoot*/, bool typeIsSrc) const {
   switch (type.match(*m_type)) {
   case eNoMatch: return eNoMatch;
   case eFullMatch:
@@ -187,7 +187,7 @@ ObjType::MatchType ObjTypeFunda::match(
 }
 
 ObjType::MatchType ObjTypeFunda::match2(
-  const ObjTypeFunda& src, bool isRoot) const {
+  const ObjTypeFunda& src, bool /*isRoot*/) const {
   return m_type == src.m_type ? eFullMatch : eNoMatch;
 }
 
@@ -206,8 +206,8 @@ bool ObjTypeFunda::is(ObjType::EClass class_) const {
   case eDouble:
   case ePointer:
   case eNullptr:
-    if (class_ == eScalar) return true;
-    if (class_ == eStoredAsIntegral) return m_type != eDouble;
+    if (class_ == eScalar) { return true; }
+    if (class_ == eStoredAsIntegral) { return m_type != eDouble; }
     switch (m_type) {
     case eBool: // fall through
     case eChar: // fall through
@@ -215,9 +215,9 @@ bool ObjTypeFunda::is(ObjType::EClass class_) const {
     case eNullptr: return false;
     case eInt:
     case eDouble:
-      if (class_ == eArithmetic) return true;
-      if (class_ == eIntegral) return m_type == eInt;
-      if (class_ == eFloatingPoint) return m_type == eDouble;
+      if (class_ == eArithmetic) { return true; }
+      if (class_ == eIntegral) { return m_type == eInt; }
+      if (class_ == eFloatingPoint) { return m_type == eDouble; }
       return false;
     default: assert(false);
     }
@@ -268,9 +268,7 @@ bool ObjTypeFunda::hasMember(int op) const {
   if (is(eAbstract)) { return false; }
   // The addrof operator is applicable to every concrete (i.e. non-abstact)
   // object. It's never a member function operator
-  else if (op == AstOperator::eAddrOf) {
-    return true;
-  }
+  if (op == AstOperator::eAddrOf) { return true; }
 
   // rules specific per object type
   // ------------------------------
@@ -285,12 +283,9 @@ bool ObjTypeFunda::hasMember(int op) const {
     // Currently there is no pointer arithmetic, and currently pointers can't
     // be subtracted from each other, thus currently dereferencing is the only
     // member function of the pointer type
-    if (op == AstOperator::eDeref)
-      return m_type == ePointer;
-    else if (op == AstOperator::eAddrOf)
-      return !is(eAbstract);
-    else
-      break;
+    if (op == AstOperator::eDeref) { return m_type == ePointer; }
+    if (op == AstOperator::eAddrOf) { return !is(eAbstract); }
+    break;
   case AstOperator::eOther: break;
   }
 
@@ -331,12 +326,12 @@ bool ObjTypeFunda::hasConstructor(const ObjType& other) const {
   return false;
 }
 
-bool ObjType::matchesFully_(const ObjType& rhs, const ObjType& lhs) {
-  return rhs.matchesFully(lhs);
+bool ObjType::matchesFully_(const ObjType& src, const ObjType& dest) {
+  return src.matchesFully(dest);
 }
 
-bool ObjType::matchesSaufQualifiers_(const ObjType& rhs, const ObjType& lhs) {
-  return rhs.matchesSaufQualifiers(lhs);
+bool ObjType::matchesSaufQualifiers_(const ObjType& src, const ObjType& dest) {
+  return src.matchesSaufQualifiers(dest);
 }
 
 ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee)
@@ -349,7 +344,7 @@ ObjType::MatchType ObjTypePtr::match(const ObjType& dst, bool isLevel0) const {
 }
 
 ObjType::MatchType ObjTypePtr::match2(
-  const ObjTypePtr& src, bool isRoot) const {
+  const ObjTypePtr& src, bool isLevel0) const {
   //           dst    =    src
   // level 0:  qualifiers irrelevant to decide whether its a match or not
   // level 1+: currently: type and qualifiers must match completely
@@ -359,7 +354,7 @@ ObjType::MatchType ObjTypePtr::match2(
   if (pointeeMatch != eFullMatch) { return eNoMatch; }
   // now we know pointee is a match
 
-  return ObjTypeFunda::match2(static_cast<const ObjTypeFunda&>(src), isRoot);
+  return ObjTypeFunda::match2(static_cast<const ObjTypeFunda&>(src), isLevel0);
 }
 
 std::basic_ostream<char>& ObjTypePtr::printTo(
@@ -380,8 +375,9 @@ std::shared_ptr<const ObjType> ObjTypePtr::pointee() const {
 ObjTypeFun::ObjTypeFun(
   vector<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret)
   : ObjType("fun") // todo: what shall the correct type name of a function be?
-  , m_args{args ? std::unique_ptr<vector<shared_ptr<const ObjType>>>{args}
-                : std::make_unique<vector<shared_ptr<const ObjType>>>()}
+  , m_args{args != nullptr
+        ? std::unique_ptr<vector<shared_ptr<const ObjType>>>{args}
+        : std::make_unique<vector<shared_ptr<const ObjType>>>()}
   , m_ret{
       ret ? move(ret) : make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt)} {
   assert(m_args);
@@ -394,13 +390,13 @@ ObjType::MatchType ObjTypeFun::match(const ObjType& dst, bool isLevel0) const {
 }
 
 ObjType::MatchType ObjTypeFun::match2(
-  const ObjTypeFun& src, bool isRoot) const {
-  if (m_args->size() != src.m_args->size()) return eNoMatch;
+  const ObjTypeFun& src, bool /*isRoot*/) const {
+  if (m_args->size() != src.m_args->size()) { return eNoMatch; }
   for (auto i = m_args->begin(), isrc = src.m_args->begin(); i != m_args->end();
        ++i, ++isrc) {
-    if ((*i)->match(**isrc) != eFullMatch) return eNoMatch;
+    if ((*i)->match(**isrc) != eFullMatch) { return eNoMatch; }
   }
-  if (m_ret->match(*src.m_ret) != eFullMatch) return eNoMatch;
+  if (m_ret->match(*src.m_ret) != eFullMatch) { return eNoMatch; }
   return eFullMatch;
 }
 
@@ -423,9 +419,9 @@ basic_ostream<char>& ObjTypeFun::printTo(basic_ostream<char>& os) const {
 vector<shared_ptr<const ObjType>>* ObjTypeFun::createArgs(
   const ObjType* arg1, const ObjType* arg2, const ObjType* arg3) {
   auto l = new vector<shared_ptr<const ObjType>>;
-  if (arg1) { l->push_back(shared_ptr<const ObjType>(arg1)); }
-  if (arg2) { l->push_back(shared_ptr<const ObjType>(arg2)); }
-  if (arg3) { l->push_back(shared_ptr<const ObjType>(arg3)); }
+  if (arg1 != nullptr) { l->push_back(shared_ptr<const ObjType>(arg1)); }
+  if (arg2 != nullptr) { l->push_back(shared_ptr<const ObjType>(arg2)); }
+  if (arg3 != nullptr) { l->push_back(shared_ptr<const ObjType>(arg3)); }
   return l;
 }
 
@@ -434,14 +430,14 @@ llvm::Type* ObjTypeFun::llvmType() const {
 }
 
 ObjTypeCompound::ObjTypeCompound(
-  const string& name, vector<shared_ptr<const ObjType>>&& members)
+  string name, vector<shared_ptr<const ObjType>>&& members)
   : ObjType(move(name)), m_members(move(members)) {
 }
 
-ObjTypeCompound::ObjTypeCompound(const string& name,
-  shared_ptr<const ObjType> member1, shared_ptr<const ObjType> member2,
-  shared_ptr<const ObjType> member3)
-  : ObjTypeCompound(name, createMembers(member1, member2, member3)) {
+ObjTypeCompound::ObjTypeCompound(string name, shared_ptr<const ObjType> member1,
+  shared_ptr<const ObjType> member2, shared_ptr<const ObjType> member3)
+  : ObjTypeCompound(
+      move(name), createMembers(move(member1), move(member2), move(member3))) {
 }
 
 vector<shared_ptr<const ObjType>> ObjTypeCompound::createMembers(
@@ -466,12 +462,12 @@ ObjType::MatchType ObjTypeCompound::match(
 }
 
 ObjType::MatchType ObjTypeCompound::match2(
-  const ObjTypeCompound& src, bool isRoot) const {
+  const ObjTypeCompound& src, bool /*isRoot*/) const {
   // Each ObjTypeCompound instance represents a distinct type
   return this == &src ? eFullMatch : eNoMatch;
 }
 
-bool ObjTypeCompound::is(EClass class_) const {
+bool ObjTypeCompound::is(EClass /*class_*/) const {
   return false;
 }
 
@@ -486,12 +482,12 @@ llvm::Type* ObjTypeCompound::llvmType() const {
   return nullptr;
 }
 
-bool ObjTypeCompound::hasMember(int op) const {
+bool ObjTypeCompound::hasMember(int /*op*/) const {
   assert(false);
   return false;
 }
 
-bool ObjTypeCompound::hasConstructor(const ObjType& other) const {
+bool ObjTypeCompound::hasConstructor(const ObjType& /*other*/) const {
   assert(false);
   return false;
 }

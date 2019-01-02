@@ -19,10 +19,10 @@ using namespace std;
 Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
   : m_errorHandler(make_unique<ErrorHandler>())
   , m_env(make_unique<Env>())
-  , m_ostream(ostream ? *ostream : cerr)
+  , m_ostream(ostream != nullptr ? *ostream : cerr)
   , m_scanner(Scanner::create(move(fileName), *m_errorHandler))
   , m_tokenFilter(make_unique<TokenFilter>(*m_scanner.get()))
-  , m_parser(make_unique<Parser>(*m_tokenFilter.get(), *m_env, *m_errorHandler))
+  , m_parser(make_unique<Parser>(*m_tokenFilter, *m_env, *m_errorHandler))
   , m_irGen(make_unique<IrGen>(*m_errorHandler))
   , m_semanticAnalizer(make_unique<SemanticAnalizer>(*m_env, *m_errorHandler)) {
   assert(m_errorHandler);
@@ -70,7 +70,7 @@ void Driver::compile() {
 unique_ptr<AstNode> Driver::scanAndParse() {
   // the parser internally drives the scanner
   auto res = m_parser->parse_();
-  if (res.m_errorCode) {
+  if (0 != res.m_errorCode) {
     Error::throwError(*m_errorHandler, Error::eInternalError, s_nullLoc,
       "parser should report errors via Error::throwError, not by returning an "
       "error value");

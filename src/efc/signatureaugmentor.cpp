@@ -7,7 +7,7 @@
 
 using namespace std;
 
-SignatureAugmentor::SignatureAugmentor(Env& env, ErrorHandler& errorHandler)
+SignatureAugmentor::SignatureAugmentor(Env& env, ErrorHandler& /*errorHandler*/)
   : m_env(env) {
 }
 

@@ -94,10 +94,8 @@ Value* Object::irValueOfIrObject(
     assert(m_irAddrOfIrObject);
     return builder.CreateLoad(m_irAddrOfIrObject, name);
   }
-  else {
-    assert(m_irValueOfObject);
-    return m_irValueOfObject;
-  }
+  assert(m_irValueOfObject);
+  return m_irValueOfObject;
 }
 
 void Object::setIrValueOfIrObject(Value* irValue, IRBuilder<>& builder) {

@@ -10,7 +10,7 @@ using namespace std;
 using namespace llvm;
 
 IrGenForwardDeclarator::IrGenForwardDeclarator(
-  ErrorHandler& errorHandler, llvm::Module& module)
+  ErrorHandler& /*errorHandler*/, llvm::Module& module)
   : m_module{module} {
 }
 

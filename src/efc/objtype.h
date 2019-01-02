@@ -251,9 +251,9 @@ private:
 /** for example user defined class */
 class ObjTypeCompound : public ObjType {
 public:
-  ObjTypeCompound(const std::string& name,
-    std::vector<std::shared_ptr<const ObjType>>&& members);
-  ObjTypeCompound(const std::string& name,
+  ObjTypeCompound(
+    std::string name, std::vector<std::shared_ptr<const ObjType>>&& members);
+  ObjTypeCompound(std::string name,
     std::shared_ptr<const ObjType> member1 = nullptr,
     std::shared_ptr<const ObjType> member2 = nullptr,
     std::shared_ptr<const ObjType> member3 = nullptr);

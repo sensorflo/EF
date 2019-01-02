@@ -9,19 +9,13 @@ using namespace std;
 namespace {
 std::string plural(const string& noun, const string& count) {
   if (count == "0") { return "zero " + noun + "s"; }
-  else if (count == "1") {
-    return count + " " + noun;
-  }
-  else {
-    return count + " " + noun + "s";
-  }
+  if (count == "1") { return count + " " + noun; }
+  return count + " " + noun + "s";
 }
 
 std::string conjucateToBe(const string& count) {
   if (count == "1") { return "is"; }
-  else {
-    return "are";
-  }
+  return "are";
 }
 }
 
@@ -35,7 +29,7 @@ Error::Error(Error::No no, string message, std::string msgParam1,
 }
 
 void Error::throwError(ErrorHandler& errorHandler, No no, Location loc,
-  std::string msgParam1, const std::string msgParam2, std::string msgParam3) {
+  std::string msgParam1, std::string msgParam2, std::string msgParam3) {
   if (!errorHandler.isReportingDisabledFor(no)) {
     stringstream ss;
     if (!loc.isNull()) {
@@ -56,7 +50,7 @@ void Error::throwError(ErrorHandler& errorHandler, No no, Location loc,
 }
 
 string Error::describe(Error::No no, const std::string& msgParam1,
-  const std::string& msgParam2, const std::string& msgParam3) {
+  const std::string& msgParam2, const std::string& /*msgParam3*/) {
   switch (no) {
     // clang-format off
   case Error::eNone: return "no error";
@@ -137,11 +131,11 @@ void ErrorHandler::add(shared_ptr<Error> error) {
 }
 
 void ErrorHandler::disableReportingOf(Error::No no) {
-  m_disabledErrors[no] = true;
+  m_disabledErrors.at(no) = true;
 }
 
 bool ErrorHandler::isReportingDisabledFor(Error::No no) const {
-  return m_disabledErrors[no];
+  return m_disabledErrors.at(no);
 }
 
 ErrorHandler::~ErrorHandler() = default;
@@ -159,7 +153,7 @@ ostream& operator<<(ostream& os, const ErrorHandler& errorHandler) {
 }
 
 BuildError::BuildError(std::shared_ptr<const Error> error)
-  : logic_error{error->message()}, m_error{error} {
+  : logic_error{error->message()}, m_error{move(error)} {
 }
 
 BuildError::~BuildError() = default;
