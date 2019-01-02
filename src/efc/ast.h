@@ -244,7 +244,10 @@ private:
   const std::vector<std::unique_ptr<AstDataDef>> m_args;
   /** Is garanteed to be non-null. */
   const std::unique_ptr<AstObjType> m_ret;
-  /** Is garanteed to be non-null */
+  /** Is garanteed to be non-null.
+  @todo: replace pointee type with AstBlock. Then all visitors for AstFunDef
+       don't need to care about Env anymore an can leave handling Env to
+       AstBlock. */
   const std::unique_ptr<AstObject> m_body;
 };
 
