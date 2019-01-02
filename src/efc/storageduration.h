@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <string>
 
 enum class StorageDuration {
   /** For StorageDuration variables which's proper value is not yet defined. */
@@ -16,3 +17,5 @@ enum class StorageDuration {
 
 std::basic_ostream<char>& operator<<(
   std::basic_ostream<char>& os, StorageDuration sd);
+
+std::string toString(StorageDuration sd);
