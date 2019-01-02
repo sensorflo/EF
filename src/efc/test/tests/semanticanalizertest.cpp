@@ -1760,41 +1760,41 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
   // calls, also for builtin types.
 
   string spec = "Example: Arithemtic operator (+) with argument not being of arithmetic class (here bool)";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstOperator('+',
       new AstNumber(0, ObjTypeFunda::eBool),
       new AstNumber(0, ObjTypeFunda::eBool)),
-    Error::eNoSuchMemberFun, spec);
+    Error::eNoSuchMemberFun, "bool", "operator+", spec);
 
   spec = "Example: Arithemtic operator (+) with argument not being of arithmetic class (here function)";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstSeq(
       pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(42)),
       new AstOperator('+',
         new AstSymbol("foo"),
         new AstSymbol("foo"))),
-    Error::eNoSuchMemberFun, spec);
+    Error::eNoSuchMemberFun, "<dont_verify>", "operator+", spec);
 
   spec = "Example: Logic operator (&&) with argument not being bool (here int)";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstOperator("&&",
       new AstNumber(0, ObjTypeFunda::eInt),
       new AstNumber(0, ObjTypeFunda::eInt)),
-    Error::eNoSuchMemberFun, spec);
+    Error::eNoSuchMemberFun, "int", "operator_and", spec);
 
   spec = "Example: Comparision operator (==) with argument not being of scalar class (here function)";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstSeq(
       pe.mkFunDef("foo", ObjTypeFunda::eInt, new AstNumber(42)),
       new AstOperator("==",
         new AstSymbol("foo"),
         new AstSymbol("foo"))),
-    Error::eNoSuchMemberFun, spec);
+    Error::eNoSuchMemberFun, "<dont_verify>", "operator==", spec);
 
   spec = "Example: Dereference operator (*) with an non-pointer argument";
-  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+  TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
     new AstOperator(AstOperator::eDeref, new AstNumber(0)),
-    Error::eNoSuchMemberFun, spec);
+    Error::eNoSuchMemberFun, "int", "operator*", spec);
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(

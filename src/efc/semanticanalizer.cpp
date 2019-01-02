@@ -170,8 +170,11 @@ void SemanticAnalizer::visit(AstOperator& op) {
   }
 
   // Verify that the first argument has the operator as member function.
-  if (!argschilds.front()->object().objType().hasMember(opop)) {
-    Error::throwError(m_errorHandler, Error::eNoSuchMemberFun);
+  const auto& lhs = *argschilds.front();
+  const auto& lhsObjType = lhs.object().objType();
+  if (!lhsObjType.hasMember(opop)) {
+    Error::throwError(m_errorHandler, Error::eNoSuchMemberFun, op.loc(),
+      lhsObjType.completeName(), op.funName());
   }
 
   // -- responsibility 3: set properties of associated object: type, sd, access

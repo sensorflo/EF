@@ -459,6 +459,8 @@ public:
 
   // -- childs of this node
   EOperation op() const { return m_op; }
+  std::string opAsStr() const;
+  std::string funName() const;
   AstCtList& args() const { return *m_args; }
 
   // -- misc

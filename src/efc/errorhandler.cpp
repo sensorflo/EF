@@ -51,7 +51,7 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eNoImplicitConversion: return "there's no implicit conversion from type '" + msgParam1+ "' to type '" + msgParam2 + "'";
   case Error::eInvalidArguments: return "eInvalidArguments";
   case Error::eNoSuchCtor: return "eNoSuchCtor";
-  case Error::eNoSuchMemberFun: return "eNoSuchMemberFun";
+  case Error::eNoSuchMemberFun: return "type '" + msgParam1 + "' has no member function '" + msgParam2 + "'";
   case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
   case Error::eUnreachableCode: return "leaves control flow and the following code is not reachable";
   case Error::eCTConstRequired: return "eCTConstRequired";

@@ -7,6 +7,7 @@
 #include "irgen.h"
 
 #include <cassert>
+#include <sstream>
 #include <stdexcept>
 #include <utility>
 
@@ -464,6 +465,17 @@ void AstOperator::setStorageDuration(StorageDuration storageDuration) {
   assert(m_storageDuration ==
     StorageDuration::eYetUndefined); // it doesn't make sense to set it twice
   m_storageDuration = storageDuration;
+}
+
+std::string AstOperator::opAsStr() const {
+  stringstream ss{};
+  ss << m_op;
+  return ss.str();
+}
+
+std::string AstOperator::funName() const {
+  const auto& s = opAsStr();
+  return string{"operator"} + (s[0] >= 'a' && s[0] <= 'z' ? "_" : "") + s;
 }
 
 AstOperator::EClass AstOperator::class_() const {
