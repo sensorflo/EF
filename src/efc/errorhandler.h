@@ -37,6 +37,7 @@ public:
     eTypeInferenceIsNotYetSupported,
     eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization,
     eScanOrParseFailed,
+    eUnexpectedCharacter,
     eCnt
   };
 

@@ -5,6 +5,7 @@
 #include "tokentesthelper.h"
 
 #include <string>
+#include <sstream>
 #include <vector>
 
 using namespace testing;
@@ -422,4 +423,14 @@ TEST(ScannerTest, MAKE_TEST_NAME2(
   EXPECT_EQ(
     Position(actualPosition.m_fileName, 3, 1),
     actualPosition);
+}
+
+TEST(ScannerTest, MAKE_TEST_NAME(
+    an_invalid_character,
+    pop,
+    reports_eUnexpectedCharacter)) {
+  TEST_SCANNER_REPORTS_ERROR_1MSGPARAM("~",
+    Error::eUnexpectedCharacter, "~", "");
+  TEST_SCANNER_REPORTS_ERROR_1MSGPARAM("42@",
+    Error::eUnexpectedCharacter, "@", "");
 }

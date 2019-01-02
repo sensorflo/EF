@@ -201,7 +201,7 @@ op([-+*/!]|&&|"||"|"=="|"_and"|"_or"|"_not"|"_new"|"_delete") {
   /* misc */
 {ID}                return Parser::make_ID(yytext, loc);
 <<EOF>>             return Parser::make_END_OF_FILE(loc);
-.                   Error::throwError(errorHandler, Error::eInternalError, loc, string("scanner encountered unexpected character '") + yytext + "'");
+.                   Error::throwError(errorHandler, Error::eUnexpectedCharacter, loc, yytext);
 
 
 %%

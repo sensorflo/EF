@@ -60,6 +60,7 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eMultipleInitializers: return "definition has multipile initializers";
   case Error::eObjectExpected: return "expecting an expression of meta type object";
   case Error::eScanOrParseFailed: return "eScanOrParseFailed";
+  case Error::eUnexpectedCharacter: return "encountered unexpected character '" + msgParam1 + "'";
   case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
   case Error::eTypeInferenceIsNotYetSupported: return "eTypeInferenceIsNotYetSupported";
   case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization";
@@ -91,6 +92,7 @@ const char* toStr(Error::No no) {
   case Error::eMultipleInitializers: return "eMultipleInitializers";
   case Error::eObjectExpected: return "eObjectExpected";
   case Error::eScanOrParseFailed: return "eScanOrParseFailed";
+  case Error::eUnexpectedCharacter: return "eUnexpectedCharacter";
   case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
   case Error::eTypeInferenceIsNotYetSupported: return "eTypeInferenceIsNotYetSupported";
   case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization";
