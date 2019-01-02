@@ -593,7 +593,7 @@ opt_id
 
 void yy::GenParser::error(const location_type& loc, const std::string& msg)
 {
-  Error::throwError(genParserExt.errorHandler(), Error::eScanOrParseFailed);
+  Error::throwError(genParserExt.errorHandler(), Error::eParseFailed);
 }
 
 // See declaration at the top of this file

@@ -36,7 +36,7 @@ public:
     eOnlyLocalStorageDurationApplicable,
     eTypeInferenceIsNotYetSupported,
     eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization,
-    eScanOrParseFailed,
+    eParseFailed,
     eUnexpectedCharacter,
     eCnt
   };

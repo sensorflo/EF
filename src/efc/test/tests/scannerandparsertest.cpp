@@ -128,8 +128,8 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
     a_return_separated_by_newline_from_the_argument,
     scanAndParse,
-    reports_eScanOrParseFailed_altough_after_other_unary_prefix_operators_newline_is_allowed)) {
-  TEST_PARSE_REPORTS_ERROR("return\n(42)", Error::eScanOrParseFailed, "");
+    reports_eParseFailed_altough_after_other_unary_prefix_operators_newline_is_allowed)) {
+  TEST_PARSE_REPORTS_ERROR("return\n(42)", Error::eParseFailed, "");
 }
 
 TEST(ScannerAndParserTest, MAKE_TEST_NAME(
@@ -370,11 +370,11 @@ TEST(ScannerAndParserTest, MAKE_TEST_NAME(
 TEST(ScannerAndParserTest, MAKE_TEST_NAME4(
   a_newline_sequence_operator_before_a_binary_operator_or_an_unary_postfix_operator,
   scanAndParse,
-  reports_eScanOrParseFailed,
+  reports_eParseFailed,
   BECAUSE_no_binary_operator_can_appear_before_another_binary_operator_or_unary_postfix_operator)) {
 
   string spec = "Example: binary operetor which is not also an unary prefix operator";
-  TEST_PARSE_REPORTS_ERROR("a \n / b", Error::eScanOrParseFailed, spec);
+  TEST_PARSE_REPORTS_ERROR("a \n / b", Error::eParseFailed, spec);
 
   // no unary postfix operators yet
 }
