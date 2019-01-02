@@ -109,9 +109,8 @@ void AstPrinter::visit(const AstFunDef& funDef) {
   for (const auto& arg : funDef.declaredArgs()) {
     if (!isFirstIter) { m_os << " "; }
     isFirstIter = false;
-    // as an exception, handle parameters directly, opposed to accept *i
-    m_os << "(" << wrapName(arg->name()) << " ";
-    arg->declaredAstObjType().accept(*this);
+    m_os << "(";
+    printNakedDataDef(*arg, true);
     m_os << ")";
   }
   m_os << ") ";
@@ -181,7 +180,8 @@ void AstPrinter::visit(const AstClassDef& class_) {
   m_os << ")";
 }
 
-void AstPrinter::printNakedDataDef(const AstDataDef& dataDef) {
+void AstPrinter::printNakedDataDef(
+  const AstDataDef& dataDef, bool ommitZeroArgInitializer) {
   m_os << wrapName(dataDef.name()) << " ";
   if (dataDef.declaredStorageDuration() != StorageDuration::eLocal) {
     m_os << dataDef.declaredStorageDuration() << "/";
@@ -189,7 +189,7 @@ void AstPrinter::printNakedDataDef(const AstDataDef& dataDef) {
   dataDef.declaredAstObjType().accept(*this);
 
   if (dataDef.doNotInit()) { m_os << " noinit"; }
-  else {
+  else if (!ommitZeroArgInitializer || !dataDef.ctorArgs().childs().empty()) {
     m_os << " (";
     dataDef.ctorArgs().accept(*this);
     m_os << ")";
