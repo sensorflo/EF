@@ -229,7 +229,8 @@ void SemanticAnalizer::visit(AstSeq& seq) {
 
   // -- responsibility 2, part 1 of 2: semantic analysis
   if (!seq.lastOperandIsAnObject()) {
-    Error::throwError(m_errorHandler, Error::eObjectExpected);
+    Error::throwError(
+      m_errorHandler, Error::eObjectExpected, seq.operands().back()->loc());
   }
 
   const auto& lastOp = seq.operands().back();
@@ -345,7 +346,8 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   // verify signature before descending into AST subtree, so the subtree can
   // see a valid signature
   if (retObjType.qualifiers() & ObjType::eMutable) {
-    Error::throwError(m_errorHandler, Error::eRetTypeCantHaveMutQualifier);
+    Error::throwError(
+      m_errorHandler, Error::eRetTypeCantHaveMutQualifier, funDef.ret().loc());
   }
   for (const auto& arg : funDef.declaredArgs()) {
     if (arg->declaredStorageDuration() != StorageDuration::eLocal) {
@@ -421,7 +423,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     }
     if (dataDef.storageDuration() == StorageDuration::eStatic &&
       !initializer->isCTConst()) {
-      Error::throwError(m_errorHandler, Error::eCTConstRequired);
+      Error::throwError(m_errorHandler, Error::eCTConstRequired, dataDef.loc());
     }
   }
 
@@ -522,7 +524,11 @@ void SemanticAnalizer::visit(AstReturn& return_) {
 
   // -- responsibility 2: semantic analysis
   if (m_funRetAstObjTypes.empty()) {
-    Error::throwError(m_errorHandler, Error::eNotInFunBodyContext);
+    // todo: this fails e.g. within a class def which is within a function
+    // def. But anyway, the grammar should change such that runtime expressions
+    // only appear within a function def or initializer of class member variable.
+    Error::throwError(
+      m_errorHandler, Error::eNotInFunBodyContext, return_.loc());
   }
   if (ctorArgs.size() != 1U) {
     Error::throwError(m_errorHandler, Error::eInvalidArguments);

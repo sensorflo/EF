@@ -53,12 +53,12 @@ string Error::describe(Error::No no, const std::string& msgParam1,
     // we take advantage of the fact that currently constructors only have one argument
   case Error::eNoSuchCtor: return "type '" + msgParam1 + "' has no constructor callable with (" + msgParam2 + ")";
   case Error::eNoSuchMemberFun: return "type '" + msgParam1 + "' has no member function '" + msgParam2 + "'";
-  case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
+  case Error::eNotInFunBodyContext: return "return is not allowed outside a function definition";
   case Error::eUnreachableCode: return "leaves control flow and the following code is not reachable";
-  case Error::eCTConstRequired: return "eCTConstRequired";
-  case Error::eRetTypeCantHaveMutQualifier: return "eRetTypeCantHaveMutQualifier";
-  case Error::eMultipleInitializers: return "eMultipleInitializers";
-  case Error::eObjectExpected: return "eObjectExpected";
+  case Error::eCTConstRequired: return "currently static objects can only be initialized with compile time const expressions (which in turn are currently limited to literals)";
+  case Error::eRetTypeCantHaveMutQualifier: return "currently the return type cannot have the mutable qualifier";
+  case Error::eMultipleInitializers: return "definition has multipile initializers";
+  case Error::eObjectExpected: return "expecting an expression of meta type object";
   case Error::eScanOrParseFailed: return "eScanOrParseFailed";
   case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
   case Error::eTypeInferenceIsNotYetSupported: return "eTypeInferenceIsNotYetSupported";
