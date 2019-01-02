@@ -54,11 +54,12 @@ void SemanticAnalizer::visit(AstCast& cast) {
 
   // test if conversion is eligible
   const auto& specifiedNewObjType = cast.specifiedNewAstObjType().objType();
-  if (!specifiedNewObjType.matchesSaufQualifiers(
-        cast.args().childs().front()->object().objType()) &&
-    !specifiedNewObjType.hasConstructor(
-      cast.args().childs().front()->object().objType())) {
-    Error::throwError(m_errorHandler, Error::eNoSuchCtor);
+  const auto& operand = cast.args().childs().front();
+  const auto& operandObjType = operand->object().objType();
+  if (!specifiedNewObjType.matchesSaufQualifiers(operandObjType) &&
+    !specifiedNewObjType.hasConstructor(operandObjType)) {
+    Error::throwError(m_errorHandler, Error::eNoSuchCtor, cast.loc(),
+      operandObjType.completeName(), specifiedNewObjType.completeName());
   }
 
   // -- responsibility 3: set properties of associated object: type, sd, access

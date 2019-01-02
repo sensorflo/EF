@@ -50,7 +50,8 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eCantOpenFileForReading: return "Can't open file '" + msgParam1 + "' for reading (" + msgParam2 + ")";
   case Error::eNoImplicitConversion: return "there's no implicit conversion from type '" + msgParam1+ "' to type '" + msgParam2 + "'";
   case Error::eInvalidArguments: return "eInvalidArguments";
-  case Error::eNoSuchCtor: return "eNoSuchCtor";
+    // we take advantage of the fact that currently constructors only have one argument
+  case Error::eNoSuchCtor: return "type '" + msgParam1 + "' has no constructor callable with (" + msgParam2 + ")";
   case Error::eNoSuchMemberFun: return "type '" + msgParam1 + "' has no member function '" + msgParam2 + "'";
   case Error::eNotInFunBodyContext: return "eNotInFunBodyContext";
   case Error::eUnreachableCode: return "leaves control flow and the following code is not reachable";

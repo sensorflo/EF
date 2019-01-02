@@ -1873,7 +1873,8 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
 
     // AstCast needs to be wrapped into an AstFunDef since in some iterations
     // the child of AstCast is the return expression.
-    AstObject* UUT = new AstCast(new AstObjTypeSymbol(inputSpec.newType), castChild);
+    const auto newAstObjTypeSymbol = new AstObjTypeSymbol(inputSpec.newType);
+    AstObject* UUT = new AstCast(newAstObjTypeSymbol, castChild);
     AstObject* funbody =
       inputSpec.newType == ObjTypeFunda::eNoreturn ?
       UUT :
@@ -1883,9 +1884,12 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
         pe.mkFunDef("foo", ObjTypeFunda::eInt, funbody),
         "");
     } else {
-      TEST_ASTTRAVERSAL_REPORTS_ERROR(
+      TEST_ASTTRAVERSAL_REPORTS_ERROR_2MSGPARAM(
         pe.mkFunDef("foo", ObjTypeFunda::eInt, funbody),
-        Error::eNoSuchCtor, "");
+        Error::eNoSuchCtor,
+        ObjTypeFunda(inputSpec.oldType).completeName(),
+        ObjTypeFunda(inputSpec.newType).completeName(),
+        "");
     }
   }
 }
