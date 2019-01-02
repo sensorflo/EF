@@ -61,7 +61,7 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eObjectExpected: return "expecting an expression of meta type object";
   case Error::eParseFailed: return msgParam1;
   case Error::eUnexpectedCharacter: return "encountered unexpected character '" + msgParam1 + "'";
-  case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
+  case Error::eInvalidStorageDurationInDef: return "eInvalidStorageDurationInDef";
   case Error::eTypeInferenceIsNotYetSupported: return "eTypeInferenceIsNotYetSupported";
   case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization";
   case Error::eCnt: return "<unknown>";
@@ -93,7 +93,7 @@ const char* toStr(Error::No no) {
   case Error::eObjectExpected: return "eObjectExpected";
   case Error::eParseFailed: return "eParseFailed";
   case Error::eUnexpectedCharacter: return "eUnexpectedCharacter";
-  case Error::eOnlyLocalStorageDurationApplicable: return "eOnlyLocalStorageDurationApplicable";
+  case Error::eInvalidStorageDurationInDef: return "eInvalidStorageDurationInDef";
   case Error::eTypeInferenceIsNotYetSupported: return "eTypeInferenceIsNotYetSupported";
   case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization";
   case Error::eCnt: return "<unknown>";

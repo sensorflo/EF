@@ -415,7 +415,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     a_parameter_defined_with_non_local_storage_duration,
     transform,
-    reports_eOnlyLocalStorageDurationApplicable)) {
+    reports_eInvalidStorageDurationInDef)) {
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     pe.mkFunDef("foo",
       AstFunDef::createArgs(
@@ -424,7 +424,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
           StorageDuration::eStatic)),
       new AstObjTypeSymbol(ObjTypeFunda::eInt),
       new AstNumber(42)),
-    Error::eOnlyLocalStorageDurationApplicable, "");
+    Error::eInvalidStorageDurationInDef, "");
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(

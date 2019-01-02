@@ -351,8 +351,7 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
   }
   for (const auto& arg : funDef.declaredArgs()) {
     if (arg->declaredStorageDuration() != StorageDuration::eLocal) {
-      Error::throwError(
-        m_errorHandler, Error::eOnlyLocalStorageDurationApplicable);
+      Error::throwError(m_errorHandler, Error::eInvalidStorageDurationInDef);
     }
   }
 

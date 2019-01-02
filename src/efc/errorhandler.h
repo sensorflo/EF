@@ -33,7 +33,7 @@ public:
     eRetTypeCantHaveMutQualifier,
     eMultipleInitializers,
     eObjectExpected,
-    eOnlyLocalStorageDurationApplicable,
+    eInvalidStorageDurationInDef,
     eTypeInferenceIsNotYetSupported,
     eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization,
     eParseFailed,
