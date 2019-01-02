@@ -87,6 +87,10 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
     spec);
   EXPECT_TOSTR_EQ("data(foo int noinit)",
     AstDataDef("foo", ObjTypeFunda::eInt, AstDataDef::noInit), spec);
+  EXPECT_TOSTR_EQ("data(foo static/int ())",
+    AstDataDef("foo",
+      new AstObjTypeSymbol(ObjTypeFunda::eInt),
+      StorageDuration::eStatic), spec);
 
   spec = "AstCtList";
   EXPECT_TOSTR_EQ("", AstCtList(), spec);
@@ -113,6 +117,15 @@ TEST(AstPrinterTest, MAKE_TEST_NAME2(
     AstFunDef("foo",
       AstFunDef::createArgs(new AstDataDef("arg1", ObjTypeFunda::eInt),
         new AstDataDef("arg2", ObjTypeFunda::eInt)),
+      new AstObjTypeSymbol(ObjTypeFunda::eInt), new AstNumber(42)),
+    spec);
+  EXPECT_TOSTR_EQ("fun(foo ((arg1 static/int)) int 42)",
+    AstFunDef("foo",
+      AstFunDef::createArgs(
+        new AstDataDef(
+          "arg1",
+          new AstObjTypeSymbol(ObjTypeFunda::eInt),
+          StorageDuration::eStatic)),
       new AstObjTypeSymbol(ObjTypeFunda::eInt), new AstNumber(42)),
     spec);
 
