@@ -475,16 +475,18 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
 
   for (const auto& access : {Access::eRead, Access::eWrite, Access::eTakeAddress}) {
     string spec = "Trivial example";
-    TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
       new AstSeq(
         createAccessTo("x", access),
         new AstDataDef("x")),
-      Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization, spec);
+      Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization,
+      "x", spec);
 
     spec = "Within the initializer subtree the data object is not yet considered initialized";
-    TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    TEST_ASTTRAVERSAL_REPORTS_ERROR_1MSGPARAM(
       new AstDataDef("x", ObjTypeFunda::eInt, createAccessTo("x", access)),
-      Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization, spec);
+      Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization,
+      "x", spec);
   }
 }
 

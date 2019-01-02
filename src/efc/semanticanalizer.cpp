@@ -297,7 +297,8 @@ void SemanticAnalizer::visit(AstSymbol& symbol) {
     !symbol.isInitialized() &&
     symbol.accessFromAstParent() != Access::eIgnoreValueAndAddr /*1)*/) {
     Error::throwError(m_errorHandler,
-      Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization);
+      Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization,
+      symbol.loc(), symbol.name());
   }
 
   postConditionCheck(symbol);

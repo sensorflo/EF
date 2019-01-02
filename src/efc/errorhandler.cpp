@@ -63,7 +63,7 @@ string Error::describe(Error::No no, const std::string& msgParam1,
   case Error::eUnexpectedCharacter: return "encountered unexpected character '" + msgParam1 + "'";
   case Error::eInvalidStorageDurationInDef: return "storage duration '" + msgParam1 + "' is invalid for this definition";
   case Error::eTypeInferenceIsNotYetSupported: return "currently type inference is not yet supported";
-  case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization";
+  case Error::eNonIgnoreAccessToLocalDataObjectBeforeItsInitialization: return "local object '" + msgParam1 + "' is accessed before it is initialized";
   case Error::eCnt: return "<unknown>";
     // clang-format on
   }
