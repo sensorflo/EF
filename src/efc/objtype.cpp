@@ -76,7 +76,6 @@ ObjTypeQuali::ObjTypeQuali(
   , m_qualifiers(static_cast<Qualifiers>(qualifiers | type->qualifiers()))
   , m_type((assert(type), type->unqualifiedObjType())) {
   assert(m_type);
-  assert(not(qualifiers != eNoQualifier && m_type->is(eAbstract)));
 }
 
 std::basic_ostream<char>& ObjTypeQuali::printTo(

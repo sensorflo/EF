@@ -1951,8 +1951,33 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
     an_occurence_of_type_inference,
     transform,
-    reports_an_eTypeInferenceIsNotYetSupported)) {
+    reports_a_eTypeInferenceIsNotYetSupported)) {
+  string spec = "example: data def with type 'infer'";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
-    new AstObjTypeSymbol(ObjTypeFunda::eInfer),
-    Error::eTypeInferenceIsNotYetSupported, "");
+    new AstDataDef("x",
+      new AstObjTypeSymbol(ObjTypeFunda::eInfer),
+      StorageDuration::eLocal,
+      new AstNumber(42)),
+    Error::eTypeInferenceIsNotYetSupported, spec);
+
+  spec = "example: fun def with type 'infer'";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    pe.mkFunDef("foo", ObjTypeFunda::eInfer, new AstNumber(42)),
+    Error::eTypeInferenceIsNotYetSupported, spec);
+
+  spec = "example: data def with type 'mut infer'";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstDataDef("x",
+      new AstObjTypeQuali(ObjType::eMutable, new AstObjTypeSymbol(ObjTypeFunda::eInfer)),
+      StorageDuration::eLocal,
+      new AstNumber(42)),
+    Error::eTypeInferenceIsNotYetSupported, spec);
+
+  spec = "example: data def with type 'raw*infer'";
+  TEST_ASTTRAVERSAL_REPORTS_ERROR(
+    new AstDataDef("x",
+      new AstObjTypePtr(new AstObjTypeSymbol(ObjTypeFunda::eInfer)),
+      StorageDuration::eLocal,
+      new AstNumber(42)),
+    Error::eTypeInferenceIsNotYetSupported, spec);
 }

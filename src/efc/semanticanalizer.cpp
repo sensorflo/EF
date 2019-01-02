@@ -364,6 +364,7 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
       setAccessAndCallAcceptOn(*arg, Access::eIgnoreValueAndAddr);
     }
     setAccessAndCallAcceptOn(funDef.body(), Access::eRead);
+    funDef.ret().accept(*this);
   }
 
   // -- responsibility 2 / part 2 of 2: semantic analysis
@@ -406,6 +407,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
     for (const auto arg : ctorArgs) {
       setAccessAndCallAcceptOn(*arg, Access::eRead);
     }
+    dataDef.declaredAstObjType().accept(*this);
 
     // -- responsibility 2: semantic analysis
     // currently a data object must be initialized with exactly one
@@ -559,12 +561,14 @@ void SemanticAnalizer::visit(AstObjTypeSymbol& symbol) {
 void SemanticAnalizer::visit(AstObjTypeQuali& quali) {
   // nop, everything was already done in previous passes
   preConditionCheck(quali);
+  quali.targetType().accept(*this);
   postConditionCheck(quali);
 }
 
 void SemanticAnalizer::visit(AstObjTypePtr& ptr) {
   // nop, everything was already done in previous passes
   preConditionCheck(ptr);
+  ptr.pointee().accept(*this);
   postConditionCheck(ptr);
 }
 
