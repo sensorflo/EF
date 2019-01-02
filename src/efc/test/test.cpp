@@ -64,7 +64,7 @@ string amend(const ErrorHandler& errorHandler) {
 
 string amend(const Env& env) {
   stringstream ss;
-  ss << "\nEnvironment:\n" << env;
+  ss << "\nEnvironment:\n" << env << "\n";
   return ss.str();
 }
 
@@ -111,13 +111,15 @@ void verifyErrorHandlerHasExpectedError(const ErrorHandler& errorHandler,
   Error::No expectedErrorNo, const string& expectedMsgParam1,
   const string& expectedMsgParam2, const string& expectedMsgParam3) {
   // verify no foreign exception was thrown
-  ASSERT_FALSE(foreignCatches) << "A foreign exception with description '"
-                               << exceptionWhat << "' was thrown." << details;
+  ASSERT_FALSE(foreignCatches) << "\nA foreign exception with description '"
+                               << exceptionWhat << "' was thrown.\n"
+                               << details;
 
   // verify that as expected no error was reported
   if (expectedErrorNo == Error::eNone) {
-    EXPECT_FALSE(errorHandler.hasErrors()) << "Unexpectedly errors occured:\n"
-                                           << errorHandler << details;
+    EXPECT_FALSE(errorHandler.hasErrors()) << "\nUnexpectedly errors occured:\n"
+                                           << errorHandler << "\n"
+                                           << details;
   }
 
   // verify that the actual error is as expected
@@ -125,12 +127,14 @@ void verifyErrorHandlerHasExpectedError(const ErrorHandler& errorHandler,
     const auto& errors = errorHandler.errors();
 
     ASSERT_TRUE(errorHandler.hasErrors())
-      << "expected the error '" << expectedErrorNo
-      << "' but no error at all occured." << details;
+      << "\nExpected the error '" << expectedErrorNo
+      << "', but no error at all occured.\n"
+      << details;
 
     ASSERT_EQ(1U, errors.size())
-      << "expected the single error " << expectedErrorNo
-      << " but more errors occured:" << errorHandler << details;
+      << "\nExpected the single error '" << expectedErrorNo
+      << "', but more errors occured:" << errorHandler << "\n"
+      << details;
 
     const auto& error = *errors.front();
     EXPECT_EQ(expectedErrorNo, error.no()) << details;
