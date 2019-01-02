@@ -53,9 +53,11 @@ void AstPrinter::visit(const AstCast& cast) {
 
 void AstPrinter::visit(const AstCtList& ctList) {
   auto& childs = ctList.childs();
-  for (auto i = childs.begin(); i != childs.end(); ++i) {
-    if (i != childs.begin()) { m_os << " "; }
-    (*i)->accept(*this);
+  auto isFirstIter = true;
+  for (const auto& child : childs) {
+    if (!isFirstIter) { m_os << " "; }
+    isFirstIter = false;
+    child->accept(*this);
   }
 }
 
@@ -103,12 +105,13 @@ void AstPrinter::visit(const AstFunCall& funCall) {
 
 void AstPrinter::visit(const AstFunDef& funDef) {
   m_os << "fun(" << wrapName(funDef.name()) << " (";
-  for (auto i = funDef.declaredArgs().cbegin();
-       i != funDef.declaredArgs().cend(); ++i) {
-    if (i != funDef.declaredArgs().cbegin()) { m_os << " "; }
+  auto isFirstIter = true;
+  for (const auto& arg : funDef.declaredArgs()) {
+    if (!isFirstIter) { m_os << " "; }
+    isFirstIter = false;
     // as an exception, handle parameters directly, opposed to accept *i
-    m_os << "(" << wrapName((*i)->name()) << " ";
-    (*i)->declaredAstObjType().accept(*this);
+    m_os << "(" << wrapName(arg->name()) << " ";
+    arg->declaredAstObjType().accept(*this);
     m_os << ")";
   }
   m_os << ") ";
