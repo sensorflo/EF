@@ -123,19 +123,7 @@ void AstPrinter::visit(const AstFunDef& funDef) {
 
 void AstPrinter::visit(const AstDataDef& dataDef) {
   m_os << "data(";
-
-  m_os << wrapName(dataDef.name()) << " ";
-  if (dataDef.declaredStorageDuration() != StorageDuration::eLocal) {
-    m_os << dataDef.declaredStorageDuration() << "/";
-  }
-  dataDef.declaredAstObjType().accept(*this);
-
-  if (dataDef.doNotInit()) { m_os << " noinit"; }
-  else {
-    m_os << " (";
-    dataDef.ctorArgs().accept(*this);
-    m_os << ")";
-  }
+  printNakedDataDef(dataDef);
   m_os << ")";
 }
 
@@ -192,3 +180,18 @@ void AstPrinter::visit(const AstClassDef& class_) {
   }
   m_os << ")";
 }
+
+void AstPrinter::printNakedDataDef(const AstDataDef& dataDef) {
+  m_os << wrapName(dataDef.name()) << " ";
+  if (dataDef.declaredStorageDuration() != StorageDuration::eLocal) {
+    m_os << dataDef.declaredStorageDuration() << "/";
+  }
+  dataDef.declaredAstObjType().accept(*this);
+
+  if (dataDef.doNotInit()) { m_os << " noinit"; }
+  else {
+    m_os << " (";
+    dataDef.ctorArgs().accept(*this);
+    m_os << ")";
+  }
+};

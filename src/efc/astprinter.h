@@ -37,5 +37,7 @@ private:
   void visit(const AstObjTypePtr& ptr) override;
   void visit(const AstClassDef& class_) override;
 
+  void printNakedDataDef(const AstDataDef& dataDef);
+
   std::basic_ostream<char>& m_os;
 };
