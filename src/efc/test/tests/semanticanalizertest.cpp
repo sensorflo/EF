@@ -1927,7 +1927,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME2(
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
-    a_return_expression_outside_a_function_body,
+    a_cast_WITH_an_invalid_number_of_arguments,
     transform,
     reports_eInvalidArguments)) {
 
@@ -1938,7 +1938,7 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME3(
       new AstCtList()),
     Error::eInvalidArguments, spec);
 
-  spec = "More than one argumeny";
+  spec = "More than one argument";
   TEST_ASTTRAVERSAL_REPORTS_ERROR(
     new AstCast(
       new AstObjTypeSymbol(ObjTypeFunda::eInt),
