@@ -64,7 +64,7 @@ MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 ReflowComments: false
 SortIncludes: true
-SortUsingDeclarations: false
+SortUsingDeclarations: true
 PointerAlignment: Left  
 SpaceAfterCStyleCast: false
 SpaceAfterTemplateKeyword: false

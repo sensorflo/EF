@@ -41,8 +41,8 @@ public:
     std::basic_ostream<char>* ostream = nullptr)
     : Driver(fileName, ostream){};
 
-  using Driver::m_errorHandler;
   using Driver::m_env;
+  using Driver::m_errorHandler;
 };
 
 /** Wrapps a Driver which operates on a temporary file with the content given
