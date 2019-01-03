@@ -149,8 +149,8 @@ llvm::Type* ObjTypeQuali::llvmType() const {
   return m_type->llvmType();
 }
 
-bool ObjTypeQuali::hasMember(int op) const {
-  return m_type->hasMember(op);
+bool ObjTypeQuali::hasMemberFun(int op) const {
+  return m_type->hasMemberFun(op);
 }
 
 bool ObjTypeQuali::hasConstructor(const ObjType& other) const {
@@ -261,7 +261,7 @@ llvm::Type* ObjTypeFunda::llvmType() const {
   return nullptr;
 }
 
-bool ObjTypeFunda::hasMember(int op) const {
+bool ObjTypeFunda::hasMemberFun(int op) const {
   // general rules
   // -------------
   // Abstract objects have no members at all.
@@ -482,7 +482,7 @@ llvm::Type* ObjTypeCompound::llvmType() const {
   return nullptr;
 }
 
-bool ObjTypeCompound::hasMember(int /*op*/) const {
+bool ObjTypeCompound::hasMemberFun(int /*op*/) const {
   assert(false);
   return false;
 }

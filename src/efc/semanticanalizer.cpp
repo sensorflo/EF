@@ -175,7 +175,7 @@ void SemanticAnalizer::visit(AstOperator& op) {
   // Verify that the first argument has the operator as member function.
   const auto& lhs = *argschilds.front();
   const auto& lhsObjType = lhs.object().objType();
-  if (!lhsObjType.hasMember(opop)) {
+  if (!lhsObjType.hasMemberFun(opop)) {
     Error::throwError(m_errorHandler, Error::eNoSuchMemberFun, op.loc(),
       lhsObjType.completeName(), op.funName());
   }

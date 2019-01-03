@@ -90,7 +90,7 @@ public:
   Assumes that the operands are of the same type, except for logical and/or,
   where the rhs additionaly can be of type noreturn. The argument may not be
   eSeq, since that operator is never a member. */
-  virtual bool hasMember(int op) const = 0;
+  virtual bool hasMemberFun(int op) const = 0;
   virtual bool hasConstructor(const ObjType& other) const = 0;
 
   static bool matchesFully_(const ObjType& src, const ObjType& dst);
@@ -135,7 +135,7 @@ public:
   bool is(EClass class_) const override;
   int size() const override;
   llvm::Type* llvmType() const override;
-  bool hasMember(int op) const override;
+  bool hasMemberFun(int op) const override;
   bool hasConstructor(const ObjType& other) const override;
   std::shared_ptr<const ObjType> unqualifiedObjType() const override;
 
@@ -185,7 +185,7 @@ public:
   EType type() const { return m_type; }
   llvm::Type* llvmType() const override;
 
-  bool hasMember(int op) const override;
+  bool hasMemberFun(int op) const override;
   bool hasConstructor(const ObjType& other) const override;
 
 private:
@@ -230,7 +230,7 @@ public:
   std::basic_ostream<char>& printTo(
     std::basic_ostream<char>& os) const override;
   llvm::Type* llvmType() const override;
-  bool hasMember(int) const override { return false; }
+  bool hasMemberFun(int) const override { return false; }
   bool hasConstructor(const ObjType& /*other*/) const override { return false; }
 
   bool is(EClass class_) const override;
@@ -270,7 +270,7 @@ public:
   using ObjType::match2;
   MatchType match2(const ObjTypeCompound& src, bool isLevel0) const override;
   llvm::Type* llvmType() const override;
-  bool hasMember(int) const override;
+  bool hasMemberFun(int) const override;
   bool hasConstructor(const ObjType& other) const override;
   bool is(EClass class_) const override;
   int size() const override;
