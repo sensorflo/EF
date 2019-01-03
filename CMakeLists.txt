@@ -9,7 +9,7 @@ enable_testing()
 #   -Wno-global-constructors -Wno-exit-time-destructors
 #   -Wno-documentation-unknown-command)
 # Wno-unused-parameter is due to llvm headers
-add_definitions(-std=c++14 -Wall -Wextra -Wpedantic -Wno-unused-parameter -Werror)
+add_definitions(-std=c++17 -Wall -Wextra -Wpedantic -Wno-unused-parameter -Werror)
 
 
 add_subdirectory(doc)
