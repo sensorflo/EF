@@ -1929,6 +1929,30 @@ accessible only from the current package, and protected classes are accessible
 from the current package and all it's subpackages.
 
 
+=== Static variables initializatin / module constructor
+
+static variables must be defined in a block (say "module_init ... $", or "ctor ...$"). That way initialization order of the static variables of that module is defined. Also local variables can be used in the process. Maybe distinguish between three types, i.e. three different blocks: (compile-time) constant initialization, run-time initialization.
+
+Caveats:
+
+- Order of initialization of class static and function static variables is yet unclear.
+
+
+=== Import dependencies / static init dependencies
+
+There multiple dependencies:
+
+- At compile time: of macros
+
+- At compile time: of other defined entities
+
+- At runtime: Of the module `constructor', i.e. initialization of static variables
+  * compile-time constant
+  * run-time
+
+By default an import statement says `I am dependend on all types of dependencies'. But that can also be modified. In any case EF must be in a way that the compiler can check that dependencies are not violated. E.g. at run-time a module accesses (read or write, taking address or getting (type) information is ok) a static variable of another module before that one could initialize its variable. That may involve a function attribute stating `I am not (transitively) dependend on a static variable needing runtime initialization'
+
+
 [[exchanging_module_impl]]
 === Exchanging module implementation
 Given a library L1 used by another library L2, and a user module MU using at
