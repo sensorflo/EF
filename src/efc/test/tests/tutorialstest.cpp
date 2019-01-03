@@ -19,7 +19,7 @@ void testTutorial(const string& expectedOutput, const string& executable) {
   FILE* stream = popen((executableDir + executable).c_str(), "r");
   assert(stream);
   string actualOutput;
-  while (!feof(stream)) {
+  while (feof(stream)==0) {
     char buf[1024];
     if (fgets(buf, sizeof(buf), stream) != nullptr) { actualOutput += buf; }
   }

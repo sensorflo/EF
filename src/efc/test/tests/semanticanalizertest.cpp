@@ -26,7 +26,7 @@ private:
 
 class TestingAstSymbol : public AstSymbol {
 public:
-  TestingAstSymbol(const std::string& name) : AstSymbol(name) {}
+  explicit TestingAstSymbol(const std::string& name) : AstSymbol(name) {}
   using AstSymbol::m_referencedAstObj;
 };
 

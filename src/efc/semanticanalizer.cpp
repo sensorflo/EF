@@ -103,7 +103,7 @@ void SemanticAnalizer::visit(AstBlock& block) {
   postConditionCheck(block);
 }
 
-void SemanticAnalizer::visit(AstCtList& ctList) {
+void SemanticAnalizer::visit(AstCtList& /*ctList*/) {
   // parent shall iterate itself so it can set access to each element
   // independently
   assert(false);

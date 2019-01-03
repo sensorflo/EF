@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,*,-google-build-using-namespace,-fuchsia-default-arguments,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-fuchsia-overloaded-operator,-hicpp-no-array-decay,-llvm-namespace-comment,-cert-err58-cpp,-google-readability-namespace-comments,-readability-named-parameter'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,*,-google-build-using-namespace,-fuchsia-default-arguments,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-fuchsia-overloaded-operator,-hicpp-no-array-decay,-llvm-namespace-comment,-cert-err58-cpp,-google-readability-namespace-comments,-readability-named-parameter,-google-default-arguments,-google-readability-todo'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*/efc/(test/(testhelpers/)?)?\w*\.h'
 AnalyzeTemporaryDtors: false
@@ -89,7 +89,7 @@ CheckOptions:
   - key:             hicpp-member-init.IgnoreArrays
     value:           '0'
   - key:             hicpp-move-const-arg.CheckTriviallyCopyableMove
-    value:           '1'
+    value:           '0'
   - key:             hicpp-named-parameter.IgnoreFailedSplit
     value:           '0'
   - key:             hicpp-no-malloc.Allocations
