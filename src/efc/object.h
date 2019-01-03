@@ -61,12 +61,11 @@ public:
 
 private:
   enum Phase { eStart, eAllocated, eInitialized };
-  union {
-    /** in case isStoredInMemory() is true: points to the IR object */
-    llvm::Value* m_irAddrOfIrObject;
-    /** in case isStoredInMemory() is false: directly the IR object. I.e. the
-    IR object is an SSA value. */
-    llvm::Value* m_irValueOfObject;
-  };
+
+  /** Only used if isStoredInMemory() is true: points to the IR object */
+  llvm::Value* m_irAddrOfIrObject;
+  /** Only used if isStoredInMemory() is false: directly the IR object. I.e. the
+  IR object is an SSA value. */
+  llvm::Value* m_irValueOfObject;
   Phase m_phase;
 };

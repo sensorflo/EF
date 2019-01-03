@@ -13,6 +13,7 @@ using namespace llvm;
 
 Object::Object()
   : m_isModifiedOrRevealsAddr{false}
+  , m_irAddrOfIrObject{nullptr}
   , m_irValueOfObject{nullptr}
   , m_phase{eStart} {
 }
