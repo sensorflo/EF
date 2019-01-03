@@ -15,12 +15,18 @@ SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler)
 }
 
 void SemanticAnalizer::analyze(AstNode& root) {
+  // 'pass 0': Parser created AST and did some responsibilities on the fly, see
+  // also GenParserExt.
+
+  // pass 1 over AST: EnvInserter
   EnvInserter envinserter(m_env, m_errorHandler);
   envinserter.insertIntoEnv(root);
 
+  // pass 2 over AST: SignatureAugmentor
   SignatureAugmentor signatureaugmentor(m_env, m_errorHandler);
   signatureaugmentor.augmentEntities(root);
 
+  // pass 3 over AST: SemanticAnalizer itself
   root.setAccessFromAstParent(Access::eIgnoreValueAndAddr);
   root.accept(*this);
 }

@@ -810,6 +810,9 @@ shared_ptr<const ObjType> AstObjTypeSymbol::objTypeAsSp() const {
   return m_objType;
 }
 
+// @todo the current implementation assumes that we already know the object type
+//       template named m_name, and thus can instantiate it (with zero template
+//       args).
 void AstObjTypeSymbol::createAndSetObjType() {
   assert(!m_objType); // it doesn't make sense to set it twice
   m_objType = make_shared<ObjTypeFunda>(toType(m_name));

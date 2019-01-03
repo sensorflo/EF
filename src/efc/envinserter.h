@@ -5,9 +5,8 @@ class Env;
 class ErrorHandler;
 class ObjType;
 
-/** Each definition occuring in AST inserts a new node into the environment,
-and associate the AST node being the definition and the new node. Of each
-node, only it's name and it's meta type is yet defined. */
+/** Each AST node being an definition inserts itself, also being an EnvNode,
+into the environment. */
 class EnvInserter : private AstDefaultIterator {
 public:
   EnvInserter(Env& env, ErrorHandler& errorHandler);

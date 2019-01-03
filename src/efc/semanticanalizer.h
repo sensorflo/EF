@@ -11,7 +11,8 @@ class ObjType;
 
 /** Does semenatic analysis by inserting AST nodes where needed or reporting
 errors via the ErrorHandler.  Some of these responsibilities were already done
-by PerserExt, see there. */
+by GenParserExt, see there, and some responsibilities are delegated to others,
+see analyze(AstNode& root). */
 class SemanticAnalizer : private AstVisitor {
 public:
   SemanticAnalizer(Env& env, ErrorHandler& errorHandler);
