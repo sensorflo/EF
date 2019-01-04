@@ -25,7 +25,7 @@ void IrGenForwardDeclarator::visit(AstDataDef& dataDef) {
     const auto addr = new GlobalVariable(m_module, dataDef.objType().llvmType(),
       !(dataDef.objType().qualifiers() & ObjType::eMutable),
       GlobalValue::InternalLinkage, nullptr, dataDef.fqName());
-    dataDef.setAddrOfIrObject(addr);
+    dataDef.ir().setAddrOfIrObject(addr);
   }
 }
 
@@ -48,5 +48,5 @@ void IrGenForwardDeclarator::visit(AstFunDef& funDef) {
   // environment said the name is unique.
   assert(functionIr->getName() == funDef.fqName());
 
-  funDef.setAddrOfIrObject(functionIr);
+  funDef.ir().setAddrOfIrObject(functionIr);
 }

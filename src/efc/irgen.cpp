@@ -60,7 +60,7 @@ unique_ptr<Module> IrGen::genIr(AstNode& root) {
 
 llvm::Value* IrGen::callAcceptOn(AstObject& node) {
   node.accept(*this);
-  return node.object().irValueOfIrObject(m_builder);
+  return node.object().ir().irValueOfIrObject(m_builder);
 }
 
 void IrGen::visit(AstNop& nop) {
@@ -178,10 +178,10 @@ void IrGen::visit(AstOperator& op) {
   }
   else if (op.op() == AstOperator::eAddrOf) {
     astOperands.front()->accept(*this);
-    llvmResult = astOperands.front()->object().irAddrOfIrObject();
+    llvmResult = astOperands.front()->object().ir().irAddrOfIrObject();
   }
   else if (op.op() == AstOperator::eDeref) {
-    op.object().referToIrObject(callAcceptOn(*astOperands.front()));
+    op.object().ir().referToIrObject(callAcceptOn(*astOperands.front()));
   }
 
   // binary logical short circuit operators
@@ -228,7 +228,7 @@ void IrGen::visit(AstOperator& op) {
     astOperands.front()->accept(*this);
     auto llvmRhs = callAcceptOn(*astOperands.back());
     m_builder.CreateStore(
-      llvmRhs, astOperands.front()->object().irAddrOfIrObject());
+      llvmRhs, astOperands.front()->object().ir().irAddrOfIrObject());
     if (op.op() == AstOperator::eVoidAssign) {
       llvmResult = m_abstractObject; // void
     }
@@ -323,7 +323,7 @@ void IrGen::visit(AstSymbol& symbol) {
 
 void IrGen::visit(AstFunDef& funDef) {
   const auto functionIr =
-    static_cast<llvm::Function*>(funDef.irAddrOfIrObject());
+    static_cast<llvm::Function*>(funDef.ir().irAddrOfIrObject());
   assert(functionIr);
 
   if (m_builder.GetInsertBlock()) {
@@ -359,7 +359,7 @@ void IrGen::visit(AstFunDef& funDef) {
 void IrGen::visit(AstFunCall& funCall) {
   funCall.address().accept(*this);
   auto callee =
-    static_cast<Function*>(funCall.address().object().irAddrOfIrObject());
+    static_cast<Function*>(funCall.address().object().ir().irAddrOfIrObject());
   assert(callee);
 
   const auto& astArgs = funCall.args().childs();
@@ -403,7 +403,7 @@ void IrGen::visit(AstDataDef& dataDef) {
 
   // allocate, if not allready done, and initialize.
   if (dataDef.storageDuration() == StorageDuration::eStatic) {
-    dataDef.initializeIrObject(initObj, m_builder);
+    dataDef.ir().initializeIrObject(initObj, m_builder);
   }
   else if (dataDef.storageDuration() == StorageDuration::eLocal) {
     allocateAndInitLocalIrObjectFor(dataDef, initObj, dataDef.name());
@@ -534,7 +534,7 @@ void IrGen::allocateAndInitLocalIrObjectFor(
     const auto functionIr = m_builder.GetInsertBlock()->getParent();
     const auto addr = createAllocaInEntryBlock(
       functionIr, name, astObject.object().objType().llvmType());
-    astObject.object().setAddrOfIrObject(addr);
+    astObject.object().ir().setAddrOfIrObject(addr);
   }
   else {
     // nop: the IR object is stored in an SSA value which will be defined in
@@ -542,9 +542,9 @@ void IrGen::allocateAndInitLocalIrObjectFor(
     // Note that the name is ignored, i.e. the SSA value will not have the
     // name of the local, but the name as defined by the IR instruction having
     // defined the SSA value.
-    astObject.object().irObjectIsAnSsaValue();
+    astObject.object().ir().irObjectIsAnSsaValue();
   }
-  astObject.object().initializeIrObject(irInitializer, m_builder);
+  astObject.object().ir().initializeIrObject(irInitializer, m_builder);
 }
 
 /** \internal We want allocas in the entry block to facilitate llvm's mem2reg

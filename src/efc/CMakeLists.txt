@@ -90,6 +90,7 @@ set(SRCS
   irgen.cpp
   irgenforwarddeclarator.cpp
   object.cpp
+  object_irpart.cpp
   objtype.cpp
   objtype2.cpp
   objtypetemplate.cpp
