@@ -5,7 +5,7 @@
 
 class ObjType;
 
-class FreeFromAstObject : public Object {
+class FreeFromAstObject : public ConcreteObject {
 public:
   FreeFromAstObject(std::shared_ptr<const ObjType>);
 

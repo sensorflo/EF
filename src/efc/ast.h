@@ -91,7 +91,7 @@ public:
 };
 
 /** AstObject directly being an Object, as opposed to refering to an Object. */
-class AstObjInstance : public AstObject, public Object {
+class AstObjInstance : public AstObject, public ConcreteObject {
 public:
   AstObjInstance(Location loc = s_nullLoc);
 
@@ -422,7 +422,7 @@ private:
 /** KLUDGE: In case of operators returning 'by reference' (eAssign and
 eDeref), the inheritance from AstObjInstance is not correct; in those cases
 we should derive from AstObject. */
-class AstOperator : public AstObject, private Object {
+class AstOperator : public AstObject, private ConcreteObject {
 public:
   enum EOperation {
     eVoidAssign = '=', // type of expr is void
@@ -491,7 +491,7 @@ public:
 private:
   // -- overrides for Object
   // !see class comment! Private so they are not called accidentaly, callers
-  // must go via object()
+  // must go via object()b
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
   StorageDuration storageDuration() const override;
