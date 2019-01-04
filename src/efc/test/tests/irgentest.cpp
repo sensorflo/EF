@@ -828,7 +828,7 @@ TEST_F(IrGenTest, MAKE_TEST_NAME(
 }
 
 TEST_F(IrGenTest, MAKE_TEST_NAME2(
-    GIVEN_a_function_call_before_that_functions_defintion,
+    GIVEN_a_function_call_before_that_functions_definition,
     THEN_that_changes_nothing)) {
   TEST_GEN_IR_IN_IMPLICIT_MAIN(
     new AstSeq(

@@ -1781,6 +1781,20 @@ TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
 }
 
 TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
+    a_function_call_preceding_the_function_definition,
+    transform,
+    succeeds)) {
+  TEST_ASTTRAVERSAL_SUCCEEDS_WITHOUT_ERRORS(
+    new AstSeq(
+      new AstFunCall(new AstSymbol("foo"), new AstCtList()),
+      pe.mkFunDef("foo",
+        AstFunDef::createArgs(),
+        new AstObjTypeSymbol(ObjTypeFunda::eInt),
+        new AstNumber(42))),
+    "");
+}
+
+TEST_F(SemanticAnalizerTest, MAKE_TEST_NAME(
     an_operator_WITH_an_argument_whose_obj_type_does_not_have_that_operator_as_member,
     transform,
     reports_eNoSuchMemberFun)) {
