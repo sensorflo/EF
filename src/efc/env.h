@@ -72,6 +72,13 @@ private:
   NEITHER_COPY_NOR_MOVEABLE(Env);
   friend std::ostream& operator<<(std::ostream&, const Env&);
 
+  class RootNode : public EnvNode {
+  public:
+    explicit RootNode(std::string name) : EnvNode{move(name)} {}
+    ~RootNode() override = default;
+    std::string description() const override { return "EnvRootNode"; }
+  };
+
   bool insertScopeAndDescent(EnvNode& node);
   void descentScope(EnvNode& node);
   void ascentScope();
@@ -81,7 +88,7 @@ private:
   comment. */
   void letLooseNodes();
 
-  EnvNode m_rootScope;
+  RootNode m_rootScope;
   /** Guaranteed to be non-null. We're not the owner. */
   EnvNode* m_currentScope;
 };

@@ -14,13 +14,17 @@ public:
   const std::string& name() const;
   const std::string& fqName() const;
 
+  virtual std::string description() const = 0;
+
+  bool insert(EnvNode& node);
+  /** Searches only within childs of this node */
+  EnvNode* find(const std::string& name);
+
 private:
   NEITHER_COPY_NOR_MOVEABLE(EnvNode);
 
   friend class Env;
 
-  bool insert(EnvNode& node);
-  EnvNode* find(const std::string& name);
   std::string createFqName() const;
 
   const std::string m_name;

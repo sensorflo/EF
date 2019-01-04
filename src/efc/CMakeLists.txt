@@ -91,6 +91,8 @@ set(SRCS
   irgenforwarddeclarator.cpp
   object.cpp
   objtype.cpp
+  objtype2.cpp
+  objtypetemplate.cpp
   parser.cpp
   scanner.cpp
   genparserext.cpp

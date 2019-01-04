@@ -115,6 +115,10 @@ private:
 class AstObjDef : public AstObjInstance, public EnvNode {
 public:
   // -- overrides for EnvNode
+  // @todo
+  std::string description() const override { return name(); }
+
+  // @todo I think this is superfluous
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
 
   // -- misc
@@ -153,6 +157,10 @@ public:
 class AstBlock : public AstObjInstance, public EnvNode {
 public:
   AstBlock(AstObject* body, Location loc = s_nullLoc);
+
+  // -- overrides for EnvNode
+  // @todo
+  std::string description() const override { return "block"; }
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
