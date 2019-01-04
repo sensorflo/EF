@@ -5,11 +5,12 @@ class Env;
 class ErrorHandler;
 class ObjType;
 
-/** Two responsibilities.
-1. 'Type template instanciaton'. AstObjType s create their associated
-   ObjType. EF does not yet have templates; but the builtin types raw pointer
-   and raw array can be viewed as type templates.
-2. Each definition occuring in AST is augmented with it's signature. */
+/** 'Object type template instanciaton'. Currently that means that each
+AstObjType node does the instanciation it represents.
+
+An AST subtree representing a type expression, i.e. all nodes are of type
+AstObjType, really denotes a template instantiation. E.g. "*int" (EF syntax) is
+short for "raw_ptr<int>" (using C++ syntax, since EF syntax is not yet there) */
 class SignatureAugmentor : private AstDefaultIterator {
 public:
   SignatureAugmentor(Env& env, ErrorHandler& errorHandler);
