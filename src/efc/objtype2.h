@@ -142,7 +142,7 @@ public:
   MatchType match(const ObjType& dst) const;
   bool matchesFully(const ObjType& dst) const;
   /** @todo: rename sauf -> except */
-  bool matchesSaufQualifiers(const ObjType& dst) const;
+  bool matchesExceptQualifiers(const ObjType& dst) const;
 
   // todo: rename to defaultObjType. or even something better. Its currently
   // always (I think) used for (simple) type deduction.

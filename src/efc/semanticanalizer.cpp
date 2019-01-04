@@ -64,7 +64,7 @@ void SemanticAnalizer::visit(AstCast& cast) {
   const auto& specifiedNewObjType = cast.specifiedNewAstObjType().objType();
   const auto& operand = cast.args().childs().front();
   const auto& operandObjType = operand->object().objType();
-  if (!specifiedNewObjType.matchesSaufQualifiers(operandObjType) &&
+  if (!specifiedNewObjType.matchesExceptQualifiers(operandObjType) &&
     !specifiedNewObjType.hasConstructor(operandObjType)) {
     Error::throwError(m_errorHandler, Error::eNoSuchCtor, cast.loc(),
       operandObjType.completeName(), specifiedNewObjType.completeName());
@@ -145,15 +145,16 @@ void SemanticAnalizer::visit(AstOperator& op) {
     auto& lhs = argschilds.front()->object().objType();
     auto& rhs = argschilds.back()->object().objType();
     if (op.class_() == AstOperator::eLogical) {
-      if (!lhs.matchesSaufQualifiers(rhs) &&
+      if (!lhs.matchesExceptQualifiers(rhs) &&
         (!op.isBinaryLogicalShortCircuit() ||
-          !rhs.matchesSaufQualifiers(ObjTypeFunda(ObjTypeFunda::eNoreturn)))) {
+          !rhs.matchesExceptQualifiers(
+            ObjTypeFunda(ObjTypeFunda::eNoreturn)))) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
           op.loc(), rhs.completeName(), lhs.completeName());
       }
     }
     else if (class_ != AstOperator::eOther) {
-      if (!lhs.matchesSaufQualifiers(rhs)) {
+      if (!lhs.matchesExceptQualifiers(rhs)) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
           op.loc(), rhs.completeName(), lhs.completeName());
       }
@@ -336,7 +337,7 @@ void SemanticAnalizer::visit(AstFunCall& funCall) {
   for (; argCallIter != argCallEnd; ++argCallIter, ++argCalleeIter) {
     const auto& argCallObjType = (*argCallIter)->object().objType();
     const auto& argCalleeObjType = **argCalleeIter;
-    if (!argCallObjType.matchesSaufQualifiers(argCalleeObjType)) {
+    if (!argCallObjType.matchesExceptQualifiers(argCalleeObjType)) {
       Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
         (*argCallIter)->loc(), argCallObjType.completeName(),
         argCalleeObjType.completeName());
@@ -380,7 +381,7 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 
   // -- responsibility 2 / part 2 of 2: semantic analysis
   const auto& bodyObjType = funDef.body().object().objType();
-  if (!bodyObjType.matchesSaufQualifiers(retObjType) &&
+  if (!bodyObjType.matchesExceptQualifiers(retObjType) &&
     !bodyObjType.isNoreturn()) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
       funDef.body().loc(), bodyObjType.completeName(),
@@ -461,7 +462,7 @@ void SemanticAnalizer::visit(AstIf& if_) {
 
   // -- responsibility 2: semantic analysis
   const auto& conditionObjType = if_.condition().object().objType();
-  if (!conditionObjType.matchesSaufQualifiers(
+  if (!conditionObjType.matchesExceptQualifiers(
         ObjTypeFunda(ObjTypeFunda::eBool))) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
       if_.condition().loc(), conditionObjType.completeName(),
@@ -477,7 +478,7 @@ void SemanticAnalizer::visit(AstIf& if_) {
   if (if_.elseAction()) {
     auto& lhs = if_.action().object().objType();
     auto& rhs = if_.elseAction()->object().objType();
-    if (!lhs.matchesSaufQualifiers(rhs)) {
+    if (!lhs.matchesExceptQualifiers(rhs)) {
       if (!actionIsOfTypeNoreturn && !rhs.isNoreturn()) {
         Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
           if_.loc(), rhs.completeName(), lhs.completeName());
@@ -513,7 +514,7 @@ void SemanticAnalizer::visit(AstLoop& loop) {
 
   // -- responsibility 2: semantic analysis
   const auto& conditionObjType = loop.condition().object().objType();
-  if (!conditionObjType.matchesSaufQualifiers(
+  if (!conditionObjType.matchesExceptQualifiers(
         ObjTypeFunda(ObjTypeFunda::eBool))) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
       loop.condition().loc(), conditionObjType.completeName(),
@@ -550,7 +551,7 @@ void SemanticAnalizer::visit(AstReturn& return_) {
   }
   const auto& definedReturnObjType = m_funRetAstObjTypes.top()->objType();
   const auto& returnedObjType = ctorArgs.front()->object().objType();
-  if (!returnedObjType.matchesSaufQualifiers(definedReturnObjType)) {
+  if (!returnedObjType.matchesExceptQualifiers(definedReturnObjType)) {
     Error::throwError(m_errorHandler, Error::eNoImplicitConversion,
       return_.loc(), returnedObjType.completeName(),
       definedReturnObjType.completeName());

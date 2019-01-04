@@ -63,7 +63,7 @@ public:
   bool isVoid() const;
   bool isNoreturn() const;
   bool matchesFully(const ObjType& dst) const;
-  bool matchesSaufQualifiers(const ObjType& dst) const;
+  bool matchesExceptQualifiers(const ObjType& dst) const;
   /** eMatchButAllQualifiersAreWeaker means that other has weaker qualifiers than
   this, likewise for eMatchButAnyQualifierIsStronger. */
   virtual MatchType match(const ObjType& dst, bool isLevel0 = true) const = 0;
@@ -99,7 +99,7 @@ public:
   virtual bool hasConstructor(const ObjType& other) const = 0;
 
   static bool matchesFully_(const ObjType& src, const ObjType& dst);
-  static bool matchesSaufQualifiers_(const ObjType& src, const ObjType& dst);
+  static bool matchesExceptQualifiers_(const ObjType& src, const ObjType& dst);
 
   virtual std::shared_ptr<const ObjType> unqualifiedObjType() const;
 

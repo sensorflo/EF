@@ -57,7 +57,7 @@ bool ObjType::matchesFully(const ObjType& dst) const {
   return match(dst) == eFullMatch;
 }
 
-bool ObjType::matchesSaufQualifiers(const ObjType& dst) const {
+bool ObjType::matchesExceptQualifiers(const ObjType& dst) const {
   return match(dst) != eNoMatch;
 }
 
@@ -126,7 +126,7 @@ FindFunResult FunUnqualifiedObjType::matchArguments(
     // base case of 'recursion': param type is pointer
     // @todo conceptuall only if its autoderef initialzer (adi) pointer
     if (param1ObjType.isRawPtr()) {
-      if (arg1ObjType.matchesSaufQualifiers(param1ObjType)) {
+      if (arg1ObjType.matchesExceptQualifiers(param1ObjType)) {
         return {eFound, 1, 0, "", nullptr};
       }
       return {eAnArgMismatches, 1, 0, "", nullptr};

@@ -73,7 +73,7 @@ std::string amend(const Env& env);
 
 #define EXPECT_MATCHES_SAUF_QUALIFIERS(expected_obj_type, actual_obj_type) \
   EXPECT_PRED2(                                                            \
-    ObjType::matchesSaufQualifiers_, expected_obj_type, actual_obj_type)
+    ObjType::matchesExceptQualifiers, expected_obj_type, actual_obj_type)
 
 template<typename T>
 std::basic_ostream<char>& operator<<(

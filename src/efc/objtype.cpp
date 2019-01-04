@@ -25,7 +25,7 @@ bool ObjType::matchesFully(const ObjType& dst) const {
   return match(dst) == eFullMatch;
 }
 
-bool ObjType::matchesSaufQualifiers(const ObjType& dst) const {
+bool ObjType::matchesExceptQualifiers(const ObjType& dst) const {
   return this->match(dst) != eNoMatch;
 }
 
@@ -330,8 +330,9 @@ bool ObjType::matchesFully_(const ObjType& src, const ObjType& dest) {
   return src.matchesFully(dest);
 }
 
-bool ObjType::matchesSaufQualifiers_(const ObjType& src, const ObjType& dest) {
-  return src.matchesSaufQualifiers(dest);
+bool ObjType::matchesExceptQualifiers_(
+  const ObjType& src, const ObjType& dest) {
+  return src.matchesExceptQualifiers(dest);
 }
 
 ObjTypePtr::ObjTypePtr(shared_ptr<const ObjType> pointee)
