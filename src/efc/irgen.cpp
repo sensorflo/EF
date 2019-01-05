@@ -60,7 +60,7 @@ unique_ptr<Module> IrGen::genIr(AstNode& root) {
 
 llvm::Value* IrGen::callAcceptOn(AstObject& node) {
   node.accept(*this);
-  return node.object().ir().irValueOfIrObject(m_builder);
+  return node.ir().irValueOfIrObject(m_builder);
 }
 
 void IrGen::visit(AstNop& nop) {
@@ -78,8 +78,8 @@ void IrGen::visit(AstCast& cast) {
   llvm::Value* irResult = nullptr;
 
   // At this point, AstCast is always between fundamental types
-  const auto& oldtype = dynamic_cast<const ObjTypeFunda&>(
-    cast.args().childs().front()->object().objType());
+  const auto& oldtype =
+    dynamic_cast<const ObjTypeFunda&>(cast.args().childs().front()->objType());
   const auto& newtype = dynamic_cast<const ObjTypeFunda&>(cast.objType());
   auto oldsize = oldtype.size();
   auto newsize = newtype.size();
@@ -178,10 +178,10 @@ void IrGen::visit(AstOperator& op) {
   }
   else if (op.op() == AstOperator::eAddrOf) {
     astOperands.front()->accept(*this);
-    llvmResult = astOperands.front()->object().ir().irAddrOfIrObject();
+    llvmResult = astOperands.front()->ir().irAddrOfIrObject();
   }
   else if (op.op() == AstOperator::eDeref) {
-    op.object().ir().referToIrObject(callAcceptOn(*astOperands.front()));
+    op.ir().referToIrObject(callAcceptOn(*astOperands.front()));
   }
 
   // binary logical short circuit operators
@@ -228,7 +228,7 @@ void IrGen::visit(AstOperator& op) {
     astOperands.front()->accept(*this);
     auto llvmRhs = callAcceptOn(*astOperands.back());
     m_builder.CreateStore(
-      llvmRhs, astOperands.front()->object().ir().irAddrOfIrObject());
+      llvmRhs, astOperands.front()->ir().irAddrOfIrObject());
     if (op.op() == AstOperator::eVoidAssign) {
       llvmResult = m_abstractObject; // void
     }
@@ -242,8 +242,7 @@ void IrGen::visit(AstOperator& op) {
   else if (astOperands.size() == 2) {
     auto llvmLhs = callAcceptOn(*astOperands.front());
     auto llvmRhs = callAcceptOn(*astOperands.back());
-    if (astOperands.front()->object().objType().is(
-          ObjType::eStoredAsIntegral)) {
+    if (astOperands.front()->objType().is(ObjType::eStoredAsIntegral)) {
       switch (op.op()) {
         // clang-format off
       case AstOperator::eSub      : llvmResult = m_builder.CreateSub   (llvmLhs, llvmRhs, "sub"); break;
@@ -274,7 +273,7 @@ void IrGen::visit(AstOperator& op) {
   else {
     assert(astOperands.size() == 1);
     const auto& operand = astOperands.front();
-    const auto& objType = operand->object().objType();
+    const auto& objType = operand->objType();
     auto llvmOperand = callAcceptOn(*operand);
 
     if (objType.is(ObjType::eStoredAsIntegral)) {
@@ -345,8 +344,8 @@ void IrGen::visit(AstFunDef& funDef) {
 
   Value* bodyVal = callAcceptOn(funDef.body());
   assert(bodyVal);
-  if (funDef.body().object().objType().isVoid()) { m_builder.CreateRetVoid(); }
-  else if (!funDef.body().object().objType().isNoreturn()) {
+  if (funDef.body().objType().isVoid()) { m_builder.CreateRetVoid(); }
+  else if (!funDef.body().objType().isNoreturn()) {
     m_builder.CreateRet(bodyVal);
   }
 
@@ -359,7 +358,7 @@ void IrGen::visit(AstFunDef& funDef) {
 void IrGen::visit(AstFunCall& funCall) {
   funCall.address().accept(*this);
   auto callee =
-    static_cast<Function*>(funCall.address().object().ir().irAddrOfIrObject());
+    static_cast<Function*>(funCall.address().ir().irAddrOfIrObject());
   assert(callee);
 
   const auto& astArgs = funCall.args().childs();
@@ -372,7 +371,7 @@ void IrGen::visit(AstFunCall& funCall) {
   }
 
   const auto& objTypeFun =
-    dynamic_cast<const ObjTypeFun&>(funCall.address().object().objType());
+    dynamic_cast<const ObjTypeFun&>(funCall.address().objType());
   Value* llvmResult{};
   if (objTypeFun.ret().isVoid()) {
     m_builder.CreateCall(callee, llvmArgs);
@@ -427,9 +426,7 @@ void IrGen::visit(AstIf& if_) {
   m_builder.SetInsertPoint(ThenFirstBB);
   Value* thenValue = callAcceptOn(if_.action());
   assert(thenValue);
-  if (!if_.action().object().objType().isNoreturn()) {
-    m_builder.CreateBr(MergeBB);
-  }
+  if (!if_.action().objType().isNoreturn()) { m_builder.CreateBr(MergeBB); }
   BasicBlock* ThenLastBB = m_builder.GetInsertBlock();
 
   // elseFirstBB:
@@ -439,7 +436,7 @@ void IrGen::visit(AstIf& if_) {
   if (if_.elseAction()) {
     elseValue = callAcceptOn(*if_.elseAction());
     assert(elseValue);
-    if (!if_.elseAction()->object().objType().isNoreturn()) {
+    if (!if_.elseAction()->objType().isNoreturn()) {
       m_builder.CreateBr(MergeBB);
     }
   }
@@ -486,9 +483,7 @@ void IrGen::visit(AstLoop& loop) {
   functionIr->getBasicBlockList().push_back(bodyBB);
   m_builder.SetInsertPoint(bodyBB);
   callAcceptOn(loop.body());
-  if (!loop.body().object().objType().isNoreturn()) {
-    m_builder.CreateBr(condBB);
-  }
+  if (!loop.body().objType().isNoreturn()) { m_builder.CreateBr(condBB); }
 
   // afterBB:
   functionIr->getBasicBlockList().push_back(afterBB);
@@ -503,9 +498,7 @@ void IrGen::visit(AstReturn& return_) {
   assert(ctorArgs.size() == 1U);
   Value* retVal = callAcceptOn(*ctorArgs.front());
   assert(retVal);
-  if (ctorArgs.front()->object().objType().isVoid()) {
-    m_builder.CreateRetVoid();
-  }
+  if (ctorArgs.front()->objType().isVoid()) { m_builder.CreateRetVoid(); }
   else {
     m_builder.CreateRet(retVal);
   }
@@ -530,11 +523,11 @@ void IrGen::visit(AstClassDef& class_) {
 
 void IrGen::allocateAndInitLocalIrObjectFor(
   AstObject& astObject, Value* irInitializer, const string& name) {
-  if (astObject.object().isStoredInMemory()) {
+  if (astObject.isStoredInMemory()) {
     const auto functionIr = m_builder.GetInsertBlock()->getParent();
     const auto addr = createAllocaInEntryBlock(
-      functionIr, name, astObject.object().objType().llvmType());
-    astObject.object().ir().setAddrOfIrObject(addr);
+      functionIr, name, astObject.objType().llvmType());
+    astObject.ir().setAddrOfIrObject(addr);
   }
   else {
     // nop: the IR object is stored in an SSA value which will be defined in
@@ -542,9 +535,9 @@ void IrGen::allocateAndInitLocalIrObjectFor(
     // Note that the name is ignored, i.e. the SSA value will not have the
     // name of the local, but the name as defined by the IR instruction having
     // defined the SSA value.
-    astObject.object().ir().irObjectIsAnSsaValue();
+    astObject.ir().irObjectIsAnSsaValue();
   }
-  astObject.object().ir().initializeIrObject(irInitializer, m_builder);
+  astObject.ir().initializeIrObject(irInitializer, m_builder);
 }
 
 /** \internal We want allocas in the entry block to facilitate llvm's mem2reg

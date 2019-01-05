@@ -76,7 +76,7 @@ private:
   const Location m_loc;
 };
 
-class AstObject : public AstNode {
+class AstObject : public AstNode, public virtual Object {
 public:
   AstObject(Location loc = s_nullLoc) : AstNode(std::move(loc)) {}
 
@@ -86,8 +86,6 @@ public:
   // -- new virtual methods
   virtual Access accessFromAstParent() const = 0;
   virtual bool isCTConst() const { return false; }
-  virtual Object& object() = 0;
-  virtual const Object& object() const = 0;
 };
 
 /** AstObject directly being an Object, as opposed to refering to an Object. */
@@ -100,10 +98,6 @@ public:
 
   // -- overrides for AstObject
   Access accessFromAstParent() const override;
-
-  // -- new virtual methods
-  Object& object() override { return *this; }
-  const Object& object() const override { return *this; }
 
 private:
   /** How the parent AST node accesses the Object associate to this AST
@@ -343,7 +337,7 @@ private:
 };
 
 /** Here symbol as an synonym to identifier */
-class AstSymbol : public AstObject {
+class AstSymbol : public AstObject, public ObjectDelegate {
 public:
   AstSymbol(std::string name, Location loc = s_nullLoc);
 
@@ -354,26 +348,22 @@ public:
 
   // -- overrides for AstObject
   Access accessFromAstParent() const override;
-  Object& object() override;
-  const Object& object() const override;
 
-  // -- overrides for Object
-  virtual const ObjType& objType() const;
-  virtual std::shared_ptr<const ObjType> objTypeAsSp() const;
-  virtual StorageDuration storageDuration() const;
+  // -- overrides for ObjectDelegate
+  Object& referencedObj() const override;
 
   // -- childs of this node
   const std::string& name() const { return m_name; }
 
   // -- misc
-  void setreferencedAstObjAndPropagateAccess(AstObjDef&);
+  void setreferencedObjAndPropagateAccess(AstObjDef&);
   bool isInitialized() const;
 
 private:
   friend class TestingAstSymbol;
 
   // -- associated object
-  AstObjDef* m_referencedAstObj;
+  AstObjDef* m_referencedObj;
   /** See AstObjInstance::m_accessFromAstParent */
   Access m_accessFromAstParent;
 
@@ -407,10 +397,7 @@ private:
   const std::unique_ptr<AstCtList> m_args;
 };
 
-/** KLUDGE: In case of operators returning 'by reference' (eAssign and
-eDeref), the inheritance from AstObjInstance is not correct; in those cases
-we should derive from AstObject. */
-class AstOperator : public AstObject, private ConcreteObject {
+class AstOperator : public AstObject, public ObjectDelegate {
 public:
   enum EOperation {
     eVoidAssign = '=', // type of expr is void
@@ -453,8 +440,9 @@ public:
 
   // -- overrides for AstObject
   Access accessFromAstParent() const override;
-  Object& object() override;
-  const Object& object() const override;
+
+  // -- overrides for ObjectDelegate
+  Object& referencedObj() const override;
 
   // -- childs of this node
   EOperation op() const { return m_op; }
@@ -469,7 +457,6 @@ public:
   void setReferencedObjAndPropagateAccess(std::unique_ptr<Object>);
   void setReferencedObjAndPropagateAccess(Object&);
   void setObjType(std::shared_ptr<const ObjType>);
-  void setStorageDuration(StorageDuration);
   static EClass classOf(AstOperator::EOperation op);
   /** In case of ambiguity, chooses the binary operator */
   static EOperation toEOperationPreferingBinary(const std::string& op);
@@ -477,30 +464,23 @@ public:
   static EOperation toEOperation(const std::string& op);
 
 private:
-  // -- overrides for Object
-  // !see class comment! Private so they are not called accidentaly, callers
-  // must go via object()b
-  const ObjType& objType() const override;
-  std::shared_ptr<const ObjType> objTypeAsSp() const override;
-  StorageDuration storageDuration() const override;
-
   friend std::basic_ostream<char>& operator<<(
     std::basic_ostream<char>&, AstOperator::EOperation);
 
+  /** Returns true if the operator returns by reference */
+  bool returnsByRef() const;
+
   // -- associated object
-  /** For operands which return by reference: Currently only
-  AstOperator::eAssign */
+  /** For operators where returnsByRef() is false, points to *m_obj; otherwise
+  it points to the object to be returned by reference. */
   Object* m_referencedObj;
+  /** Is only set if returnsByRef() is true _and_ we have to take ownership of
+  the Object to be returned by reference */
+  std::unique_ptr<Object> m_foreignObj;
+  /** Is only set if returnsByRef() is false */
+  std::unique_ptr<FullConcreteObject> m_obj;
   /** See AstObjInstance::m_accessFromAstParent */
   Access m_accessFromAstParent;
-  /** For the case we must be the owner of m_referencedObj's pointee */
-  std::unique_ptr<Object> m_dummy;
-  /** In case m_referencedObj is non-nullptr, redundant to
-  m_referencedObj->objTypeAsSp*/
-  std::shared_ptr<const ObjType> m_objType;
-  /** In case m_referencedObj is non-nullptr, redundant to
-  m_referencedObj->m_storageDuration */
-  StorageDuration m_storageDuration;
 
   // -- childs of this node
   const EOperation m_op;
@@ -519,7 +499,7 @@ std::basic_ostream<char>& operator<<(
 /** Has two responsibilities: 1) Be an ordered sequence of AstNode s 2) cast
 the last AstNode to an AstObject and report an error if that is not
 possible. */
-class AstSeq : public AstObject {
+class AstSeq : public AstObject, public ObjectDelegate {
 public:
   /** Location of this AstSeq is implicitly the location of the last
   operand. The rational is that if our parent node has a problem with us, that's
@@ -537,8 +517,9 @@ public:
 
   // -- overrides for AstObject
   Access accessFromAstParent() const override;
-  Object& object() override;
-  const Object& object() const override;
+
+  // -- overrides for ObjectDelegate
+  Object& referencedObj() const override;
 
   // -- childs of this node
   const std::vector<std::unique_ptr<AstNode>>& operands() const {
@@ -561,6 +542,12 @@ private:
   /** Pointers are garanteed to be non null. Garanteed to have at least one
   element. */
   const std::vector<std::unique_ptr<AstNode>> m_operands;
+  /** That AstSeq is-a Object by inheritance is not always true - if the last
+  operand is not an Object, the sequence also isn't. In that case we still need
+  to fulfill the conract imposed by inheritance. It's the task of the semantic
+  analizer to report the proper error. Until then, to fulfill the contract,
+  m_dummyObj serves as dummt object. */
+  static FullConcreteObject m_dummyObj;
 };
 
 /* If flow control expression */
@@ -820,8 +807,7 @@ public:
   }
 
 private:
-  // -- to implement overrides
-  std::shared_ptr<const ObjTypeCompound> m_objType;
+  std::shared_ptr<ObjTypeCompound> m_objType;
 
   // -- childs of this node
   const std::string m_name;

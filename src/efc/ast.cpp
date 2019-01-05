@@ -54,7 +54,7 @@ string AstNode::toStr() const {
 }
 
 bool AstObject::isObjTypeNoReturn() const {
-  return object().objType().isNoreturn();
+  return objType().isNoreturn();
 }
 
 AstObjInstance::AstObjInstance(Location loc)
@@ -109,8 +109,8 @@ const ObjType& AstBlock::objType() const {
   return *objTypeAsSp();
 }
 
-shared_ptr<const ObjType> AstBlock::objTypeAsSp() const {
-  return m_body->object().objType().unqualifiedObjType();
+std::shared_ptr<const ObjType> AstBlock::objTypeAsSp() const {
+  return m_body->objType().unqualifiedObjType();
 }
 
 StorageDuration AstBlock::storageDuration() const {
@@ -317,7 +317,7 @@ StorageDuration AstNumber::storageDuration() const {
 
 AstSymbol::AstSymbol(std::string name, Location loc)
   : AstObject{std::move(loc)}
-  , m_referencedAstObj{}
+  , m_referencedObj{nullptr}
   , m_accessFromAstParent{Access::eYetUndefined}
   , m_name(std::move(name)) {
 }
@@ -326,48 +326,27 @@ void AstSymbol::setAccessFromAstParent(Access access) {
   assert(Access::eYetUndefined != access);
   assert(Access::eYetUndefined == m_accessFromAstParent);
   m_accessFromAstParent = access;
-  if (m_referencedAstObj != nullptr) { m_referencedAstObj->addAccess(access); }
+  if (m_referencedObj != nullptr) { m_referencedObj->addAccess(access); }
 }
 
 Access AstSymbol::accessFromAstParent() const {
   return m_accessFromAstParent;
 }
 
-Object& AstSymbol::object() {
-  assert(m_referencedAstObj);
-  return *m_referencedAstObj;
+Object& AstSymbol::referencedObj() const {
+  assert(m_referencedObj != nullptr);
+  return *m_referencedObj;
 }
 
-const Object& AstSymbol::object() const {
-  assert(m_referencedAstObj);
-  return *m_referencedAstObj;
-}
-
-const ObjType& AstSymbol::objType() const {
-  assert(m_referencedAstObj);
-  return m_referencedAstObj->objType();
-}
-
-shared_ptr<const ObjType> AstSymbol::objTypeAsSp() const {
-  assert(m_referencedAstObj);
-  return m_referencedAstObj->objTypeAsSp();
-}
-
-StorageDuration AstSymbol::storageDuration() const {
-  assert(m_referencedAstObj);
-  return m_referencedAstObj->storageDuration();
-}
-
-void AstSymbol::setreferencedAstObjAndPropagateAccess(
-  AstObjDef& referencedAstObj) {
-  assert(!m_referencedAstObj); // it doesnt make sense to set it twice
-  m_referencedAstObj = &referencedAstObj;
-  m_referencedAstObj->addAccess(accessFromAstParent());
+void AstSymbol::setreferencedObjAndPropagateAccess(AstObjDef& referencedObj) {
+  assert(!m_referencedObj); // it doesnt make sense to set it twice
+  m_referencedObj = &referencedObj;
+  m_referencedObj->addAccess(accessFromAstParent());
 }
 
 bool AstSymbol::isInitialized() const {
-  assert(m_referencedAstObj);
-  return m_referencedAstObj->isInitialized();
+  assert(m_referencedObj);
+  return m_referencedObj->isInitialized();
 }
 
 const map<const string, const AstOperator::EOperation> AstOperator::m_opMap{
@@ -392,12 +371,36 @@ AstOperator::AstOperator(const string& op, AstCtList* args, Location loc)
 AstOperator::AstOperator(
   AstOperator::EOperation op, AstCtList* args, Location loc)
   : AstObject{move(loc)}
-  , m_referencedObj{}
+  , m_referencedObj{nullptr}
   , m_accessFromAstParent{Access::eYetUndefined}
-  , m_storageDuration{StorageDuration::eYetUndefined}
   , m_op(op)
   , m_args(args != nullptr ? unique_ptr<AstCtList>(args)
                            : make_unique<AstCtList>()) {
+  if (!returnsByRef()) {
+    m_obj = make_unique<FullConcreteObject>();
+    m_referencedObj = m_obj.get();
+    m_obj->m_storageDuration = StorageDuration::eLocal;
+
+    if (m_args->childs().empty()) {
+      // nop - it's a semantic error if there are no arguments, but it's the job
+      // of the SemanticAnalizer to report an error.
+    }
+    else if (class_() == AstOperator::eComparison) {
+      m_obj->m_objType = std::make_unique<ObjTypeFunda>(ObjTypeFunda::eBool);
+    }
+    else if (m_op == AstOperator::eVoidAssign) {
+      m_obj->m_objType = make_shared<ObjTypeFunda>(ObjTypeFunda::eVoid);
+    }
+    else {
+      // nop - m_obj->m_objType is dependend on the object type of childs, but
+      // that might not be known yet. SemanticAnalizer will set
+      // m_obj->m_objType.
+    }
+  }
+  else {
+    // nop - settig m_referencedObj to the proper object is done later by
+    // SemanticAnalizer
+  }
   if ('-' == m_op || '+' == m_op) {
     const auto argCnt = m_args->childs().size();
     assert(argCnt == 1 || argCnt == 2);
@@ -429,7 +432,6 @@ void AstOperator::setAccessFromAstParent(Access access) {
   assert(Access::eYetUndefined == m_accessFromAstParent);
   m_accessFromAstParent = access;
   if (m_referencedObj != nullptr) { m_referencedObj->addAccess(access); }
-  addAccess(access);
 }
 
 Access AstOperator::accessFromAstParent() const {
@@ -437,62 +439,34 @@ Access AstOperator::accessFromAstParent() const {
   return m_accessFromAstParent;
 }
 
-Object& AstOperator::object() {
-  return m_referencedObj != nullptr ? *m_referencedObj : *this;
-}
-
-const Object& AstOperator::object() const {
-  return m_referencedObj != nullptr ? *m_referencedObj
-                                    : static_cast<const Object&>(*this);
-}
-
-const ObjType& AstOperator::objType() const {
-  assert(m_objType);
-  return *m_objType;
-}
-
-shared_ptr<const ObjType> AstOperator::objTypeAsSp() const {
-  return m_objType;
-}
-
-StorageDuration AstOperator::storageDuration() const {
-  assert(m_storageDuration != StorageDuration::eYetUndefined);
-  return m_storageDuration;
+Object& AstOperator::referencedObj() const {
+  assert(m_referencedObj != nullptr);
+  return *m_referencedObj;
 }
 
 void AstOperator::setReferencedObjAndPropagateAccess(
   unique_ptr<Object> object) {
-  assert(!m_dummy); // it doesn't make sense to set it twice
-  assert(object);
+  assert(object != nullptr);
   setReferencedObjAndPropagateAccess(*object);
-  m_dummy = move(object);
+  m_foreignObj = move(object);
 }
 
 void AstOperator::setReferencedObjAndPropagateAccess(Object& object) {
-  assert(!m_referencedObj); // it doesn't make sense to set it twice
+  assert(returnsByRef());
+  assert(m_referencedObj == nullptr); // it doesn't make sense to set it twice
   m_referencedObj = &object;
-  assert(!m_objType); // it doesn't make sense to set it twice
-  m_objType = m_referencedObj->objTypeAsSp();
-  assert(m_storageDuration ==
-    StorageDuration::eYetUndefined); // it doesn't make sense to set it twice
-  m_storageDuration = m_referencedObj->storageDuration();
   m_referencedObj->addAccess(m_accessFromAstParent);
 }
 
 void AstOperator::setObjType(shared_ptr<const ObjType> objType) {
   assert(objType);
-  assert(!m_objType); // it doesn't make sense to set it twice
-  m_objType = move(objType);
+  assert(!returnsByRef()); // can't set obj type of m_referencedObj
+  assert(m_obj != nullptr);
+  assert(m_obj->m_objType == nullptr); // it doesn't make sense to set it twice
+  m_obj->m_objType = move(objType);
 }
 
-void AstOperator::setStorageDuration(StorageDuration storageDuration) {
-  assert(storageDuration != StorageDuration::eYetUndefined);
-  assert(m_storageDuration ==
-    StorageDuration::eYetUndefined); // it doesn't make sense to set it twice
-  m_storageDuration = storageDuration;
-}
-
-string AstOperator::opAsStr() const {
+std::string AstOperator::opAsStr() const {
   stringstream ss{};
   ss << m_op;
   return ss.str();
@@ -551,6 +525,10 @@ AstOperator::EOperation AstOperator::toEOperation(const string& op) {
   return i->second;
 }
 
+bool AstOperator::returnsByRef() const {
+  return m_op == AstOperator::eAssign || m_op == AstOperator::eDeref;
+}
+
 basic_ostream<char>& operator<<(
   basic_ostream<char>& os, AstOperator::EOperation op) {
   if (static_cast<int>(op) < 128) { return os << static_cast<char>(op); }
@@ -568,6 +546,8 @@ Location locationOf(const vector<unique_ptr<AstNode>>& operands) {
 }
 }
 
+FullConcreteObject AstSeq::m_dummyObj{};
+
 AstSeq::AstSeq(vector<AstNode*>* operands) : AstSeq{toUniquePtrs(operands)} {
 }
 
@@ -579,7 +559,7 @@ AstSeq::AstSeq(
 AstSeq::AstSeq(vector<unique_ptr<AstNode>>&& operands)
   : AstObject{locationOf(operands)}
   , m_accessFromAstParent{Access::eYetUndefined}
-  , m_operands(move(operands)) {
+  , m_operands{move(operands)} {
   for (const auto& operand : m_operands) { assert(operand); }
   assert(!m_operands.empty());
 }
@@ -597,12 +577,9 @@ Access AstSeq::accessFromAstParent() const {
   return m_accessFromAstParent;
 }
 
-Object& AstSeq::object() {
-  return lastOperand().object();
-}
-
-const Object& AstSeq::object() const {
-  return lastOperand().object();
+Object& AstSeq::referencedObj() const {
+  if (lastOperandIsAnObject()) { return lastOperand(); }
+  return m_dummyObj;
 }
 
 bool AstSeq::lastOperandIsAnObject() const {
@@ -703,7 +680,7 @@ const ObjType& AstFunCall::objType() const {
 
 shared_ptr<const ObjType> AstFunCall::objTypeAsSp() const {
   const auto objTypeFun =
-    dynamic_pointer_cast<const ObjTypeFun>(m_address->object().objTypeAsSp());
+    dynamic_pointer_cast<const ObjTypeFun>(m_address->objTypeAsSp());
   assert(objTypeFun);
   return objTypeFun->ret().unqualifiedObjType();
 }
