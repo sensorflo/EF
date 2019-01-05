@@ -204,7 +204,6 @@ void SemanticAnalizer::visit(AstOperator& op) {
   }
   // Addrof
   else if (opop == AstOperator::eAddrOf) {
-    op.object().addAccess(Access::eTakeAddress);
     op.setObjType(
       make_shared<ObjTypePtr>(argschilds.back()->object().objTypeAsSp()));
     op.setStorageDuration(StorageDuration::eLocal);
