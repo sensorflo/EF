@@ -224,17 +224,9 @@ public:
 
   // -- childs of this node
   // name() is in EnvNode
-  virtual std::vector<std::unique_ptr<AstDataDef>> const& declaredArgs() const {
-    return m_args;
-  }
-  virtual AstObjType& ret() const {
-    assert(m_ret);
-    return *m_ret;
-  }
-  virtual AstObject& body() const {
-    assert(m_body);
-    return *m_body;
-  }
+  virtual std::vector<std::unique_ptr<AstDataDef>> const& declaredArgs() const;
+  virtual AstObjType& ret() const;
+  virtual AstObject& body() const;
 
   // -- misc
   static std::vector<AstDataDef*>* createArgs(AstDataDef* arg1 = nullptr,

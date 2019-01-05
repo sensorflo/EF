@@ -198,6 +198,21 @@ StorageDuration AstFunDef::storageDuration() const {
   return StorageDuration::eStatic;
 }
 
+std::vector<std::unique_ptr<AstDataDef>> const&
+  AstFunDef::declaredArgs() const {
+  return m_args;
+}
+
+AstObjType& AstFunDef::ret() const {
+  assert(m_ret);
+  return *m_ret;
+}
+
+AstObject& AstFunDef::body() const {
+  assert(m_body);
+  return *m_body;
+}
+
 AstObject* const AstDataDef::noInit = reinterpret_cast<AstObject*>(1);
 
 AstDataDef::AstDataDef(const string& name, AstObjType* declaredAstObjType,
