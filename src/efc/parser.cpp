@@ -182,9 +182,9 @@ basic_ostream<char>& yy::operator<<(
 basic_ostream<char>& std::operator<<(
   basic_ostream<char>& os, const vector<Parser::token_type>& tokens) {
   os << "{";
-  for (auto i = tokens.begin(); i != tokens.end(); ++i) {
-    if (i != tokens.begin()) { os << ", "; }
-    os << *i;
+  for (const auto& token : tokens) {
+    if (&token != &tokens.front()) { os << ", "; }
+    os << token;
   }
   return os << "}";
 }
