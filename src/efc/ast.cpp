@@ -540,26 +540,25 @@ basic_ostream<char>& operator<<(
 namespace {
 /** Returns the location of the last operand in the sequence, or s_nullLoc if
 that doesn't exist. */
-Location locationOf(std::vector<AstNode*>* operands) {
-  if (operands == nullptr || operands->empty() || operands->back() == nullptr) {
-    return s_nullLoc;
-  }
-  return operands->back()->loc();
+Location locationOf(const vector<unique_ptr<AstNode>>& operands) {
+  if (operands.empty() || operands.back() == nullptr) { return s_nullLoc; }
+  return operands.back()->loc();
 }
 }
 
-AstSeq::AstSeq(std::vector<AstNode*>* operands)
-  : AstObject{locationOf(operands)}
-  , m_accessFromAstParent{Access::eYetUndefined}
-  , m_operands(toUniquePtrs(operands)) {
-  for (const auto& operand : m_operands) { assert(operand); }
-  assert(!m_operands.empty());
+AstSeq::AstSeq(vector<AstNode*>* operands) : AstSeq{toUniquePtrs(operands)} {
 }
 
 AstSeq::AstSeq(
   AstNode* op1, AstNode* op2, AstNode* op3, AstNode* op4, AstNode* op5)
-  : m_accessFromAstParent{Access::eYetUndefined}
-  , m_operands(toUniquePtrs(op1, op2, op3, op4, op5)) {
+  : AstSeq{toUniquePtrs(op1, op2, op3, op4, op5)} {
+}
+
+AstSeq::AstSeq(vector<std::unique_ptr<AstNode>>&& operands)
+  : AstObject{locationOf(operands)}
+  , m_accessFromAstParent{Access::eYetUndefined}
+  , m_operands(move(operands)) {
+  for (const auto& operand : m_operands) { assert(operand); }
   assert(!m_operands.empty());
 }
 

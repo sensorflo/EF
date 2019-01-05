@@ -561,6 +561,8 @@ public:
   bool lastOperandIsAnObject() const;
 
 private:
+  AstSeq(std::vector<std::unique_ptr<AstNode>>&& operands);
+
   AstObject& lastOperand() const;
 
   // -- associated object
