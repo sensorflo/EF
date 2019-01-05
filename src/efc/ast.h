@@ -78,26 +78,17 @@ private:
 
 class AstObject : public AstNode, public virtual Object {
 public:
-  AstObject(Location loc = s_nullLoc) : AstNode(std::move(loc)) {}
+  AstObject(Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   bool isObjTypeNoReturn() const override;
-
-  // -- new virtual methods
-  virtual Access accessFromAstParent() const = 0;
-  virtual bool isCTConst() const { return false; }
-};
-
-/** AstObject directly being an Object, as opposed to refering to an Object. */
-class AstObjInstance : public AstObject, public ConcreteObject {
-public:
-  AstObjInstance(Location loc = s_nullLoc);
-
-  // -- overrides for AstNode
   void setAccessFromAstParent(Access access) override;
 
-  // -- overrides for AstObject
-  Access accessFromAstParent() const override;
+  // -- new virtual methods
+  virtual bool isCTConst() const { return false; }
+
+  // -- misc
+  Access accessFromAstParent() const;
 
 private:
   /** How the parent AST node accesses the Object associate to this AST
@@ -106,7 +97,7 @@ private:
   Access m_accessFromAstParent;
 };
 
-class AstObjDef : public AstObjInstance, public EnvNode {
+class AstObjDef : public AstObject, public EnvNode {
 public:
   // -- overrides for EnvNode
   // @todo
@@ -134,21 +125,16 @@ private:
   bool m_isInitialized = false;
 };
 
-class AstNop : public AstObjInstance {
+class AstNop : public AstObject, public FullConcreteObject {
 public:
-  AstNop(Location loc = s_nullLoc) : AstObjInstance(std::move(loc)) {}
+  AstNop(Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
-
-  // -- overrides for Object
-  const ObjType& objType() const override;
-  std::shared_ptr<const ObjType> objTypeAsSp() const override;
-  StorageDuration storageDuration() const override;
 };
 
-class AstBlock : public AstObjInstance, public EnvNode {
+class AstBlock : public AstObject, public ConcreteObject, public EnvNode {
 public:
   AstBlock(AstObject* body, Location loc = s_nullLoc);
 
@@ -174,7 +160,7 @@ private:
   const std::unique_ptr<AstObject> m_body;
 };
 
-class AstCast : public AstObjInstance {
+class AstCast : public AstObject, public ConcreteObject {
 public:
   AstCast(AstObjType* specifiedNewAstObjType, AstObject* arg);
   AstCast(AstObjType* specifiedNewAstObjType, AstCtList* args,
@@ -202,7 +188,7 @@ private:
   const std::unique_ptr<AstCtList> m_args;
 };
 
-class AstFunDef : public AstObjDef {
+class AstFunDef : public AstObjDef, public ConcreteObject {
 public:
   AstFunDef(const std::string& name, std::vector<AstDataDef*>* args,
     AstObjType* ret, AstObject* body, Location loc = s_nullLoc);
@@ -248,7 +234,7 @@ private:
 /** Also used for data members of a class, which is not entirerly a nice
 design since a member declaration is not yet an object, thus subtyping from
 AstObject is wrong in this case. */
-class AstDataDef : public AstObjDef {
+class AstDataDef : public AstObjDef, public ConcreteObject {
 public:
   AstDataDef(const std::string& name, AstObjType* declaredAstObjType,
     StorageDuration declaredStorageDuration, AstCtList* ctorArgs = nullptr,
@@ -308,7 +294,7 @@ private:
 /** Literal 'scalar', where scalar means 'not an aggregation /
 composition'. Obviously a well defined term is needed, and then the class
 should be renamed. */
-class AstNumber : public AstObjInstance {
+class AstNumber : public AstObject, public ConcreteObject {
 public:
   AstNumber(GeneralValue value, AstObjType* astObjType = nullptr,
     Location loc = s_nullLoc);
@@ -319,8 +305,10 @@ public:
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
 
-  // -- overrides for Object
+  // -- overrides for AstObject
   bool isCTConst() const override { return true; }
+
+  // -- overrides for Object
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
   StorageDuration storageDuration() const override;
@@ -344,12 +332,9 @@ public:
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
-  void setAccessFromAstParent(Access access) override;
-
-  // -- overrides for AstObject
-  Access accessFromAstParent() const override;
 
   // -- overrides for ObjectDelegate
+  void addAccess(Access access) override;
   Object& referencedObj() const override;
 
   // -- childs of this node
@@ -364,14 +349,12 @@ private:
 
   // -- associated object
   AstObjDef* m_referencedObj;
-  /** See AstObjInstance::m_accessFromAstParent */
-  Access m_accessFromAstParent;
 
   // -- childs of this node
   const std::string m_name;
 };
 
-class AstFunCall : public AstObjInstance {
+class AstFunCall : public AstObject, public ConcreteObject {
 public:
   AstFunCall(
     AstObject* address, AstCtList* args = nullptr, Location loc = s_nullLoc);
@@ -436,12 +419,9 @@ public:
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
-  void setAccessFromAstParent(Access access) override;
-
-  // -- overrides for AstObject
-  Access accessFromAstParent() const override;
 
   // -- overrides for ObjectDelegate
+  void addAccess(Access access) override;
   Object& referencedObj() const override;
 
   // -- childs of this node
@@ -479,8 +459,6 @@ private:
   std::unique_ptr<Object> m_foreignObj;
   /** Is only set if returnsByRef() is false */
   std::unique_ptr<FullConcreteObject> m_obj;
-  /** See AstObjInstance::m_accessFromAstParent */
-  Access m_accessFromAstParent;
 
   // -- childs of this node
   const EOperation m_op;
@@ -513,10 +491,6 @@ public:
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
-  void setAccessFromAstParent(Access access) override;
-
-  // -- overrides for AstObject
-  Access accessFromAstParent() const override;
 
   // -- overrides for ObjectDelegate
   Object& referencedObj() const override;
@@ -534,10 +508,6 @@ private:
 
   AstObject& lastOperand() const;
 
-  // -- associated object
-  /** See AstObjInstance::m_accessFromAstParent */
-  Access m_accessFromAstParent;
-
   // -- childs of this node
   /** Pointers are garanteed to be non null. Garanteed to have at least one
   element. */
@@ -551,7 +521,7 @@ private:
 };
 
 /* If flow control expression */
-class AstIf : public AstObjInstance {
+class AstIf : public AstObject, public ConcreteObject {
 public:
   AstIf(AstObject* cond, AstObject* action, AstObject* elseAction = nullptr,
     Location loc = s_nullLoc);
@@ -586,7 +556,7 @@ private:
   const std::unique_ptr<AstObject> m_elseAction;
 };
 
-class AstLoop : public AstObjInstance {
+class AstLoop : public AstObject, public ConcreteObject {
 public:
   AstLoop(AstObject* cond, AstObject* body, Location loc = s_nullLoc);
 
@@ -611,7 +581,7 @@ private:
   const std::unique_ptr<AstObject> m_body;
 };
 
-class AstReturn : public AstObjInstance {
+class AstReturn : public AstObject, public ConcreteObject {
 public:
   AstReturn(AstObject* retVal = nullptr, Location loc = s_nullLoc);
   AstReturn(AstCtList* ctorArgs, Location loc = s_nullLoc);

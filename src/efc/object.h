@@ -51,6 +51,11 @@ Object interface in a trivial way has to do it again himself. Thus the members
 variables are public */
 class FullConcreteObject : public ConcreteObject {
 public:
+  FullConcreteObject() = default;
+  FullConcreteObject(
+    std::shared_ptr<const ObjType> objType, StorageDuration storageDuration)
+    : m_objType{move(objType)}, m_storageDuration{storageDuration} {}
+
   // clang-format off
   const ObjType& objType() const override { return *m_objType; }
   std::shared_ptr<const ObjType> objTypeAsSp() const override { return m_objType; }
