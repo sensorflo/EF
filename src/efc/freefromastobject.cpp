@@ -1,6 +1,8 @@
 #include "freefromastobject.h"
 
-FreeFromAstObject::FreeFromAstObject(std::shared_ptr<const ObjType> objType)
+using namespace std;
+
+FreeFromAstObject::FreeFromAstObject(shared_ptr<const ObjType> objType)
   : m_objType(move(objType)) {
 }
 
@@ -9,7 +11,7 @@ const ObjType& FreeFromAstObject::objType() const {
   return *m_objType;
 }
 
-std::shared_ptr<const ObjType> FreeFromAstObject::objTypeAsSp() const {
+shared_ptr<const ObjType> FreeFromAstObject::objTypeAsSp() const {
   return m_objType;
 }
 

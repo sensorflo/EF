@@ -34,18 +34,18 @@ ObjType::MatchType ObjType::match2(
   return src.match2Quali(*this, isLevel0, false);
 }
 
-std::shared_ptr<const ObjType> ObjType::unqualifiedObjType() const {
+shared_ptr<const ObjType> ObjType::unqualifiedObjType() const {
   return shared_from_this();
 }
 
 string ObjType::completeName() const {
-  std::ostringstream ss;
+  ostringstream ss;
   printTo(ss);
   return ss.str();
 }
 
-std::basic_ostream<char>& operator<<(
-  std::basic_ostream<char>& os, const ObjType& objType) {
+basic_ostream<char>& operator<<(
+  basic_ostream<char>& os, const ObjType& objType) {
   return objType.printTo(os);
 }
 
@@ -71,15 +71,14 @@ basic_ostream<char>& operator<<(
 }
 
 ObjTypeQuali::ObjTypeQuali(
-  Qualifiers qualifiers, std::shared_ptr<const ObjType> type)
+  Qualifiers qualifiers, shared_ptr<const ObjType> type)
   : ObjType("")
   , m_qualifiers(static_cast<Qualifiers>(qualifiers | type->qualifiers()))
   , m_type((assert(type), type->unqualifiedObjType())) {
   assert(m_type);
 }
 
-std::basic_ostream<char>& ObjTypeQuali::printTo(
-  std::basic_ostream<char>& os) const {
+basic_ostream<char>& ObjTypeQuali::printTo(basic_ostream<char>& os) const {
   if (eMutable & m_qualifiers) { os << "mut-"; }
   return os << *m_type;
 }
@@ -157,12 +156,12 @@ bool ObjTypeQuali::hasConstructor(const ObjType& other) const {
   return m_type->hasConstructor(other);
 }
 
-std::shared_ptr<const ObjType> ObjTypeQuali::unqualifiedObjType() const {
+shared_ptr<const ObjType> ObjTypeQuali::unqualifiedObjType() const {
   return m_type;
 }
 
 namespace {
-std::string toStr(ObjTypeFunda::EType type) {
+string toStr(ObjTypeFunda::EType type) {
   switch (type) {
   case ObjTypeFunda::eVoid: return "void";
   case ObjTypeFunda::eNoreturn: return "noreturn";
@@ -358,8 +357,7 @@ ObjType::MatchType ObjTypePtr::match2(
   return ObjTypeFunda::match2(static_cast<const ObjTypeFunda&>(src), isLevel0);
 }
 
-std::basic_ostream<char>& ObjTypePtr::printTo(
-  std::basic_ostream<char>& os) const {
+basic_ostream<char>& ObjTypePtr::printTo(basic_ostream<char>& os) const {
   ObjTypeFunda::printTo(os);
   m_pointee->printTo(os);
   return os;
@@ -369,7 +367,7 @@ llvm::Type* ObjTypePtr::llvmType() const {
   return PointerType::get(m_pointee->llvmType(), 0);
 }
 
-std::shared_ptr<const ObjType> ObjTypePtr::pointee() const {
+shared_ptr<const ObjType> ObjTypePtr::pointee() const {
   return m_pointee;
 }
 
@@ -377,7 +375,7 @@ ObjTypeFun::ObjTypeFun(
   vector<shared_ptr<const ObjType>>* args, shared_ptr<const ObjType> ret)
   : ObjType("fun") // todo: what shall the correct type name of a function be?
   , m_args{args != nullptr
-        ? std::unique_ptr<vector<shared_ptr<const ObjType>>>{args}
+        ? unique_ptr<vector<shared_ptr<const ObjType>>>{args}
         : std::make_unique<vector<shared_ptr<const ObjType>>>()}
   , m_ret{
       ret ? move(ret) : make_shared<const ObjTypeFunda>(ObjTypeFunda::eInt)} {

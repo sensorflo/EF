@@ -48,7 +48,7 @@ string amend(llvm::Module* module) {
   return ss.str();
 }
 
-string amend(const std::unique_ptr<llvm::Module>& module) {
+string amend(const unique_ptr<llvm::Module>& module) {
   return amend(module.get());
 }
 

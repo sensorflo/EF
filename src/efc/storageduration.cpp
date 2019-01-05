@@ -1,11 +1,13 @@
 #include "storageduration.h"
 
-std::basic_ostream<char>& operator<<(
+using namespace std;
+
+basic_ostream<char>& operator<<(
   std::basic_ostream<char>& os, StorageDuration sd) {
   return os << toString(sd);
 }
 
-std::string toString(StorageDuration sd) {
+string toString(StorageDuration sd) {
   switch (sd) {
   case StorageDuration::eYetUndefined: return "yetundefined";
   case StorageDuration::eUnknown: return "unknown";

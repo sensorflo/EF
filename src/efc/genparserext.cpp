@@ -27,11 +27,11 @@ AstCtList* combine(ErrorHandler& errorHandler, AstCtList* ctorArgs1,
 }
 }
 
-RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler, std::string name,
+RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler, string name,
   AstCtList* ctorArgs1, AstCtList* ctorArgs2, AstObjType* astObjType,
   StorageDuration storageDuration, const Location& loc)
   : m_errorHandler{errorHandler}
-  , m_name(std::move(name))
+  , m_name(move(name))
   , m_ctorArgs(combine(m_errorHandler, ctorArgs1, ctorArgs2, loc))
   , m_astObjType(astObjType)
   , m_storageDuration(storageDuration) {

@@ -7,20 +7,20 @@
 using namespace std;
 
 namespace {
-std::string plural(const string& noun, const string& count) {
+string plural(const string& noun, const string& count) {
   if (count == "0") { return "zero " + noun + "s"; }
   if (count == "1") { return count + " " + noun; }
   return count + " " + noun + "s";
 }
 
-std::string conjucateToBe(const string& count) {
+string conjucateToBe(const string& count) {
   if (count == "1") { return "is"; }
   return "are";
 }
 }
 
-Error::Error(Error::No no, string message, std::string msgParam1,
-  std::string msgParam2, std::string msgParam3)
+Error::Error(Error::No no, string message, string msgParam1, string msgParam2,
+  string msgParam3)
   : m_no(no)
   , m_message(move(message))
   , m_msgParam1(move(msgParam1))
@@ -29,7 +29,7 @@ Error::Error(Error::No no, string message, std::string msgParam1,
 }
 
 void Error::throwError(ErrorHandler& errorHandler, No no, Location loc,
-  std::string msgParam1, std::string msgParam2, std::string msgParam3) {
+  string msgParam1, string msgParam2, string msgParam3) {
   if (!errorHandler.isReportingDisabledFor(no)) {
     stringstream ss;
     if (!loc.isNull()) {
@@ -49,8 +49,8 @@ void Error::throwError(ErrorHandler& errorHandler, No no, Location loc,
   }
 }
 
-string Error::describe(Error::No no, const std::string& msgParam1,
-  const std::string& msgParam2, const std::string& /*msgParam3*/) {
+string Error::describe(Error::No no, const string& msgParam1,
+  const string& msgParam2, const string& /*msgParam3*/) {
   switch (no) {
     // clang-format off
   case Error::eNone: return "no error";
@@ -152,13 +152,13 @@ ostream& operator<<(ostream& os, const ErrorHandler& errorHandler) {
   return os;
 }
 
-BuildError::BuildError(std::shared_ptr<const Error> error)
+BuildError::BuildError(shared_ptr<const Error> error)
   : logic_error{error->message()}, m_error{move(error)} {
 }
 
 BuildError::~BuildError() = default;
 
-std::ostream& operator<<(std::ostream& os, const BuildError& error) {
+ostream& operator<<(ostream& os, const BuildError& error) {
   os << error.error();
   return os;
 }

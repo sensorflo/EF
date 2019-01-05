@@ -16,7 +16,7 @@
 using namespace std;
 
 /** \param osstream caller keeps ownership */
-Driver::Driver(string fileName, std::basic_ostream<char>* ostream)
+Driver::Driver(string fileName, basic_ostream<char>* ostream)
   : m_errorHandler(make_unique<ErrorHandler>())
   , m_env(make_unique<Env>())
   , m_ostream(ostream != nullptr ? *ostream : cerr)

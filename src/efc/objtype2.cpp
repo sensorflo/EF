@@ -3,7 +3,7 @@
 using namespace std;
 
 UnqualifiedObjType::UnqualifiedObjType(
-  std::string name, size_t size, ObjTypes templateArgs, llvm::Type* llvmType)
+  string name, size_t size, ObjTypes templateArgs, llvm::Type* llvmType)
   : EnvNode(move(name))
   , m_size{size}
   , m_templateArgs{move(templateArgs)}
@@ -64,7 +64,7 @@ bool ObjType::matchesExceptQualifiers(const ObjType& dst) const {
 // @todo make 'global' type (actually per module), to which free functions &
 //       variables are added.
 FindFunResult ObjType::findMemberFun(
-  const std::string& name, const ObjType& arg1ObjType) const {
+  const string& name, const ObjType& arg1ObjType) const {
   // if EF already had function overloading, find would return multiple nodes,
   // and we had to choose among those candidates.
   const auto envNode = m_unqualified.find(name);

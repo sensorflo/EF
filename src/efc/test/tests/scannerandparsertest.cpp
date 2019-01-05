@@ -30,7 +30,7 @@ void testParse(const string efProgram, const string& expectedAst,
   const string& spec) {
   // setup
   DriverOnTmpFile driver(efProgram);
-  std::unique_ptr<AstNode> actualAst{};
+  unique_ptr<AstNode> actualAst{};
 
   // exercise
   const auto body = [&](){ actualAst = driver.d().scanAndParse(); };

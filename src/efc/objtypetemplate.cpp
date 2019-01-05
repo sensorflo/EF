@@ -3,7 +3,7 @@
 using namespace std;
 
 namespace {
-std::string mangleName(std::string name, const ObjTypes& templateArgs) {
+string mangleName(string name, const ObjTypes& templateArgs) {
   size_t pos = name.find('_');
   while (pos != string::npos) {
     name.replace(pos, 1, "__");

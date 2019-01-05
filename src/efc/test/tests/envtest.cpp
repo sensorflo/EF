@@ -3,10 +3,12 @@
 
 #include <string>
 
+using namespace std;
+
 class TestingEnvNode : public EnvNode {
 public:
-  TestingEnvNode(std::string name) : EnvNode{move(name)} {}
-  std::string description() const override { return "TestingEnvNode " + name(); }
+  TestingEnvNode(string name) : EnvNode{move(name)} {}
+  string description() const override { return "TestingEnvNode " + name(); }
 };
 
 using namespace testing;

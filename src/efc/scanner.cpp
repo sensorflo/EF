@@ -21,10 +21,10 @@ extern void yyrestart(FILE*);
 // defined in configuration of generated scanner (genscanner.l).
 extern Location& locOfGenScanner();
 
-std::weak_ptr<Scanner> Scanner::sm_instance{};
+weak_ptr<Scanner> Scanner::sm_instance{};
 
-std::shared_ptr<Scanner> Scanner::create(
-  std::string fileName, ErrorHandler& errorHandler) {
+shared_ptr<Scanner> Scanner::create(
+  string fileName, ErrorHandler& errorHandler) {
   assert(sm_instance.expired());
   auto instance =
     shared_ptr<Scanner>{new Scanner{move(fileName), errorHandler}, Deleter()};
@@ -32,7 +32,7 @@ std::shared_ptr<Scanner> Scanner::create(
   return instance;
 }
 
-Scanner::Scanner(std::string fileName, ErrorHandler& errorHandler)
+Scanner::Scanner(string fileName, ErrorHandler& errorHandler)
   : m_fileName{move(fileName)}
   , m_errorHandler(errorHandler)
   , m_opened_yyin{false} {
