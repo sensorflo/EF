@@ -11,6 +11,7 @@ enable_testing()
 # Wno-unused-parameter is due to llvm headers
 add_definitions(-std=c++17 -Wall -Wextra -Wpedantic -Wno-unused-parameter -Werror)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 add_subdirectory(doc)
 add_subdirectory(googletest)

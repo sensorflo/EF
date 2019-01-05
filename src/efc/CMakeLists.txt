@@ -154,10 +154,11 @@ target_link_libraries(efc_test PRIVATE efc_as_lib gtest gmock)
 # TODO: pass path to testdox and to doc/tutorial dir as parameter
 # TODO: make adding an entry to PATH more portable
 # TODO: testdox should not be a strict requirement
-add_test(efc_test efc_test)
+add_test(NAME efc_test
+  COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/efc_test")
 # Set PATH in order that the "#!/usr/bin/env efc" in the tutorials
 # (doc/tutorial) finds the efc executable.
-set_property(TEST efc_test PROPERTY ENVIRONMENT "PATH=$ENV{PATH}:${CMAKE_CURRENT_BINARY_DIR}")
+set_property(TEST efc_test PROPERTY ENVIRONMENT "PATH=$ENV{PATH}:${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 
 # generate human readable specifications from test sources
