@@ -17,14 +17,14 @@ using namespace std;
 
 /** \param osstream caller keeps ownership */
 Driver::Driver(string fileName, basic_ostream<char>* ostream)
-  : m_errorHandler(make_unique<ErrorHandler>())
-  , m_env(make_unique<Env>())
-  , m_ostream(ostream != nullptr ? *ostream : cerr)
-  , m_scanner(Scanner::create(move(fileName), *m_errorHandler))
-  , m_tokenFilter(make_unique<TokenFilter>(*m_scanner.get()))
-  , m_parser(make_unique<Parser>(*m_tokenFilter, *m_env, *m_errorHandler))
-  , m_irGen(make_unique<IrGen>(*m_errorHandler))
-  , m_semanticAnalizer(make_unique<SemanticAnalizer>(*m_env, *m_errorHandler)) {
+  : m_errorHandler{make_unique<ErrorHandler>()}
+  , m_env{make_unique<Env>()}
+  , m_ostream{ostream != nullptr ? *ostream : cerr}
+  , m_scanner{Scanner::create(move(fileName), *m_errorHandler)}
+  , m_tokenFilter{make_unique<TokenFilter>(*m_scanner.get())}
+  , m_parser{make_unique<Parser>(*m_tokenFilter, *m_env, *m_errorHandler)}
+  , m_irGen{make_unique<IrGen>(*m_errorHandler)}
+  , m_semanticAnalizer{make_unique<SemanticAnalizer>(*m_env, *m_errorHandler)} {
   assert(m_errorHandler);
   assert(m_env);
   assert(m_scanner);

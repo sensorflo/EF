@@ -8,7 +8,7 @@
 using namespace std;
 
 EnvInserter::EnvInserter(Env& env, ErrorHandler& errorHandler)
-  : m_env(env), m_errorHandler(errorHandler) {
+  : m_env{env}, m_errorHandler{errorHandler} {
 }
 
 void EnvInserter::insertIntoEnv(AstNode& root) {
@@ -16,7 +16,7 @@ void EnvInserter::insertIntoEnv(AstNode& root) {
 }
 
 void EnvInserter::visit(AstBlock& block) {
-  Env::AutoScope scope(m_env, block, Env::AutoScope::insertScopeAndDescent);
+  Env::AutoScope scope{m_env, block, Env::AutoScope::insertScopeAndDescent};
 
   AstDefaultIterator::visit(block);
 }
@@ -34,9 +34,9 @@ void EnvInserter::visit(AstDataDef& dataDef) {
 }
 
 void EnvInserter::visit(AstFunDef& funDef) {
-  bool success{};
-  Env::AutoScope scope(
-    m_env, funDef, Env::AutoScope::insertScopeAndDescent, success);
+  auto success = false;
+  Env::AutoScope scope{
+    m_env, funDef, Env::AutoScope::insertScopeAndDescent, success};
   if (!success) {
     Error::throwError(
       m_errorHandler, Error::eRedefinition, funDef.loc(), funDef.name());

@@ -5,7 +5,7 @@
 using namespace yy;
 
 TokenFilter::TokenFilter(TokenStream& input)
-  : m_input(input), m_bIsStartOfStream(true) {
+  : m_input{input}, m_bIsStartOfStream{true} {
 }
 
 Parser::symbol_type TokenFilter::pop() {

@@ -1,7 +1,7 @@
 #include "tokenstreamlookahead.h"
 
 TokenStreamLookAhead::TokenStreamLookAhead(TokenStream& input)
-  : m_lookAheadCnt(0), m_frontRawIndex(0), m_input(input) {
+  : m_lookAheadCnt{0}, m_frontRawIndex{0}, m_input{input} {
 }
 
 TokenStreamLookAhead::~TokenStreamLookAhead() {
@@ -21,7 +21,7 @@ Parser::symbol_type& TokenStreamLookAhead::lookAhead(size_t pos) {
   assert(pos < m_buf.size());
   size_t backRawIndex = (m_frontRawIndex + m_lookAheadCnt) % m_buf.size();
   while (pos >= m_lookAheadCnt) {
-    Parser::symbol_type tmp(m_input.pop());
+    Parser::symbol_type tmp{m_input.pop()};
     m_buf.at(backRawIndex).~basic_symbol();
     m_buf.at(backRawIndex).move(tmp);
     backRawIndex = (backRawIndex + 1) % m_buf.size();

@@ -34,7 +34,7 @@ shared_ptr<Scanner> Scanner::create(
 
 Scanner::Scanner(string fileName, ErrorHandler& errorHandler)
   : m_fileName{move(fileName)}
-  , m_errorHandler(errorHandler)
+  , m_errorHandler{errorHandler}
   , m_opened_yyin{false} {
   if (m_fileName.empty() || m_fileName == "-") { yyin = stdin; }
   else {

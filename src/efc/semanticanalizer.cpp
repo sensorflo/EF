@@ -11,7 +11,7 @@
 using namespace std;
 
 SemanticAnalizer::SemanticAnalizer(Env& env, ErrorHandler& errorHandler)
-  : m_env(env), m_errorHandler(errorHandler) {
+  : m_env{env}, m_errorHandler{errorHandler} {
 }
 
 void SemanticAnalizer::analyze(AstNode& root) {
@@ -19,11 +19,11 @@ void SemanticAnalizer::analyze(AstNode& root) {
   // also GenParserExt.
 
   // pass 1 over AST: EnvInserter
-  EnvInserter envinserter(m_env, m_errorHandler);
+  EnvInserter envinserter{m_env, m_errorHandler};
   envinserter.insertIntoEnv(root);
 
   // pass 2 over AST: TemplateInstanciator
-  TemplateInstanciator templateInstanciator(m_env, m_errorHandler);
+  TemplateInstanciator templateInstanciator{m_env, m_errorHandler};
   templateInstanciator.instanciateTemplates(root);
 
   // pass 3 over AST: SemanticAnalizer itself
@@ -96,7 +96,7 @@ void SemanticAnalizer::visit(AstBlock& block) {
 
   // -- responsibility 1: set access to direct childs and descent AST subtree
   {
-    Env::AutoScope scope(m_env, block);
+    Env::AutoScope scope{m_env, block};
     setAccessAndCallAcceptOn(block.body(), Access::eRead);
   }
 
@@ -359,8 +359,8 @@ void SemanticAnalizer::visit(AstFunDef& funDef) {
 
   // -- responsibility 1: set access to direct childs and descent AST subtree
   {
-    FunBodyHelper dummy(m_funRetAstObjTypes, &funDef.ret());
-    Env::AutoScope scope(m_env, funDef);
+    FunBodyHelper dummy{m_funRetAstObjTypes, &funDef.ret()};
+    Env::AutoScope scope{m_env, funDef};
     for (const auto& arg : funDef.declaredArgs()) {
       setAccessAndCallAcceptOn(*arg, Access::eIgnoreValueAndAddr);
     }

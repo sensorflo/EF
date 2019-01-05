@@ -13,19 +13,19 @@ string wrapName(const string& str) {
 }
 }
 
-AstPrinter::AstPrinter(basic_ostream<char>& os) : m_os(os) {
+AstPrinter::AstPrinter(basic_ostream<char>& os) : m_os{os} {
 }
 
 string AstPrinter::toStr(const AstNode& root) {
   ostringstream oss;
-  AstPrinter printer(oss);
+  AstPrinter printer{oss};
   root.accept(printer);
   return oss.str();
 }
 
 basic_ostream<char>& AstPrinter::printTo(
   const AstNode& root, basic_ostream<char>& os) {
-  AstPrinter printer(os);
+  AstPrinter printer{os};
   root.accept(printer);
   return os;
 }
@@ -73,7 +73,7 @@ void AstPrinter::visit(const AstSeq& seq) {
   if (seq.operands().size() == 1) { seq.operands().front()->accept(*this); }
   else {
     m_os << "(";
-    bool isFirstIter = true;
+    auto isFirstIter = true;
     for (const auto& op : seq.operands()) {
       if (!isFirstIter) { m_os << " "; }
       isFirstIter = false;

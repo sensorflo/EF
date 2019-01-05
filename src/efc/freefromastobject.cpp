@@ -3,7 +3,7 @@
 using namespace std;
 
 FreeFromAstObject::FreeFromAstObject(shared_ptr<const ObjType> objType)
-  : m_objType(move(objType)) {
+  : m_objType{move(objType)} {
 }
 
 const ObjType& FreeFromAstObject::objType() const {

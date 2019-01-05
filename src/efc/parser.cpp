@@ -14,7 +14,7 @@ namespace {
 /** Analogous to makeToken */
 template<typename T>
 Parser::symbol_type makeTokenT(Parser::token_type tt) {
-  return Parser::symbol_type(tt, T{}, Parser::location_type());
+  return Parser::symbol_type{tt, T{}, Parser::location_type()};
 }
 }
 
@@ -74,7 +74,7 @@ location member being default initialized */
 Parser::symbol_type Parser::makeToken(Parser::token_type tt) {
   switch (m_TokenAttrs.at(tt).m_semanticValueType) {
   case SVTInvalid: assert(false); // fall through
-  case SVTVoid: return Parser::symbol_type(tt, Parser::location_type());
+  case SVTVoid: return Parser::symbol_type(tt, Parser::location_type{});
   case SVTFundamentalType: return makeTokenT<ObjTypeFunda::EType>(tt);
   case SVTString: return makeTokenT<string>(tt);
   case SVTNumberToken: return makeTokenT<NumberToken>(tt);
@@ -89,7 +89,7 @@ void Parser::initTokenAttrs() {
   if (!m_TokenAttrs.empty()) { return; }
   m_TokenAttrs.resize(Parser::token::TOK_TOKENLISTEND);
   for (auto i = 0U; i < 256; ++i) {
-    m_OneCharTokenNames.at(i * 2) = char(i);
+    m_OneCharTokenNames.at(i * 2) = static_cast<char>(i);
     m_OneCharTokenNames.at(i * 2 + 1) = '\0';
     m_TokenAttrs.at(i).m_name = &m_OneCharTokenNames.at(i * 2);
     m_TokenAttrs.at(i).m_semanticValueType = SVTVoid;

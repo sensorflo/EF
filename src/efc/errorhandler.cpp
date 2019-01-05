@@ -21,17 +21,17 @@ string conjucateToBe(const string& count) {
 
 Error::Error(Error::No no, string message, string msgParam1, string msgParam2,
   string msgParam3)
-  : m_no(no)
-  , m_message(move(message))
-  , m_msgParam1(move(msgParam1))
-  , m_msgParam2(move(msgParam2))
-  , m_msgParam3(move(msgParam3)) {
+  : m_no{no}
+  , m_message{move(message)}
+  , m_msgParam1{move(msgParam1)}
+  , m_msgParam2{move(msgParam2)}
+  , m_msgParam3{move(msgParam3)} {
 }
 
 void Error::throwError(ErrorHandler& errorHandler, No no, Location loc,
   string msgParam1, string msgParam2, string msgParam3) {
   if (!errorHandler.isReportingDisabledFor(no)) {
-    stringstream ss;
+    stringstream ss{};
     if (!loc.isNull()) {
       if (loc.begin.m_fileName != nullptr) { ss << *loc.begin.m_fileName; }
       else {
@@ -42,10 +42,10 @@ void Error::throwError(ErrorHandler& errorHandler, No no, Location loc,
     ss << "error: " << describe(no, msgParam1, msgParam2, msgParam3) << " ["
        << no << "]";
 
-    auto error = shared_ptr<Error>(new Error{
-      no, ss.str(), move(msgParam1), move(msgParam2), move(msgParam3)});
+    auto error = shared_ptr<Error>{new Error{
+      no, ss.str(), move(msgParam1), move(msgParam2), move(msgParam3)}};
     errorHandler.add(error);
-    throw BuildError(error);
+    throw BuildError{error};
   }
 }
 

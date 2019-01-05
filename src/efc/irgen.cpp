@@ -31,7 +31,7 @@ void IrGen::staticOneTimeInit() {
 }
 
 IrGen::IrGen(ErrorHandler& errorHandler)
-  : m_builder(llvmContext), m_errorHandler(errorHandler) {
+  : m_builder{llvmContext}, m_errorHandler{errorHandler} {
 }
 
 /** Using the given AST, generates LLVM IR code, appending it to the one
@@ -45,8 +45,8 @@ unique_ptr<Module> IrGen::genIr(AstNode& root) {
 
   root.accept(*this);
 
-  stringstream ss;
-  llvm::raw_os_ostream llvmss(ss);
+  stringstream ss{};
+  llvm::raw_os_ostream llvmss{ss};
   if (verifyModule(*m_module, &llvmss)) {
     llvmss.flush();
     ss << "\n--- llvm module dump: ------------------\n";
@@ -83,7 +83,7 @@ void IrGen::visit(AstCast& cast) {
   const auto& newtype = dynamic_cast<const ObjTypeFunda&>(cast.objType());
   auto oldsize = oldtype.size();
   auto newsize = newtype.size();
-  string irValueName =
+  const auto irValueName =
     childIr->getName().str() + "_as_" + newtype.completeName();
 
   // unity conversion
@@ -186,7 +186,8 @@ void IrGen::visit(AstOperator& op) {
 
   // binary logical short circuit operators
   else if (op.isBinaryLogicalShortCircuit()) {
-    const string opname = op.op() == AstOperator::eAnd ? "and" : "or";
+    const auto opname =
+      op.op() == AstOperator::eAnd ? string{"and"} : string{"or"};
     Function* functionIr = m_builder.GetInsertBlock()->getParent();
     BasicBlock* rhsBB = BasicBlock::Create(llvmContext, opname + "_rhs");
     BasicBlock* mergeBB = BasicBlock::Create(llvmContext, opname + "_merge");
@@ -363,7 +364,7 @@ void IrGen::visit(AstFunCall& funCall) {
 
   const auto& astArgs = funCall.args().childs();
 
-  vector<Value*> llvmArgs;
+  vector<Value*> llvmArgs{};
   for (const auto& astArg : astArgs) {
     Value* llvmArg = callAcceptOn(*astArg);
     assert(llvmArg);
@@ -544,7 +545,7 @@ void IrGen::allocateAndInitLocalIrObjectFor(
 pass.*/
 AllocaInst* IrGen::createAllocaInEntryBlock(
   Function* functionIr, const string& varName, llvm::Type* type) {
-  IRBuilder<> irBuilder(
-    &functionIr->getEntryBlock(), functionIr->getEntryBlock().begin());
+  IRBuilder<> irBuilder{
+    &functionIr->getEntryBlock(), functionIr->getEntryBlock().begin()};
   return irBuilder.CreateAlloca(type, nullptr, varName.c_str());
 }

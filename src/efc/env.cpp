@@ -17,7 +17,7 @@ Env::AutoScope::AutoScope(Env& env, EnvNode& node, Action action)
 
 Env::AutoScope::AutoScope(
   Env& env, EnvNode& node, Env::AutoScope::Action action, bool& success)
-  : m_env(env) {
+  : m_env{env} {
   if (action == insertScopeAndDescent) {
     success = m_env.insertScopeAndDescent(node);
   }

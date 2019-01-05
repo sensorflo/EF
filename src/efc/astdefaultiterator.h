@@ -5,7 +5,7 @@
 given in the ctor. Currently it's only pre order traversal. */
 class AstDefaultIterator : public AstVisitor {
 public:
-  AstDefaultIterator(AstVisitor* visitor = nullptr) : m_visitor(visitor) {}
+  AstDefaultIterator(AstVisitor* visitor = nullptr) : m_visitor{visitor} {}
 
   void visit(AstNop& nop) override;
   void visit(AstBlock& block) override;

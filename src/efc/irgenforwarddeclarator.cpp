@@ -22,9 +22,9 @@ void IrGenForwardDeclarator::visit(AstDataDef& dataDef) {
   AstDefaultIterator::visit(dataDef);
 
   if (dataDef.storageDuration() == StorageDuration::eStatic) {
-    const auto addr = new GlobalVariable(m_module, dataDef.objType().llvmType(),
+    const auto addr = new GlobalVariable{m_module, dataDef.objType().llvmType(),
       !(dataDef.objType().qualifiers() & ObjType::eMutable),
-      GlobalValue::InternalLinkage, nullptr, dataDef.fqName());
+      GlobalValue::InternalLinkage, nullptr, dataDef.fqName()};
     dataDef.ir().setAddrOfIrObject(addr);
   }
 }
@@ -33,7 +33,7 @@ void IrGenForwardDeclarator::visit(AstFunDef& funDef) {
   AstDefaultIterator::visit(funDef);
 
   // create IR function with given name and signature
-  vector<Type*> llvmArgs;
+  vector<Type*> llvmArgs{};
   for (const auto& astArg : funDef.declaredArgs()) {
     llvmArgs.push_back(astArg->objType().llvmType());
   }

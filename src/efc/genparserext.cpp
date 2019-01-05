@@ -17,7 +17,7 @@ AstCtList* combine(ErrorHandler& errorHandler, AstCtList* ctorArgs1,
     Error::throwError(errorHandler, Error::eMultipleInitializers, loc);
   }
   else if (!ctorArgs1 && !ctorArgs2) {
-    return new AstCtList(loc);
+    return new AstCtList{loc};
   }
   else {
     return ctorArgs1 ? ctorArgs1 : ctorArgs2;
@@ -31,10 +31,10 @@ RawAstDataDef::RawAstDataDef(ErrorHandler& errorHandler, string name,
   AstCtList* ctorArgs1, AstCtList* ctorArgs2, AstObjType* astObjType,
   StorageDuration storageDuration, const Location& loc)
   : m_errorHandler{errorHandler}
-  , m_name(move(name))
-  , m_ctorArgs(combine(m_errorHandler, ctorArgs1, ctorArgs2, loc))
-  , m_astObjType(astObjType)
-  , m_storageDuration(storageDuration) {
+  , m_name{move(name)}
+  , m_ctorArgs{combine(m_errorHandler, ctorArgs1, ctorArgs2, loc)}
+  , m_astObjType{astObjType}
+  , m_storageDuration{storageDuration} {
 }
 
 GenParserExt::GenParserExt(Env&, ErrorHandler& errorHandler)
@@ -42,7 +42,7 @@ GenParserExt::GenParserExt(Env&, ErrorHandler& errorHandler)
 }
 
 AstObjType* GenParserExt::mkDefaultType(Location loc) {
-  return new AstObjTypeSymbol(ObjTypeFunda::eInfer, move(loc));
+  return new AstObjTypeSymbol{ObjTypeFunda::eInfer, move(loc)};
 }
 
 StorageDuration GenParserExt::mkDefaultStorageDuration() {
@@ -66,7 +66,7 @@ AstOperator* GenParserExt::mkOperatorTree(
   // unary operator
   if (op == '!') {
     assert(args->childs().size() == 1);
-    tree = new AstOperator(op, args->childs().front(), nullptr, move(loc));
+    tree = new AstOperator{op, args->childs().front(), nullptr, move(loc)};
   }
 
   // right associative binary operator
@@ -75,9 +75,9 @@ AstOperator* GenParserExt::mkOperatorTree(
     auto ri = args->childs().rbegin();
     AstObject* last = *ri;
     AstObject* beforelast = *(++ri);
-    tree = new AstOperator(op, beforelast, last, loc);
+    tree = new AstOperator{op, beforelast, last, loc};
     for (++ri; ri != args->childs().rend(); ++ri) {
-      tree = new AstOperator(op, *ri, tree, loc);
+      tree = new AstOperator{op, *ri, tree, loc};
     }
   }
 
@@ -87,9 +87,9 @@ AstOperator* GenParserExt::mkOperatorTree(
     auto i = args->childs().begin();
     AstObject* first = *i;
     AstObject* second = *(++i);
-    tree = new AstOperator(op, first, second, loc);
+    tree = new AstOperator{op, first, second, loc};
     for (++i; i != args->childs().end(); ++i) {
-      tree = new AstOperator(op, tree, *i, loc);
+      tree = new AstOperator{op, tree, *i, loc};
     }
   }
 
@@ -102,7 +102,7 @@ AstOperator* GenParserExt::mkOperatorTree(const string& op, AstObject* child1,
   AstObject* child2, AstObject* child3, AstObject* child4, AstObject* child5,
   AstObject* child6) {
   return mkOperatorTree(
-    op, new AstCtList(child1, child2, child3, child4, child5, child6));
+    op, new AstCtList{child1, child2, child3, child4, child5, child6});
 }
 
 AstDataDef* GenParserExt::mkDataDef(
@@ -115,23 +115,23 @@ AstDataDef* GenParserExt::mkDataDef(
     ? rawAstDataDef->m_astObjType
     : mkDefaultType(loc); // 1)
   const auto qualifiedAstObjType =
-    new AstObjTypeQuali(qualifiers, unqualifiedAstObjType, loc); // 2)
+    new AstObjTypeQuali{qualifiers, unqualifiedAstObjType, loc}; // 2)
 
-  return new AstDataDef(rawAstDataDef->m_name, qualifiedAstObjType,
-    rawAstDataDef->m_storageDuration, rawAstDataDef->m_ctorArgs, loc);
+  return new AstDataDef{rawAstDataDef->m_name, qualifiedAstObjType,
+    rawAstDataDef->m_storageDuration, rawAstDataDef->m_ctorArgs, loc};
 }
 
 AstFunDef* GenParserExt::mkFunDef(const string name,
   vector<AstDataDef*>* astArgs, AstObjType* retAstObjType, AstObject* astBody,
   Location loc) {
   astArgs = astArgs ? astArgs : new vector<AstDataDef*>();
-  return new AstFunDef(name, astArgs, retAstObjType, astBody, move(loc));
+  return new AstFunDef{name, astArgs, retAstObjType, astBody, move(loc)};
 }
 
 AstFunDef* GenParserExt::mkFunDef(
   const string name, ObjTypeFunda::EType ret, AstObject* body, Location loc) {
   return mkFunDef(
-    name, AstFunDef::createArgs(), new AstObjTypeSymbol(ret), body, move(loc));
+    name, AstFunDef::createArgs(), new AstObjTypeSymbol{ret}, body, move(loc));
 }
 
 AstFunDef* GenParserExt::mkFunDef(
@@ -141,6 +141,6 @@ AstFunDef* GenParserExt::mkFunDef(
 
 AstFunDef* GenParserExt::mkMainFunDef(AstObject* body) {
   // note that a valid Location is created, opposed to passing s_nullLoc
-  return mkFunDef("main", new AstObjTypeSymbol(ObjTypeFunda::eInt, Location{}),
+  return mkFunDef("main", new AstObjTypeSymbol{ObjTypeFunda::eInt, Location{}},
     body, Location{});
 }

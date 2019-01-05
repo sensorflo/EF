@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
   }
   try {
     IrGen::staticOneTimeInit();
-    Driver driver(argv[1]);
+    Driver driver{argv[1]};
     driver.compile();
     if (driver.errorHandler().hasErrors()) { exit(1); }
     cout << driver.jitExecMain() << "\n";
