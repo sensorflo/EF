@@ -22,7 +22,6 @@ public:
     return "object type template " + name();
   }
 
-  // @todo this is the one I want, the ones below are only intermediate steps
   ObjType& instanciate(ObjTypes args, ObjType::Qualifiers qualifiers);
 
   //probably already solved by EnvNode::insert

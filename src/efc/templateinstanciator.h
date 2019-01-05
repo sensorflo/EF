@@ -11,10 +11,10 @@ AstObjType node does the instanciation it represents.
 An AST subtree representing a type expression, i.e. all nodes are of type
 AstObjType, really denotes a template instantiation. E.g. "*int" (EF syntax) is
 short for "raw_ptr<int>" (using C++ syntax, since EF syntax is not yet there) */
-class SignatureAugmentor : private AstDefaultIterator {
+class TemplateInstanciator : private AstDefaultIterator {
 public:
-  SignatureAugmentor(Env& env, ErrorHandler& errorHandler);
-  void augmentEntities(AstNode& root);
+  TemplateInstanciator(Env& env, ErrorHandler& errorHandler);
+  void instanciateTemplates(AstNode& root);
 
 private:
   void visit(AstBlock& block) override;

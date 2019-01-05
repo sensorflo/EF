@@ -161,12 +161,10 @@ public:
     eNotStoredAsIntegral
   };
 
-  //probably already solved by EnvNode::insert, or by ObjTypeTemplate
-  //void addMemberFun(const FunctionObj* functionObj);
-
   /** Returns the Function that would be called given the argument arg1, or
   nullptr if there is no such function obj. The callee is not the owner of the
   pointee.
+
   @todo: Each arg is actualy a ct_list (tree) */
   FindFunResult findMemberFun(
     const std::string& name, const ObjType& arg1) const;
@@ -215,9 +213,6 @@ private:
   FunUnqualifiedObjType(const ObjType& retObjType, ObjTypes paramObjTypes);
 };
 
-// @todo: is raw_ptr<raw_ptr<eAutoTakeAddr>,eAutoTakeAddr> really meaningful?
-//      I think so, the outer raw_ptr doesnt care about how its pointee object
-//      was initialized.
 class RawPtrUnqualifiedObjType : public UnqualifiedObjType {
 public:
   bool isRawPtr() const override { return true; }

@@ -6,7 +6,7 @@
 #include "errorhandler.h"
 #include "freefromastobject.h"
 #include "objtype.h"
-#include "signatureaugmentor.h"
+#include "templateinstanciator.h"
 
 using namespace std;
 
@@ -22,9 +22,9 @@ void SemanticAnalizer::analyze(AstNode& root) {
   EnvInserter envinserter(m_env, m_errorHandler);
   envinserter.insertIntoEnv(root);
 
-  // pass 2 over AST: SignatureAugmentor
-  SignatureAugmentor signatureaugmentor(m_env, m_errorHandler);
-  signatureaugmentor.augmentEntities(root);
+  // pass 2 over AST: TemplateInstanciator
+  TemplateInstanciator templateInstanciator(m_env, m_errorHandler);
+  templateInstanciator.instanciateTemplates(root);
 
   // pass 3 over AST: SemanticAnalizer itself
   root.setAccessFromAstParent(Access::eIgnoreValueAndAddr);
@@ -442,7 +442,7 @@ void SemanticAnalizer::visit(AstDataDef& dataDef) {
   }
 
   // -- responsibility 3: set properties of associated object: type, sd, access
-  // As with all definitions, SignatureAugmentor, did already define type and
+  // As with all definitions, TemplateInstanciator, did already define type and
   // sd
   dataDef.notifyInitialized();
 
@@ -603,7 +603,7 @@ void SemanticAnalizer::preConditionCheck(const AstObjType& node) {
 }
 
 void SemanticAnalizer::postConditionCheck(const AstObject& node) {
-  assert(node.object().objTypeAsSp()); //todo:move to signature augmentor
+  assert(node.object().objTypeAsSp()); //todo:move to TemplateInstanciator
   assert(node.object().storageDuration() != StorageDuration::eYetUndefined);
 }
 

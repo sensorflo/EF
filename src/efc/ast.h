@@ -657,7 +657,8 @@ private:
   const std::unique_ptr<AstCtList> m_ctorArgs;
 };
 
-/** See also ObjType */
+/** Represents a object type template instanciation. See also ObjType and
+TemplateInstanciator. */
 class AstObjType : public AstNode {
 public:
   AstObjType(Location loc = s_nullLoc) : AstNode{std::move(loc)} {}

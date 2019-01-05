@@ -97,7 +97,7 @@ set(SRCS
   scanner.cpp
   genparserext.cpp
   semanticanalizer.cpp
-  signatureaugmentor.cpp
+  templateinstanciator.cpp
   storageduration.cpp
   tokenfilter.cpp
   tokenstreamlookahead.cpp

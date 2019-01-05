@@ -778,7 +778,7 @@ AstObject* AstObjTypeSymbol::createDefaultAstObjectForSemanticAnalizer(
 
   // What EnvInserter does: nothing
 
-  // What SignatureAugmentor does:
+  // What TemplateInstanciator does:
   newAstNode->declaredAstObjType().createAndSetObjType();
 
   // What SemanticAnalizer does: to be done by caller
@@ -880,7 +880,7 @@ AstObject* AstObjTypePtr::createDefaultAstObjectForSemanticAnalizer(
 
   // What EnvInserter does: nothing
 
-  // What SignatureAugmentor does:
+  // What TemplateInstanciator does:
   newAstNode->declaredAstObjType().createAndSetObjType();
 
   // What SemanticAnalizer does: to be done by caller
