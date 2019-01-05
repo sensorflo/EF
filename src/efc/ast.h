@@ -353,11 +353,7 @@ private:
 /** Here symbol as an synonym to identifier */
 class AstSymbol : public AstObject {
 public:
-  AstSymbol(std::string name, Location loc = s_nullLoc)
-    : AstObject{std::move(loc)}
-    , m_referencedAstObj{}
-    , m_accessFromAstParent{Access::eYetUndefined}
-    , m_name(std::move(name)) {}
+  AstSymbol(std::string name, Location loc = s_nullLoc);
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;

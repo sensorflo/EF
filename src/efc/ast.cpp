@@ -300,6 +300,13 @@ StorageDuration AstNumber::storageDuration() const {
   return StorageDuration::eLocal;
 }
 
+AstSymbol::AstSymbol(std::string name, Location loc)
+  : AstObject{std::move(loc)}
+  , m_referencedAstObj{}
+  , m_accessFromAstParent{Access::eYetUndefined}
+  , m_name(std::move(name)) {
+}
+
 void AstSymbol::setAccessFromAstParent(Access access) {
   assert(Access::eYetUndefined != access);
   assert(Access::eYetUndefined == m_accessFromAstParent);
