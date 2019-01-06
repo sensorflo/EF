@@ -73,8 +73,7 @@ Access AstObject::accessFromAstParent() const {
   return m_accessFromAstParent;
 }
 
-AstObjDef::AstObjDef(string name, Location loc)
-  : AstObject(move(loc)), EnvNode(move(name)) {
+AstObjDef::AstObjDef(Location loc) : AstObject(move(loc)) {
 }
 
 basic_ostream<char>& AstObjDef::printTo(basic_ostream<char>& os) const {
@@ -92,8 +91,8 @@ AstNop::AstNop(Location loc)
 }
 
 AstBlock::AstBlock(AstObject* body, Location loc)
-  : AstObject{move(loc)}
-  , EnvNode{Env::makeUniqueInternalName("$block")}
+  : Object{Env::makeUniqueInternalName("$block")}
+  , AstObject{move(loc)}
   , m_body{body} {
   assert(m_body);
 }
@@ -147,13 +146,19 @@ StorageDuration AstCast::storageDuration() const {
 
 AstFunDef::AstFunDef(const string& name, vector<AstDataDef*>* args,
   AstObjType* ret, AstObject* body, Location loc)
-  : AstObjDef{name, move(loc)}
+  : Object{name}
+  , AstObjDef{move(loc)}
   , m_args{toUniquePtrs(args)}
   , m_ret{ret}
   , m_body{body} {
   assert(m_ret);
   assert(m_body);
   for (const auto& arg : m_args) { assert(arg); }
+}
+
+std::string AstFunDef::description() const {
+  return "function definition of " + fqName() + " defined here '" +
+    toString(loc()) + "'";
 }
 
 vector<AstDataDef*>* AstFunDef::createArgs(
@@ -210,7 +215,8 @@ AstObject* const AstDataDef::noInit = reinterpret_cast<AstObject*>(1);
 
 AstDataDef::AstDataDef(const string& name, AstObjType* declaredAstObjType,
   StorageDuration declaredStorageDuration, AstCtList* ctorArgs, Location loc)
-  : AstObjDef{name, loc}
+  : Object{name}
+  , AstObjDef{loc}
   , m_doNotInit{false} // conceptually initialized by mkCtorArgs below
   , m_declaredAstObjType{declaredAstObjType != nullptr
         ? unique_ptr<AstObjType>{declaredAstObjType}
@@ -237,6 +243,11 @@ AstDataDef::AstDataDef(const string& name, AstObjType* declaredAstObjType,
 AstDataDef::AstDataDef(const string& name, ObjTypeFunda::EType declaredObjType,
   AstObject* initObj, Location loc)
   : AstDataDef{name, new AstObjTypeSymbol{declaredObjType, loc}, initObj, loc} {
+}
+
+std::string AstDataDef::description() const {
+  return "data definition of " + fqName() + " defined here '" +
+    toString(loc()) + "'";
 }
 
 const ObjType& AstDataDef::objType() const {

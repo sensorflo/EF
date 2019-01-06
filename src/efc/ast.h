@@ -3,7 +3,6 @@
 #include "access.h"
 #include "astforwards.h"
 #include "declutils.h"
-#include "envnode.h"
 #include "generalvalue.h"
 #include "location.h"
 #include "object.h"
@@ -97,12 +96,8 @@ private:
   Access m_accessFromAstParent;
 };
 
-class AstObjDef : public AstObject, public EnvNode {
+class AstObjDef : public AstObject {
 public:
-  // -- overrides for EnvNode
-  // @todo
-  std::string description() const override { return name(); }
-
   // @todo I think this is superfluous
   virtual std::basic_ostream<char>& printTo(std::basic_ostream<char>& os) const;
 
@@ -114,7 +109,7 @@ public:
   }
 
 protected:
-  AstObjDef(std::string name, Location loc = s_nullLoc);
+  AstObjDef(Location loc = s_nullLoc);
 
 private:
   /** Relative to program order, which equals AST post-order traversal, childs
@@ -134,13 +129,9 @@ public:
   void accept(AstConstVisitor& visitor) const override;
 };
 
-class AstBlock : public AstObject, public ConcreteObject, public EnvNode {
+class AstBlock : public AstObject, public ConcreteObject {
 public:
   AstBlock(AstObject* body, Location loc = s_nullLoc);
-
-  // -- overrides for EnvNode
-  // @todo
-  std::string description() const override { return "block"; }
 
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
@@ -197,6 +188,9 @@ public:
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
 
+  // -- overrides for EnvNode
+  std::string description() const override;
+
   // -- overrides for Object
   const ObjType& objType() const override;
   std::shared_ptr<const ObjType> objTypeAsSp() const override;
@@ -226,8 +220,8 @@ private:
   const std::unique_ptr<AstObjType> m_ret;
   /** Is garanteed to be non-null.
   @todo: replace pointee type with AstBlock. Then all visitors for AstFunDef
-       don't need to care about Env anymore an can leave handling Env to
-       AstBlock. */
+  don't need to care about Env anymore an can leave handling Env to
+  AstBlock. */
   const std::unique_ptr<AstObject> m_body;
 };
 
@@ -251,6 +245,9 @@ public:
   // -- overrides for AstNode
   void accept(AstVisitor& visitor) override;
   void accept(AstConstVisitor& visitor) const override;
+
+  // -- overrides for EnvNode
+  std::string description() const override;
 
   // -- overrides for Object
   const ObjType& objType() const override;

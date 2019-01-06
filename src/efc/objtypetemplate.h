@@ -17,9 +17,9 @@ public:
   ObjTypeTemplate(std::string name);
   ~ObjTypeTemplate() override;
 
-  // @todo: also template args
+  // @todo: also template args and location
   std::string description() const override {
-    return "object type template " + name();
+    return "object type template " + fqName();
   }
 
   ObjType& instanciate(ObjTypes args, ObjType::Qualifiers qualifiers);

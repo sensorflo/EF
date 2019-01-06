@@ -2,6 +2,10 @@
 
 #include "position.h"
 
+#include <iostream>
+#include <sstream>
+#include <string>
+
 /** A losition in the EF source file. */
 class Location {
 public:
@@ -95,6 +99,12 @@ inline std::basic_ostream<YYChar>& operator<<(
   else if (loc.begin.m_column < end_col)
     ostr << '-' << end_col;
   return ostr;
+}
+
+inline std::string toString(const Location& loc) {
+  std::stringstream ss{};
+  ss << loc;
+  return ss.str();
 }
 
 extern const Location s_nullLoc;

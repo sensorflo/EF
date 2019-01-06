@@ -48,11 +48,6 @@ public:
     eFunction
   };
 
-  // @todo
-  std::string description() const override {
-    return "object type " + completeName();
-  }
-
   /** Writes the complete type name to the specified output stream. Note that
   name() (inherited from EnvNode) denotes only the 'template' name. */
   virtual std::basic_ostream<char>& printTo(

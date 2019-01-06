@@ -17,7 +17,10 @@ public:
   const std::string& name() const;
   const std::string& fqName() const;
 
-  virtual std::string description() const = 0;
+  /** End user readable description. Usually for the case he uses a name to
+  refer to something, but what was found under that name does not fulfill
+  semantic requirements. Meant to be overriden by AstNodes being definitions.*/
+  virtual std::string description() const;
 
   bool insert(EnvNode& node);
   /** Searches only within childs of this node */

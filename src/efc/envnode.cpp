@@ -20,6 +20,10 @@ const string& EnvNode::fqName() const {
   return m_fqName;
 }
 
+string EnvNode::description() const {
+  return "internal entity";
+}
+
 bool EnvNode::insert(EnvNode& node) {
   assert(!node.m_envParent); // ensure node is not already inserted into Env
   assert(node.m_envChildren.empty());

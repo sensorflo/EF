@@ -5,12 +5,6 @@
 
 using namespace std;
 
-class TestingEnvNode : public EnvNode {
-public:
-  TestingEnvNode(string name) : EnvNode{move(name)} {}
-  string description() const override { return "TestingEnvNode " + name(); }
-};
-
 using namespace testing;
 using namespace std;
 
@@ -21,7 +15,7 @@ TEST(EnvTest, MAKE_TEST_NAME3(
   auto spec = "Current scope being root scope, using insertLeaf to insert";
   {
     // setup
-    TestingEnvNode node("x");
+    EnvNode node("x");
     Env UUT;  // env shall life shorter than it's nodes
 
     // exercise
@@ -34,7 +28,7 @@ TEST(EnvTest, MAKE_TEST_NAME3(
   spec = "Current scope being root scope, using AutoScope to insert";
   {
     // setup
-    TestingEnvNode node("x");
+    EnvNode node("x");
     Env UUT;  // env shall life shorter than it's nodes
 
     // exercise
@@ -49,8 +43,8 @@ TEST(EnvTest, MAKE_TEST_NAME3(
   spec = "Current scope being _not_ root scope, using insertLeaf to insert";
   {
     // setup
-    TestingEnvNode otherNode("otherName");
-    TestingEnvNode node("x");
+    EnvNode otherNode("otherName");
+    EnvNode node("x");
     Env UUT;  // env shall life shorter than it's nodes
     Env::AutoScope dummy(UUT, otherNode, Env::AutoScope::insertScopeAndDescent);
 
@@ -64,8 +58,8 @@ TEST(EnvTest, MAKE_TEST_NAME3(
   spec = "Current scope being _not_ root scope, using AutoScope to insert";
   {
     // setup
-    TestingEnvNode otherNode("otherName");
-    TestingEnvNode node("x");
+    EnvNode otherNode("otherName");
+    EnvNode node("x");
     Env UUT;  // env shall life shorter than it's nodes
     Env::AutoScope dummy1(
       UUT, otherNode, Env::AutoScope::insertScopeAndDescent);
@@ -89,8 +83,8 @@ TEST(EnvTest, MAKE_TEST_NAME(
   auto spec = "Current scope being root scope, using insertLeaf to insert";
   {
     // setup
-    TestingEnvNode meanNode(name);
-    TestingEnvNode node(name);
+    EnvNode meanNode(name);
+    EnvNode node(name);
     Env UUT;  // env shall life shorter than it's nodes
     UUT.insertLeaf(meanNode);
 
@@ -104,8 +98,8 @@ TEST(EnvTest, MAKE_TEST_NAME(
   spec = "Current scope being root scope, using AutoScope to insert";
   {
     // setup
-    TestingEnvNode meanNode(name);
-    TestingEnvNode node(name);
+    EnvNode meanNode(name);
+    EnvNode node(name);
     Env UUT;  // env shall life shorter than it's nodes
     UUT.insertLeaf(meanNode);
 
@@ -121,9 +115,9 @@ TEST(EnvTest, MAKE_TEST_NAME(
   spec = "Current scope being _not_ root scope, using insertLeaf to insert";
   {
     // setup
-    TestingEnvNode yetOtherNode("otherName");
-    TestingEnvNode meanNode(name);
-    TestingEnvNode node(name);
+    EnvNode yetOtherNode("otherName");
+    EnvNode meanNode(name);
+    EnvNode node(name);
     Env UUT;  // env shall life shorter than it's nodes
     Env::AutoScope dummy(
       UUT, yetOtherNode, Env::AutoScope::insertScopeAndDescent);
@@ -139,9 +133,9 @@ TEST(EnvTest, MAKE_TEST_NAME(
   spec = "Current scope being _not_ root scope, using AutoScope to insert";
   {
     // setup
-    TestingEnvNode yetOtherNode("otherName");
-    TestingEnvNode meanNode(name);
-    TestingEnvNode node(name);
+    EnvNode yetOtherNode("otherName");
+    EnvNode meanNode(name);
+    EnvNode node(name);
     Env UUT;  // env shall life shorter than it's nodes
     Env::AutoScope dummy1(
       UUT, yetOtherNode, Env::AutoScope::insertScopeAndDescent);
@@ -162,8 +156,8 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     THEN_insert_returns_true_each_time,
     BECAUSE_the_anonymous_name_is_not_really_inserted_and_thus_there_is_no_conflict_on_the_2nd_insert)) {
   // setup
-  TestingEnvNode node1(s_anonymousName);
-  TestingEnvNode node2(s_anonymousName);
+  EnvNode node1(s_anonymousName);
+  EnvNode node2(s_anonymousName);
   Env UUT;
 
   // exercise
@@ -180,7 +174,7 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     THEN_find_returns_false,
     BECAUSE_anonymous_nodes_are_not_added_to_the_env)) {
   // setup
-  TestingEnvNode node(s_anonymousName);
+  EnvNode node(s_anonymousName);
   Env UUT;
 
   // exercise
@@ -199,7 +193,7 @@ TEST(EnvTest, MAKE_TEST_NAME3(
   auto spec = "Using insertLeaf to insert";
   {
     // setup
-    TestingEnvNode insertedNode(name);
+    EnvNode insertedNode(name);
     Env UUT;  // env shall life shorter than it's nodes
     UUT.insertLeaf(insertedNode);
 
@@ -213,7 +207,7 @@ TEST(EnvTest, MAKE_TEST_NAME3(
   spec = "Using AutoScope to insert";
   {
     // setup
-    TestingEnvNode insertedNode(name);
+    EnvNode insertedNode(name);
     Env UUT;  // env shall life shorter than it's nodes
     Env::AutoScope dummy(
       UUT, insertedNode, Env::AutoScope::insertScopeAndDescent);
@@ -229,7 +223,7 @@ TEST(EnvTest, MAKE_TEST_NAME3(
 TEST(EnvTest, MAKE_TEST_NAME2(
     find_WITH_an_nonexisting_name,
     returns_NULL)) {
-  TestingEnvNode insertedNode("x");
+  EnvNode insertedNode("x");
   Env UUT;  // env shall life shorter than it's nodes
   const auto foundNode = UUT.find("cantfindme");
   EXPECT_EQ(nullptr, foundNode) << amend(UUT);
@@ -242,9 +236,9 @@ TEST(EnvTest, MAKE_TEST_NAME4(
     BECAUSE_the_new_scope_allows_the_inner_x_to_shadow_the_outer_x)) {
   // setup
   const auto name = "x"s;
-  TestingEnvNode nodeOuter(name);
-  TestingEnvNode scopesNode("foo");
-  TestingEnvNode nodeInner(name);
+  EnvNode nodeOuter(name);
+  EnvNode scopesNode("foo");
+  EnvNode nodeInner(name);
   Env UUT;  // env shall life shorter than it's nodes
   UUT.insertLeaf(nodeOuter);
 
@@ -263,8 +257,8 @@ TEST(EnvTest, MAKE_TEST_NAME4(
     because_the_new_scope_did_not_add_a_new_x_which_would_shadow_the_x_at_root)) {
   // setup
   const auto name = "x"s;
-  TestingEnvNode scopesNode("foo");
-  TestingEnvNode insertedNode(name);
+  EnvNode scopesNode("foo");
+  EnvNode insertedNode(name);
   Env UUT;  // env shall life shorter than it's nodes
   UUT.insertLeaf(insertedNode);
 
@@ -282,9 +276,9 @@ TEST(EnvTest, MAKE_TEST_NAME(
     find_behaves_as_if_the_part_from_pushScope_to_popScope_did_not_happen)) {
   // setup
   const auto name = "x"s;
-  TestingEnvNode scopesNode("foo");
-  TestingEnvNode outerNode(name);
-  TestingEnvNode innerNode(name);
+  EnvNode scopesNode("foo");
+  EnvNode outerNode(name);
+  EnvNode innerNode(name);
   Env UUT;  // env shall life shorter than it's nodes
   UUT.insertLeaf(outerNode);
 
@@ -302,8 +296,8 @@ TEST(EnvTest, MAKE_TEST_NAME(
 
 TEST(EnvTest, MAKE_TEST_NAME1(
     descentScope)) {
-  TestingEnvNode insertedNode("x");
-  TestingEnvNode scopesNode("foo");
+  EnvNode insertedNode("x");
+  EnvNode scopesNode("foo");
   Env UUT;  // env shall life shorter than it's nodes
   {
     Env::AutoScope dummy(
@@ -324,7 +318,7 @@ TEST(EnvTest, MAKE_TEST_NAME2(
   string spec = "insertLeaf called at root";
   {
     // setup
-    TestingEnvNode node("foo");
+    EnvNode node("foo");
     Env UUT;  // env shall life shorter than it's nodes
 
     // exercise
@@ -337,7 +331,7 @@ TEST(EnvTest, MAKE_TEST_NAME2(
   spec = "AutoScope at root";
   {
     // setup
-    TestingEnvNode node("foo");
+    EnvNode node("foo");
     Env UUT;  // env shall life shorter than it's nodes
 
     // exercise
@@ -350,8 +344,8 @@ TEST(EnvTest, MAKE_TEST_NAME2(
   spec = "insertLeaf called at a descendant of root";
   {
     // setup
-    TestingEnvNode scopesNode("othername");
-    TestingEnvNode node("foo");
+    EnvNode scopesNode("othername");
+    EnvNode node("foo");
     Env UUT;  // env shall life shorter than it's nodes
     Env::AutoScope dummy(
       UUT, scopesNode, Env::AutoScope::insertScopeAndDescent);
@@ -366,8 +360,8 @@ TEST(EnvTest, MAKE_TEST_NAME2(
   spec = "AutoScope at a descendant of root";
   {
     // setup
-    TestingEnvNode scopesNode("othername");
-    TestingEnvNode node("foo");
+    EnvNode scopesNode("othername");
+    EnvNode node("foo");
     Env UUT;  // env shall life shorter than it's nodes
     Env::AutoScope dummy1(
       UUT, scopesNode, Env::AutoScope::insertScopeAndDescent);
@@ -406,13 +400,13 @@ TEST(EnvTest, MAKE_TEST_NAME1(
   spec = "Example with a few scopes and a few leafs";
   {
     // setup
-    TestingEnvNode node1("1");
-    TestingEnvNode node2("2_");
-    TestingEnvNode node21("2_1");
-    TestingEnvNode node22("2_2");
-    TestingEnvNode node3("3");
-    TestingEnvNode node4("4_");
-    TestingEnvNode node41("4_1");
+    EnvNode node1("1");
+    EnvNode node2("2_");
+    EnvNode node21("2_1");
+    EnvNode node22("2_2");
+    EnvNode node3("3");
+    EnvNode node4("4_");
+    EnvNode node41("4_1");
     Env UUT;  // env shall life shorter than it's nodes
 
     UUT.insertLeaf(node1);

@@ -1,15 +1,23 @@
 #pragma once
 #include "access.h"
+#include "envnode.h"
 #include "object_irpart.h"
 #include "storageduration.h"
 
 #include <memory>
+#include <string>
 
 class ObjType;
 
-/** An Object is a region of storage. It is either a data object or a function (object). */
-class Object {
+/** An Object is a region of storage. It is either a data object or a function
+(object). Note that deriving from EnvNode doesn't mean the EnvNode must be in
+the environment; e.g. the Object resulting from dereferencing a pointer might be
+an anonymous object, e.g. a member of a raw array. */
+class Object : public EnvNode {
 public:
+  /** name is for EnvNode */
+  explicit Object(std::string name = s_anonymousName)
+    : EnvNode{std::move(name)} {};
   virtual ~Object() = default;
 
   virtual const ObjType& objType() const = 0;
@@ -50,11 +58,12 @@ Object interface in a trivial way has to do it again himself. Thus the members
 variables are public */
 class FullConcreteObject : public ConcreteObject {
 public:
-  FullConcreteObject() = default;
+  FullConcreteObject() : FullConcreteObject{nullptr, StorageDuration{}} {};
   FullConcreteObject(
     std::shared_ptr<const ObjType> objType, StorageDuration storageDuration)
     : m_objType{move(objType)}, m_storageDuration{storageDuration} {}
 
+  // -- overrides for Object
   // clang-format off
   const ObjType& objType() const override { return *m_objType; }
   std::shared_ptr<const ObjType> objTypeAsSp() const override { return m_objType; }

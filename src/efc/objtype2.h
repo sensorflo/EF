@@ -24,7 +24,7 @@ public:
   FunctionObj(std::string name) : EnvNode(move(name)) {}
 
   // @todo add signature
-  std::string description() const override { return "function " + name(); }
+  std::string description() const override { return "function " + fqName(); }
   FunUnqualifiedObjType& objType();
 };
 
@@ -87,7 +87,7 @@ struct FindFunResult {
 class UnqualifiedObjType : public EnvNode {
 public:
   // @todo: also template args
-  std::string description() const override { return name(); }
+  std::string description() const override { return "object type " + fqName(); }
 
   size_t size() const { return m_size; }
   const ObjTypes& templateArgs() const { return m_templateArgs; }
