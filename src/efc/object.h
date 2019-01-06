@@ -7,6 +7,7 @@
 
 class ObjType;
 
+/** An Object is a region of storage. It is either a data object or a function (object). */
 class Object {
 public:
   virtual ~Object() = default;
