@@ -8,8 +8,8 @@ if (NOT ASCIIDOC)
 else()
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ef.html
-    DEPENDS ef.txt
-    COMMAND ${ASCIIDOC} -o ${CMAKE_CURRENT_SOURCE_DIR}/ef.html ${CMAKE_CURRENT_SOURCE_DIR}/ef.txt
+    DEPENDS ef.asciidoc
+    COMMAND ${ASCIIDOC} -o ${CMAKE_CURRENT_SOURCE_DIR}/ef.html ${CMAKE_CURRENT_SOURCE_DIR}/ef.asciidoc
     VERBATIM
   )
 
