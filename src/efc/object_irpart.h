@@ -11,6 +11,8 @@ class Object_IrPart {
 public:
   Object_IrPart(const Object& obj);
 
+  bool isStoredInMemory() const;
+
   // -- either allocate and initialize IR object or refer to an already
   //    existing IR Object:
 

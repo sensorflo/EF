@@ -14,9 +14,3 @@ void ConcreteObject::addAccess(Access access) {
 bool ConcreteObject::isModifiedOrRevealsAddr() const {
   return m_isModifiedOrRevealsAddr;
 }
-
-bool ConcreteObject::isStoredInMemory() const {
-  assert(storageDuration() != StorageDuration::eYetUndefined);
-  return storageDuration() != StorageDuration::eLocal ||
-    m_isModifiedOrRevealsAddr;
-}

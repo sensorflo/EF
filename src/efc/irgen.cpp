@@ -524,7 +524,7 @@ void IrGen::visit(AstClassDef& class_) {
 
 void IrGen::allocateAndInitLocalIrObjectFor(
   AstObject& astObject, Value* irInitializer, const string& name) {
-  if (astObject.isStoredInMemory()) {
+  if (astObject.ir().isStoredInMemory()) {
     const auto functionIr = m_builder.GetInsertBlock()->getParent();
     const auto addr = createAllocaInEntryBlock(
       functionIr, name, astObject.objType().llvmType());

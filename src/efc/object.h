@@ -18,7 +18,6 @@ public:
 
   virtual void addAccess(Access access) = 0;
   virtual bool isModifiedOrRevealsAddr() const = 0;
-  virtual bool isStoredInMemory() const = 0;
 
   virtual const Object_IrPart& ir() const = 0;
   virtual Object_IrPart& ir() = 0;
@@ -36,7 +35,6 @@ public:
   AstObject::m_accessFromAstParent. */
   void addAccess(Access access) override;
   bool isModifiedOrRevealsAddr() const override;
-  bool isStoredInMemory() const override;
 
   const Object_IrPart& ir() const override { return m_ir; }
   Object_IrPart& ir() override { return m_ir; }
@@ -78,7 +76,6 @@ public:
   StorageDuration storageDuration() const override { return referencedObj().storageDuration(); };
   void addAccess(Access access) override { return referencedObj().addAccess(access); };
   bool isModifiedOrRevealsAddr() const override { return referencedObj().isModifiedOrRevealsAddr(); };
-  bool isStoredInMemory() const override { return referencedObj().isStoredInMemory(); };
   const Object_IrPart& ir() const override { return referencedObj().ir(); };
   Object_IrPart& ir() override { return referencedObj().ir(); };
   // clang-format on
