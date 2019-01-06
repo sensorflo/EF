@@ -11,7 +11,9 @@ class Object_IrPart {
 public:
   Object_IrPart(const Object& obj);
 
-  bool isStoredInMemory() const;
+  /** True if we want to place the object in memory, false if we store it as
+  SSA value. */
+  bool isSSAValue() const;
 
   // -- either allocate and initialize IR object or refer to an already
   //    existing IR Object:
@@ -39,9 +41,9 @@ private:
 
   const Object& m_obj;
 
-  /** Only used if isStoredInMemory() is true: points to the IR object */
+  /** Only used if isSSAValue() is false: points to the IR object */
   llvm::Value* m_irAddrOfIrObject;
-  /** Only used if isStoredInMemory() is false: directly the IR object. I.e. the
+  /** Only used if isSSAValue() is true: directly the IR object. I.e. the
   IR object is an SSA value. */
   llvm::Value* m_irValueOfObject;
   Phase m_phase;

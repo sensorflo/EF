@@ -17,15 +17,15 @@ Object_IrPart::Object_IrPart(const Object& obj)
   , m_phase{eStart} {
 }
 
-bool Object_IrPart::isStoredInMemory() const {
+bool Object_IrPart::isSSAValue() const {
   const auto sd = m_obj.storageDuration();
   assert(sd != StorageDuration::eYetUndefined);
-  return sd != StorageDuration::eLocal || m_obj.isModifiedOrRevealsAddr();
+  return sd == StorageDuration::eLocal && !m_obj.isModifiedOrRevealsAddr();
 }
 
 void Object_IrPart::setAddrOfIrObject(llvm::Value* irAddrOfIrObject) {
   assert(eStart == m_phase);
-  assert(isStoredInMemory());
+  assert(!isSSAValue());
   assert(irAddrOfIrObject);
   assert(!m_irAddrOfIrObject); // doesn't make sense to set it twice
   m_irAddrOfIrObject = irAddrOfIrObject;
@@ -35,7 +35,7 @@ void Object_IrPart::setAddrOfIrObject(llvm::Value* irAddrOfIrObject) {
 void Object_IrPart::irObjectIsAnSsaValue() {
   assert(eStart == m_phase);
   assert(m_obj.storageDuration() == StorageDuration::eLocal);
-  assert(!isStoredInMemory());
+  assert(isSSAValue());
   assert(!m_irValueOfObject); // must not yet be set, will be set in
   // initializeIrObject
   m_phase = eAllocated;
@@ -44,7 +44,7 @@ void Object_IrPart::irObjectIsAnSsaValue() {
 void Object_IrPart::initializeIrObject(Value* irValue, IRBuilder<>& builder) {
   assert(eAllocated == m_phase);
   assert(irValue);
-  if (isStoredInMemory()) {
+  if (!isSSAValue()) {
     assert(m_irAddrOfIrObject);
     if (m_obj.storageDuration() == StorageDuration::eStatic) {
       const auto globalVariable =
@@ -66,7 +66,7 @@ void Object_IrPart::initializeIrObject(Value* irValue, IRBuilder<>& builder) {
 void Object_IrPart::referToIrObject(llvm::Value* irAddrOfIrObject) {
   assert(eStart == m_phase);
   assert(m_obj.storageDuration() != StorageDuration::eLocal);
-  assert(isStoredInMemory());
+  assert(!isSSAValue());
   assert(!m_irAddrOfIrObject); // doesn't make sense to set it twice
   assert(irAddrOfIrObject);
   m_irAddrOfIrObject = irAddrOfIrObject;
@@ -81,7 +81,7 @@ Value* Object_IrPart::irValueOfIrObject(
   else {
     assert(eStart != m_phase);
   }
-  if (isStoredInMemory()) {
+  if (!isSSAValue()) {
     assert(m_irAddrOfIrObject);
     return builder.CreateLoad(m_irAddrOfIrObject, name);
   }
@@ -96,8 +96,7 @@ void Object_IrPart::setIrValueOfIrObject(Value* irValue, IRBuilder<>& builder) {
   else {
     assert(eStart != m_phase);
   }
-  assert(isStoredInMemory()); // IR objects not in memmory are SSA values
-  // which are immutable
+  assert(!isSSAValue());
   assert(m_irAddrOfIrObject);
   assert(irValue);
   builder.CreateStore(irValue, m_irAddrOfIrObject);
@@ -110,7 +109,7 @@ Value* Object_IrPart::irAddrOfIrObject() const {
   else {
     assert(eStart != m_phase);
   }
-  assert(isStoredInMemory());
+  assert(!isSSAValue());
   assert(m_irAddrOfIrObject);
   return m_irAddrOfIrObject;
 }
