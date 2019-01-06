@@ -32,19 +32,10 @@ void Object_IrPart::setAddrOfIrObject(llvm::Value* irAddrOfIrObject) {
   m_phase = eAllocated;
 }
 
-void Object_IrPart::irObjectIsAnSsaValue() {
-  assert(eStart == m_phase);
-  assert(m_obj.storageDuration() == StorageDuration::eLocal);
-  assert(isSSAValue());
-  assert(!m_irValueOfObject); // must not yet be set, will be set in
-  // initializeIrObject
-  m_phase = eAllocated;
-}
-
 void Object_IrPart::initializeIrObject(Value* irValue, IRBuilder<>& builder) {
-  assert(eAllocated == m_phase);
   assert(irValue);
   if (!isSSAValue()) {
+    assert(eAllocated == m_phase);
     assert(m_irAddrOfIrObject);
     if (m_obj.storageDuration() == StorageDuration::eStatic) {
       const auto globalVariable =
@@ -57,6 +48,7 @@ void Object_IrPart::initializeIrObject(Value* irValue, IRBuilder<>& builder) {
     }
   }
   else {
+    assert(m_phase == eStart); // there's no allocation phase for SSA values
     assert(!m_irValueOfObject); // doesn't make sense to set it twice
     m_irValueOfObject = irValue;
   }

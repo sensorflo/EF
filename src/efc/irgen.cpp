@@ -536,7 +536,6 @@ void IrGen::allocateAndInitLocalIrObjectFor(
     // Note that the name is ignored, i.e. the SSA value will not have the
     // name of the local, but the name as defined by the IR instruction having
     // defined the SSA value.
-    astObject.ir().irObjectIsAnSsaValue();
   }
   astObject.ir().initializeIrObject(irInitializer, m_builder);
 }

@@ -18,9 +18,8 @@ public:
   // -- either allocate and initialize IR object or refer to an already
   //    existing IR Object:
 
-  // ---- allocate IR object
+  // ---- allocate IR object (SSA values don't have to be allocated)
   void setAddrOfIrObject(llvm::Value* irAddrOfIrObject);
-  void irObjectIsAnSsaValue();
 
   // ---- initialize (allocated) IR object
   void initializeIrObject(llvm::Value* irValue, llvm::IRBuilder<>& builder);
