@@ -24,7 +24,7 @@ googletest:: Testing framework
 
 To build efc, the EF compiler, you need CMake, llvm, bison, and flex. For other targets you will need also further programs. The build will tell you what is missing.
 
-Suppose you put the EF Git project in directory <EF_DIR>. Let <BUILD_DIR> denote the directory where you want the build products in, e.g. <EF_DIR>/bin. One time, you do the follwing:
+Suppose you put the EF Git project in directory <EF_DIR>. Let <BUILD_DIR> denote the directory where you want the build products in, e.g. <EF_DIR>/build. One time, you do the follwing:
 
 --------------------------------------------------
 mkdir <BUILD_DIR> # create a directory somewhere to held the build output
