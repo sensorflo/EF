@@ -23,13 +23,14 @@ bool Object_IrPart::isSSAValue() const {
   return sd == StorageDuration::eLocal && !m_obj.isModifiedOrRevealsAddr();
 }
 
-void Object_IrPart::setAddrOfIrObject(llvm::Value* irAddrOfIrObject) {
+void Object_IrPart::setAddrOfIrObject(
+  llvm::Value* irAddrOfIrObject, EInitStatus status) {
   assert(eStart == m_phase);
   assert(!isSSAValue());
   assert(irAddrOfIrObject);
   assert(!m_irAddrOfIrObject); // doesn't make sense to set it twice
   m_irAddrOfIrObject = irAddrOfIrObject;
-  m_phase = eAllocated;
+  m_phase = status == EInitStatus::eUNinitialized ? eAllocated : eInitialized;
 }
 
 void Object_IrPart::initializeIrObject(Value* irValue, IRBuilder<>& builder) {
@@ -52,16 +53,6 @@ void Object_IrPart::initializeIrObject(Value* irValue, IRBuilder<>& builder) {
     assert(!m_irValueOfObject); // doesn't make sense to set it twice
     m_irValueOfObject = irValue;
   }
-  m_phase = eInitialized;
-}
-
-void Object_IrPart::referToIrObject(llvm::Value* irAddrOfIrObject) {
-  assert(eStart == m_phase);
-  assert(m_obj.storageDuration() != StorageDuration::eLocal);
-  assert(!isSSAValue());
-  assert(!m_irAddrOfIrObject); // doesn't make sense to set it twice
-  assert(irAddrOfIrObject);
-  m_irAddrOfIrObject = irAddrOfIrObject;
   m_phase = eInitialized;
 }
 

@@ -181,7 +181,8 @@ void IrGen::visit(AstOperator& op) {
     llvmResult = astOperands.front()->ir().irAddrOfIrObject();
   }
   else if (op.op() == AstOperator::eDeref) {
-    op.ir().referToIrObject(callAcceptOn(*astOperands.front()));
+    op.ir().setAddrOfIrObject(
+      callAcceptOn(*astOperands.front()), EInitStatus::eInitialized);
   }
 
   // binary logical short circuit operators
