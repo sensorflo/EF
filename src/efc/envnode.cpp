@@ -22,6 +22,9 @@ bool EnvNode::insert(EnvNode& node) {
   assert(!node.m_envParent); // ensure node is not already inserted into Env
   assert(node.m_envChildren.empty());
 
+  // anonymous nodes are not added to the Env
+  if (node.m_name.empty()) { return true; }
+
   const auto nameAlreadyExists = find(node.name());
   if (nameAlreadyExists != nullptr) { return false; }
 

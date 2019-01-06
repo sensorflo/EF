@@ -158,6 +158,42 @@ TEST(EnvTest, MAKE_TEST_NAME(
 }
 
 TEST(EnvTest, MAKE_TEST_NAME3(
+    WHEN_the_anonymous_name_is_inserted_twice,
+    THEN_insert_returns_true_each_time,
+    BECAUSE_the_anonymous_name_is_not_really_inserted_and_thus_there_is_no_conflict_on_the_2nd_insert)) {
+  // setup
+  const auto anonymousName = "";
+  TestingEnvNode node1(anonymousName);
+  TestingEnvNode node2(anonymousName);
+  Env UUT;
+
+  // exercise
+  const auto success1 = UUT.insertLeaf(node1);
+  const auto success2 = UUT.insertLeaf(node2);
+
+  // verify
+  EXPECT_TRUE(success1) << amend(UUT);
+  EXPECT_TRUE(success2) << amend(UUT);
+}
+
+TEST(EnvTest, MAKE_TEST_NAME3(
+    WHEN_an_anonymous_name_is_inserted_AND_find_is_called,
+    THEN_find_returns_false,
+    BECAUSE_anonymous_nodes_are_not_added_to_the_env)) {
+  // setup
+  const auto anonymousName = "";
+  TestingEnvNode node(anonymousName);
+  Env UUT;
+
+  // exercise
+  UUT.insertLeaf(node);
+  const auto foundNode = UUT.find(anonymousName);
+
+  // verify
+  EXPECT_TRUE(foundNode == nullptr) << amend(UUT);
+}
+
+TEST(EnvTest, MAKE_TEST_NAME3(
     an_env_with_name_x_already_inserted,
     find_WITH_name_x,
     returns_the_same_ptr_that_insert_already_returned)) {
