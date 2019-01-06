@@ -178,7 +178,7 @@ if (TESTDOX AND ASCIIDOC)
     VERBATIM
     )
   add_custom_target(
-    efc-test-spec-html ALL
+    efc-spec ALL
     DEPENDS ${_spec_html}
     )
 endif()
