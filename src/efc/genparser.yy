@@ -81,6 +81,7 @@
 
 %code
 {
+  #include "../envnode.h"
   #include "../genparserext.h"
   #include "../objtype.h"
   #include "../storageduration.h"
@@ -580,7 +581,7 @@ opt_nl
   ;
 
 opt_id
-  : %empty                                                           { $$ = std::string(); }
+  : %empty                                                           { $$ = s_anonymousName; }
   | ID                                                               { swap($$,$1); }
   ;
 

@@ -6,13 +6,6 @@
 
 using namespace std;
 
-namespace {
-string wrapName(const string& str) {
-  if (!str.empty()) { return str; }
-  return "<anonymous>";
-}
-}
-
 AstPrinter::AstPrinter(basic_ostream<char>& os) : m_os{os} {
 }
 
@@ -88,7 +81,7 @@ void AstPrinter::visit(const AstNumber& number) {
 }
 
 void AstPrinter::visit(const AstSymbol& symbol) {
-  m_os << wrapName(symbol.name());
+  m_os << symbol.name();
 }
 
 void AstPrinter::visit(const AstFunCall& funCall) {
@@ -102,7 +95,7 @@ void AstPrinter::visit(const AstFunCall& funCall) {
 }
 
 void AstPrinter::visit(const AstFunDef& funDef) {
-  m_os << "fun(" << wrapName(funDef.name()) << " (";
+  m_os << "fun(" << funDef.name() << " (";
   auto isFirstIter = true;
   for (const auto& arg : funDef.declaredArgs()) {
     if (!isFirstIter) { m_os << " "; }
@@ -151,7 +144,7 @@ void AstPrinter::visit(const AstReturn& return_) {
 }
 
 void AstPrinter::visit(const AstObjTypeSymbol& symbol) {
-  m_os << wrapName(symbol.name());
+  m_os << symbol.name();
 }
 
 void AstPrinter::visit(const AstObjTypeQuali& quali) {
@@ -170,7 +163,7 @@ void AstPrinter::visit(const AstObjTypePtr& ptr) {
 }
 
 void AstPrinter::visit(const AstClassDef& class_) {
-  m_os << "class(" << wrapName(class_.name());
+  m_os << "class(" << class_.name();
   for (const auto& dataMember : class_.dataMembers()) {
     m_os << " ";
     dataMember->accept(*this);
@@ -180,7 +173,7 @@ void AstPrinter::visit(const AstClassDef& class_) {
 
 void AstPrinter::printNakedDataDef(
   const AstDataDef& dataDef, bool ommitZeroArgInitializer) {
-  m_os << wrapName(dataDef.name()) << " ";
+  m_os << dataDef.name() << " ";
   if (dataDef.declaredStorageDuration() != StorageDuration::eLocal) {
     m_os << dataDef.declaredStorageDuration() << "/";
   }

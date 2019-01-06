@@ -162,9 +162,8 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     THEN_insert_returns_true_each_time,
     BECAUSE_the_anonymous_name_is_not_really_inserted_and_thus_there_is_no_conflict_on_the_2nd_insert)) {
   // setup
-  const auto anonymousName = "";
-  TestingEnvNode node1(anonymousName);
-  TestingEnvNode node2(anonymousName);
+  TestingEnvNode node1(s_anonymousName);
+  TestingEnvNode node2(s_anonymousName);
   Env UUT;
 
   // exercise
@@ -181,13 +180,12 @@ TEST(EnvTest, MAKE_TEST_NAME3(
     THEN_find_returns_false,
     BECAUSE_anonymous_nodes_are_not_added_to_the_env)) {
   // setup
-  const auto anonymousName = "";
-  TestingEnvNode node(anonymousName);
+  TestingEnvNode node(s_anonymousName);
   Env UUT;
 
   // exercise
   UUT.insertLeaf(node);
-  const auto foundNode = UUT.find(anonymousName);
+  const auto foundNode = UUT.find(s_anonymousName);
 
   // verify
   EXPECT_TRUE(foundNode == nullptr) << amend(UUT);

@@ -6,6 +6,8 @@
 
 using namespace std;
 
+const std::string s_anonymousName = "<anonymous>";
+
 EnvNode::EnvNode(string name) : m_name{move(name)}, m_envParent{} {
 }
 
@@ -23,7 +25,7 @@ bool EnvNode::insert(EnvNode& node) {
   assert(node.m_envChildren.empty());
 
   // anonymous nodes are not added to the Env
-  if (node.m_name.empty()) { return true; }
+  if (node.m_name == s_anonymousName) { return true; }
 
   const auto nameAlreadyExists = find(node.name());
   if (nameAlreadyExists != nullptr) { return false; }

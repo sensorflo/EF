@@ -5,6 +5,9 @@
 #include <ostream>
 #include <string>
 
+/** Special name denoting an anonymous node, that is a node without a name. */
+extern const std::string s_anonymousName;
+
 class EnvNode {
 public:
   explicit EnvNode(std::string name);
