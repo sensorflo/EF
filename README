@@ -1,60 +1,61 @@
 // The markup language of this document is AsciiDoc
 :encoding: UTF-8
-:author: Florian Kaufmann and Elias Diem
-:revdate: January 2015
+:author: Florian Kaufmann
 
 = The EF Programming Language
 
-https://github.com/sensorflo/EF[The EF Programming Language] (C) by Florian
-Kaufmann <sensorflo@gmail.com> and Elias Diem <pub@webconect.ch> is licensed
-under a http://creativecommons.org/licenses/by-sa/4.0/[Creative Commons
-Attribution-ShareAlike 4.0 International License]
+The documentation of the EF programming language and its design is in the doc directory.
 
-The purpose of this document currently is to have a vehicle to conduct
-brainstorming.
 
-[[motivation_abstract]]
-== Motivation for a new programming language
+== File Overview
 
-For embedded systems or regular operating systems with rather tough run-time
-efficiency constrains, IMO there is currently no general purpose programming
-language which offers most of the abstraction and convenience features of
-modern and classic programming languages and has a relatively simple syntax
-and rules.  More on EF's motivation in <<motivation_details>>.
+src/efc:: Source code of efc, the EF compiler. The build generates ``src/efc/test/generated_spec.html'', a nicely formatted specification extracted from test source code.
 
-== Vision
+doc:: Documentation, in particular ef.txt. The build can generate a nicely formated ef.html (build taget doxygen or all).
 
-A general purpose programming language, biased towards system programming and
-embedded hard real-time environments in the industry.  Competitor to
-C&plus;&plus;, Ada, Real-Time Java.
+doc/tutorial:: Examples of EF code
 
-- Multi-paradigm 
-- Nearly pure OO language, nearly everything is an object, nearly every type
-  is a class
-- Functional programming
-- Generic programming
-- Meta programming
-- Based on expressions; no statements.  Thus much less constraints where
-  certain constructs, e.g. definition of functions, classes, objects etc can
-  occur.
-- Collections (e.g. lists or maps aka dictionaries) and operations (e.g
-  slicing) on them are first class citizen.
-- Static typed, type inference, whether strong or weak typing I don't know yet
-- Compile time execution: many things can be computed at compile-time opposed
-  to run-time
-- Exceptions.
-- Contracts (as in D)
-- Interfaces as in Java, no multiple inheritance as in C&plus;&plus;.
-- Manual memory management, but by default smart pointers are used, probably
-  no garbage collector due to its impact on hard real-time constraints.
-- Supply safe-easy-to-use primitives such as pointers, arrays, strings,
-  collections in general etc, which are nearly are as efficient as their C
-  counterparts.  That includes having literals of those.
-- Low level code in the spirit of C still possible, but one has to use
-  explicit language constructs to use these, so when reading code it's
-  apparent when they are used.
-- Easy enough grammar, so compilers and additional tools like static code
-  analysis, semantic aware IDEs etc are easy enough to write.  Only if good
-  development tools are available for EF it will also be used in the industry.
+doxygen:: Generated source code documention (build target doxygen)
 
-// more details in ./doc/ef.txt
+googletest:: Testing framework
+
+
+== Building
+
+To build efc, the EF compiler, you need CMake, llvm, bison, and flex. For other targets you will need also further programs. The build will tell you what is missing.
+
+Suppose you put the EF Git project in directory <EF_DIR>. Let <BUILD_DIR> denote the directory where you want the build products in, e.g. <EF_DIR>/bin. One time, you do the follwing:
+
+--------------------------------------------------
+mkdir <BUILD_DIR> # create a directory somewhere to held the build output
+cd <BUILD_DIR>
+cmake <EF_DIR>
+--------------------------------------------------
+
+This produces the default build system for your system. To actually build, on a *nix system, you run
+
+--------------------------------------------------
+cd <BUILD_DIR>
+make
+--------------------------------------------------
+
+This will produce the executable <BUILD_DIR>/bin/efc. To execute the automated tests, run ``ctest -V'' in <BUILD_DIR>.
+
+
+=== Build targes
+
+Notable build targets run by target `all':
+
+efc, efc_test, efc-spec:: Target efc builds the compiler, efc_test the associated automated tests, efc-test-spec-html the nicely formated specification extracted from the test source code.
+
+ef-doc:: Nicely formats the documentation in directory doc.
+
+Further build targets:
+
+doxygen:: Builds source code documentation in <EF_DIR>/doxygen, the entry point being <EF_DIR>/doxygen/html/index.html. Part of target `all'.
+
+clang-format:: Formats all source files with clang-format.
+
+clang-modernize:: Runs clang-tidy, a static code analysis tool.
+
+Note that you can rather easily do dynamic code analysis with clang sanitizers such as undefined behavior sanitizer and address sanitizer the usual way on top of CMake as documented by these tools.

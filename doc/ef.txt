@@ -1,16 +1,31 @@
-:encoding: UTF-8
 // The markup language of this document is AsciiDoc
+:encoding: UTF-8
+:author: Florian Kaufmann
 
-include::../README[]
+= The EF Programming Language
+
+https://github.com/sensorflo/EF[The EF Programming Language] (C) by Florian
+Kaufmann <sensorflo@gmail.com> and Elias Diem <pub@webconect.ch> is licensed
+under a http://creativecommons.org/licenses/by-sa/4.0/[Creative Commons
+Attribution-ShareAlike 4.0 International License]
+The purpose of this document currently is to have a vehicle to conduct
+brainstorming.
+
 
 == Designing EF
 
 
-[[motivation_details]]
-=== Motivation for EF revisited
+[[motivation]]
+=== Motivation for a new programming language
 
-See also <<motivation_abstract>>. Thoughts about what EF could provide overall
-what no other current language can provide overall.
+For embedded systems or regular operating systems with rather tough run-time
+efficiency constrains, IMO there is currently no general purpose programming
+language which offers most of the abstraction and convenience features of
+modern and classic programming languages and has a relatively simple syntax
+and rules.  More on EF's motivation in chapter ``Motivation forEF.
+
+Thoughts about what EF could provide overall what no other current language can
+provide overall.
 
 Hard real-time / deterministic;; This is important for many embedded systems.
 Any programming language with an obligatory garbage collector most probably
@@ -72,6 +87,41 @@ programmer can do and how he can do it.  I think when the language is too
 pedantic and patronizing, it is not so much fun anymore using the language.
 
 
+=== Vision
+
+A general purpose programming language, biased towards system programming and
+embedded hard real-time environments in the industry.  Competitor to
+C&plus;&plus;, Ada, Real-Time Java.
+
+- Multi-paradigm 
+- Nearly pure OO language, nearly everything is an object, nearly every type
+  is a class
+- Functional programming
+- Generic programming
+- Meta programming
+- Based on expressions; no statements.  Thus much less constraints where
+  certain constructs, e.g. definition of functions, classes, objects etc can
+  occur.
+- Collections (e.g. lists or maps aka dictionaries) and operations (e.g
+  slicing) on them are first class citizen.
+- Static typed, type inference, whether strong or weak typing I don't know yet
+- Compile time execution: many things can be computed at compile-time opposed
+  to run-time
+- Exceptions.
+- Contracts (as in D)
+- Interfaces as in Java, no multiple inheritance as in C&plus;&plus;.
+- Manual memory management, but by default smart pointers are used, probably
+  no garbage collector due to its impact on hard real-time constraints.
+- Supply safe-easy-to-use primitives such as pointers, arrays, strings,
+  collections in general etc, which are nearly are as efficient as their C
+  counterparts.  That includes having literals of those.
+- Low level code in the spirit of C still possible, but one has to use
+  explicit language constructs to use these, so when reading code it's
+  apparent when they are used.
+- Easy enough grammar, so compilers and additional tools like static code
+  analysis, semantic aware IDEs etc are easy enough to write.  Only if good
+  development tools are available for EF it will also be used in the industry.
+
 === Competing programming languages
 
 ==== C
@@ -120,6 +170,7 @@ collection.  Is thus not suitable for a hard real-time embedded system.
 
 
 ==== D
+
 ...
 
 === Guidelines in designing EF
@@ -258,7 +309,6 @@ collection.  Is thus not suitable for a hard real-time embedded system.
   (currently) well known patterns in procedural, OO, functional, generic
   programming.
 
-
 Inspiration: don't re-invent the wheel -- look at how lisp and other language
 solve problems:
 
@@ -338,11 +388,6 @@ solve problems:
 * An embedded system often does have things a normal OS has: files,
   processes/threads?, ... What is the influence on EF's stdlib?
 
-=== Respect computer science theory
-
-* What profit does EF get when it tries to listen to findings, concepts from
-  theory.  E.g. if it would have a truly context free grammar, what would be
-  the profit -- and the costs
 
 
 == Introduction
@@ -363,10 +408,7 @@ environment: 1) Accessing an object designated volatile 2) modifying an object
 3) calling a library I/O function 4) calling a function that does any of
 those.
 
-undefined behavior;; As C&plus;&plus; -- However the hope is that EF has no
-constructs with undefined behavior.  Note to myself: undefined behavior
-includes that the implementation deliberately chooses a specific behaviour and
-optionally documents it.
+undefined behavior;; See <<undefined_behavior>>
 
 unspecified behavior;; Similar to C&plus;&plus;.  Contrary to C&plus;&plus;,
 the EF specification must specify the range of possible behaviors.
@@ -392,6 +434,15 @@ A directory (at least by default) is a module aka package.
 
 Or alternatively, file extension defines whether this file defines a class or
 a module.
+
+
+[[undefined_behavior]]
+=== Undefined Behavior
+
+Similar to C&plus;&plus; -- However the hope is that EF has only few constructs with undefined behavior in safe context. In safe context, what often is undefined behavior in C&plus;C&plus;, should in EF either be well defined or unspecified behavior.
+
+Note to myself: undefined behavior includes that the implementation deliberately
+chooses a specific behaviour and optionally documents it.
 
 
 == Lexical structure
@@ -1076,12 +1127,14 @@ A _(fixed size) raw array_ is comparable to C's arrays.  Syntax: see
 ++raw[sub_expr#size]type_expr++ is from a logical point of view equivalent to
 ++raw_array<sub_expr#size,type_expr>++.
 
-Size must be known at compile time.  Zero sized arrays are allowed.  The size
-can be omitted if it can be deduced from the initializer list, e.g. in ++var a
-: raw[]int = {2,4,8}$++ the size 3 can be deduced.
+Size must be known at compile time.  Wether zero sized arrays are allowed is yet
+unclear, see <<zero_sized_objects>>.  The size can be omitted if it can be
+deduced from the initializer list, e.g. in ++var a : raw[]int = {2,4,8}$++ the
+size 3 can be deduced.
 
-Creating a pointer to the one past the end element and possibly dereferencing
-it is allowed.  Note that this includes zero sized arrays.
+Creating a pointer to the one past the end element and possibly dereferencing it
+(but without reading/writing from/to the pointee) is allowed.  Note that this
+includes zero sized arrays.
 
 Standard style guidelines disallow its use.  It's intended that the user
 nearly always uses collections and nearly never raw arrays directly.
@@ -1096,10 +1149,6 @@ var a({1,1,2,3,5}) : raw[5]int$
 var a : raw[5]int ,= {1,1,2,3,5}$
 var pa : raw*raw[5]int ,= new raw[5]int({1,1,2,3,5})$
 ----------------------------------------------------------------------
-
-*to-do*:
-
-* Do array elements of zero size impose any problems?
 
 
 [[variable_sized_raw_array]]
@@ -1937,8 +1986,9 @@ Caveats:
 
 - Order of initialization of class static and function static variables is yet unclear.
 
+- There is also thread_local
 
-=== Import dependencies / static init dependencies
+=== Import dependencies / static/thread_local init dependencies
 
 There multiple dependencies:
 
@@ -1946,11 +1996,19 @@ There multiple dependencies:
 
 - At compile time: of other defined entities
 
-- At runtime: Of the module `constructor', i.e. initialization of static variables
+- At runtime, at program startup: Of the module `constructor', i.e. initialization of static variables
   * compile-time constant
   * run-time
 
-By default an import statement says `I am dependend on all types of dependencies'. But that can also be modified. In any case EF must be in a way that the compiler can check that dependencies are not violated. E.g. at run-time a module accesses (read or write, taking address or getting (type) information is ok) a static variable of another module before that one could initialize its variable. That may involve a function attribute stating `I am not (transitively) dependend on a static variable needing runtime initialization'
+- At runtime: at thread startup: Of the module `thread constructor', i.e. initialization of thread_local variables.
+  * compile-time constant
+  * run-time
+
+- At runtime, static / thread_local variables local to a function. Maybe make two variants: One which behaves as any other static / thread_local, and one which is initialized the first time control flow reaches definition (which internally requires another `guard' around it, and in case of static, maybe even more stuff to prevent race conditions).
+
+If the user splits a originally large headerfile into smaller ones, that also can help in breaking dependencies, and doesn't require EF to provide more find grained control over how to import.
+
+Ideas for more fine grained control over how import works: By default an import statement says `I am dependend on all types of dependencies'. But that can also be modified. In any case EF must be in a way that the compiler can check that dependencies are not violated. E.g. at run-time a module accesses (read or write, taking address or getting (type) information is ok) a static variable of another module before that one could initialize its variable. That may involve a function attribute stating `I am not (transitively) dependend on a static variable needing runtime initialization'
 
 
 [[exchanging_module_impl]]
@@ -2129,11 +2187,12 @@ opposed to a concrete type. See also <<type_deduction>>
 
 === Layout
 
-- Don't have C&plus;&plus;'s restriction that each obj must have an unique
-  address.  Or just allow for zero sized objects, in particular zero sized
-  arrays.
+- see <<zero_sized_objects>>, <<memory_model>>
+
 - +alignof+
+
 - bit fields
+
 - pack as attribute to structs/classes
 
 
@@ -2922,12 +2981,16 @@ other_control_flow_expr =
   'label identifier;
 ----------------------------------------------------------------------
 
-.Notes
+Notes:
+
 * Short circuit operators such as +or+ or +and+ are also kind of flow control.
 
-.To-do
+To-do:
+
 * As for block_expr, make it a compile time switch whether parentheses are
   enforced for the conditional part of the flow control expressions.
+
+* To make the EF language core small and simple, i.e. make many things just standard library, consider makinge the building the builtin if / while part of the standard library. The EF core only has blocks and a `goto' which only can jump to the beginning of a block (actually the rules must be even more restrictive), so there's no skippinig of initializations (mind function static variables) or of destructors. That is, it doesn't really just jump, its more like hoping along destructor sections of blocks on the way.
 
 
 === Interact with other programs
@@ -3120,15 +3183,38 @@ of their members by themselves.
   links at the bottom.
 
 
+[[memory_model]]
 ==== Memory model and object layout in memory
 
-- Allow zero sized objects (which then also makes zero sized arrays more
-  feasible).  Most probably that means that the `costs' of this decision are
-  that `multiple' such objects really are identical, i.e. there is really only
-  one object which has different names.
+- probably allow <<zero_sized_objects>> in some form
+
 - +alignof+
+
 - bit fields
+
 - pack as attribute to structs/classes
+
+
+[[zero_sized_objects]]
+Discussion of zero sized objects.
+
+* If zero sized arrays are not allowed, there's the edge case that the
+  const_expr specifying the array size must be greater than zero. That might be
+  cumbersome to accomplish in generic contexts. Even more so that it is quite
+  natural that a collection can be empty.
+
+- If (conceptually) zero sized objects are allowed and they really use zero
+  memory, then what should the address of operator return? In any case, we can't
+  differentiate objects of that type. They have the same content (nothing), thus
+  are equivalent, but not the same object. Some applications might care,
+  especially in generic context.
+
+- Allow conceptually zero sized objects (compound types with no members, in
+  particular zero sized arrays). But their size if instantiated `at top level'
+  (i.e. not as supertype-member of a subtype), will be non-zero. The
+  disadvantage is that e.g. for a zero sized array, sizeof(array<T,cnt>) !=
+  sizeof(T)*cnt, which also might be surprising. But currently I think its the
+  solution with the best trade-offs.
 
 
 [[smart_pointers]]
