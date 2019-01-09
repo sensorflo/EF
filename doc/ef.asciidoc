@@ -24,15 +24,12 @@ language which offers most of the abstraction and convenience features of
 modern and classic programming languages and has a relatively simple syntax
 and rules.  More on EF's motivation in chapter ``Motivation forEF.
 
-Thoughts about what EF could provide overall what no other current language can
-provide overall.
+Thoughts about what EF could provide overall:
 
 Hard real-time / deterministic;; This is important for many embedded systems.
 Any programming language with an obligatory garbage collector most probably
 won't be suitable for hard real-time.  I am unsure about exceptions: there are
 zero overhead implementations,
-
-Concurrency support;; ...
 
 Low power consumption;; This is important e.g. for portable devices running on
 battery or big server farms.  Interpreted languages in contrast to natively
@@ -77,7 +74,9 @@ nets and abstractions starts to really pay off when programs get larger.
 Anything interpreted is probably to large since the interpreter also needs
 space.
 
-Features;; OO, functional programming (includes first-class functions),
+Concurrency support;; ...
+
+Misc Features;; OO, functional programming (includes first-class functions),
 generic programming, meta programming, collections (lists, maps aka hash
 tables etc) and slices thereof, regular expressions.
 
@@ -171,7 +170,18 @@ collection.  Is thus not suitable for a hard real-time embedded system.
 
 ==== D
 
-...
+*to-do*
+
+
+==== Rust
+
+*to-do*
+
+
+==== Go
+
+*to-do*
+
 
 === Guidelines in designing EF
 
