@@ -1,0 +1,18 @@
+{
+    "version" : 8,
+    "configurePresets": [
+        {
+            "name": "DefaultCMakePreset",
+            "generator": "Ninja",
+            "binaryDir": "${workspaceFolder}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${workspaceFolder}/install/${presetName}",
+                "CMAKE_EXPORT_COMPILE_COMMANDS" : "YES",
+                "CMAKE_C_COMPILER": "cl.exe",
+                "CMAKE_CXX_COMPILER": "cl.exe",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            }
+        }
+    ]
+}
