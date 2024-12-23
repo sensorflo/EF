@@ -94,7 +94,7 @@ auto Parser::ParsePrimaryExpr() -> std::unique_ptr<Node>{
     const auto& iPeek = miLexxer->PeekToken();
     if (iPeek->Type() == TokenType::Symbol && iPeek->Text() == "(")
         return ParseExprSeq();
-    if (iPeek->Type() == TokenType::Literal) {
+    if (iPeek->Type() == TokenType::IntegerLiteral) {
         miLexxer->PopToken();
         return std::make_unique<LiteralIntegerNode>(iPeek->Text().begin(), iPeek->IntegerValue().value());
     }

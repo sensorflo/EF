@@ -28,7 +28,7 @@ public:
 
 class LiteralIntegerNode : public Node {
 public:
-    LiteralIntegerNode(std::string_view::iterator pos, integer_t value);
+    LiteralIntegerNode(std::string_view::iterator pos, Integer value);
 };
 
 class IdentifierNode : public Node {

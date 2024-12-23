@@ -1,32 +1,6 @@
 #pragma once
-#include <memory>
-#include <optional>
-#include <string>
-#include <boost/locale/utf.hpp>
-
-using CodePoint = boost::locale::utf::code_point;
-using integer_t = std::int64_t;
-
-enum class TokenType {
-    Literal,
-    Identifier,
-    Symbol,
-    EndOfFile
-};
-
-class Token {
-public:
-    Token(TokenType, std::string_view::iterator, std::string_view::iterator);
-    virtual ~Token() = default;
-
-    auto Text() -> std::string_view const;
-    auto Type() -> TokenType const;
-    auto IntegerValue() -> std::optional<integer_t> const;
-
-protected:
-    TokenType mType;
-    std::string_view mText;
-};
+#include "Text.h"
+#include "Token.h"
 
 class Lexxer {
 public:

@@ -16,8 +16,11 @@ add_library(EfLib)
 target_sources(EfLib
     PRIVATE
         ef.cpp
+        Exception.cpp
         Lexxer.cpp
         Parser.cpp
+        Text.cpp
+        Token.cpp
 )
 target_link_libraries(EfLib
     PRIVATE
