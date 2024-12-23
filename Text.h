@@ -8,5 +8,7 @@ constexpr CodePoint CodePointIncomplete = 0xFFFF'FFFEu;
 constexpr CodePoint CodePointEof = 0xFFFF'FFFDu;
 
 auto IsAsciiWhite(CodePoint codePoint) -> bool;
+auto IsAsciiDigit(CodePoint) -> bool;
+auto IsLetter(CodePoint codePoint) -> bool;
 
 auto ReadCodePoint(std::string_view::iterator& pos, std::string_view::iterator end) -> CodePoint;

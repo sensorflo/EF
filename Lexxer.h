@@ -14,7 +14,8 @@ private:
     auto PopCodePoint() -> CodePoint;
     auto PeekCodePoint() -> CodePoint;
 
-    auto ReadIntegerLiteralToken() -> Token;
+    auto ReadIntegerLiteral() -> Token;
+    auto ReadIdentifier() -> Token;
     auto EatWhite() -> void;
 
 private:

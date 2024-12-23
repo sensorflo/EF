@@ -4,6 +4,16 @@
 
 #include <stdexcept>
 
+namespace {
+    auto IsIdentifierBegin(CodePoint codePoint) {
+        return IsLetter(codePoint) || codePoint == '_';
+    }
+
+    auto IsIdentifier(CodePoint codePoint) {
+        return IsIdentifierBegin(codePoint) || IsAsciiDigit(codePoint);
+    }
+}
+
 Lexxer::Lexxer(std::string_view content)
 : mContent{content}
 , miCurrentCodePoint{}
@@ -47,8 +57,10 @@ auto Lexxer::PopTokenInner() -> Token {
             EatWhite();
             continue;
         }
-        if (codePoint >= '0' && codePoint <= '9')
-            return ReadIntegerLiteralToken();
+        if (IsAsciiDigit(codePoint))
+            return ReadIntegerLiteral();
+        if (IsIdentifierBegin(codePoint))
+            return ReadIdentifier();
         if (codePoint == '=' || codePoint == '(' || codePoint == ')')
             return Token{TokenType::Symbol, miCurrentCodePoint, miNextCodePoint};
         if (codePoint == CodePointEof)
@@ -57,17 +69,30 @@ auto Lexxer::PopTokenInner() -> Token {
     }
 }
 
-auto Lexxer::ReadIntegerLiteralToken() -> Token {
+auto Lexxer::ReadIntegerLiteral() -> Token {
     auto begin = miCurrentCodePoint;
     while (true) {
         const auto codePoint = PeekCodePoint();
-        if (codePoint >= '0' && codePoint <= '9') {
+        if (IsAsciiDigit(codePoint)) {
             PopCodePoint();
             continue;
         }
         break;
     }
     return Token{TokenType::IntegerLiteral, begin, miNextCodePoint};
+}
+
+auto Lexxer::ReadIdentifier() -> Token {
+    auto begin = miCurrentCodePoint;
+    while (true) {
+        const auto codePoint = PeekCodePoint();
+        if (IsIdentifier(codePoint)) {
+            PopCodePoint();
+            continue;
+        }
+        break;
+    }
+    return Token{TokenType::Identifier, begin, miNextCodePoint};
 }
 
 auto Lexxer::EatWhite() -> void {
