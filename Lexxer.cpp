@@ -4,104 +4,113 @@
 
 namespace
 {
-    bool IsWhite(code_point codePoint) {
+    constexpr auto eof = std::numeric_limits<uint32_t>::max();
+
+    bool IsWhite(CodePoint codePoint) {
+        return std::isspace(codePoint);
+    }
+
+    bool IsLineBreak(CodePoint codePoint) {
         return codePoint == 0;
     }
 
-    bool IsLineBreak(code_point codePoint) {
+    bool IsModifier(CodePoint codePoint) {
         return codePoint == 0;
     }
 
-    bool IsModifier(code_point codePoint) {
-        return codePoint == 0;
-    }
-
-    bool IsZeroWidth(code_point codePoint) {
+    bool IsZeroWidth(CodePoint codePoint) {
         return codePoint == 0;
     }
 }
 
-std::unique_ptr<Token> Lexxer::NextToken() {
-    while (true)
-    {
-        if (miNextToken == mContent.end())
-            return nullptr;
-
-        const auto codePoint = NextGraphemeClusterFirstCodePoint();
-
-        if (IsWhite(codePoint))
-            continue;        
-        if (codePoint >= '0' && codePoint <= '9')
-            return ReadIntegerLiteralToken(codePoint);
-        if (codePoint == '+')
-            return ReadOperatorToken(codePoint);
-    }
-}
-
-std::unique_ptr<Token> Lexxer::ReadIntegerLiteralToken(code_point codePoint)
+auto Token::IntegerValue() -> std::optional<integer_t> const
 {
+    if (mType != TokenType::Literal)
+        return std::nullopt;
     integer_t value = 0;
-    while (true)
-    {
-        value += codePoint - '0';
-        codePoint = NextGraphemeClusterFirstCodePoint();
-        if (!(codePoint >= '0' && codePoint <= '9'))
-        {
-            PutBack();
-            break;
-        }
+    for (const auto digit : mText) {
         value *= 10;
+        value += digit - '0';
     }
-    return std::make_unique<IntegerLiteralToken>(value, std::string_view{miCurrentToken, miNextToken});
+    // to-do: throw on overflow
+    return value;
 }
 
-std::unique_ptr<Token> Lexxer::ReadOperatorToken(code_point )
+Lexxer::Lexxer(std::string_view content)
+: mContent{content}
+, miCurrentCodePoint{}
+, miNextCodePoint{content.begin()}
+, mi2ndNextCodePoint{miNextCodePoint}
+, mNextCodePoint{content.empty() ? eof : boost::locale::utf::utf_traits<char>::decode(mi2ndNextCodePoint, mContent.end())}
+, mNextToken{PopTokenInner()}
 {
-    return nullptr;
 }
 
-code_point Lexxer::NextGraphemeClusterFirstCodePoint()
-{
+auto Lexxer::PopCodePoint() -> CodePoint {
     using namespace boost::locale::utf;
-    code_point firstCodePoint = 0;
-    bool isFirstIter = true;
-    miPreviousToken = miCurrentToken;
-    miCurrentToken = miNextToken;
-    do 
-    {
-        const auto codePoint = utf_traits<char>::decode(miNextToken, mContent.end());
-        if (codePoint == illegal)
-            throw std::logic_error{MakeErrorMsg("Invalid UTF8 character encountered")};
-        if (isFirstIter)
-            firstCodePoint = codePoint, isFirstIter = false;
-        if (IsModifier(codePoint) || IsZeroWidth(codePoint))
+    
+    const auto returnValue = mNextCodePoint;
+    if (returnValue == illegal || returnValue == incomplete)
+        throw std::logic_error{"Invalid UTF-8 sequence or unexpected end of file encountered"}; // At miNextCodePoint
+
+    miCurrentCodePoint = miNextCodePoint;
+    miNextCodePoint = mi2ndNextCodePoint;
+    mNextCodePoint = mi2ndNextCodePoint == mContent.end() ? eof : utf_traits<char>::decode(mi2ndNextCodePoint, mContent.end());
+
+    return returnValue;
+}
+
+auto Lexxer::PeekCodePoint() -> CodePoint {
+    return mNextCodePoint;
+}
+
+auto Lexxer::PopToken() -> Token {
+    auto returnValue = mNextToken;
+    mNextToken = PopTokenInner();
+    return returnValue;
+}
+
+auto Lexxer::PeekToken() -> const Token& {
+    return mNextToken;
+}
+
+auto Lexxer::PopTokenInner() -> Token {
+    while (true) {
+        const auto codePoint = PopCodePoint();
+        if (IsWhite(codePoint)) {
+            EatWhite();
             continue;
+        }
+        if (codePoint >= '0' && codePoint <= '9')
+            return ReadIntegerLiteralToken();
+        if (codePoint == '=' || codePoint == '(' || codePoint == ')')
+            return Token{TokenType::Symbol, miCurrentCodePoint, miNextCodePoint};
+        if (codePoint == eof)
+            return Token{TokenType::EndOfFile, miNextCodePoint, miNextCodePoint};
+        throw std::logic_error{"Unexpected character encountered"};
+    }
+}
+
+auto Lexxer::ReadIntegerLiteralToken() -> Token {
+    auto begin = miCurrentCodePoint;
+    while (true) {
+        const auto codePoint = PeekCodePoint();
+        if (codePoint >= '0' && codePoint <= '9') {
+            PopCodePoint();
+            continue;
+        }
         break;
-    } while(true);
-
-    if (IsLineBreak(firstCodePoint))
-        mColumn = 0, mLine++;
-    else
-        mColumn++;
-
-    return firstCodePoint;
+    }
+    return Token{TokenType::Literal, begin, miNextCodePoint};
 }
 
-void Lexxer::PutBack()
-{
-    miNextToken = miCurrentToken;
-    miCurrentToken = miPreviousToken;
-}
-
-std::string Lexxer::MakeErrorMsg(std::string_view msgCore)
-{
-    std::string msg{mPath};
-    msg += ':';
-    msg += std::to_string(mLine);
-    msg += ':';
-    msg += std::to_string(mColumn);
-    msg += ':';
-    msg += ' ';
-    msg += msgCore;
-    return msg;
+auto Lexxer::EatWhite() -> void {
+    while (true) {
+        const auto codePoint = PeekCodePoint();
+        if (IsWhite(codePoint)) {
+            PopCodePoint();
+            continue;
+        }
+        return;
+    }
 }
