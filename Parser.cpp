@@ -1,36 +1,42 @@
 #include "Parser.h"
 
+#include "Ast.h"
+#include "Exception.h"
 #include "Lexxer.h"
 
-#include <stdexcept>
-
 std::unique_ptr<Node> Parser::Parse() {
-    while (true) {
-        auto def = ParseDef();
-    }
+    auto iElementsNode = std::make_unique<ElementsNode>();
+    while (miLexxer->PeekToken().Type() != TokenType::EndOfFile)
+        iElementsNode->Add(ParseElement());
+    return iElementsNode;
 }
 
-auto Parser::ParseDef() -> std::unique_ptr<Node> {
-    const auto& iFunDef = miLexxer->PopToken();
-    if (!(iFunDef->Type() == TokenType::Identifier && iFunDef->Text() == "fun"))
-        throw std::logic_error{"Unexpected token"};
+auto Parser::ParseElement() -> std::unique_ptr<Node> {
+    const auto introToken = miLexxer->PopToken();
+    if (introToken.Type() == TokenType::Identifier && introToken.Text() == "fun")
+        return ParseFunDef(introToken);
+    throw Exception{"Unexpected token", introToken};
+}
 
-    const auto& iFunId = miLexxer->PopToken();
-    if (iFunId->Type() != TokenType::Identifier)
-        throw std::logic_error{"Unexpected token"};
+auto Parser::ParseFunDef(const Token& introToken) -> std::unique_ptr<Node> {
+    // 'fun' is already popped and in introToken.
 
-    const auto& iEqual = miLexxer->PopToken();
-    if (!(iEqual->Type() == TokenType::Symbol && iEqual->Text() == "=="))
-        throw std::logic_error{"Unexpected token"};    
+    const auto& funId = miLexxer->PopToken();
+    if (funId.Type() != TokenType::Identifier)
+        throw Exception{"Unexpected token. Expected function identifier.", funId};
+
+    const auto& equalSymbol = miLexxer->PopToken();
+    if (!(equalSymbol.Type() == TokenType::Symbol && equalSymbol.Text() == "="))
+        throw Exception{"Unexpected token. Expected '='.", equalSymbol};    
 
     auto&& iBody = ParseTopLevelExpr();
-    return std::make_unique<FunDefNode>(iFunDef->Text().begin(), iFunId->Text(), move(iBody));
+    return std::make_unique<FunDefNode>(introToken.Text().begin(), funId.Text(), move(iBody));
 }
 
 auto Parser::ParseExprSeq() -> std::unique_ptr<Node>{
-    const auto& iOpenParen = miLexxer->PopToken();
-    if (!(iOpenParen->Type() == TokenType::Symbol && iOpenParen->Text() == "("))
-        throw std::logic_error{"Unexpected token"};
+    const auto& openParen = miLexxer->PopToken();
+    if (!(openParen.Type() == TokenType::Symbol && openParen.Text() == "("))
+        throw Exception{"Unexpected token. Expected '('.", openParen};
     
     auto&& iSeq = std::make_unique<ExprSeqNode>();
     while (true)
@@ -38,69 +44,66 @@ auto Parser::ParseExprSeq() -> std::unique_ptr<Node>{
         iSeq->Add(ParseTopLevelExpr());
 
         const auto& iDelimiter = miLexxer->PopToken();
-        if (iDelimiter->Type() != TokenType::Symbol)
-            throw std::logic_error{"Unexpected token"};
-        if (iDelimiter->Text() == ";")
-            continue;
-        if (iDelimiter->Text() == ")")
+        if (iDelimiter.Type() == TokenType::Symbol) {
+            if (iDelimiter.Text() == ";")
+                continue;
+            if (iDelimiter.Text() == ")")
+                break;
+        }
+        if (iDelimiter.Type() == TokenType::EndOfFile)
             break;
-        throw std::logic_error{"Unexpected token"};
+        throw Exception{"Unexpected token. Expected ';' or ')'.", iDelimiter};
     }
     return iSeq;
 }
 
 auto Parser::ParseTopLevelExpr() -> std::unique_ptr<Node> {
-
     auto&& iLeft = ParsePrecedence1Expr();
-
-    while (true)
-    {
-        const auto& iBinaryOp = miLexxer->PeekToken();
-        if (iBinaryOp->Type() == TokenType::Identifier && iBinaryOp->Text() == "+")
-        {
+    while (true) {
+        const auto& binaryOp = miLexxer->PeekToken();
+        if (binaryOp.Type() == TokenType::Identifier && binaryOp.Text() == "+") {
             miLexxer->PopToken();
             auto&& iRight = ParsePrecedence1Expr();
-            auto&& iFunCall = std::make_unique<FunCallNode>(iBinaryOp->Text().begin(), iBinaryOp->Text());
+            auto&& iFunCall = std::make_unique<FunCallNode>(binaryOp.Text().begin(), binaryOp.Text());
             iFunCall->AddArgument(std::move(iLeft));
             iFunCall->AddArgument(std::move(iRight));
-
             iLeft = std::move(iFunCall);
         }
+        else
+            break;
     }
     return iLeft;
 }
 
 auto Parser::ParsePrecedence1Expr() -> std::unique_ptr<Node> {
-  
     auto&& iLeft = ParsePrimaryExpr();
-
-    const auto& iBinaryOp = miLexxer->PeekToken();
-    if (iBinaryOp->Type() == TokenType::Identifier && iBinaryOp->Text() == "*")
-    {
-        miLexxer->PopToken();
-        auto&& iRight = ParsePrimaryExpr();
-        auto&& iFunCall = std::make_unique<FunCallNode>(iBinaryOp->Text().begin(), iBinaryOp->Text());
-        iFunCall->AddArgument(std::move(iLeft));
-        iFunCall->AddArgument(std::move(iRight));
-        return iFunCall;
+    while (true) {
+        const auto& binaryOp = miLexxer->PeekToken();
+        if (binaryOp.Type() == TokenType::Identifier && binaryOp.Text() == "*") {
+            miLexxer->PopToken();
+            auto&& iRight = ParsePrimaryExpr();
+            auto&& iFunCall = std::make_unique<FunCallNode>(binaryOp.Text().begin(), binaryOp.Text());
+            iFunCall->AddArgument(std::move(iLeft));
+            iFunCall->AddArgument(std::move(iRight));
+            iLeft = std::move(iFunCall);
+        }
+        else
+            break;
     }
-    else
-    {
-        return iLeft;
-    }
+    return iLeft;
 }
 
 auto Parser::ParsePrimaryExpr() -> std::unique_ptr<Node>{
-    const auto& iPeek = miLexxer->PeekToken();
-    if (iPeek->Type() == TokenType::Symbol && iPeek->Text() == "(")
+    const auto& peekToken = miLexxer->PeekToken();
+    if (peekToken.Type() == TokenType::Symbol && peekToken.Text() == "(")
         return ParseExprSeq();
-    if (iPeek->Type() == TokenType::IntegerLiteral) {
+    if (peekToken.Type() == TokenType::IntegerLiteral) {
         miLexxer->PopToken();
-        return std::make_unique<LiteralIntegerNode>(iPeek->Text().begin(), iPeek->IntegerValue().value());
+        return std::make_unique<LiteralIntegerNode>(peekToken.Text().begin(), peekToken.IntegerValue().value());
     }
-    if (iPeek->Type() == TokenType::Identifier) {
+    if (peekToken.Type() == TokenType::Identifier) {
         miLexxer->PopToken();
-        return std::make_unique<IdentifierNode>(iPeek->Text().begin(), iPeek->Text());
+        return std::make_unique<IdentifierNode>(peekToken.Text().begin(), peekToken.Text());
     }
-    throw std::logic_error{"Unexpected token"};
+    throw Exception{"Unexpected token. Expected a primary expression.", peekToken};
 }

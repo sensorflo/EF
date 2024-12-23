@@ -15,7 +15,7 @@ add_definitions(
 add_library(EfLib)
 target_sources(EfLib
     PRIVATE
-        ef.cpp
+        Ast.cpp
         Exception.cpp
         Lexxer.cpp
         Parser.cpp
@@ -37,5 +37,7 @@ target_link_libraries(Ef
     PRIVATE
         EfLib
 )
+set_target_properties(Ef
+    PROPERTIES OUTPUT_NAME "ef")
 
 add_subdirectory(test)

@@ -81,6 +81,7 @@
         "array": "cpp",
         "coroutine": "cpp",
         "deque": "cpp",
-        "stdfloat": "cpp"
+        "stdfloat": "cpp",
+        "*.rh": "cpp"
     }
 }
