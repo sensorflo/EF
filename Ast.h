@@ -4,9 +4,11 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 class Node {
 public:
+    Node() = default;
     virtual ~Node() = default;
 };
 
@@ -14,6 +16,8 @@ class ElementsNode : public Node {
 public:
     ElementsNode();
     auto Add(std::unique_ptr<Node>) -> void;
+private:
+    std::vector<std::unique_ptr<Node>> mElements;    
 };
 
 class FunDefNode : public Node {
